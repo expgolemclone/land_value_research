@@ -79,3 +79,38 @@ rank_market_cap_ratio.py
 - `data/landprice/tokyo_2025/` — Public land price GeoJSON (L01-25_13.geojson)
 - `data/cache/` — PDF, web scraping, and facility extraction caches
 - `data/output/` — Per-company CSVs, anomaly exclusions, ranking markdowns
+
+## Git Commit Rules
+
+- **Make commits as granular as possible.** Create one commit per logical change (e.g., adding a function, fixing a bug, refactoring, changing config). Never bundle multiple unrelated changes into a single commit.
+- **Write detailed commit messages.** Describe not only what was changed, but also why — include background, reasoning, and intent.
+- Write commit messages in English.
+- Message format:
+  ```
+  <Short summary of the change (one line, ~50 chars)>
+
+  - Detailed description of what changed (bullet points)
+  - Background and reasoning behind the change
+  - Impact scope or caveats, if any
+  ```
+- Stage files by semantic unit of change, not by file. Only `git add` the files relevant to the current logical change.
+- Do not use `git add .` or `git add -A` as a rule.
+- **Do not ask for confirmation before committing.** When a change is ready, commit it immediately without prompting the user.
+
+## Workspace Consistency
+
+After every change, ensure the entire workspace remains consistent. This is mandatory, not optional.
+
+- **Propagate all changes.** When renaming, moving, or modifying a function, class, variable, constant, dataclass field, or config key, find and update every reference across the entire codebase — imports, call sites, tests, YAML/CSV configs, and documentation (including this CLAUDE.md).
+- **Run linting and tests after every change.** Execute `ruff check .` and `python -m pytest tests/ -v` to verify nothing is broken. Fix any errors before committing.
+- **Keep documentation in sync.** If behavior, architecture, CLI usage, directory structure, or data formats change, update the relevant sections of CLAUDE.md and any other docs immediately in the same commit.
+- **Verify cross-module impact.** Refer to the module dependency graph above. When changing a module, check all modules that depend on it for breakage.
+- **Keep config files aligned.** Changes to dataclass fields, YAML schema, or CSV column layouts must be reflected in all corresponding config files under `config/` and any parsing logic.
+
+## Session Cleanup
+
+Before ending each session, delete all temporary/scratch files created during the session. This is mandatory.
+
+- **Targets:** context files (e.g., `context.md`), debug scripts, scratch notes, temporary test outputs, and any other files created for in-session use that are not part of the permanent codebase.
+- **Exclusions:** Do NOT delete files under `data/cache/`, `data/output/`, `config/`, or any file that is tracked by git and part of the project.
+- **Verification:** Run `git status` before ending the session. There should be no untracked temporary files remaining in the working tree.
