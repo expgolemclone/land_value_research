@@ -116,3 +116,4 @@ Before ending each session, delete all temporary/scratch files created during th
 - **Targets:** context files (e.g., `context.md`), debug scripts, scratch notes, temporary test outputs, and any other files created for in-session use that are not part of the permanent codebase.
 - **Exclusions:** Do NOT delete files under `data/cache/`, `data/output/`, `config/`, or any file that is tracked by git and part of the project.
 - **Verification:** Run `git status` before ending the session. There should be no untracked temporary files remaining in the working tree.
+- **Push on session end.** After all cleanup is done, push all commits from the session to the remote repository (`git push`). Do not ask for confirmation — just push.
