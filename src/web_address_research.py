@@ -4,6 +4,7 @@ import hashlib
 import html
 import io
 import json
+import logging
 import os
 import re
 import urllib.request
@@ -13,6 +14,8 @@ from dataclasses import dataclass
 import pdfplumber
 
 from src.jp_address import normalize_addr, split_tokyo_municipality
+
+logger = logging.getLogger(__name__)
 
 _RE_TAG = re.compile(r"<[^>]+>")
 _RE_LINE_TOKYO = re.compile(r"東京都[^\n]{0,120}")
@@ -42,6 +45,7 @@ class WebAddressResearcher:
                 if isinstance(d, dict):
                     self._resolve_cache = d
             except Exception:
+                logger.debug("resolve cache load failed: %s", self._resolve_cache_path, exc_info=True)
                 self._resolve_cache = {}
 
     def _cache_path(self, url: str) -> str:
@@ -163,11 +167,12 @@ class WebAddressResearcher:
                         self._addr_cache[url] = addrs
                         return addrs
                 except Exception:
-                    pass
+                    logger.debug("analysis cache load failed: %s", url, exc_info=True)
 
             try:
                 raw = self._fetch_bytes(url)
             except Exception:
+                logger.debug("fetch failed: %s", url, exc_info=True)
                 self._addr_cache[url] = []
                 return []
 
@@ -175,6 +180,7 @@ class WebAddressResearcher:
                 try:
                     text = self._pdf_to_text(raw)
                 except Exception:
+                    logger.debug("pdf to text failed: %s", url, exc_info=True)
                     self._addr_cache[url] = []
                     return []
             else:
@@ -199,7 +205,7 @@ class WebAddressResearcher:
                     separators=(",", ":"),
                 )
         except Exception:
-            pass
+            logger.debug("analysis cache write failed: %s", url, exc_info=True)
         return addrs
 
     @staticmethod
@@ -292,4 +298,4 @@ class WebAddressResearcher:
                 json.dump(self._resolve_cache, f, ensure_ascii=False, separators=(",", ":"))
             self._resolve_cache_dirty = False
         except Exception:
-            pass
+            logger.debug("resolve cache flush failed: %s", self._resolve_cache_path, exc_info=True)
