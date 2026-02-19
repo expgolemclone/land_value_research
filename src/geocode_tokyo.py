@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import logging
+
 import pandas as pd
 
 from src.jp_address import build_oaza_chome_name, normalize_addr, parse_town_chome_block, split_tokyo_municipality
+
+logger = logging.getLogger(__name__)
 
 
 class TokyoGeocoder:
@@ -66,15 +70,18 @@ class TokyoGeocoder:
         gaiku_candidates: list[tuple[str, int]] = []
         oaza_candidates: list[str] = []
 
-        if town and chome:
-            oaza_chome = build_oaza_chome_name(town, chome)
-            oaza_candidates.append(oaza_chome)
+        if town and chome is not None:
+            if 0 <= chome <= 99:
+                oaza_chome = build_oaza_chome_name(town, chome)
+                oaza_candidates.append(oaza_chome)
+                if block is not None:
+                    gaiku_candidates.append((oaza_chome, block))
+                    # 例: 日本橋兜町11-5 は town=日本橋兜町, block=11 で解決できる
+                    gaiku_candidates.append((town, chome))
+            else:
+                logger.warning("丁目値が範囲外(0-99)のためスキップ: chome=%d, address=%s", chome, address)
             # ハイフン住所は「丁目あり」と「丁目なし」が混在するため town も候補に含める
             oaza_candidates.append(town)
-            if block is not None:
-                gaiku_candidates.append((oaza_chome, block))
-                # 例: 日本橋兜町11-5 は town=日本橋兜町, block=11 で解決できる
-                gaiku_candidates.append((town, chome))
         elif town:
             oaza_candidates.append(town)
             if block is not None:

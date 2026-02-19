@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import logging
 import re
 from dataclasses import dataclass
 
 import pdfplumber
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -253,7 +256,13 @@ def extract_major_facilities_land(pdf_path: str) -> list[FacilityLand]:
     in_section = False
     skip_hq_row = False
 
-    with pdfplumber.open(pdf_path) as pdf:
+    try:
+        pdf_file = pdfplumber.open(pdf_path)
+    except Exception as e:
+        logger.warning("PDF解析失敗(破損の可能性): %s: %s: %s", pdf_path, type(e).__name__, e)
+        return []
+
+    with pdf_file as pdf:
         for page in pdf.pages:
             txt = _normalize_text(page.extract_text() or "")
             if not txt:

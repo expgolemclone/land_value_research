@@ -154,6 +154,10 @@ class _SiteResult:
     book_raw: float
 
 
+class CompanySkipError(Exception):
+    """企業単位の処理をスキップすべきエラー."""
+
+
 def sanitize_filename_component(name: str) -> str:
     # Windowsで使えない文字を置換して, 出力ファイル名として安全化する
     safe = re.sub(r'[\\/:*?"<>|]', "_", name.strip())
@@ -501,11 +505,10 @@ def _resolve_company_metadata(
         if fallback.address_source_url and fallback.address_source_url not in address_source_urls:
             address_source_urls.append(fallback.address_source_url)
     if not company_name or not pdf_url:
-        raise SystemExit(
-            f"証券コード{code}の会社情報が不足しています.\n"
-            "config/input.csvに company_name,securities_report_pdf_url を追加するか,\n"
-            "company_master.yamlへ登録してください.\n"
-            "または --allow-auto-metadata を有効化してください."
+        raise CompanySkipError(
+            f"証券コード{code}の会社情報が不足しています."
+            " config/input.csvに company_name,securities_report_pdf_url を追加するか,"
+            " company_master.yamlへ登録してください."
         )
     if pdf_url and pdf_url not in address_source_urls:
         address_source_urls.append(pdf_url)
@@ -515,17 +518,15 @@ def _resolve_company_metadata(
 
     if not os.path.exists(pdf_path):
         if not ctx.args.allow_download:
-            raise SystemExit(
-                f"PDFが見つかりません: {pdf_path}\nネットワーク無し環境では, 事前にdata/cache/pdfへ配置してください."
+            raise CompanySkipError(
+                f"PDFが見つかりません: {pdf_path}"
+                " ネットワーク無し環境では, 事前にdata/cache/pdfへ配置してください."
             )
         try:
             download_file(pdf_url, pdf_path)
         except (ValueError, urllib.error.URLError, OSError) as e:
-            raise SystemExit(
-                f"証券コード{code}の有報PDF取得に失敗しました.\n"
-                f"{e}\n"
-                "company_master.yaml または config/input.csv の\n"
-                "securities_report_pdf_url をPDF直リンクに更新してください."
+            raise CompanySkipError(
+                f"証券コード{code}の有報PDF取得に失敗しました: {e}"
             ) from e
 
     sites_cache_path = os.path.join(ctx.facilities_cache_dir, f"{code}_sites.json")
@@ -543,10 +544,9 @@ def _resolve_company_metadata(
         if fallback.market_cap_yen is not None:
             mcap = fallback.market_cap_yen
     if mcap is None:
-        raise SystemExit(
-            f"証券コード{code}の時価総額が不足しています.\n"
-            "config/input.csvに market_cap を追加するか, market_cap_overrides.csvへ登録してください.\n"
-            "または --allow-auto-metadata を有効化してください."
+        raise CompanySkipError(
+            f"証券コード{code}の時価総額が不足しています."
+            " config/input.csvに market_cap を追加するか, market_cap_overrides.csvへ登録してください."
         )
     return _CompanyMeta(
         code=code,
@@ -1020,14 +1020,28 @@ def main() -> None:
     logger.info("処理開始: %d社", total_companies)
 
     results: list[CompanyResult] = []
+    failed_companies: list[tuple[str, str, str]] = []
+    succeeded_targets: list[dict[str, Any]] = []
     for company_index, t in enumerate(targets_to_process, start=1):
-        result = process_company(t, company_index, total_companies, ctx)
-        results.append(result)
+        try:
+            result = process_company(t, company_index, total_companies, ctx)
+            results.append(result)
+            succeeded_targets.append(t)
+        except Exception as e:
+            code = t["code"]
+            company_name = t.get("_resolved_company_name", code)
+            logger.error("企業処理スキップ: %s %s %s: %s", code, company_name, type(e).__name__, e)
+            failed_companies.append((code, company_name, f"{type(e).__name__}: {e}"))
         if company_index % CACHE_SAVE_INTERVAL == 0:
             save_caches(ctx)
 
-    write_results(results, targets_to_process, ctx)
+    write_results(results, succeeded_targets, ctx)
     save_caches(ctx)
+
+    if failed_companies:
+        logger.warning("処理失敗企業: %d社", len(failed_companies))
+        for code, name, reason in failed_companies:
+            logger.warning("  %s %s: %s", code, name, reason)
 
 
 if __name__ == "__main__":
