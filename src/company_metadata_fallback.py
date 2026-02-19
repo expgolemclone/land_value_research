@@ -1,7 +1,10 @@
+import logging
 import re
 import urllib.request
 from dataclasses import dataclass
 from functools import lru_cache
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_TIMEOUT_SEC = 20
 
@@ -63,13 +66,13 @@ def fetch_from_irbank(code: str) -> CompanyMetadata:
         if m_cap:
             market_cap_yen = _parse_yen_text(m_cap.group(1))
     except Exception:
-        pass
+        logger.debug("IRBank IR page fetch failed: %s", ir_url, exc_info=True)
 
     try:
         html_edinet = _fetch_text(edinet_url)
         # 有価証券報告書の最新 doc id を1件取得
         doc_ids = re.findall(
-            r'title="有価証券報告書[^"]*" href="notes\?f=(S100[0-9A-Z]{4})"',
+            r'title="有価証券報告書[^"]*" href="notes\?f=(S100[0-9A-Z]+)"',
             html_edinet,
         )
         if doc_ids:
@@ -77,7 +80,7 @@ def fetch_from_irbank(code: str) -> CompanyMetadata:
                 f"https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/{doc_ids[0]}.pdf"
             )
     except Exception:
-        pass
+        logger.debug("IRBank EDINET page fetch failed: %s", edinet_url, exc_info=True)
 
     return CompanyMetadata(
         company_name=company_name,
