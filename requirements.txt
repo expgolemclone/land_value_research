@@ -1,0 +1,6 @@
+pdfplumber
+pandas
+geopandas
+numpy
+pyproj
+PyYAML
