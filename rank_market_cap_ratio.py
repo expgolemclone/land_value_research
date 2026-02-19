@@ -1,8 +1,6 @@
 import argparse
 import csv
 import os
-import shutil
-import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -13,21 +11,6 @@ DEFAULT_INPUT_DIR = BASE_DIR / "data" / "output"
 DEFAULT_OUTPUT_PATH = DEFAULT_INPUT_DIR / "ranking_market_cap_ratio.md"
 DEFAULT_EXCLUDED_OUTPUT_PATH = DEFAULT_INPUT_DIR / "ranking_market_cap_ratio_excluded.md"
 DEFAULT_COMPANY_MASTER_PATH = BASE_DIR / "config" / "company_master.yaml"
-
-
-def resolve_vscode_cli() -> str | None:
-    for command in ("code", "code.cmd"):
-        resolved = shutil.which(command)
-        if resolved:
-            return resolved
-
-    local_app_data = os.environ.get("LOCALAPPDATA")
-    if local_app_data:
-        fallback = Path(local_app_data) / "Programs" / "Microsoft VS Code" / "bin" / "code.cmd"
-        if fallback.exists():
-            return str(fallback)
-
-    return None
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
@@ -392,42 +375,6 @@ def write_excluded_markdown(rows: list[dict[str, str]], output_path: Path, input
     return open_script_path
 
 
-def open_markdown_preview_in_vscode(path: Path, code_command: str) -> None:
-    subprocess.run([code_command, "--reuse-window", str(path)], check=True)
-    subprocess.run(
-        [
-            "powershell",
-            "-NoProfile",
-            "-Command",
-            "$wshell = New-Object -ComObject WScript.Shell; "
-            "if (-not $wshell.AppActivate('Visual Studio Code')) { exit 1 }; "
-            "Start-Sleep -Milliseconds 200; "
-            "$wshell.SendKeys('^t'); "
-            "Start-Sleep -Milliseconds 200; "
-            "$wshell.SendKeys('^q')",
-        ],
-        check=True,
-    )
-
-
-def open_markdown_previews_in_vscode(paths: list[Path]) -> None:
-    code_command = resolve_vscode_cli()
-    if not code_command:
-        print("skip vscode preview: 'code' command not found")
-        return
-
-    try:
-        opened: set[Path] = set()
-        for path in paths:
-            resolved = path.resolve()
-            if resolved in opened:
-                continue
-            open_markdown_preview_in_vscode(resolved, code_command)
-            opened.add(resolved)
-    except subprocess.CalledProcessError as e:
-        print(f"skip vscode preview: command failed ({e.returncode})")
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description="data/output配下の時価総額比ランキングMarkdownを生成する")
     parser.add_argument("--input-dir", default=str(DEFAULT_INPUT_DIR), help="企業別CSVがあるフォルダ")
@@ -459,7 +406,6 @@ def main() -> None:
     print(f"written: {output_path} ({len(rank_rows)} rows)")
     print(f"written: {excluded_output_path} ({len(excluded_rows)} rows)")
     print(f"written: {open_script_path}")
-    open_markdown_previews_in_vscode([output_path, excluded_output_path])
 
 
 if __name__ == "__main__":
