@@ -15,6 +15,7 @@ from src.anomaly import (
     CRITICAL_UNIT_PRICE_YEN_PER_M2,
     DUPLICATE_ADDRESS_CRITICAL_AREA_M2,
     DUPLICATE_ADDRESS_CRITICAL_SITE_COUNT,
+    OutputRow,
     calc_uncertainty_metrics,
     detect_anomaly_warnings,
     detect_critical_anomaly,
@@ -125,7 +126,7 @@ class RunContext:
 class CompanyResult:
     code: str
     company_name: str
-    out_rows: list[dict[str, object]]
+    out_rows: list[OutputRow]
     excluded_rows: list[dict[str, str]]
     is_critical: bool
     sum_est: int
@@ -144,7 +145,7 @@ class _CompanyMeta:
 
 @dataclass
 class _SiteResult:
-    out_row: dict[str, object]
+    out_row: OutputRow
     excluded_rows: list[dict[str, str]]
     is_critical: bool
     est: int
@@ -754,7 +755,7 @@ def _process_site(
 def _postprocess_duplicate_anomalies(
     code: str,
     company_name: str,
-    out_rows: list[dict[str, object]],
+    out_rows: list[OutputRow],
 ) -> tuple[list[dict[str, str]], bool]:
     """Detect duplicate-address anomalies and return (excluded_rows, is_critical)."""
     duplicate_warnings, duplicate_criticals = detect_duplicate_address_large_area(out_rows)
@@ -857,7 +858,7 @@ def process_company(
     sum_est_raw = 0.0
     sum_book_raw = 0.0
     company_critical = False
-    out_rows: list[dict[str, object]] = []
+    out_rows: list[OutputRow] = []
     excluded_rows: list[dict[str, str]] = []
 
     total_tokyo_sites = len(tokyo_sites)

@@ -2,8 +2,49 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from typing import TypedDict
 
 from src.landprice_tokyo import PriceResult
+
+# Use functional syntax because keys contain Japanese parentheses (e.g. "土地面積(m2)")
+OutputRow = TypedDict(
+    "OutputRow",
+    {
+        "証券コード": object,
+        "企業名": object,
+        "事業所名": object,
+        "住所": object,
+        "住所取得元": object,
+        "住所取得元URL": object,
+        "住所解決レベル": object,
+        "土地面積(m2)": object,
+        "地価単価(円/m2)": object,
+        "地価単価補正係数": object,
+        "住所解像度補正係数": object,
+        "地価単価算出方法": object,
+        "基準用途区分": object,
+        "最近傍用途区分": object,
+        "公示点ID": object,
+        "公示点距離(m)": object,
+        "k近傍ID": object,
+        "k近傍用途区分": object,
+        "k近傍距離(m)": object,
+        "k近傍単価(円/m2)": object,
+        "k近傍距離分散(m2)": object,
+        "k近傍最遠距離(m)": object,
+        "地価推定信頼度スコア": object,
+        "地価推定信頼度": object,
+        "異常値警告": object,
+        "推定土地時価(円)": object,
+        "土地簿価(円)": object,
+        "含み益(円)": object,
+        "評価倍率(実値)": object,
+        "評価倍率": object,
+        "時価総額(円)": object,
+        "時価総額比(実値)": object,
+        "時価総額比": object,
+    },
+)
 
 WEB_ADDRESS_SCORE_MIN = 40
 CRITICAL_UNIT_PRICE_YEN_PER_M2 = 20_000_000
@@ -108,7 +149,7 @@ def detect_critical_anomaly(
 class _DuplicateBucket:
     address: str
     total_area_m2: float = 0.0
-    rows: list[dict[str, object]] = field(default_factory=list)
+    rows: list[OutputRow] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -117,11 +158,11 @@ class DuplicateHit:
     count: int
     total_area_m2: float
     detail: str
-    rows: list[dict[str, object]]
+    rows: list[OutputRow]
 
 
 def detect_duplicate_address_large_area(
-    site_rows: list[dict[str, object]],
+    site_rows: list[OutputRow],
 ) -> tuple[list[DuplicateHit], list[DuplicateHit]]:
     buckets: dict[str, _DuplicateBucket] = {}
     for row in site_rows:
