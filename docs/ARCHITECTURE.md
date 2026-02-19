@@ -80,15 +80,17 @@ land_value_research/
 ├── run.py                          # メインエントリポイント
 ├── rank_market_cap_ratio.py        # ランキングMarkdown生成
 ├── src/
+│   ├── anomaly.py                  # 異常値検出・閾値定数・OutputRow型
+│   ├── cache.py                    # JSONキャッシュI/O(アトミック書込み)
 │   ├── pdf_extract.py              # 有報PDFからの設備テーブル抽出
 │   ├── geocode_tokyo.py            # 住所→緯度経度変換
 │   ├── jp_address.py               # 日本語住所正規化
-│   ├── landprice_tokyo.py          # 公示地価による価格推定(IDW/最近傍)
+│   ├── landprice_tokyo.py          # 公示地価による価格推定(cKDTree+IDW/最近傍)
 │   ├── web_address_research.py     # Webスクレイピングで住所補完
 │   ├── web_cache.py                # PDFダウンロード/検証
 │   ├── company_config.py           # YAML/CSV設定読込
 │   ├── company_metadata_fallback.py# IRBankフォールバック
-│   └── utils.py                    # ユーティリティ
+│   └── utils.py                    # ユーティリティ + SSRF保護
 ├── config/
 │   ├── company_master.yaml         # 企業マスタ(名前/PDF URL)
 │   ├── address_overrides.yaml      # 住所手動オーバーライド
@@ -276,18 +278,18 @@ flowchart TD
 
     LU{"用途区分マッチ<br>有効?"}
     SEED["nearest()で<br>最近傍公示点の用途区分取得"]
-    FILTER["同一用途区分の公示点のみ<br>候補に絞込"]
+    FILTER["同一用途区分の<br>cKDTreeサブツリーを選択"]
 
     METHOD{"price_method?"}
 
     subgraph IDW["IDW (逆距離加重法)"]
-        IDW1["k近傍の公示点を検索"]
-        IDW2["距離に基づく重み計算<br>w = 1/(d+eps)^p"]
+        IDW1["cKDTree.query(k)で<br>k近傍の公示点を検索"]
+        IDW2["楕円体距離で重み計算<br>w = 1/(d+eps)^p"]
         IDW3["加重平均で単価推定<br>Σ(w×price) / Σ(w)"]
     end
 
     subgraph NEAR["最近傍法"]
-        N1["最も近い公示点を検索"]
+        N1["cKDTree.query(k=1)で<br>最も近い公示点を検索"]
         N2["その点の単価をそのまま採用"]
     end
 
@@ -694,6 +696,8 @@ graph TD
     RUN["run.py<br>(メインオーケストレータ)"]
     RANK["rank_market_cap_ratio.py<br>(ランキング生成)"]
 
+    ANO["anomaly.py"]
+    CAC["cache.py"]
     PDF["pdf_extract.py"]
     GEO["geocode_tokyo.py"]
     LP["landprice_tokyo.py"]
@@ -704,6 +708,8 @@ graph TD
     WC["web_cache.py"]
     UTL["utils.py"]
 
+    RUN --> ANO
+    RUN --> CAC
     RUN --> PDF
     RUN --> GEO
     RUN --> LP
@@ -713,8 +719,12 @@ graph TD
     RUN --> WC
     RUN --> UTL
 
+    CAC --> PDF
     GEO --> JPA
     WAR --> JPA
+    WAR --> UTL
+    WC --> UTL
+    CMF --> UTL
 
     RUN -.->|"出力CSV"| RANK
 
@@ -732,5 +742,6 @@ graph TD
 | `pandas` | ジオコーディング参照CSVの読込・インデックス構築 |
 | `geopandas` | 公示地価GeoJSONの読込 |
 | `pyproj` | WGS84楕円体上の測地距離計算 |
+| `scipy` | cKDTreeによるk近傍空間インデックス |
 | `numpy` | IDW計算, k-NN距離計算 |
 | `pyyaml` | YAML設定ファイル読込 |

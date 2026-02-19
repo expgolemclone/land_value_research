@@ -58,16 +58,18 @@ python -m pytest tests/test_geocode_tokyo.py -v   # single file
 
 ```
 run.py
+├── anomaly.py              # Anomaly detection & thresholds
+├── cache.py                # JSON cache I/O (atomic write, sites cache)
 ├── pdf_extract.py          # Securities report table extraction
 ├── geocode_tokyo.py        # Address → coordinates
 │   └── jp_address.py       # Japanese address normalization
-├── landprice_tokyo.py      # IDW/nearest price estimation
+├── landprice_tokyo.py      # IDW/nearest price estimation (cKDTree + pyproj)
 ├── web_address_research.py # Web scraping for detailed addresses
 │   └── jp_address.py
 ├── web_cache.py            # PDF download & validation
 ├── company_config.py       # YAML/CSV config loading
 ├── company_metadata_fallback.py  # IRBank API fallback
-└── utils.py
+└── utils.py                # Helpers + SSRF protection
 
 rank_market_cap_ratio.py
 └── company_config.py
@@ -77,6 +79,8 @@ rank_market_cap_ratio.py
 
 - `FacilityLand` (frozen dataclass in `pdf_extract.py`) — site_name, location_short, land_area_m2, land_book_value_yen
 - `PriceResult` (frozen dataclass in `landprice_tokyo.py`) — unit_price, nearest_id, nearest_dist_m, knn_ids, knn_dist_m, knn_prices
+- `OutputRow` (TypedDict in `anomaly.py`) — typed output row with 33 Japanese-keyed columns
+- `DuplicateHit` (dataclass in `anomaly.py`) — address, count, total_area_m2, detail, rows
 - `CompanyResult` (dataclass in `run.py`) — aggregates output rows, excluded rows, totals per company
 
 **Caching:** JSON disk caches for geocode results, price results, and web address lookups. Saved every 10 companies. PDF facility cache validated by file size + mtime. Clear `data/cache/*.json` if results seem wrong.
