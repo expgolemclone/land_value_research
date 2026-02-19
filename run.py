@@ -766,12 +766,8 @@ def _postprocess_duplicate_anomalies(
         duplicate_address_count[addr] = duplicate_address_count.get(addr, 0) + 1
 
     for hit in duplicate_warnings:
-        detail = str(hit["detail"])
-        print(f"Warn(anomaly): {code} duplicate_address {detail}")
-        rows = hit.get("rows", [])
-        if not isinstance(rows, list):
-            continue
-        for row in rows:
+        print(f"Warn(anomaly): {code} duplicate_address {hit.detail}")
+        for row in hit.rows:
             warning_label = "同一住所かつ大面積の複数拠点"
             old = str(row.get("異常値警告", "") or "").strip()
             row["異常値警告"] = f"{old} | {warning_label}" if old else warning_label
@@ -821,20 +817,14 @@ def _postprocess_duplicate_anomalies(
     if duplicate_criticals:
         is_critical = True
         for hit in duplicate_criticals:
-            detail = str(hit["detail"])
-            rows = hit.get("rows", [])
-            if not isinstance(rows, list):
-                continue
-            for row in rows:
-                dup_count = int(hit.get("count", 0))
-                dup_total_area = float(hit.get("total_area_m2", 0.0))
+            for row in hit.rows:
                 excluded_rows.append(
                     build_excluded_row(
                         code=code,
                         company_name=company_name,
                         site_name=str(row.get("事業所名", "") or ""),
                         reason_code="DUPLICATE_ADDRESS_LARGE_AREA",
-                        reason_detail=detail,
+                        reason_detail=hit.detail,
                         est=str(row.get("推定土地時価(円)", "") or ""),
                         book=str(row.get("土地簿価(円)", "") or ""),
                         mcap_ratio_raw=str(row.get("時価総額比(実値)", "") or ""),
@@ -844,8 +834,8 @@ def _postprocess_duplicate_anomalies(
                         address=str(row.get("住所", "") or ""),
                         address_source=str(row.get("住所取得元", "") or ""),
                         geocode_level=str(row.get("住所解決レベル", "") or ""),
-                        duplicate_count=str(dup_count),
-                        duplicate_total_area=f"{dup_total_area:.2f}",
+                        duplicate_count=str(hit.count),
+                        duplicate_total_area=f"{hit.total_area_m2:.2f}",
                     )
                 )
         print(f"Exclude(critical anomaly): {code} duplicate_address reasons=DUPLICATE_ADDRESS_LARGE_AREA")

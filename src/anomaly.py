@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass, field
 
 from src.landprice_tokyo import PriceResult
 
@@ -103,10 +104,26 @@ def detect_critical_anomaly(
     return reasons
 
 
+@dataclass
+class _DuplicateBucket:
+    address: str
+    total_area_m2: float = 0.0
+    rows: list[dict[str, object]] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class DuplicateHit:
+    address: str
+    count: int
+    total_area_m2: float
+    detail: str
+    rows: list[dict[str, object]]
+
+
 def detect_duplicate_address_large_area(
     site_rows: list[dict[str, object]],
-) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
-    buckets: dict[str, dict[str, object]] = {}
+) -> tuple[list[DuplicateHit], list[DuplicateHit]]:
+    buckets: dict[str, _DuplicateBucket] = {}
     for row in site_rows:
         addr = str(row.get("住所", "") or "").strip()
         if not addr:
@@ -120,34 +137,28 @@ def detect_duplicate_address_large_area(
             continue
         b = buckets.get(addr)
         if b is None:
-            b = {"address": addr, "total_area_m2": 0.0, "rows": []}
+            b = _DuplicateBucket(address=addr)
             buckets[addr] = b
-        b["total_area_m2"] = float(b["total_area_m2"]) + area
-        cast_rows = b["rows"]
-        if isinstance(cast_rows, list):
-            cast_rows.append(row)
+        b.total_area_m2 += area
+        b.rows.append(row)
 
-    warnings: list[dict[str, object]] = []
-    criticals: list[dict[str, object]] = []
+    warnings: list[DuplicateHit] = []
+    criticals: list[DuplicateHit] = []
     for addr, b in buckets.items():
-        rows = b.get("rows", [])
-        if not isinstance(rows, list):
-            continue
-        count = len(rows)
-        total_area = float(b.get("total_area_m2", 0.0))
+        count = len(b.rows)
         if count < DUPLICATE_ADDRESS_CRITICAL_SITE_COUNT:
             continue
 
-        detail = f"同一住所に{count}拠点あります, 住所={addr}, 合計面積={total_area:.2f}m2."
-        item = {
-            "address": addr,
-            "count": count,
-            "total_area_m2": total_area,
-            "detail": detail,
-            "rows": rows,
-        }
-        if total_area >= DUPLICATE_ADDRESS_WARNING_AREA_M2:
-            warnings.append(item)
-        if total_area >= DUPLICATE_ADDRESS_CRITICAL_AREA_M2:
-            criticals.append(item)
+        detail = f"同一住所に{count}拠点あります, 住所={addr}, 合計面積={b.total_area_m2:.2f}m2."
+        hit = DuplicateHit(
+            address=addr,
+            count=count,
+            total_area_m2=b.total_area_m2,
+            detail=detail,
+            rows=b.rows,
+        )
+        if b.total_area_m2 >= DUPLICATE_ADDRESS_WARNING_AREA_M2:
+            warnings.append(hit)
+        if b.total_area_m2 >= DUPLICATE_ADDRESS_CRITICAL_AREA_M2:
+            criticals.append(hit)
     return warnings, criticals
