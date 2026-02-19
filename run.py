@@ -1091,7 +1091,29 @@ def process_company(
     total_tokyo_sites = len(tokyo_sites)
     for site_index, s in enumerate(tokyo_sites, start=1):
         print(f"[{company_index}/{total_companies}][{site_index}/{total_tokyo_sites}] 解析中: {code} {s.site_name}")
-        sr = _process_site(code, company_name, s, mcap, cm.address_source_urls, ctx)
+        try:
+            sr = _process_site(code, company_name, s, mcap, cm.address_source_urls, ctx)
+        except (ValueError, KeyError) as e:
+            logger.warning("サイト処理スキップ: %s %s %s: %s", code, s.site_name, type(e).__name__, e)
+            excluded_rows.append(
+                build_excluded_row(
+                    code=code,
+                    company_name=company_name,
+                    site_name=s.site_name,
+                    reason_code="SITE_PROCESSING_ERROR",
+                    reason_detail=f"{type(e).__name__}: {e}",
+                    est="",
+                    book=str(int(round(float(s.land_book_value_yen)))),
+                    mcap_ratio_raw="",
+                    area_m2=f"{float(s.land_area_m2):.2f}",
+                    unit_price="",
+                    eval_multiple_raw="",
+                    address=s.location_short,
+                    address_source="",
+                    geocode_level="",
+                )
+            )
+            continue
         out_rows.append(sr.out_row)
         excluded_rows.extend(sr.excluded_rows)
         if sr.is_critical:

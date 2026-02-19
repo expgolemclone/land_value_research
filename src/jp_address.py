@@ -46,6 +46,8 @@ def normalize_addr(s: str) -> str:
 
 
 def num_to_kanji(n: int) -> str:
+    if not (0 <= n <= 99):
+        raise ValueError(f"num_to_kanjiの範囲外です(0-99): {n}")
     if n <= 10:
         return KANJI_DIGITS[n]
     if n < 20:
