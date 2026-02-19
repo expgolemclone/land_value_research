@@ -84,7 +84,7 @@ class CheckResult:
 
 def main() -> None:
     engine = RapidOCR()
-    input_path = BASE_DIR / "input.csv"
+    input_path = BASE_DIR / "config" / "input.csv"
     codes = read_codes(input_path)
     all_results: list[CheckResult] = []
 

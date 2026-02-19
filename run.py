@@ -252,7 +252,7 @@ def load_targets(input_path: str) -> list[dict[str, Any]]:
 
 
 def resolve_default_input(base_dir: str) -> str:
-    return os.path.join(base_dir, "input.csv")
+    return os.path.join(base_dir, "config", "input.csv")
 
 
 def migrate_legacy_pdf_cache(cache_dir: str) -> None:
@@ -718,7 +718,8 @@ def _resolve_company_metadata(
     if not company_name or not pdf_url:
         raise SystemExit(
             f"証券コード{code}の会社情報が不足しています.\n"
-            "input.csvに company_name,securities_report_pdf_url を追加するか, company_master.yamlへ登録してください.\n"
+            "config/input.csvに company_name,securities_report_pdf_url を追加するか,\n"
+            "company_master.yamlへ登録してください.\n"
             "または --allow-auto-metadata を有効化してください."
         )
     if pdf_url and pdf_url not in address_source_urls:
@@ -738,7 +739,8 @@ def _resolve_company_metadata(
             raise SystemExit(
                 f"証券コード{code}の有報PDF取得に失敗しました.\n"
                 f"{e}\n"
-                "company_master.yaml または input.csv の securities_report_pdf_url をPDF直リンクに更新してください."
+                "company_master.yaml または config/input.csv の\n"
+                "securities_report_pdf_url をPDF直リンクに更新してください."
             ) from e
 
     sites_cache_path = os.path.join(ctx.facilities_cache_dir, f"{code}_sites.json")
@@ -758,7 +760,7 @@ def _resolve_company_metadata(
     if mcap is None:
         raise SystemExit(
             f"証券コード{code}の時価総額が不足しています.\n"
-            "input.csvに market_cap を追加するか, market_cap_overrides.csvへ登録してください.\n"
+            "config/input.csvに market_cap を追加するか, market_cap_overrides.csvへ登録してください.\n"
             "または --allow-auto-metadata を有効化してください."
         )
     return _CompanyMeta(

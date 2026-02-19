@@ -1,10 +1,6 @@
 $targets = @(
-    'C:\Users\0000250059\Desktop\stock\property\land_value_research\ranking_market_cap_ratio_excluded.md',
+    'C:\Users\0000250059\Desktop\stock\property\land_value_research\data\output\ranking_market_cap_ratio_excluded.md',
     'C:\Users\0000250059\Desktop\stock\property\land_value_research\data\output\anomaly_excluded_companies.csv',
-    'C:\Users\0000250059\Desktop\stock\property\land_value_research\data\output_test_progress\anomaly_excluded_companies.csv',
-    'C:\Users\0000250059\Desktop\stock\property\land_value_research\data\output_verify_dup_rule\anomaly_excluded_companies.csv',
-    'C:\Users\0000250059\Desktop\stock\property\land_value_research\data\output_verify_web_off\anomaly_excluded_companies.csv',
-    'C:\Users\0000250059\Desktop\stock\property\land_value_research\data\output_verify_web_on\anomaly_excluded_companies.csv',
     'C:\Users\0000250059\Desktop\stock\property\land_value_research\data\cache\pdf\1899_securities_report.pdf',
     'C:\Users\0000250059\Desktop\stock\property\land_value_research\data\cache\pdf\5423_securities_report.pdf',
     'C:\Users\0000250059\Desktop\stock\property\land_value_research\data\cache\pdf\5563_securities_report.pdf',

@@ -10,7 +10,7 @@ Codexの作業ルールは `AGENTS.md` に分けて書いてあります.
 計算結果は, 会社ごとのCSV(`data/output/証券コード_output.csv`)として出力します.
 
 ## 対象と前提
-- 対象は `input.csv` に書いた4桁の証券コードの企業です.
+- 対象は `config/input.csv` に書いた4桁の証券コードの企業です.
 - 土地の評価対象は東京都だけです.
 - 東京都以外の土地は, このツールでは評価しません.
 
@@ -32,7 +32,7 @@ Codexの作業ルールは `AGENTS.md` に分けて書いてあります.
 - `data/landprice/tokyo_2025/`: 地価公示データです(東京都2025).
 
 ## 入力
-`input.csv` は2形式に対応します.
+`config/input.csv` は2形式に対応します.
 
 最小形式(証券コードのみ):
 ```csv
@@ -62,7 +62,7 @@ python run.py --price-method idw --k 3 --p 3 --allow-web-address
 
 ## 主要オプション
 - `--input`: 読み込む入力CSVです.
-  - 省略すると `./input.csv` を使います.
+  - 省略すると `./config/input.csv` を使います.
 - `--output`: 出力先フォルダです.
   - 省略すると `data/output` を使います.
 - `--price-method`: 地価単価の計算方法です.

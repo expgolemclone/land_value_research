@@ -10,7 +10,7 @@
 %%{init: {"theme":"base","themeVariables":{"background":"#0d1117","primaryColor":"#161b22","primaryTextColor":"#c9d1d9","primaryBorderColor":"#58a6ff","secondaryColor":"#21262d","tertiaryColor":"#30363d","lineColor":"#8b949e","clusterBkg":"#0d1117","clusterBorder":"#30363d"}}}%%
 flowchart TB
     subgraph INPUT["入力データ"]
-        CSV[/"input.csv<br>(証券コード一覧)"/]
+        CSV[/"config/input.csv<br>(証券コード一覧)"/]
         YAML1[/"company_master.yaml<br>(企業メタデータ)"/]
         YAML2[/"address_overrides.yaml<br>(住所手動補正)"/]
         MCAP[/"market_cap_overrides.csv<br>(時価総額)"/]
@@ -79,7 +79,6 @@ flowchart TB
 land_value_research/
 ├── run.py                          # メインエントリポイント
 ├── rank_market_cap_ratio.py        # ランキングMarkdown生成
-├── input.csv                       # 入力: 証券コード一覧
 ├── src/
 │   ├── pdf_extract.py              # 有報PDFからの設備テーブル抽出
 │   ├── geocode_tokyo.py            # 住所→緯度経度変換
@@ -92,7 +91,13 @@ land_value_research/
 │   └── utils.py                    # ユーティリティ
 ├── config/
 │   ├── company_master.yaml         # 企業マスタ(名前/PDF URL)
-│   └── address_overrides.yaml      # 住所手動オーバーライド
+│   ├── address_overrides.yaml      # 住所手動オーバーライド
+│   └── input.csv                   # 入力: 証券コード一覧
+├── scripts/
+│   ├── validate_ocr_accuracy.py    # OCR精度検証
+│   └── open_excluded_related_files.ps1  # 関連ファイル一括表示
+├── docs/
+│   └── ARCHITECTURE.md             # システムアーキテクチャ詳細
 └── data/
     ├── geocoding/                   # ジオコーディング参照CSV
     ├── landprice/tokyo_2025/        # 公示地価GeoJSON
@@ -600,7 +605,7 @@ flowchart LR
 
 | オプション | 型 | デフォルト | 説明 |
 |-----------|-----|-----------|------|
-| `--input` | str | input.csv | 入力CSVパス |
+| `--input` | str | config/input.csv | 入力CSVパス |
 | `--output` | str | data/output | 出力ディレクトリ |
 | `--price-method` | idw/nearest | idw | 地価推定方法 |
 | `--k` | int | 3 | k近傍数 |
