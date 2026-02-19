@@ -3,4 +3,5 @@ pandas
 geopandas
 numpy
 pyproj
+scipy
 PyYAML

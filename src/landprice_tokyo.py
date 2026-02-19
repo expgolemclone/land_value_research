@@ -4,7 +4,8 @@ from dataclasses import dataclass
 
 import geopandas as gpd
 import numpy as np
-from pyproj import Geod
+from pyproj import Geod, Transformer
+from scipy.spatial import cKDTree
 
 
 @dataclass(frozen=True)
@@ -34,6 +35,23 @@ class LandPriceTokyo:
 
         self.geod = Geod(ellps="WGS84")
 
+        # 平面直角座標 (EPSG:6677 = JGD2011 / Japan Plane IX — 東京都) への変換
+        self._transformer = Transformer.from_crs("EPSG:4326", "EPSG:6677", always_xy=True)
+        xs, ys = self._transformer.transform(self.lons, self.lats)
+        self._plane_coords = np.column_stack([xs, ys])
+
+        # 全点用 cKDTree
+        self._tree_all = cKDTree(self._plane_coords)
+
+        # 用途区分別サブツリー + グローバルインデックス
+        self._landuse_trees: dict[str, tuple[cKDTree, np.ndarray]] = {}
+        unique_kinds = set(self.landuse_kinds.tolist()) - {""}
+        for kind in unique_kinds:
+            mask = self.landuse_kinds == kind
+            idx = np.where(mask)[0]
+            if len(idx) > 0:
+                self._landuse_trees[kind] = (cKDTree(self._plane_coords[idx]), idx)
+
     def get_point_landuse_kind(self, point_id: str) -> str:
         idx = self.point_idx_by_id.get(point_id)
         if idx is None:
@@ -43,41 +61,51 @@ class LandPriceTokyo:
     def get_landuse_kinds_for_ids(self, point_ids: list[str]) -> list[str]:
         return [self.get_point_landuse_kind(pid) for pid in point_ids]
 
-    def _candidate_index_by_landuse(self, landuse_kind: str | None = None) -> np.ndarray:
-        if not landuse_kind:
-            return np.arange(len(self.point_ids))
-        mask = self.landuse_kinds == str(landuse_kind)
-        if np.any(mask):
-            return np.where(mask)[0]
-        return np.arange(len(self.point_ids))
+    def _get_tree_and_index(self, landuse_kind: str | None) -> tuple[cKDTree, np.ndarray]:
+        if landuse_kind and landuse_kind in self._landuse_trees:
+            return self._landuse_trees[landuse_kind]
+        return self._tree_all, np.arange(len(self.point_ids))
 
-    def _dist_all(self, lat: float, lon: float) -> np.ndarray:
-        # pyproj.Geod.invは (lon1, lat1, lon2, lat2)
+    def _to_plane(self, lat: float, lon: float) -> np.ndarray:
+        x, y = self._transformer.transform(lon, lat)
+        return np.array([x, y])
+
+    def _ellipsoid_dists(self, lat: float, lon: float, global_indices: np.ndarray) -> np.ndarray:
+        """Compute WGS84 ellipsoid distances for the given global indices."""
         _, _, dist = self.geod.inv(
-            np.full_like(self.lons, lon),
-            np.full_like(self.lats, lat),
-            self.lons,
-            self.lats,
+            np.full(len(global_indices), lon),
+            np.full(len(global_indices), lat),
+            self.lons[global_indices],
+            self.lats[global_indices],
         )
-        return dist
+        return np.asarray(dist, dtype=float)
 
     def nearest(self, lat: float, lon: float, landuse_kind: str | None = None) -> PriceResult:
-        dist = self._dist_all(lat, lon)
-        cand_idx = self._candidate_index_by_landuse(landuse_kind=landuse_kind)
-        cand_dist = dist[cand_idx]
-        min_dist = float(np.min(cand_dist))
-        cands = cand_idx[np.where(cand_dist == min_dist)[0]]
-        if len(cands) == 1:
-            idx0 = int(cands[0])
+        tree, global_idx = self._get_tree_and_index(landuse_kind)
+        pt = self._to_plane(lat, lon)
+        # Query extra neighbours to handle tie-breaking by point_id
+        _, local_indices = tree.query(pt, k=min(3, len(global_idx)))
+        local_indices = np.atleast_1d(local_indices)
+        cands_global = global_idx[local_indices]
+
+        # 楕円体距離で正確に最近傍を決定
+        dists = self._ellipsoid_dists(lat, lon, cands_global)
+        min_dist = float(np.min(dists))
+        ties = np.where(np.isclose(dists, min_dist))[0]
+        if len(ties) == 1:
+            idx0 = int(cands_global[ties[0]])
         else:
-            ids = self.point_ids[cands]
-            idx0 = int(cands[np.argmin(ids)])
+            tie_globals = cands_global[ties]
+            ids = self.point_ids[tie_globals]
+            idx0 = int(tie_globals[np.argmin(ids)])
+
+        dist_m = float(self._ellipsoid_dists(lat, lon, np.array([idx0]))[0])
         return PriceResult(
             unit_price=int(round(self.prices[idx0])),
             nearest_id=str(self.point_ids[idx0]),
-            nearest_dist_m=float(dist[idx0]),
+            nearest_dist_m=dist_m,
             knn_ids=[str(self.point_ids[idx0])],
-            knn_dist_m=[float(dist[idx0])],
+            knn_dist_m=[dist_m],
             knn_prices=[int(round(self.prices[idx0]))],
         )
 
@@ -92,25 +120,31 @@ class LandPriceTokyo:
     ) -> PriceResult:
         if k <= 0:
             raise ValueError("kは1以上")
-        dist = self._dist_all(lat, lon)
-        cand_idx = self._candidate_index_by_landuse(landuse_kind=landuse_kind)
-        dist_cand = dist[cand_idx]
-        n = len(dist_cand)
-        k2 = min(k, n)
-        kth_dist = float(np.partition(dist_cand, k2 - 1)[k2 - 1])
-        cands = np.where(dist_cand <= kth_dist)[0]
-        cands_global = cand_idx[cands]
-        cands_order = np.lexsort((self.point_ids[cands_global], dist[cands_global]))
-        idx = cands_global[cands_order][:k2]
-        d = dist[idx]
+        tree, global_idx = self._get_tree_and_index(landuse_kind)
+        pt = self._to_plane(lat, lon)
+        k2 = min(k, len(global_idx))
+        # Query extra candidates for tie-breaking
+        k_query = min(k2 + 2, len(global_idx))
+        _, local_indices = tree.query(pt, k=k_query)
+        local_indices = np.atleast_1d(local_indices)
+        cands_global = global_idx[local_indices]
+
+        # 楕円体距離を計算
+        dists = self._ellipsoid_dists(lat, lon, cands_global)
+
+        # 距離昇順→point_id昇順でソートし上位k2件を選択
+        order = np.lexsort((self.point_ids[cands_global], dists))
+        selected = cands_global[order[:k2]]
+        d = self._ellipsoid_dists(lat, lon, selected)
+
         w = 1.0 / np.power(d + eps, p)
-        unit = float(np.sum(w * self.prices[idx]) / np.sum(w))
-        idx0 = int(idx[0])
+        unit = float(np.sum(w * self.prices[selected]) / np.sum(w))
+        idx0 = int(selected[0])
         return PriceResult(
             unit_price=int(round(unit)),
             nearest_id=str(self.point_ids[idx0]),
-            nearest_dist_m=float(dist[idx0]),
-            knn_ids=[str(x) for x in self.point_ids[idx].tolist()],
+            nearest_dist_m=float(d[0]),
+            knn_ids=[str(x) for x in self.point_ids[selected].tolist()],
             knn_dist_m=[float(x) for x in d.tolist()],
-            knn_prices=[int(round(x)) for x in self.prices[idx].tolist()],
+            knn_prices=[int(round(x)) for x in self.prices[selected].tolist()],
         )
