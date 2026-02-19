@@ -919,9 +919,7 @@ def _process_site(
                     geocode_level=geocode_level,
                 )
             )
-        print(
-            f"Exclude(critical anomaly): {code} {s.site_name} reasons={'|'.join([x[0] for x in critical_reasons])}"
-        )
+        print(f"Exclude(critical anomaly): {code} {s.site_name} reasons={'|'.join([x[0] for x in critical_reasons])}")
 
     out_row: dict[str, object] = {
         "証券コード": code,

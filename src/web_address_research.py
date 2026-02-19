@@ -14,6 +14,7 @@ from dataclasses import dataclass
 import pdfplumber
 
 from src.jp_address import normalize_addr, split_tokyo_municipality
+from src.utils import validate_url_not_private
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,7 @@ class WebAddressResearcher:
             with open(cache_path, "rb") as f:
                 return f.read()
 
+        validate_url_not_private(url)
         req = urllib.request.Request(
             url,
             headers={"User-Agent": "Mozilla/5.0 (compatible; land_value_research/1.0)"},

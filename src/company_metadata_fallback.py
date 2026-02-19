@@ -4,6 +4,8 @@ import urllib.request
 from dataclasses import dataclass
 from functools import lru_cache
 
+from src.utils import validate_url_not_private
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_TIMEOUT_SEC = 20
@@ -18,6 +20,7 @@ class CompanyMetadata:
 
 
 def _fetch_text(url: str) -> str:
+    validate_url_not_private(url)
     req = urllib.request.Request(
         url,
         headers={"User-Agent": "Mozilla/5.0 (compatible; land_value_research/1.0)"},
@@ -76,9 +79,7 @@ def fetch_from_irbank(code: str) -> CompanyMetadata:
             html_edinet,
         )
         if doc_ids:
-            securities_report_pdf_url = (
-                f"https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/{doc_ids[0]}.pdf"
-            )
+            securities_report_pdf_url = f"https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/{doc_ids[0]}.pdf"
     except Exception:
         logger.debug("IRBank EDINET page fetch failed: %s", edinet_url, exc_info=True)
 

@@ -1,6 +1,8 @@
 import os
 import urllib.request
 
+from src.utils import validate_url_not_private
+
 DEFAULT_TIMEOUT_SEC = 20
 
 
@@ -14,6 +16,7 @@ def is_pdf_file(path: str) -> bool:
 
 
 def download_file(url: str, out_path: str) -> None:
+    validate_url_not_private(url)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     req = urllib.request.Request(
         url,
