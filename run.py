@@ -872,7 +872,7 @@ def _process_site(
     book_raw = float(s.land_book_value_yen)
     book = int(round(book_raw))
     profit = est - book
-    mult_raw = (est_raw / book_raw) if book_raw else None
+    mult_raw = (est_raw / book_raw) if not math.isclose(book_raw, 0.0) else None
     mcap_ratio_raw = est_raw / float(mcap) if mcap else None
     anomaly_warnings = detect_anomaly_warnings(
         land_area_m2=float(s.land_area_m2),
@@ -1093,7 +1093,7 @@ def process_company(
         print(f"[{company_index}/{total_companies}][{site_index}/{total_tokyo_sites}] 解析中: {code} {s.site_name}")
         try:
             sr = _process_site(code, company_name, s, mcap, cm.address_source_urls, ctx)
-        except (ValueError, KeyError) as e:
+        except Exception as e:
             logger.warning("サイト処理スキップ: %s %s %s: %s", code, s.site_name, type(e).__name__, e)
             excluded_rows.append(
                 build_excluded_row(
