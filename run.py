@@ -5,6 +5,7 @@ import logging
 import math
 import os
 import re
+import sys
 import urllib.error
 from dataclasses import dataclass
 from typing import Any
@@ -997,6 +998,9 @@ def save_caches(ctx: RunContext) -> None:
 
 
 def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
     args = parse_args()
     ctx = setup_environment(args)
 
