@@ -1,16 +1,15 @@
 import argparse
 import atexit
 import csv
-import json
 import logging
 import math
 import os
 import re
-import tempfile
 import urllib.error
 from dataclasses import dataclass
 from typing import Any
 
+from src.cache import load_json_dict, load_sites_cache, save_json_dict, save_sites_cache
 from src.company_config import (
     load_address_overrides,
     load_company_master,
@@ -277,86 +276,6 @@ def get_pdf_path(cache_dir: str, code: str) -> str:
     if not os.path.exists(new_pdf_path) and os.path.exists(legacy_pdf_path):
         os.replace(legacy_pdf_path, new_pdf_path)
     return new_pdf_path
-
-
-def load_sites_cache(cache_path: str, pdf_path: str) -> list[FacilityLand] | None:
-    if not os.path.exists(cache_path):
-        return None
-    try:
-        with open(cache_path, encoding="utf-8") as f:
-            d = json.load(f)
-        stat = os.stat(pdf_path)
-        if (
-            d.get("cache_version") != 1
-            or int(d.get("pdf_size", -1)) != int(stat.st_size)
-            or float(d.get("pdf_mtime", -1.0)) != float(stat.st_mtime)
-        ):
-            return None
-        out: list[FacilityLand] = []
-        for x in d.get("sites", []):
-            out.append(
-                FacilityLand(
-                    site_name=str(x.get("site_name", "")),
-                    location_short=str(x.get("location_short", "")),
-                    land_area_m2=float(x.get("land_area_m2", 0.0)),
-                    land_book_value_yen=float(x.get("land_book_value_yen", 0.0)),
-                )
-            )
-        return out
-    except Exception:
-        logger.debug("sites cache load failed: %s", cache_path, exc_info=True)
-        return None
-
-
-def save_sites_cache(cache_path: str, pdf_path: str, sites: list[FacilityLand]) -> None:
-    stat = os.stat(pdf_path)
-    payload = {
-        "cache_version": 1,
-        "pdf_size": int(stat.st_size),
-        "pdf_mtime": float(stat.st_mtime),
-        "sites": [
-            {
-                "site_name": s.site_name,
-                "location_short": s.location_short,
-                "land_area_m2": float(s.land_area_m2),
-                "land_book_value_yen": float(s.land_book_value_yen),
-            }
-            for s in sites
-        ],
-    }
-    _atomic_json_write(cache_path, payload)
-
-
-def _load_json_dict(path: str) -> dict[str, Any]:
-    if not os.path.exists(path):
-        return {}
-    try:
-        with open(path, encoding="utf-8") as f:
-            d = json.load(f)
-        if isinstance(d, dict):
-            return d
-    except Exception:
-        logger.debug("json dict load failed: %s", path, exc_info=True)
-    return {}
-
-
-def _atomic_json_write(path: str, obj: object) -> None:
-    dir_name = os.path.dirname(path) or "."
-    fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(obj, f, ensure_ascii=False, separators=(",", ":"))
-        os.replace(tmp_path, path)
-    except BaseException:
-        try:
-            os.unlink(tmp_path)
-        except OSError:
-            pass
-        raise
-
-
-def _save_json_dict(path: str, d: dict[str, Any]) -> None:
-    _atomic_json_write(path, d)
 
 
 def get_geocode_adjustment_factor(level: str, args: argparse.Namespace) -> float:
@@ -645,8 +564,8 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
     ensure_dir(output_dir)
     processed_lookup_dir = os.path.join(base_dir, "data", "output")
 
-    price_cache_disk = _load_json_dict(price_cache_path)
-    geocode_cache_disk = _load_json_dict(geocode_cache_path)
+    price_cache_disk = load_json_dict(price_cache_path)
+    geocode_cache_disk = load_json_dict(geocode_cache_path)
 
     ctx = RunContext(
         args=args,
@@ -1216,8 +1135,8 @@ def write_results(
 
 
 def save_caches(ctx: RunContext) -> None:
-    _save_json_dict(ctx.price_cache_path, ctx.price_cache_disk)
-    _save_json_dict(ctx.geocode_cache_path, ctx.geocode_cache_disk)
+    save_json_dict(ctx.price_cache_path, ctx.price_cache_disk)
+    save_json_dict(ctx.geocode_cache_path, ctx.geocode_cache_disk)
     ctx.web_addr.flush()
 
 
