@@ -1,6 +1,6 @@
 import unittest
 
-from run import (
+from src.anomaly import (
     detect_critical_anomaly,
     should_accept_web_address,
 )
