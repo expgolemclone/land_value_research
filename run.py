@@ -8,6 +8,7 @@ import re
 import sys
 import urllib.error
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
 from src.anomaly import (
@@ -336,12 +337,32 @@ def build_excluded_row(
     }
 
 
+def _setup_logging() -> None:
+    log_dir = os.path.join(os.path.dirname(__file__), "docs")
+    os.makedirs(log_dir, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_path = os.path.join(log_dir, f"{timestamp}.log")
+
+    fmt = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s", datefmt="%H:%M:%S")
+
+    file_handler = logging.FileHandler(log_path, encoding="utf-8")
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(fmt)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(logging.INFO)
+    stream_handler.setFormatter(fmt)
+
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    root.addHandler(file_handler)
+    root.addHandler(stream_handler)
+
+    logging.info("ログファイル: %s", log_path)
+
+
 def parse_args() -> argparse.Namespace:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-        datefmt="%H:%M:%S",
-    )
+    _setup_logging()
     parser = argparse.ArgumentParser(description="東京都の土地推定時価を算出する")
     parser.add_argument("--input", default="")
     parser.add_argument("--output", default="data/output")
