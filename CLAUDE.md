@@ -34,7 +34,7 @@ python -m pytest tests/test_geocode_tokyo.py -v   # single file
 |-----------|----------|
 | `config/` | `company_master.yaml`, `address_overrides.yaml`, `market_cap_overrides.csv`, `input.csv` |
 | `docs/` | `ARCHITECTURE.md` (detailed system architecture documentation) |
-| `scripts/` | `validate_ocr_accuracy.py`, `open_excluded_related_files.ps1` (auxiliary scripts) |
+| `scripts/` | `validate_ocr_accuracy.py`, `open_excluded_related_files.ps1`, `parallel_resolve_address.ps1`, `merge_address_patches.py` (auxiliary scripts) |
 | `data/geocoding/` | Address reference CSVs (oaza_chome, gaiku levels) |
 | `data/landprice/tokyo_2025/` | Public land price GeoJSON (`L01-25_13.geojson`) |
 | `data/cache/` | PDF, web scraping, and facility extraction caches |
