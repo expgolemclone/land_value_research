@@ -40,39 +40,40 @@ land_value_research/
 
 ## フェーズ一覧
 
-| Phase | 対象 | 目的 | 削除可能なPython依存 |
-|-------|------|------|---------------------|
-| 0 | 基盤構築 | Rust環境・CI・最小動作確認 | なし |
-| 1 | `landprice_tokyo.py`, `geocode_tokyo.py` | CPUボトルネック解消 | scipy, pyproj, geopandas, numpy, pandas |
-| 2 | `jp_address.py`, `anomaly.py` | 純粋ロジックのRust化 | なし |
-| 3 | `cache.py`, `company_config.py`, `utils.py` | I/Oユーティリティ移行 | PyYAML |
-| 4 | `web_cache.py`, `company_metadata_fallback.py` | HTTP処理のRust化 | なし |
-| 5 | `run.py`, `rank_market_cap_ratio.py` | オーケストレータのRust CLI化 + rayon並列化 | なし |
+| | Phase | 対象 | 目的 | 削除可能なPython依存 |
+|---|-------|------|------|---------------------|
+| [ ] | 0 | 基盤構築 | Rust環境・CI・最小動作確認 | なし |
+| [ ] | 1 | `landprice_tokyo.py`, `geocode_tokyo.py` | CPUボトルネック解消 | scipy, pyproj, geopandas, numpy, pandas |
+| [ ] | 2 | `jp_address.py`, `anomaly.py` | 純粋ロジックのRust化 | なし |
+| [ ] | 3 | `cache.py`, `company_config.py`, `utils.py` | I/Oユーティリティ移行 | PyYAML |
+| [ ] | 4 | `web_cache.py`, `company_metadata_fallback.py` | HTTP処理のRust化 | なし |
+| [ ] | 5 | `run.py`, `rank_market_cap_ratio.py` | オーケストレータのRust CLI化 + rayon並列化 | なし |
 
 ---
 
 ## Phase 0: 基盤構築
 
 **作業内容:**
-1. `Cargo.toml`（ワークスペース）と `rust/Cargo.toml` を作成
-2. `rust/src/lib.rs` に最小限の `#[pymodule]` を定義（`rust_available()` 関数のみ）
-3. `rust/src/types.rs` に共通構造体 `PriceResult`, `FacilityLand` を `#[pyclass(frozen)]` で定義
-4. `pyproject.toml` に maturin ビルド設定を追加
-5. `maturin develop --release` で Windows 上のビルドを検証
-6. CP932 CSV のデコードテスト（`encoding_rs` クレート）
+- [ ] `Cargo.toml`（ワークスペース）と `rust/Cargo.toml` を作成
+- [ ] `rust/src/lib.rs` に最小限の `#[pymodule]` を定義（`rust_available()` 関数のみ）
+- [ ] `rust/src/types.rs` に共通構造体 `PriceResult`, `FacilityLand` を `#[pyclass(frozen)]` で定義
+- [ ] `pyproject.toml` に maturin ビルド設定を追加
+- [ ] `maturin develop --release` で Windows 上のビルドを検証
+- [ ] CP932 CSV のデコードテスト（`encoding_rs` クレート）
 
 **主要クレート:** `pyo3`
 
-**検証:** `python -c "import land_value_core; print(land_value_core.rust_available())"`
+**検証:**
+- [ ] `python -c "import land_value_core; print(land_value_core.rust_available())"`
 
 ---
 
 ## Phase 1: CPU集約モジュールの移行（最重要）
 
 **対象ファイル:**
-- `src/landprice_tokyo.py` (151行) → `rust/src/landprice_tokyo.rs`
-- `src/geocode_tokyo.py` (112行) → `rust/src/geocode_tokyo.rs`
-- `src/jp_address.py` の内部関数も同時にRust実装（geocodeが依存するため）
+- [ ] `src/landprice_tokyo.py` (151行) → `rust/src/landprice_tokyo.rs`
+- [ ] `src/geocode_tokyo.py` (112行) → `rust/src/geocode_tokyo.rs`
+- [ ] `src/jp_address.py` の内部関数も同時にRust実装（geocodeが依存するため）
 
 ### landprice_tokyo.rs
 
@@ -129,43 +130,43 @@ except ImportError:
 ```
 
 ### テスト戦略
-- `cargo test` で Rust 単体テスト（既存テストケースを移植）
-- `pytest tests/` が無変更で pass（ラッパー経由でRust実装が呼ばれる）
-- 一致性テスト: Python実装とRust実装の結果比較（`unit_price` ±1円、距離 ±0.1m）
+- [ ] `cargo test` で Rust 単体テスト（既存テストケースを移植）
+- [ ] `pytest tests/` が無変更で pass（ラッパー経由でRust実装が呼ばれる）
+- [ ] 一致性テスト: Python実装とRust実装の結果比較（`unit_price` ±1円、距離 ±0.1m）
 
 ---
 
 ## Phase 2: 純粋ロジックモジュールの移行
 
 **対象ファイル:**
-- `src/jp_address.py` (179行) → `rust/src/jp_address.rs`（Phase 1で内部実装済み、Python公開を追加）
-- `src/anomaly.py` (206行) → `rust/src/anomaly.rs`
+- [ ] `src/jp_address.py` (179行) → `rust/src/jp_address.rs`（Phase 1で内部実装済み、Python公開を追加）
+- [ ] `src/anomaly.py` (206行) → `rust/src/anomaly.rs`
 
 ### jp_address.rs
-- 全角→半角変換テーブル: `match` 式
-- 漢数字→整数変換: `match` 式
-- 正規表現パース: `regex` クレート
+- [ ] 全角→半角変換テーブル: `match` 式
+- [ ] 漢数字→整数変換: `match` 式
+- [ ] 正規表現パース: `regex` クレート
 
 ### anomaly.rs
-- 閾値定数 + ルールベース判定（外部依存なし）
-- `detect_duplicate_address_large_area` は OutputRow (Python dict) を扱うためPhase 5まで Python に残す
+- [ ] 閾値定数 + ルールベース判定（外部依存なし）
+- [ ] `detect_duplicate_address_large_area` は OutputRow (Python dict) を扱うためPhase 5まで Python に残す
 
 ---
 
 ## Phase 3: ユーティリティモジュールの移行
 
 **対象ファイル:**
-- `src/cache.py` (92行) → `rust/src/cache.rs`（`serde_json` + `tempfile`）
-- `src/company_config.py` (46行) → `rust/src/company_config.rs`（`serde_yaml` + `csv`）
-- `src/utils.py` (24行) → `rust/src/utils.rs`（`std::net::IpAddr`）
+- [ ] `src/cache.py` (92行) → `rust/src/cache.rs`（`serde_json` + `tempfile`）
+- [ ] `src/company_config.py` (46行) → `rust/src/company_config.rs`（`serde_yaml` + `csv`）
+- [ ] `src/utils.py` (24行) → `rust/src/utils.rs`（`std::net::IpAddr`）
 
 ---
 
 ## Phase 4: HTTPモジュールの移行
 
 **対象ファイル:**
-- `src/web_cache.py` (31行) → `reqwest` (blocking)
-- `src/company_metadata_fallback.py` (92行) → `reqwest` + `scraper`
+- [ ] `src/web_cache.py` (31行) → `reqwest` (blocking)
+- [ ] `src/company_metadata_fallback.py` (92行) → `reqwest` + `scraper`
 
 **Pythonに残す:** `web_address_research.py`（pdfplumber依存）, `pdf_extract.py`（pdfplumber依存）
 
@@ -174,8 +175,8 @@ except ImportError:
 ## Phase 5: オーケストレータの Rust CLI化
 
 **対象ファイル:**
-- `run.py` (1074行) → `rust/src/main.rs`（`clap` でCLI引数）
-- `rank_market_cap_ratio.py` (416行) → `rust/src/ranking.rs`
+- [ ] `run.py` (1074行) → `rust/src/main.rs`（`clap` でCLI引数）
+- [ ] `rank_market_cap_ratio.py` (416行) → `rust/src/ranking.rs`
 
 **並列化:** `rayon` でPDF抽出以外の企業処理を並列化
 ```rust
@@ -209,8 +210,8 @@ Python::with_gil(|py| {
 ## 検証方法
 
 各フェーズ完了時:
-1. `cargo test` — Rust 単体テスト pass
-2. `maturin develop --release` — ビルド成功
-3. `python -m pytest tests/ -v` — 既存テスト全 pass
-4. `ruff check .` — Python リント pass
-5. `python run.py` で実データ処理を実行し、出力 CSV の差分確認
+- [ ] `cargo test` — Rust 単体テスト pass
+- [ ] `maturin develop --release` — ビルド成功
+- [ ] `python -m pytest tests/ -v` — 既存テスト全 pass
+- [ ] `ruff check .` — Python リント pass
+- [ ] `python run.py` で実データ処理を実行し、出力 CSV の差分確認
