@@ -12,7 +12,7 @@
     対象一覧を表示するだけで起動しない
 #>
 param(
-    [int]$N = 3,
+    [int]$N = 1,
     [switch]$DryRun
 )
 
@@ -120,12 +120,8 @@ for ($i = 0; $i -lt $count; $i++) {
     $code = $selected[$i].Code
     $patchFile = "config/address_patches/$code.yaml"
 
-    $extraInstruction = "ただし address_overrides.yaml を直接編集せず、$patchFile に同じ形式で書き出すこと。証券コード ${code} のエントリのみを含めること。"
-
-    # powershell.exe 内で codex を実行（ウィンドウハンドル取得のため）
-    # スキル呼び出しは $skill-name 形式（Codex CLI公式構文）
-    # '$' + "..." で組み立て、内側PSでは単一引用符で $resolve を保護する
-    $codexPrompt = '$' + "resolve-address $code $extraInstruction"
+    # SKILL.md が config/address_patches/ パスを検出してパッチモードで動作する
+    $codexPrompt = '$' + "resolve-address $code $patchFile"
     $innerCmd = "Set-Location '$projectRoot'; codex --full-auto '$codexPrompt'"
 
     Write-Host "  [$($i + 1)] codex `$resolve-address $code  -> $patchFile"

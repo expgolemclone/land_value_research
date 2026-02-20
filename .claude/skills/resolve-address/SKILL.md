@@ -1,7 +1,7 @@
 ---
 name: resolve-address
 description: 低解像度住所（muni_centroid / oaza_chome）をWebで調査し、番地レベル（gaiku）の詳細住所を特定して address_overrides.yaml に登録する。出力CSVに muni_centroid や oaza_chome が残っている場合や、住所精度を改善したい場合に使用する。
-argument-hint: "[証券コード（省略時はランキング最上位の低解像度銘柄）]"
+argument-hint: "[証券コード] [パッチファイルパス（例: config/address_patches/1234.yaml）]"
 ---
 
 <!-- !!SYNC!! このファイルは以下の2箇所で同一内容を維持すること:
@@ -23,6 +23,23 @@ argument-hint: "[証券コード（省略時はランキング最上位の低解
 4. 該当なしの場合はその旨を報告して終了する
 
 引数として証券コードが指定された場合はその企業のみを対象とする。
+
+## パッチモード（並行実行時）
+
+`$ARGUMENTS` に `config/address_patches/` で始まるファイルパスが含まれている場合、**パッチモード**で動作する。これは `parallel_resolve_address.ps1` による並行実行時に使用される。
+
+**パッチモードの動作:**
+
+- **`address_overrides.yaml` を直接編集しない**
+- 調査結果を指定されたパッチファイル（例: `config/address_patches/1234.yaml`）に同じYAML形式で書き出す
+- 対象証券コードのエントリのみを含める
+- セクション5（反映と検証）はスキップする（呼び出し元が `merge_address_patches.py` で一括処理する）
+
+**パッチモードでないとき（通常モード）:**
+
+- 従来通り `config/address_overrides.yaml` に直接追記する
+
+> **重要**: パッチモードでは、調査結果を**必ず**パッチファイルに書き出すこと。ファイルが書き出されなければリサーチ結果が失われる。
 
 ---
 
@@ -164,11 +181,20 @@ grep -E "muni_centroid|oaza_chome" data/output/9351_output.csv
 東京都港区六本木ヒルズ       # ビル名で番地が無い
 ```
 
-## 4. address_overrides.yaml への登録
+## 4. 調査結果の保存
+
+### 4.0 出力先の決定
+
+| モード | 条件 | 出力先 |
+|--------|------|--------|
+| 通常モード | パッチファイルパスの指定なし | `config/address_overrides.yaml` に直接追記 |
+| パッチモード | 引数に `config/address_patches/*.yaml` を含む | 指定されたパッチファイルに出力 |
+
+**パッチモードの場合**: 以下の4.1〜4.3の手順に従うが、出力先を指定されたパッチファイルに置き換えること。パッチファイルには対象証券コードのエントリのみを記載する。
 
 ### 4.1 ファイル構造
 
-`config/address_overrides.yaml` に以下の形式で追記する：
+出力先ファイルに以下の形式で追記（パッチモードでは新規作成）する：
 
 ```yaml
 # 証券コード:
@@ -244,6 +270,8 @@ python run.py
 5. **推定土地時価** — 合理的な範囲に収まっているか
 
 ### 5.3 コミット
+
+> **パッチモードの場合**: このセクションはスキップする。パッチファイルのマージとコミットは呼び出し元の `merge_address_patches.py` が行う。
 
 変更を確認したら、`address_overrides.yaml` の変更をコミットする：
 
