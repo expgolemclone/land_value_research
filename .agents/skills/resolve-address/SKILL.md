@@ -1,7 +1,7 @@
 ---
 name: resolve-address
 description: 低解像度住所（muni_centroid / oaza_chome）をWebで調査し、番地レベル（gaiku）の詳細住所を特定して address_overrides.yaml に登録する。出力CSVに muni_centroid や oaza_chome が残っている場合や、住所精度を改善したい場合に使用する。
-argument-hint: "[証券コード（省略時は全件対象）]"
+argument-hint: "[証券コード（省略時はランキング最上位の低解像度銘柄）]"
 ---
 
 <!-- !!SYNC!! このファイルは以下の2箇所で同一内容を維持すること:
@@ -13,7 +13,16 @@ argument-hint: "[証券コード（省略時は全件対象）]"
 
 パイプライン実行後に `muni_centroid` や `oaza_chome` レベルでしかジオコーディングできなかった事業所について、Webで詳細住所を調査し `address_overrides.yaml` に登録することで精度を向上させる。
 
-引数として証券コードが指定された場合はその企業のみを対象とする。省略時は全低解像度行を対象とする。
+## デフォルト対象の選定
+
+引数 `$ARGUMENTS` が**指定されていない場合**、以下の手順で対象1銘柄を自動選定する：
+
+1. `data/output/ranking_market_cap_ratio.md` を読み込む
+2. 「住所解決タグ」列に `muni_centroid` または `oaza_chome` を含む行をフィルタする
+3. フィルタ結果の中で**最も順位が高い（時価総額比が大きい）1銘柄**を対象とする
+4. 該当なしの場合はその旨を報告して終了する
+
+引数として証券コードが指定された場合はその企業のみを対象とする。
 
 ---
 
@@ -23,23 +32,31 @@ argument-hint: "[証券コード（省略時は全件対象）]"
 
 ## 2. 対象の特定
 
-### 2.1 出力CSVから低解像度行を抽出
+### 2.1 対象企業の決定
 
-`data/output/*_output.csv` の「住所解決レベル」列が `muni_centroid` または `oaza_chome` の行を抽出する。
+**引数なし（デフォルト）の場合:**
 
-引数 `$ARGUMENTS` が指定されている場合は、対象を `data/output/${ARGUMENTS}_output.csv` に絞る。
+`data/output/ranking_market_cap_ratio.md` のMarkdownテーブルを読み込み、「住所解決タグ」列に `muni_centroid` または `oaza_chome` を含む最上位1銘柄の証券コードを取得する。
 
-```bash
-# muni_centroid の一覧（証券コード, 企業名, 事業所名, 住所, 住所取得元, レベル）
-grep "muni_centroid" data/output/*_output.csv | \
-  awk -F',' '{print $1","$2","$3","$4","$5","$7}'
-
-# oaza_chome の一覧
-grep "oaza_chome" data/output/*_output.csv | \
-  awk -F',' '{print $1","$2","$3","$4","$5","$7}'
+テーブルの形式:
+```
+| 順位 | 証券コード | 企業名 | ... | 住所解決タグ | タグ件数 | ... |
 ```
 
-### 2.2 優先度の判断
+**引数ありの場合:**
+
+`$ARGUMENTS` を証券コードとして使用する。
+
+### 2.2 対象事業所の抽出
+
+対象企業が決まったら、`data/output/{証券コード}_output.csv` の「住所解決レベル」列が `muni_centroid` または `oaza_chome` の行を抽出する。
+
+```bash
+# 対象企業の低解像度行を確認（例: 証券コード 9351）
+grep -E "muni_centroid|oaza_chome" data/output/9351_output.csv
+```
+
+### 2.3 優先度の判断（複数事業所がある場合）
 
 以下の条件に当てはまるものを優先的に調査する：
 
