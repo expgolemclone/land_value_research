@@ -10,6 +10,8 @@
 
 既存 Python コードの中に Rust ワークスペースを配置し、`land_value_core` という Python 拡張モジュールとしてビルドする。各 Python モジュールは `try: from land_value_core import ... except ImportError: ...` のフォールバックパターンでラップし、Rust がビルドできない環境でも動作を保証する。
 
+**注意:** `pyproject.toml` に maturin ビルド設定を追加し、`Cargo.toml` のワークスペースルートと共存させる必要がある（Phase 0 で設定）。
+
 ---
 
 ## ディレクトリ構造（最終形）
@@ -57,7 +59,8 @@ land_value_research/
 - [ ] `Cargo.toml`（ワークスペース）と `rust/Cargo.toml` を作成
 - [ ] `rust/src/lib.rs` に最小限の `#[pymodule]` を定義（`rust_available()` 関数のみ）
 - [ ] `rust/src/types.rs` に共通構造体 `PriceResult`, `FacilityLand` を `#[pyclass(frozen)]` で定義
-- [ ] `pyproject.toml` に maturin ビルド設定を追加
+- [ ] Python 側 `FacilityLand` dataclass → Rust `FacilityLand` pyclass の変換レイヤーを実装（`pdf_extract.py` が Python 側で生成するため）
+- [ ] `pyproject.toml` に maturin ビルド設定を追加（`Cargo.toml` ワークスペースルートとの共存を確認）
 - [ ] `maturin develop --release` で Windows 上のビルドを検証
 - [ ] CP932 CSV のデコードテスト（`encoding_rs` クレート）
 
@@ -82,7 +85,7 @@ land_value_research/
 | `geopandas` GeoJSON読込 | `geojson` クレート |
 | `scipy.cKDTree` | `kiddo` v4 (`KdTree<f64, 2>`) |
 | `pyproj.Transformer` (EPSG:4326→6677) | `proj4rs` (純Rust、Cバインディング不要) |
-| `pyproj.Geod.inv()` 楕円体距離 | `geodesic` クレートまたはVincenty自前実装 |
+| `pyproj.Geod.inv()` 楕円体距離 | `geographiclib-rs` クレート（Karney法、高精度） |
 | `numpy` 配列演算 | `Vec<f64>` + イテレータ |
 
 **PyO3インターフェース:**
@@ -94,8 +97,8 @@ struct LandPriceTokyo { /* KDTree, coords, prices, landuse_trees */ }
 impl LandPriceTokyo {
     #[new]
     fn new(geojson_path: &str) -> PyResult<Self>;
-    fn nearest(&self, lat: f64, lon: f64, landuse_kind: Option<&str>) -> PyResult<PriceResult>;
-    fn idw(&self, lat: f64, lon: f64, k: usize, p: usize, eps: f64, landuse_kind: Option<&str>) -> PyResult<PriceResult>;
+    fn nearest(&self, lat: f64, lon: f64, landuse_kind: Option<String>) -> PyResult<PriceResult>;
+    fn idw(&self, lat: f64, lon: f64, k: usize, p: f64, eps: f64, landuse_kind: Option<String>) -> PyResult<PriceResult>;
 }
 ```
 
@@ -134,6 +137,8 @@ except ImportError:
 - [ ] `pytest tests/` が無変更で pass（ラッパー経由でRust実装が呼ばれる）
 - [ ] 一致性テスト: Python実装とRust実装の結果比較（`unit_price` ±1円、距離 ±0.1m）
 
+**注意:** `kiddo` と `scipy.cKDTree` では同距離の点の返却順序が異なる可能性がある。IDW計算結果には大きな影響はないが、一致性テストでは同距離点の順序差に起因する微小な差異を許容すること。
+
 ---
 
 ## Phase 2: 純粋ロジックモジュールの移行
@@ -160,6 +165,8 @@ except ImportError:
 - [ ] `src/company_config.py` (46行) → `rust/src/company_config.rs`（`serde_yaml` + `csv`）
 - [ ] `src/utils.py` (24行) → `rust/src/utils.rs`（`std::net::IpAddr`）
 
+**注意:** `utils.py` にはSSRF保護ロジックが含まれる。Rust実装がPython実装と同等以上のセキュリティを提供することをテストで保証すること。
+
 ---
 
 ## Phase 4: HTTPモジュールの移行
@@ -185,12 +192,17 @@ targets.par_iter().map(|t| process_company(t, &ctx)).collect::<Vec<_>>();
 
 **Python呼び出し:** PDF抽出は `Python::with_gil()` で Python を呼ぶ
 ```rust
-pyo3::prepare_freethreaded_python();
+pyo3::prepare_freethreaded_python();  // プロセスで1回のみ呼び出し可能
 Python::with_gil(|py| {
+    // sys.path の設定が必要（Pythonモジュールのパス解決）
     let pdf_extract = py.import("src.pdf_extract")?;
     // ...
 });
 ```
+
+**GIL制約:** rayon + GIL の組み合わせでは、PDF抽出がGILを必要とするため並列化の効果が制限される。PDF抽出の処理時間を事前に計測し、GIL外処理の割合を見積もること。
+
+**代替案:** Phase 5 の代わりに、Python側で `multiprocessing` を使い Phase 1 の Rust 拡張を各ワーカーで利用するアプローチも検討に値する。run.py の1,074行をRustに移行するコストと、rayon並列化の実効果を比較して判断すること。
 
 ---
 
@@ -204,6 +216,10 @@ Python::with_gil(|py| {
 | pdfplumber 代替不在 | `pdf_extract.py`, `web_address_research.py` は Python のまま維持。Phase 5 で Rust→Python 呼び出し |
 | OutputRow (33列 TypedDict) の互換性 | Phase 1-4 は Python dict のまま。Phase 5 で Rust 構造体 + `serde(rename)` に移行 |
 | GIL + rayon 並列化 | PDF抽出は逐次（GIL必要）、地価推定等は `py.allow_threads()` でGIL解放して並列化 |
+| maturin の Python バージョン互換性 | CI で Python 3.10, 3.11, 3.12 のビルドを検証 |
+| Rust コンパイル時間の増大 | `sccache` 導入、CI でのキャッシュ設定 |
+| Phase 1 のスコープ膨張 | `jp_address` の Python 公開は Phase 2 に完全に分離し、Phase 1 では internal のみ |
+| rayon + GIL の並列化限界 | PDF抽出の処理時間を計測し、GIL外処理の割合を事前に見積もる |
 
 ---
 
