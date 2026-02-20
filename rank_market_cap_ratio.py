@@ -407,6 +407,9 @@ def main() -> None:
     print(f"written: {excluded_output_path} ({len(excluded_rows)} rows)")
     print(f"written: {open_script_path}")
 
+    os.startfile(output_path)
+    os.startfile(excluded_output_path)
+
 
 if __name__ == "__main__":
     main()
