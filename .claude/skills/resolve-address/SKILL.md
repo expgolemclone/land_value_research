@@ -1,6 +1,14 @@
-# SKILL.md — 低解像度住所（muni_centroid / oaza_chome）のWeb調査・解決手順
+---
+name: resolve-address
+description: 低解像度住所（muni_centroid / oaza_chome）をWebで調査し、番地レベル（gaiku）の詳細住所を特定して address_overrides.yaml に登録する。出力CSVに muni_centroid や oaza_chome が残っている場合や、住所精度を改善したい場合に使用する。
+argument-hint: "[証券コード（省略時は全件対象）]"
+---
 
-このドキュメントは、パイプライン実行後に `muni_centroid` や `oaza_chome` レベルでしかジオコーディングできなかった事業所について、Webで詳細住所を調査し `address_overrides.yaml` に登録することで精度を向上させるスキルを定義する。
+# 低解像度住所（muni_centroid / oaza_chome）のWeb調査・解決手順
+
+パイプライン実行後に `muni_centroid` や `oaza_chome` レベルでしかジオコーディングできなかった事業所について、Webで詳細住所を調査し `address_overrides.yaml` に登録することで精度を向上させる。
+
+引数として証券コードが指定された場合はその企業のみを対象とする。省略時は全低解像度行を対象とする。
 
 ---
 
@@ -13,6 +21,8 @@
 ### 2.1 出力CSVから低解像度行を抽出
 
 `data/output/*_output.csv` の「住所解決レベル」列が `muni_centroid` または `oaza_chome` の行を抽出する。
+
+引数 `$ARGUMENTS` が指定されている場合は、対象を `data/output/${ARGUMENTS}_output.csv` に絞る。
 
 ```bash
 # muni_centroid の一覧（証券コード, 企業名, 事業所名, 住所, 住所取得元, レベル）
@@ -69,7 +79,7 @@ grep "oaza_chome" data/output/*_output.csv | \
 検索クエリ: "{企業名} 法人番号"
 ```
 
-- 国税庁法人番号公表サイト（https://www.houjin-bangou.nta.go.jp/）で法人番号から本店所在地を確認可能
+- 国税庁法人番号公表サイトで法人番号から本店所在地を確認可能
 - ただし本店以外の事業所は掲載されない
 
 #### ステップ3: 地図サービス・不動産情報
@@ -88,7 +98,7 @@ grep "oaza_chome" data/output/*_output.csv | \
 検索クエリ: "{企業名} 有価証券報告書 設備の状況"
 ```
 
-- EDINET（https://disclosure2.edinet-fsa.go.jp/）で有報PDFを直接確認
+- EDINETで有報PDFを直接確認
 - 「設備の状況」セクションに事業所一覧と所在地が記載されている
 - PDFの表から自動抽出できなかった詳細住所が記載されている場合がある
 
