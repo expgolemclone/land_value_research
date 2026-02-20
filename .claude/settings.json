@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "test -n \"$CLAUDE_PROJECT_DIR\" && bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_git_add_all.sh\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_git_add_all.sh\""
           }
         ]
       }
@@ -17,7 +17,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "test -n \"$CLAUDE_PROJECT_DIR\" && bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_edit_lint.sh\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_edit_lint.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_commit_push.sh\""
           }
         ]
       }
@@ -28,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "test -n \"$CLAUDE_PROJECT_DIR\" && bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_run_tests.sh\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_run_tests.sh\""
           }
         ]
       }
@@ -39,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "test -n \"$CLAUDE_PROJECT_DIR\" && bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session_end_push.sh\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session_end_push.sh\""
           }
         ]
       }
