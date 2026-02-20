@@ -105,6 +105,7 @@ public class Win32 {
 "@
 
 # ワーキングエリア取得（タスクバーを除く）
+Add-Type -AssemblyName System.Windows.Forms
 $screen = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
 
 $cols = [Math]::Ceiling([Math]::Sqrt($count))
@@ -121,12 +122,16 @@ for ($i = 0; $i -lt $count; $i++) {
 
     $extraInstruction = "ただし address_overrides.yaml を直接編集せず、$patchFile に同じ形式で書き出すこと。証券コード ${code} のエントリのみを含めること。"
 
-    $codexArgs = "--full-auto exec `"resolve-address $code $extraInstruction`""
+    # powershell.exe 内で codex を実行（ウィンドウハンドル取得のため）
+    # スキル呼び出しは $skill-name 形式（Codex CLI公式構文）
+    # '$' + "..." で組み立て、内側PSでは単一引用符で $resolve を保護する
+    $codexPrompt = '$' + "resolve-address $code $extraInstruction"
+    $innerCmd = "Set-Location '$projectRoot'; codex --full-auto '$codexPrompt'"
 
-    Write-Host "  [$($i + 1)] codex resolve-address $code  -> $patchFile"
+    Write-Host "  [$($i + 1)] codex `$resolve-address $code  -> $patchFile"
 
-    $proc = Start-Process -FilePath "codex" `
-        -ArgumentList $codexArgs `
+    $proc = Start-Process -FilePath "powershell.exe" `
+        -ArgumentList "-NoExit", "-Command", $innerCmd `
         -PassThru
 
     $processes += [PSCustomObject]@{
