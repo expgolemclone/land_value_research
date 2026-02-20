@@ -1,0 +1,48 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -n \"$CLAUDE_PROJECT_DIR\" && bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_git_add_all.sh\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -n \"$CLAUDE_PROJECT_DIR\" && bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_edit_lint.sh\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -n \"$CLAUDE_PROJECT_DIR\" && bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_run_tests.sh\""
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -n \"$CLAUDE_PROJECT_DIR\" && bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session_end_push.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}
