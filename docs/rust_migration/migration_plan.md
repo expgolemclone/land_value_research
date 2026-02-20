@@ -40,14 +40,14 @@ land_value_research/
 
 ## フェーズ一覧
 
-| | Phase | 対象 | 目的 | 削除可能なPython依存 |
-|---|-------|------|------|---------------------|
-| [ ] | 0 | 基盤構築 | Rust環境・CI・最小動作確認 | なし |
-| [ ] | 1 | `landprice_tokyo.py`, `geocode_tokyo.py` | CPUボトルネック解消 | scipy, pyproj, geopandas, numpy, pandas |
-| [ ] | 2 | `jp_address.py`, `anomaly.py` | 純粋ロジックのRust化 | なし |
-| [ ] | 3 | `cache.py`, `company_config.py`, `utils.py` | I/Oユーティリティ移行 | PyYAML |
-| [ ] | 4 | `web_cache.py`, `company_metadata_fallback.py` | HTTP処理のRust化 | なし |
-| [ ] | 5 | `run.py`, `rank_market_cap_ratio.py` | オーケストレータのRust CLI化 + rayon並列化 | なし |
+| Phase | 対象 | 目的 | 削除可能なPython依存 |
+|-------|------|------|---------------------|
+| [ ] 0 | 基盤構築 | Rust環境・CI・最小動作確認 | なし |
+| [ ] 1 | `landprice_tokyo.py`, `geocode_tokyo.py` | CPUボトルネック解消 | scipy, pyproj, geopandas, numpy, pandas |
+| [ ] 2 | `jp_address.py`, `anomaly.py` | 純粋ロジックのRust化 | なし |
+| [ ] 3 | `cache.py`, `company_config.py`, `utils.py` | I/Oユーティリティ移行 | PyYAML |
+| [ ] 4 | `web_cache.py`, `company_metadata_fallback.py` | HTTP処理のRust化 | なし |
+| [ ] 5 | `run.py`, `rank_market_cap_ratio.py` | オーケストレータのRust CLI化 + rayon並列化 | なし |
 
 ---
 
