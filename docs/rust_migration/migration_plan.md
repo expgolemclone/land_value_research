@@ -2,7 +2,34 @@
 
 ## Context
 
-現在のパイプラインは全て Python で実装されており、3,618社の処理をシングルスレッドで逐次実行している。CPU集約的な処理（KDTree探索、IDW地価推定、座標変換）と大量CSVのインデックス構築が主なボトルネック。PyO3/maturin を使った Python 拡張モジュールとして Rust を段階的に導入し、各フェーズで既存システムが動作する状態を維持する。
+現在のパイプラインは全て Python で実装されており、3,618社の処理をシングルスレッドで逐次実行している。プロファイリングにより特定されたCPUボトルネックは以下の3つ:
+
+1. **KDTree構築・探索** — `scipy.cKDTree` による ~3,000地価ポイントの空間探索
+2. **IDW地価推定** — 逆距離加重補間の反復計算
+3. **座標変換** — `pyproj.Transformer` (EPSG:4326→6677) と楕円体距離計算
+4. **CSVインデックス構築** — `pandas` による大量住所CSVの読込・groupby
+
+これらはすべて `landprice_tokyo.py` と `geocode_tokyo.py` に集中している。PyO3/maturin でこの2モジュールのみを Rust 拡張に置き換え、最小の実装コストで最大の高速化を得る。
+
+---
+
+## 移行スコープ
+
+| 対象 | 移行する？ | 理由 |
+|------|-----------|------|
+| `landprice_tokyo.py` | **する** | CPU集約（KDTree, IDW, 座標変換）。全社処理で最も時間を消費 |
+| `geocode_tokyo.py` | **する** | CPU集約（CSVインデックス構築、住所ルックアップ）。pandas依存を解消 |
+| `jp_address.py` | **部分的** | geocode_tokyo が内部依存するため Rust 内部実装。Python公開は不要 |
+| `anomaly.py` | しない | ルールベース判定。実行時間は無視できるレベル |
+| `cache.py` | しない | JSON I/O。ディスクI/Oバウンドで Rust 化の効果なし |
+| `company_config.py` | しない | YAML/CSV読込。起動時に1回のみ実行 |
+| `utils.py` | しない | 24行のヘルパー。ボトルネックではない |
+| `web_cache.py` | しない | ネットワークI/Oバウンド |
+| `company_metadata_fallback.py` | しない | ネットワークI/Oバウンド |
+| `pdf_extract.py` | しない | pdfplumber依存。Rust代替なし |
+| `web_address_research.py` | しない | pdfplumber依存 + ネットワークI/O |
+| `run.py` | しない | オーケストレータ。並列化は Python `multiprocessing` で対応可能 |
+| `rank_market_cap_ratio.py` | しない | 集計・出力のみ。ボトルネックではない |
 
 ---
 
@@ -14,7 +41,7 @@
 
 ---
 
-## ディレクトリ構造（最終形）
+## ディレクトリ構造
 
 ```
 land_value_research/
@@ -23,33 +50,16 @@ land_value_research/
 │   ├── Cargo.toml                # land_value_core クレート
 │   └── src/
 │       ├── lib.rs                # #[pymodule] 定義
-│       ├── types.rs              # 共通構造体 (PriceResult, FacilityLand等)
-│       ├── jp_address.rs         # 住所正規化
-│       ├── anomaly.rs            # 異常値検出
+│       ├── types.rs              # 共通構造体 (PriceResult)
+│       ├── jp_address.rs         # 住所正規化（内部使用のみ）
 │       ├── geocode_tokyo.rs      # ジオコーダ
-│       ├── landprice_tokyo.rs    # IDW地価推定
-│       ├── cache.rs              # JSONキャッシュI/O
-│       ├── company_config.rs     # YAML/CSV設定読込
-│       └── main.rs              # Phase 5: Rust CLIエントリポイント
-├── src/                          # 既存Python（段階的にラッパー化）
-│   ├── pdf_extract.py            # Pythonのまま維持（pdfplumber依存）
-│   ├── web_address_research.py   # Pythonのまま維持（pdfplumber依存）
-│   └── ...                       # 各モジュール → Rustラッパーへ
+│       └── landprice_tokyo.rs    # IDW地価推定
+├── src/                          # 既存Python（大部分はそのまま維持）
+│   ├── landprice_tokyo.py        # → Rustラッパー化
+│   ├── geocode_tokyo.py          # → Rustラッパー化
+│   └── ...                       # その他は変更なし
 └── tests/                        # 既存テスト（全フェーズで維持）
 ```
-
----
-
-## フェーズ一覧
-
-| Phase | 対象 | 目的 | 削除可能なPython依存 |
-|-------|------|------|---------------------|
-| [ ] 0 | 基盤構築 | Rust環境・CI・最小動作確認 | なし |
-| [ ] 1 | `landprice_tokyo.py`, `geocode_tokyo.py` | CPUボトルネック解消 | scipy, pyproj, geopandas, numpy, pandas |
-| [ ] 2 | `jp_address.py`, `anomaly.py` | 純粋ロジックのRust化 | なし |
-| [ ] 3 | `cache.py`, `company_config.py`, `utils.py` | I/Oユーティリティ移行 | PyYAML |
-| [ ] 4 | `web_cache.py`, `company_metadata_fallback.py` | HTTP処理のRust化 | なし |
-| [ ] 5 | `run.py`, `rank_market_cap_ratio.py` | オーケストレータのRust CLI化 + rayon並列化 | なし |
 
 ---
 
@@ -58,8 +68,7 @@ land_value_research/
 **作業内容:**
 - [ ] `Cargo.toml`（ワークスペース）と `rust/Cargo.toml` を作成
 - [ ] `rust/src/lib.rs` に最小限の `#[pymodule]` を定義（`rust_available()` 関数のみ）
-- [ ] `rust/src/types.rs` に共通構造体 `PriceResult`, `FacilityLand` を `#[pyclass(frozen)]` で定義
-- [ ] Python 側 `FacilityLand` dataclass → Rust `FacilityLand` pyclass の変換レイヤーを実装（`pdf_extract.py` が Python 側で生成するため）
+- [ ] `rust/src/types.rs` に `PriceResult` を `#[pyclass(frozen)]` で定義
 - [ ] `pyproject.toml` に maturin ビルド設定を追加（`Cargo.toml` ワークスペースルートとの共存を確認）
 - [ ] `maturin develop --release` で Windows 上のビルドを検証
 - [ ] CP932 CSV のデコードテスト（`encoding_rs` クレート）
@@ -71,12 +80,12 @@ land_value_research/
 
 ---
 
-## Phase 1: CPU集約モジュールの移行（最重要）
+## Phase 1: CPU集約モジュールの移行
 
 **対象ファイル:**
 - [ ] `src/landprice_tokyo.py` (151行) → `rust/src/landprice_tokyo.rs`
 - [ ] `src/geocode_tokyo.py` (112行) → `rust/src/geocode_tokyo.rs`
-- [ ] `src/jp_address.py` の内部関数も同時にRust実装（geocodeが依存するため）
+- [ ] `src/jp_address.py` の内部関数を Rust 実装（geocode が依存するため。Python公開は不要）
 
 ### landprice_tokyo.rs
 
@@ -87,6 +96,8 @@ land_value_research/
 | `pyproj.Transformer` (EPSG:4326→6677) | `proj4rs` (純Rust、Cバインディング不要) |
 | `pyproj.Geod.inv()` 楕円体距離 | `geographiclib-rs` クレート（Karney法、高精度） |
 | `numpy` 配列演算 | `Vec<f64>` + イテレータ |
+
+**削除可能なPython依存:** scipy, pyproj, geopandas, numpy, pandas
 
 **PyO3インターフェース:**
 ```rust
@@ -122,7 +133,7 @@ impl TokyoGeocoder {
 }
 ```
 
-### Pythonラッパーパターン（全モジュール共通）
+### Pythonラッパーパターン
 
 ```python
 try:
@@ -141,68 +152,20 @@ except ImportError:
 
 ---
 
-## Phase 2: 純粋ロジックモジュールの移行
+## 並列化について
 
-**対象ファイル:**
-- [ ] `src/jp_address.py` (179行) → `rust/src/jp_address.rs`（Phase 1で内部実装済み、Python公開を追加）
-- [ ] `src/anomaly.py` (206行) → `rust/src/anomaly.rs`
+Phase 1 完了後、企業単位の並列処理が必要な場合は Python 側で `multiprocessing` を使い、各ワーカーで Rust 拡張を利用する。`run.py` の1,074行を Rust に移行するよりも遥かに低コストで並列化を実現できる。
 
-### jp_address.rs
-- [ ] 全角→半角変換テーブル: `match` 式
-- [ ] 漢数字→整数変換: `match` 式
-- [ ] 正規表現パース: `regex` クレート
+```python
+from multiprocessing import Pool
 
-### anomaly.rs
-- [ ] 閾値定数 + ルールベース判定（外部依存なし）
-- [ ] `detect_duplicate_address_large_area` は OutputRow (Python dict) を扱うためPhase 5まで Python に残す
+def process_company(target):
+    # LandPriceTokyo, TokyoGeocoder は Rust 拡張（各プロセスで独立インスタンス）
+    ...
 
----
-
-## Phase 3: ユーティリティモジュールの移行
-
-**対象ファイル:**
-- [ ] `src/cache.py` (92行) → `rust/src/cache.rs`（`serde_json` + `tempfile`）
-- [ ] `src/company_config.py` (46行) → `rust/src/company_config.rs`（`serde_yaml` + `csv`）
-- [ ] `src/utils.py` (24行) → `rust/src/utils.rs`（`std::net::IpAddr`）
-
-**注意:** `utils.py` にはSSRF保護ロジックが含まれる。Rust実装がPython実装と同等以上のセキュリティを提供することをテストで保証すること。
-
----
-
-## Phase 4: HTTPモジュールの移行
-
-**対象ファイル:**
-- [ ] `src/web_cache.py` (31行) → `reqwest` (blocking)
-- [ ] `src/company_metadata_fallback.py` (92行) → `reqwest` + `scraper`
-
-**Pythonに残す:** `web_address_research.py`（pdfplumber依存）, `pdf_extract.py`（pdfplumber依存）
-
----
-
-## Phase 5: オーケストレータの Rust CLI化
-
-**対象ファイル:**
-- [ ] `run.py` (1074行) → `rust/src/main.rs`（`clap` でCLI引数）
-- [ ] `rank_market_cap_ratio.py` (416行) → `rust/src/ranking.rs`
-
-**並列化:** `rayon` でPDF抽出以外の企業処理を並列化
-```rust
-targets.par_iter().map(|t| process_company(t, &ctx)).collect::<Vec<_>>();
+with Pool(processes=4) as pool:
+    results = pool.map(process_company, targets)
 ```
-
-**Python呼び出し:** PDF抽出は `Python::with_gil()` で Python を呼ぶ
-```rust
-pyo3::prepare_freethreaded_python();  // プロセスで1回のみ呼び出し可能
-Python::with_gil(|py| {
-    // sys.path の設定が必要（Pythonモジュールのパス解決）
-    let pdf_extract = py.import("src.pdf_extract")?;
-    // ...
-});
-```
-
-**GIL制約:** rayon + GIL の組み合わせでは、PDF抽出がGILを必要とするため並列化の効果が制限される。PDF抽出の処理時間を事前に計測し、GIL外処理の割合を見積もること。
-
-**代替案:** Phase 5 の代わりに、Python側で `multiprocessing` を使い Phase 1 の Rust 拡張を各ワーカーで利用するアプローチも検討に値する。run.py の1,074行をRustに移行するコストと、rayon並列化の実効果を比較して判断すること。
 
 ---
 
@@ -213,13 +176,9 @@ Python::with_gil(|py| {
 | 浮動小数点精度差異（pyproj vs proj4rs） | `proj4rs` は PROJ の Rust ポートで精度差は最小。一致性テストで ±1円を検証 |
 | Windows でのRustビルド | `proj4rs`, `kiddo` は純Rust、Cバインディング不要。Phase 0 で検証 |
 | CP932 CSV エンコーディング | `encoding_rs::SHIFT_JIS.decode()` でUTF-8変換後にCSVパース |
-| pdfplumber 代替不在 | `pdf_extract.py`, `web_address_research.py` は Python のまま維持。Phase 5 で Rust→Python 呼び出し |
-| OutputRow (33列 TypedDict) の互換性 | Phase 1-4 は Python dict のまま。Phase 5 で Rust 構造体 + `serde(rename)` に移行 |
-| GIL + rayon 並列化 | PDF抽出は逐次（GIL必要）、地価推定等は `py.allow_threads()` でGIL解放して並列化 |
 | maturin の Python バージョン互換性 | CI で Python 3.10, 3.11, 3.12 のビルドを検証 |
 | Rust コンパイル時間の増大 | `sccache` 導入、CI でのキャッシュ設定 |
-| Phase 1 のスコープ膨張 | `jp_address` の Python 公開は Phase 2 に完全に分離し、Phase 1 では internal のみ |
-| rayon + GIL の並列化限界 | PDF抽出の処理時間を計測し、GIL外処理の割合を事前に見積もる |
+| kiddo と cKDTree の同距離点順序差異 | IDW結果への影響は微小。一致性テストの許容幅で対応 |
 
 ---
 
