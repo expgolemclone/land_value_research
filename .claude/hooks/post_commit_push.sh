@@ -3,7 +3,7 @@
 # Ensures commits are immediately pushed to remote.
 
 json_input=$(cat)
-command=$(echo "$json_input" | jq -r '.tool_input.command // empty')
+command=$(echo "$json_input" | python -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('command',''))" 2>/dev/null)
 
 if [ -z "$command" ]; then
   exit 0
