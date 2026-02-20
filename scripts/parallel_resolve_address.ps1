@@ -7,14 +7,42 @@
     各インスタンスは address_overrides.yaml を直接編集せず、
     config/address_patches/{証券コード}.yaml に個別出力する。
 .PARAMETER N
-    同時起動するウィンドウ数（デフォルト: 3）
+    同時起動するウィンドウ数（デフォルト: 1）。
+    --N <num> または -N <num> の形式で指定可能。
 .PARAMETER DryRun
-    対象一覧を表示するだけで起動しない
+    対象一覧を表示するだけで起動しない。
+    --dry-run または -DryRun で指定可能。
 #>
 param(
-    [int]$N = 1,
-    [switch]$DryRun
+    [Parameter(ValueFromRemainingArguments)]
+    [string[]]$_args
 )
+
+# --- Argument parsing (supports --N <num>, -N <num>, --dry-run, -DryRun) ---
+$N = 1
+$DryRun = $false
+$i = 0
+while ($i -lt $_args.Count) {
+    switch ($_args[$i]) {
+        { $_ -in '--N', '-N' } {
+            $i++
+            if ($i -ge $_args.Count) {
+                Write-Host "エラー: $_($_args[$i-1]) には値が必要です" -ForegroundColor Red
+                exit 1
+            }
+            $N = [int]$_args[$i]
+        }
+        { $_ -in '--dry-run', '-DryRun' } {
+            $DryRun = $true
+        }
+        default {
+            Write-Host "エラー: 不明なオプション: $($_args[$i])" -ForegroundColor Red
+            Write-Host "使用法: parallel_resolve_address.ps1 [--N <num>] [--dry-run]" -ForegroundColor Yellow
+            exit 1
+        }
+    }
+    $i++
+}
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
