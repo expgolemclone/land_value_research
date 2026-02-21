@@ -58,7 +58,7 @@ impl LandPriceTokyo {
         let mut tree_all: KdTree<f64, 2> = KdTree::new();
         let mut point_idx_by_id = HashMap::new();
 
-        for (i, feature) in gj.features.iter().enumerate() {
+        for feature in gj.features.iter() {
             let geom = match feature.geometry.as_ref() {
                 Some(g) => g,
                 None => continue,

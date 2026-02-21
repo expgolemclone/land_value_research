@@ -10,6 +10,7 @@ build-backend = "maturin"
 [tool.maturin]
 manifest-path = "Cargo.toml"
 module-name = "land_value_core"
+features = ["pyo3/extension-module"]
 
 [tool.ruff]
 target-version = "py310"
