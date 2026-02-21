@@ -8,6 +8,8 @@
 - build_oaza_chome_name: 出力が必ず「丁目」で終わる
 """
 
+import unittest
+
 from hypothesis import given
 from hypothesis import strategies as st
 
@@ -18,43 +20,6 @@ from src.jp_address import (
     num_to_kanji,
     split_tokyo_municipality,
 )
-
-# --- normalize_addr: 冪等性 ---
-
-
-@given(s=st.text(max_size=200))
-def test_normalize_addr_idempotent(s: str) -> None:
-    """normalize_addr を2回適用しても結果が変わらない."""
-    once = normalize_addr(s)
-    twice = normalize_addr(once)
-    assert twice == once
-
-
-# --- num_to_kanji: 往復性 ---
-
-
-@given(n=st.integers(min_value=0, max_value=99))
-def test_num_to_kanji_roundtrip(n: int) -> None:
-    """num_to_kanji で変換した漢字を _kanji_to_int で戻すと元の数値になる."""
-    kanji = num_to_kanji(n)
-    back = _kanji_to_int(kanji)
-    assert back == n
-
-
-# --- num_to_kanji: 範囲外で ValueError ---
-
-
-@given(n=st.integers().filter(lambda x: x < 0 or x > 99))
-def test_num_to_kanji_out_of_range_raises(n: int) -> None:
-    """0-99 範囲外の整数で ValueError が発生する."""
-    try:
-        num_to_kanji(n)
-        assert False, f"ValueError が発生しなかった: n={n}"
-    except ValueError:
-        pass
-
-
-# --- split_tokyo_municipality: 東京都プレフィクスがあれば muni が非 None ---
 
 TOKYO_MUNICIPALITIES = [
     "千代田区",
@@ -99,25 +64,44 @@ TOKYO_MUNICIPALITIES = [
 ]
 
 
-@given(
-    muni=st.sampled_from(TOKYO_MUNICIPALITIES),
-    rest=st.text(alphabet=st.characters(categories=("L", "N")), max_size=30),
-)
-def test_split_tokyo_municipality_with_tokyo_prefix(muni: str, rest: str) -> None:
-    """東京都+有効な区市町村で始まる住所は muni が非 None を返す."""
-    addr = f"東京都{muni}{rest}"
-    result_muni, _ = split_tokyo_municipality(addr)
-    assert result_muni is not None
+class TestJpAddressProperties(unittest.TestCase):
+    """jp_address モジュールの property-based テスト."""
 
+    @given(s=st.text(max_size=200))
+    def test_normalize_addr_idempotent(self, s: str) -> None:
+        """normalize_addr を2回適用しても結果が変わらない."""
+        once = normalize_addr(s)
+        twice = normalize_addr(once)
+        self.assertEqual(twice, once)
 
-# --- build_oaza_chome_name: 出力が必ず「丁目」で終わる ---
+    @given(n=st.integers(min_value=0, max_value=99))
+    def test_num_to_kanji_roundtrip(self, n: int) -> None:
+        """num_to_kanji で変換した漢字を _kanji_to_int で戻すと元の数値になる."""
+        kanji = num_to_kanji(n)
+        back = _kanji_to_int(kanji)
+        self.assertEqual(back, n)
 
+    @given(n=st.integers().filter(lambda x: x < 0 or x > 99))
+    def test_num_to_kanji_out_of_range_raises(self, n: int) -> None:
+        """0-99 範囲外の整数で ValueError が発生する."""
+        with self.assertRaises(ValueError):
+            num_to_kanji(n)
 
-@given(
-    town=st.text(min_size=1, max_size=20, alphabet=st.characters(categories=("L",))),
-    chome=st.integers(min_value=1, max_value=99),
-)
-def test_build_oaza_chome_name_ends_with_chome(town: str, chome: int) -> None:
-    """build_oaza_chome_name の出力は必ず「丁目」で終わる."""
-    result = build_oaza_chome_name(town, chome)
-    assert result.endswith("丁目")
+    @given(
+        muni=st.sampled_from(TOKYO_MUNICIPALITIES),
+        rest=st.text(alphabet=st.characters(categories=("L", "N")), max_size=30),
+    )
+    def test_split_tokyo_municipality_with_tokyo_prefix(self, muni: str, rest: str) -> None:
+        """東京都+有効な区市町村で始まる住所は muni が非 None を返す."""
+        addr = f"東京都{muni}{rest}"
+        result_muni, _ = split_tokyo_municipality(addr)
+        self.assertIsNotNone(result_muni)
+
+    @given(
+        town=st.text(min_size=1, max_size=20, alphabet=st.characters(categories=("L",))),
+        chome=st.integers(min_value=1, max_value=99),
+    )
+    def test_build_oaza_chome_name_ends_with_chome(self, town: str, chome: int) -> None:
+        """build_oaza_chome_name の出力は必ず「丁目」で終わる."""
+        result = build_oaza_chome_name(town, chome)
+        self.assertTrue(result.endswith("丁目"))
