@@ -18,6 +18,9 @@ __pycache__/
 *.dll
 land_value_core/
 
+# Pipeline run logs
+docs/*.log
+
 # Temporary planning files
 plan.md
 fix_plan_*.md

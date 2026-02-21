@@ -1,5 +1,0 @@
-13:39:21 INFO root: ログファイル: C:\Users\0000250059\Desktop\stock\property\land_value_research\docs\20260221_133921.log
-13:39:22 INFO __main__: 処理開始: 3618社
-13:44:39 ERROR __main__: 企業処理スキップ: 1897 金下建設 CompanySkipError: 証券コード1897の時価総額が不足しています. config/input.csvに market_cap を追加するか, market_cap_overrides.csvへ登録してください.
-13:49:06 ERROR __main__: 企業処理スキップ: 1938 日本リーテック CompanySkipError: 証券コード1938の時価総額が不足しています. config/input.csvに market_cap を追加するか, market_cap_overrides.csvへ登録してください.
-13:50:53 ERROR __main__: 企業処理スキップ: 1946 トーエネック CompanySkipError: 証券コード1946の時価総額が不足しています. config/input.csvに market_cap を追加するか, market_cap_overrides.csvへ登録してください.
