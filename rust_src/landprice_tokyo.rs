@@ -120,8 +120,9 @@ impl LandPriceTokyo {
                 .to_string();
 
             let (px, py) = lonlat_to_plane(lon, lat);
-            tree_all.add(&[px, py], i as u64);
-            point_idx_by_id.insert(point_id.clone(), i);
+            let idx = points.len();
+            tree_all.add(&[px, py], idx as u64);
+            point_idx_by_id.insert(point_id.clone(), idx);
 
             points.push(LandPoint {
                 lat,
@@ -422,5 +423,69 @@ mod tests {
         let lp = LandPriceTokyo::new(f.path().to_str().unwrap()).unwrap();
         let result = lp.idw(35.68, 139.77, 0, 3.0, 1.0, None);
         assert!(result.is_err());
+    }
+
+    /// GeoJSON with skipped features (missing geometry / properties) must not
+    /// cause index misalignment between the KdTree and the points vec.
+    #[test]
+    fn test_skipped_features_no_index_misalignment() {
+        init_python();
+        let geojson = serde_json::json!({
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {"type": "Point", "coordinates": [139.77, 35.68]},
+                    "properties": {
+                        "L01_001": "13", "L01_002": "101", "L01_003": "001",
+                        "L01_008": 1000000, "L01_051": "住宅"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": null,
+                    "properties": {
+                        "L01_001": "13", "L01_002": "101", "L01_003": "999",
+                        "L01_008": 9999999, "L01_051": "住宅"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {"type": "Point", "coordinates": [139.78, 35.69]},
+                    "properties": null
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {"type": "Point", "coordinates": [139.79, 35.70]},
+                    "properties": {
+                        "L01_001": "13", "L01_002": "101", "L01_003": "003",
+                        "L01_008": 3000000, "L01_051": "商業"
+                    }
+                }
+            ]
+        });
+        let mut f = NamedTempFile::new().unwrap();
+        write!(f, "{}", geojson).unwrap();
+
+        let lp = LandPriceTokyo::new(f.path().to_str().unwrap()).unwrap();
+        assert_eq!(lp.points.len(), 2);
+
+        // Query near the first valid point
+        let pr = lp.nearest(35.6801, 139.7701, None).unwrap();
+        assert_eq!(pr.unit_price, 1000000);
+        assert_eq!(pr.nearest_id, "13-101-001");
+
+        // Query near the second valid point (index 3 in original, 1 in points)
+        let pr2 = lp.nearest(35.7001, 139.7901, None).unwrap();
+        assert_eq!(pr2.unit_price, 3000000);
+        assert_eq!(pr2.nearest_id, "13-101-003");
+
+        // IDW should also work without panic
+        let pr3 = lp.idw(35.69, 139.78, 2, 3.0, 1.0, None).unwrap();
+        assert!(pr3.unit_price > 1000000 && pr3.unit_price < 3000000);
+
+        // point_idx_by_id lookup
+        assert_eq!(lp.get_point_landuse_kind("13-101-001"), "住宅");
+        assert_eq!(lp.get_point_landuse_kind("13-101-003"), "商業");
     }
 }
