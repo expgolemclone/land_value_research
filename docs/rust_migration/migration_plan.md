@@ -92,13 +92,13 @@ land_value_research/
 
 ### Step 0-1: Rust ツールチェインの準備
 
-- [ ] `rustup` がインストールされていることを確認（`rustup --version`）
-- [ ] `maturin` を pip でインストール: `pip install maturin`
-- [ ] `requirements-dev.txt` に `maturin` を追加
+- [x] `rustup` がインストールされていることを確認（`rustup --version`）
+- [x] `maturin` を pip でインストール: `pip install maturin`
+- [x] `requirements-dev.txt` に `maturin` を追加
 
 ### Step 0-2: Cargo ワークスペースの作成
 
-- [ ] プロジェクトルートに `Cargo.toml`（ワークスペースルート）を作成
+- [x] プロジェクトルートに `Cargo.toml`（ワークスペースルート）を作成
 
 ```toml
 # Cargo.toml (ワークスペースルート)
@@ -107,8 +107,8 @@ members = ["rust"]
 resolver = "2"
 ```
 
-- [ ] `rust/` ディレクトリを作成
-- [ ] `rust/Cargo.toml` を作成
+- [x] `rust/` ディレクトリを作成
+- [x] `rust/Cargo.toml` を作成
 
 ```toml
 # rust/Cargo.toml
@@ -127,7 +127,7 @@ pyo3 = { version = "0.24", features = ["extension-module"] }
 
 ### Step 0-3: 最小限の PyO3 モジュール
 
-- [ ] `rust/src/lib.rs` を作成
+- [x] `rust/src/lib.rs` を作成
 
 ```rust
 use pyo3::prelude::*;
@@ -148,7 +148,7 @@ fn land_value_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
 ### Step 0-4: pyproject.toml へのビルド設定追加
 
-- [ ] 既存の `pyproject.toml` に maturin セクションを追加
+- [x] 既存の `pyproject.toml` に maturin セクションを追加
 
 ```toml
 # 既存セクションに追加
@@ -167,12 +167,12 @@ features = ["pyo3/extension-module"]
 
 ### Step 0-5: ビルド検証
 
-- [ ] `maturin develop --release` を実行し、Windows 上でビルドが通ることを確認
-- [ ] `python -c "import land_value_core; print(land_value_core.rust_available())"` → `True`
+- [x] `maturin develop --release` を実行し、Windows 上でビルドが通ることを確認
+- [x] `python -c "import land_value_core; print(land_value_core.rust_available())"` → `True`
 
 ### Step 0-6: types.rs — PriceResult の定義
 
-- [ ] `rust/src/types.rs` を作成
+- [x] `rust/src/types.rs` を作成
 
 ```rust
 use pyo3::prelude::*;
@@ -192,13 +192,13 @@ pub struct PriceResult {
 
 **frozen + get_all の理由:** Python 側の `PriceResult` は `frozen=True` の dataclass。フィールドへのアトリビュートアクセス（`pr.unit_price`, `pr.nearest_id` 等）を `anomaly.py` と `run.py` が多用しているため、`get_all` で全フィールドを自動公開する。
 
-- [ ] `lib.rs` に `mod types;` を追加し、`m.add_class::<types::PriceResult>()?;` で登録
-- [ ] `maturin develop --release` → ビルド成功を確認
+- [x] `lib.rs` に `mod types;` を追加し、`m.add_class::<types::PriceResult>()?;` で登録
+- [x] `maturin develop --release` → ビルド成功を確認
 
 ### Step 0-7: CP932 エンコーディングの検証
 
-- [ ] `rust/Cargo.toml` に `encoding_rs = "0.8"` を追加
-- [ ] geocode 用 CSV（`data/geocoding/geocode_ref_oaza_chome_tokyo_2024/13_2024.csv`）を CP932 として読み込み、UTF-8 にデコードできることを `#[test]` で検証
+- [x] `rust/Cargo.toml` に `encoding_rs = "0.8"` を追加
+- [x] geocode 用 CSV（`data/geocoding/geocode_ref_oaza_chome_tokyo_2024/13_2024.csv`）を CP932 として読み込み、UTF-8 にデコードできることを `#[test]` で検証
 
 ```rust
 #[cfg(test)]
@@ -219,11 +219,11 @@ mod tests {
 
 ### Phase 0 完了条件
 
-- [ ] `maturin develop --release` が Windows 上で成功
-- [ ] `python -c "from land_value_core import rust_available, PriceResult; print(rust_available())"` → `True`
-- [ ] `cargo test` が pass
-- [ ] `python -m pytest tests/ -v` が全 pass（既存テストに影響なし）
-- [ ] `ruff check .` が pass
+- [x] `maturin develop --release` が Windows 上で成功
+- [x] `python -c "from land_value_core import rust_available, PriceResult; print(rust_available())"` → `True`
+- [x] `cargo test` が pass
+- [x] `python -m pytest tests/ -v` が全 pass（既存テストに影響なし）
+- [x] `ruff check .` が pass
 
 ---
 
@@ -241,7 +241,7 @@ geographiclib-rs = "0.2"
 
 ### Step 1a-1: EPSG:4326 → EPSG:6677 座標変換
 
-- [ ] `coord.rs` を作成し `lonlat_to_plane()` を実装
+- [x] `coord.rs` を作成し `lonlat_to_plane()` を実装
 
 Python 版の対応コード（`landprice_tokyo.py:39-41`）:
 
@@ -271,7 +271,7 @@ pub fn lonlat_to_plane(lon: f64, lat: f64) -> (f64, f64) {
 
 **注意:** `proj4rs` は PROJ4 文字列で CRS を指定する。EPSG:6677 (Japan Plane Rectangular IX — 東京都) の PROJ4 文字列は上記の通り。`always_xy=True` に対応するため、入力は `(lon, lat)` 順とする。
 
-- [ ] `proj4rs` の PROJ4 文字列がpyproj の EPSG:6677 と同一結果を出すことを単体テストで検証（東京駅 (35.6812, 139.7671) を変換して pyproj の出力と比較、許容誤差 ±0.01m）
+- [x] `proj4rs` の PROJ4 文字列がpyproj の EPSG:6677 と同一結果を出すことを単体テストで検証（東京駅 (35.6812, 139.7671) を変換して pyproj の出力と比較、許容誤差 ±0.01m）
 
 ### Step 1a-2: WGS84 楕円体距離
 
@@ -295,7 +295,7 @@ pub fn ellipsoid_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
 }
 ```
 
-- [ ] 既知の2点間距離（国土地理院の検算値）と比較し ±0.001m 以内であることを `#[test]` で検証
+- [x] 既知の2点間距離（国土地理院の検算値）と比較し ±0.001m 以内であることを `#[test]` で検証
 
 ### Step 1a-3: バッチ距離計算
 
@@ -317,9 +317,9 @@ pub fn ellipsoid_distances(
 
 ### Phase 1a 完了条件
 
-- [ ] `cargo test` で coord モジュールの全テスト pass
-- [ ] pyproj との座標変換結果の差異が ±0.01m 以内
-- [ ] 楕円体距離の差異が ±0.001m 以内
+- [x] `cargo test` で coord モジュールの全テスト pass
+- [x] pyproj との座標変換結果の差異が ±0.01m 以内
+- [x] 楕円体距離の差異が ±0.001m 以内
 
 ---
 
@@ -672,9 +672,9 @@ mod tests {
 
 ### Phase 1b 完了条件
 
-- [ ] `cargo test` で landprice_tokyo モジュールの全テスト pass
-- [ ] `lib.rs` に `m.add_class::<landprice_tokyo::LandPriceTokyo>()?;` を追加
-- [ ] `maturin develop --release` → ビルド成功
+- [x] `cargo test` で landprice_tokyo モジュールの全テスト pass
+- [x] `lib.rs` に `m.add_class::<landprice_tokyo::LandPriceTokyo>()?;` を追加
+- [x] `maturin develop --release` → ビルド成功
 
 ---
 
@@ -898,8 +898,8 @@ mod tests {
 
 ### Phase 1c 完了条件
 
-- [ ] `cargo test` で jp_address モジュールの全テスト pass
-- [ ] Python 版 `test_jp_address.py` の全テストケースに対応する Rust テストが存在する
+- [x] `cargo test` で jp_address モジュールの全テスト pass
+- [x] Python 版 `test_jp_address.py` の全テストケースに対応する Rust テストが存在する
 
 ---
 
@@ -1200,9 +1200,9 @@ mod tests {
 
 ### Phase 1d 完了条件
 
-- [ ] `cargo test` で geocode_tokyo モジュールの全テスト pass
-- [ ] `lib.rs` に `m.add_class::<geocode_tokyo::TokyoGeocoder>()?;` を追加
-- [ ] `maturin develop --release` → ビルド成功
+- [x] `cargo test` で geocode_tokyo モジュールの全テスト pass
+- [x] `lib.rs` に `m.add_class::<geocode_tokyo::TokyoGeocoder>()?;` を追加
+- [x] `maturin develop --release` → ビルド成功
 
 ---
 
@@ -1315,8 +1315,8 @@ if not _RUST_BACKEND:
 
 ### Step 2-4: 統合テスト
 
-- [ ] `python -m pytest tests/ -v` — 全既存テストが pass（Rust ラッパー経由で実行される）
-- [ ] テスト内で `_RUST_BACKEND` が `True` であることを確認するアサーションを一時的に追加
+- [x] `python -m pytest tests/ -v` — 全既存テストが pass（Rust ラッパー経由で実行される）
+- [x] テスト内で `_RUST_BACKEND` が `True` であることを確認するアサーションを一時的に追加
 
 ### Step 2-5: Python/Rust 一致性テスト（新規）
 
@@ -1375,9 +1375,9 @@ class TestGeocodeParity(unittest.TestCase):
 
 ### Phase 2 完了条件
 
-- [ ] `python -m pytest tests/ -v` — 全テスト pass
-- [ ] `ruff check .` — pass
-- [ ] Rust バックエンドが使用されていることの確認:
+- [x] `python -m pytest tests/ -v` — 全テスト pass
+- [x] `ruff check .` — pass
+- [x] Rust バックエンドが使用されていることの確認:
   ```python
   python -c "from src.landprice_tokyo import _RUST_BACKEND; print(_RUST_BACKEND)"
   # → True
@@ -1408,10 +1408,10 @@ init_rust = time.perf_counter() - t0
 ```
 
 計測対象:
-- [ ] GeoJSON ロード + KDTree 構築時間
-- [ ] CSV ロード + インデックス構築時間
-- [ ] 1社あたりの geocode + IDW 処理時間
-- [ ] 全社処理の合計時間
+- [x] GeoJSON ロード + KDTree 構築時間
+- [x] CSV ロード + インデックス構築時間
+- [x] 1社あたりの geocode + IDW 処理時間
+- [x] 全社処理の合計時間
 
 ### Step 3-2: 最適化の検討
 
@@ -1453,8 +1453,8 @@ land_value_core/
 
 ### Phase 3 完了条件
 
-- [ ] ベンチマーク結果を `docs/rust_migration/benchmark.md` に記録
-- [ ] 最適化を適用し、再ベンチマークで改善を確認
+- [x] ベンチマーク結果を `docs/rust_migration/benchmark.md` に記録
+- [x] 最適化を適用し、再ベンチマークで改善を確認
 - [ ] `python run.py` が全社処理で正常完了
 - [ ] 出力 CSV が Python 版と許容誤差内で一致
 
@@ -1517,11 +1517,11 @@ with Pool(processes=4) as pool:
 
 各フェーズ完了時に必ず実行:
 
-- [ ] `cargo test` — Rust 単体テスト pass
+- [x] `cargo test` — Rust 単体テスト pass
 - [ ] `cargo clippy -- -D warnings` — Rust リント pass
-- [ ] `maturin develop --release` — ビルド成功
-- [ ] `python -m pytest tests/ -v` — 既存 Python テスト全 pass
-- [ ] `ruff check .` — Python リント pass
+- [x] `maturin develop --release` — ビルド成功
+- [x] `python -m pytest tests/ -v` — 既存 Python テスト全 pass
+- [x] `ruff check .` — Python リント pass
 - [ ] `python run.py` で実データ処理を実行し、出力 CSV の差分確認
 
 ## フェーズ間の依存関係

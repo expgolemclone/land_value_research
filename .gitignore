@@ -10,6 +10,14 @@ __pycache__/
 *.pyc
 .ruff_cache/
 
+# Rust build artifacts
+/target/
+/rust/target/
+*.so
+*.pyd
+*.dll
+land_value_core/
+
 # Temporary planning files
 plan.md
 fix_plan_*.md
