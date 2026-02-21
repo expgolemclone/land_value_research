@@ -422,6 +422,7 @@ def generate_ranking(
     if open_files:
         os.startfile(resolved_output_path)
         os.startfile(resolved_excluded_output_path)
+        os.startfile(BASE_DIR / "scripts" / "parallel_resolve_address.ps1")
 
 
 def main() -> None:
