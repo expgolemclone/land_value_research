@@ -241,6 +241,8 @@ geographiclib-rs = "0.2"
 
 ### Step 1a-1: EPSG:4326 → EPSG:6677 座標変換
 
+- [ ] `coord.rs` を作成し `lonlat_to_plane()` を実装
+
 Python 版の対応コード（`landprice_tokyo.py:39-41`）:
 
 ```python
