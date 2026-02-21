@@ -53,7 +53,8 @@ def merge_patches() -> None:
     print(f"パッチファイル: {len(patch_files)} 件")
     print()
 
-    overrides = load_yaml(OVERRIDES_FILE)
+    overrides_raw = load_yaml(OVERRIDES_FILE)
+    overrides: dict[str, dict] = {str(k): v for k, v in overrides_raw.items()}
     added = 0
     updated = 0
     errors = 0
@@ -69,7 +70,7 @@ def merge_patches() -> None:
         print(f"  処理中: {pf.name}")
 
         for code, sites in patch.items():
-            code_key = code  # preserve original key type from YAML (int or str)
+            code_key = str(code)
             if not isinstance(sites, dict):
                 print(f"    警告: {code} の値が辞書ではありません。スキップ。")
                 errors += 1
