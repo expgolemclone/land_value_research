@@ -9,6 +9,7 @@ input_enriched.csv
 __pycache__/
 *.pyc
 .ruff_cache/
+.hypothesis/
 
 # Rust build artifacts
 /target/
