@@ -68,8 +68,12 @@ impl TokyoGeocoder {
             }
             let muni = row.get("市区町村名").cloned().unwrap_or_default();
             let oaza = row.get("大字町丁目名").cloned().unwrap_or_default();
-            let lat: f64 = row.get("緯度").and_then(|s| s.parse().ok()).unwrap_or(0.0);
-            let lon: f64 = row.get("経度").and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            let Some(lat) = row.get("緯度").and_then(|s| s.parse::<f64>().ok()) else {
+                continue;
+            };
+            let Some(lon) = row.get("経度").and_then(|s| s.parse::<f64>().ok()) else {
+                continue;
+            };
             oaza_groups
                 .entry((muni, oaza))
                 .or_default()
@@ -93,8 +97,12 @@ impl TokyoGeocoder {
                 continue;
             }
             let muni = row.get("市区町村名").cloned().unwrap_or_default();
-            let lat: f64 = row.get("緯度").and_then(|s| s.parse().ok()).unwrap_or(0.0);
-            let lon: f64 = row.get("経度").and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            let Some(lat) = row.get("緯度").and_then(|s| s.parse::<f64>().ok()) else {
+                continue;
+            };
+            let Some(lon) = row.get("経度").and_then(|s| s.parse::<f64>().ok()) else {
+                continue;
+            };
             let entry = muni_sums.entry(muni).or_insert((0.0, 0.0, 0));
             entry.0 += lat;
             entry.1 += lon;
@@ -123,8 +131,12 @@ impl TokyoGeocoder {
                 .get("住居表示フラグ")
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(0);
-            let lat: f64 = row.get("緯度").and_then(|s| s.parse().ok()).unwrap_or(0.0);
-            let lon: f64 = row.get("経度").and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            let Some(lat) = row.get("緯度").and_then(|s| s.parse::<f64>().ok()) else {
+                continue;
+            };
+            let Some(lon) = row.get("経度").and_then(|s| s.parse::<f64>().ok()) else {
+                continue;
+            };
             gaiku_groups
                 .entry((muni, oaza, block))
                 .or_default()
