@@ -10,22 +10,22 @@ Tool that estimates land values of Tokyo-based assets held by Japanese listed co
 
 ```bash
 # Install
-pip install -r requirements.txt
-pip install -r requirements-dev.txt   # adds ruff
+uv sync --group dev
+maturin develop
 
 # Run main pipeline
-python run.py
+uv run python run.py
 
 # Generate rankings from output CSVs
-python rank_market_cap_ratio.py
+uv run python rank_market_cap_ratio.py
 
 # Lint & format
-ruff check .
-ruff format .
+uv run ruff check .
+uv run ruff format .
 
 # Tests
-python -m pytest tests/ -v
-python -m pytest tests/test_geocode_tokyo.py -v   # single file
+uv run python -m unittest discover -s tests -v
+uv run python -m unittest tests.test_geocode_tokyo -v   # single module
 ```
 
 ## Project Structure
@@ -135,7 +135,7 @@ land_value_core (Rust extension — rust_src/)
 After every change, ensure the entire workspace remains consistent. This is mandatory.
 
 - **Propagate all changes.** When renaming, moving, or modifying a function, class, variable, constant, dataclass field, or config key, update every reference across the entire codebase — imports, call sites, tests, YAML/CSV configs, and documentation (including this CLAUDE.md).
-- **Run linting and tests after every change.** Execute `ruff check .` and `python -m pytest tests/ -v` to verify nothing is broken. Fix any errors before committing.
+- **Run linting and tests after every change.** Execute `uv run ruff check .` and `uv run python -m unittest discover -s tests -v` to verify nothing is broken. Fix any errors before committing.
 - **Keep documentation in sync.** If behavior, architecture, CLI usage, directory structure, or data formats change, update the relevant sections of CLAUDE.md and any other docs in the same commit.
 - **Verify cross-module impact.** Refer to the module dependency graph above. When changing a module, check all dependent modules for breakage.
 - **Keep config files aligned.** Changes to dataclass fields, YAML schema, or CSV column layouts must be reflected in all corresponding config files under `config/` and any parsing logic.

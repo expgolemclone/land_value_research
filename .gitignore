@@ -11,6 +11,9 @@ __pycache__/
 .ruff_cache/
 .hypothesis/
 
+# Virtual environment
+.venv/
+
 # Rust build artifacts
 /target/
 *.so
