@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from rank_market_cap_ratio import collect_excluded_codes, collect_rank_rows, write_rank_markdown
+from rank_market_cap_ratio import collect_rank_rows, write_rank_markdown
 
 CSV_HEADER = (
     "証券コード,企業名,事業所名,住所,住所取得元,住所取得元URL,住所解決レベル,土地面積(m2),"
@@ -14,16 +14,7 @@ CSV_HEADER = (
 
 
 class TestRankMarketCapRatio(unittest.TestCase):
-    def test_collect_excluded_codes_ignores_site_processing_error(self) -> None:
-        excluded_rows = [
-            {"証券コード": "9999", "理由コード": "SITE_PROCESSING_ERROR"},
-            {"証券コード": "8888", "理由コード": "DUPLICATE_ADDRESS_LARGE_AREA"},
-        ]
-        excluded = collect_excluded_codes(excluded_rows)
-        self.assertNotIn("9999", excluded)
-        self.assertIn("8888", excluded)
-
-    def test_collect_rank_rows_keeps_company_with_non_critical_excluded_reason(self) -> None:
+    def test_collect_rank_rows_includes_all_companies(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             base = Path(td)
             out_csv = base / "9999_output.csv"
@@ -32,7 +23,7 @@ class TestRankMarketCapRatio(unittest.TestCase):
                 "2.0,2.000,10000000000,0.1,0.100\n",
                 encoding="utf-8",
             )
-            rows = collect_rank_rows(base, {}, {"8888"})
+            rows = collect_rank_rows(base, {})
             self.assertEqual(1, len(rows))
             self.assertEqual("9999", rows[0]["証券コード"])
 

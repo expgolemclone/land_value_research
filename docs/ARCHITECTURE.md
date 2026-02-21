@@ -46,7 +46,6 @@ flowchart TB
     subgraph RANK["rank_market_cap_ratio.py"]
         RANK_PROC["ランキング生成"]
         RANK_MD[/"ranking_market_cap_ratio.md"/]
-        EXCL_MD[/"ranking_market_cap_ratio_excluded.md"/]
     end
 
     CSV --> LOAD
@@ -66,9 +65,7 @@ flowchart TB
     WRITE --> EXCL_CSV
 
     OUT_CSV --> RANK_PROC
-    EXCL_CSV --> RANK_PROC
     RANK_PROC --> RANK_MD
-    RANK_PROC --> EXCL_MD
 ```
 
 ---
@@ -104,7 +101,7 @@ land_value_research/
 │   └── input.csv                   # 入力: 証券コード一覧
 ├── scripts/
 │   ├── validate_ocr_accuracy.py    # OCR精度検証
-│   └── open_excluded_related_files.ps1  # 関連ファイル一括表示
+│   └── parallel_resolve_address.ps1     # 並列住所解決
 ├── docs/
 │   └── ARCHITECTURE.md             # システムアーキテクチャ詳細
 └── data/
@@ -149,9 +146,7 @@ flowchart TD
     subgraph POST["後処理"]
         D1["重複住所検出"]
         D2["複合異常検出"]
-        D3{"Critical<br>異常あり?"}
         D4["東京都合計行を追加"]
-        D5["除外リストに追加"]
     end
 
     START --> M1
@@ -172,9 +167,7 @@ flowchart TD
     S5 -->|"次の拠点"| S1
 
     S5 -->|"全拠点完了"| D1
-    D1 --> D2 --> D3
-    D3 -->|Yes| D5
-    D3 -->|No| D4
+    D1 --> D2 --> D4
 
     D4 --> END(["CompanyResult返却"])
     D5 --> END
@@ -431,19 +424,19 @@ class FacilityLand:
 
 ---
 
-## 9. 異常値検出と除外ロジック
+## 9. 異常値検出ロジック
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"background":"#0d1117","primaryColor":"#161b22","primaryTextColor":"#c9d1d9","primaryBorderColor":"#58a6ff","secondaryColor":"#21262d","tertiaryColor":"#30363d","lineColor":"#8b949e","clusterBkg":"#0d1117","clusterBorder":"#30363d"}}}%%
 flowchart TD
-    subgraph CRITICAL["Critical異常 → 企業を除外"]
+    subgraph CRITICAL["Critical異常 → 記録のみ(除外しない)"]
         C1["AGGREGATE_WEB_GAIKU<br>集約名拠点 + web住所 + 街区解決"]
         C2["HIGH_UNIT_PRICE_LARGE_AREA<br>単価≥2000万 + 面積≥5000m2<br>(デフォルト無効)"]
         C3["DUPLICATE_ADDRESS_LARGE_AREA<br>同一住所に2拠点以上 + 合計面積≥10万m2"]
         C4["HIGH_EVAL_MULTIPLE_COMPOSITE<br>倍率≥500 + 粗ジオコード + 同一住所2拠点以上"]
     end
 
-    subgraph WARNING["Warning異常 → フラグのみ(除外しない)"]
+    subgraph WARNING["Warning異常 → フラグのみ"]
         W1["muni_centroid + 面積≥1万m2"]
         W2["oaza_chome + 面積≥5万m2"]
         W3["k近傍最遠距離≥1万m"]
@@ -452,10 +445,10 @@ flowchart TD
         W6["同一住所 + 大面積の複数拠点"]
     end
 
-    C1 --> EXCLUDE["企業全体を除外<br>output CSVを生成しない"]
-    C2 --> EXCLUDE
-    C3 --> EXCLUDE
-    C4 --> EXCLUDE
+    C1 --> LOG["anomaly_excluded_companies.csvに記録<br>企業はランキングに含む"]
+    C2 --> LOG
+    C3 --> LOG
+    C4 --> LOG
 
     W1 --> FLAG["異常値警告列に記録<br>output CSVに含む"]
     W2 --> FLAG
@@ -464,7 +457,7 @@ flowchart TD
     W5 --> FLAG
     W6 --> FLAG
 
-    style EXCLUDE fill:#d44,color:#fff
+    style LOG fill:#f90,color:#fff
     style FLAG fill:#f90,color:#fff
 ```
 
@@ -528,26 +521,18 @@ flowchart LR
 %%{init: {"theme":"base","themeVariables":{"background":"#0d1117","primaryColor":"#161b22","primaryTextColor":"#c9d1d9","primaryBorderColor":"#58a6ff","secondaryColor":"#21262d","tertiaryColor":"#30363d","lineColor":"#8b949e","clusterBkg":"#0d1117","clusterBorder":"#30363d"}}}%%
 flowchart TD
     INPUT["data/output/<br>全*_output.csv"]
-    EXCL["anomaly_excluded_companies.csv"]
 
     LOAD["全CSVを読込"]
     PICK["pick_company_row()<br>東京都合計行を選択"]
-    FILTER["除外企業を除去"]
     SORT["時価総額比で降順ソート"]
 
     RANK_MD["ranking_market_cap_ratio.md<br>ランキングテーブル"]
-    EXCL_MD["ranking_market_cap_ratio_excluded.md<br>除外企業テーブル"]
-    PS1["open_excluded_related_files.ps1<br>関連ファイル一括表示"]
     VSCODE["VS Codeで<br>Markdownプレビュー"]
 
     INPUT --> LOAD
-    EXCL --> FILTER
-    LOAD --> PICK --> FILTER --> SORT
+    LOAD --> PICK --> SORT
     SORT --> RANK_MD
-    EXCL --> EXCL_MD
-    EXCL_MD --> PS1
     RANK_MD --> VSCODE
-    EXCL_MD --> VSCODE
 ```
 
 ---
@@ -585,7 +570,7 @@ flowchart LR
 
     subgraph OUTPUT["出力"]
         O1["企業別CSV"]
-        O2["除外企業CSV"]
+        O2["異常値記録CSV"]
         O3["ランキングMD"]
     end
 

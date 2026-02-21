@@ -34,7 +34,7 @@ python -m pytest tests/test_geocode_tokyo.py -v   # single file
 |-----------|----------|
 | `config/` | `company_master.yaml`, `address_overrides.yaml`, `market_cap_overrides.csv`, `input.csv` |
 | `docs/` | `ARCHITECTURE.md` (detailed system architecture documentation) |
-| `scripts/` | `validate_ocr_accuracy.py`, `open_excluded_related_files.ps1`, `parallel_resolve_address.ps1`, `merge_address_patches.py` (auxiliary scripts) |
+| `scripts/` | `validate_ocr_accuracy.py`, `parallel_resolve_address.ps1`, `merge_address_patches.py` (auxiliary scripts) |
 | `data/geocoding/` | Address reference CSVs (oaza_chome, gaiku levels) |
 | `data/landprice/tokyo_2025/` | Public land price GeoJSON (`L01-25_13.geojson`) |
 | `rust_src/` | Rust source for `land_value_core` PyO3 extension (geocoder, land price, address normalization) |
@@ -58,7 +58,7 @@ python -m pytest tests/test_geocode_tokyo.py -v   # single file
 3. **Address resolution** (3-tier priority): override YAML → web scraping (score ≥ 40, parallel URL fetch) → securities report as-is
 4. **Geocoding** — `geocode_tokyo.py` (Rust backend via `land_value_core`) converts address → (lat, lon, level). Three resolution levels with correction factors: `gaiku` (1.00) → `oaza_chome` (0.95) → `muni_centroid` (0.85)
 5. **Price estimation** — `landprice_tokyo.py` (Rust backend via `land_value_core`) uses IDW (k=3, p=3) or nearest-neighbor against ~3000 public land price points
-6. **Anomaly detection** — Critical anomalies exclude the company entirely; warnings flag in output only
+6. **Anomaly detection** — Critical anomalies are logged but do not exclude companies from ranking; warnings flag in output only
 7. **Output** — Per-company CSV with 33 columns + aggregated "東京都合計" summary row
 
 **Post-pipeline cleanup (in `run.py` → `_post_pipeline_cleanup()`):**

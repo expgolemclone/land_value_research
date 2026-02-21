@@ -973,18 +973,6 @@ def process_company(
     if dup_critical:
         company_critical = True
 
-    if company_critical:
-        _tprint(f"[{company_index}/{total_companies}] 除外: {code} critical anomaly")
-        return CompanyResult(
-            code=code,
-            company_name=company_name,
-            out_rows=out_rows,
-            excluded_rows=excluded_rows,
-            is_critical=True,
-            sum_est=sum_est,
-            tokyo_site_count=len(tokyo_sites),
-        )
-
     # 東京都合計行(東京都の対象が0件でも必ず出力する)
     profit = sum_est - sum_book
     mult_raw = (sum_est_raw / sum_book_raw) if not math.isclose(sum_book_raw, 0.0) else None
@@ -1019,7 +1007,7 @@ def process_company(
         company_name=company_name,
         out_rows=out_rows,
         excluded_rows=excluded_rows,
-        is_critical=False,
+        is_critical=company_critical,
         sum_est=sum_est,
         tokyo_site_count=len(tokyo_sites),
     )
@@ -1035,14 +1023,8 @@ def write_results(
 
     for write_index, t in enumerate(targets, start=1):
         code = t["code"]
-        company_name = t["_resolved_company_name"] or ctx.company_master.get(code, {}).get("company_name", code)
         out_path = t["_output_path"]
         result = result_by_code.get(code)
-        if result is not None and result.is_critical:
-            if os.path.exists(out_path):
-                os.remove(out_path)
-            print(f"[{write_index}/{total}] Skip(critical anomaly): {code} {company_name}")
-            continue
         with open(out_path, "w", newline="", encoding="utf-8") as f:
             w = csv.DictWriter(f, fieldnames=OUTPUT_FIELDNAMES)
             w.writeheader()
