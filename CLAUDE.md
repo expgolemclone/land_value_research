@@ -37,6 +37,7 @@ python -m pytest tests/test_geocode_tokyo.py -v   # single file
 | `scripts/` | `validate_ocr_accuracy.py`, `open_excluded_related_files.ps1`, `parallel_resolve_address.ps1`, `merge_address_patches.py` (auxiliary scripts) |
 | `data/geocoding/` | Address reference CSVs (oaza_chome, gaiku levels) |
 | `data/landprice/tokyo_2025/` | Public land price GeoJSON (`L01-25_13.geojson`) |
+| `rust_src/` | Rust source for `land_value_core` PyO3 extension (geocoder, land price, address normalization) |
 | `data/cache/` | PDF, web scraping, and facility extraction caches |
 | `data/output/` | Per-company CSVs, anomaly exclusions, ranking markdowns |
 
@@ -49,8 +50,8 @@ python -m pytest tests/test_geocode_tokyo.py -v   # single file
 1. **Metadata** — `company_config.py` loads from YAML/CSV; `company_metadata_fallback.py` fills gaps from IRBank
 2. **PDF extraction** — `pdf_extract.py` extracts facility tables → `FacilityLand` dataclass (site name, location, area, book value)
 3. **Address resolution** (3-tier priority): override YAML → web scraping (score ≥ 40) → securities report as-is
-4. **Geocoding** — `geocode_tokyo.py` converts address → (lat, lon, level). Three resolution levels with correction factors: `gaiku` (1.00) → `oaza_chome` (0.95) → `muni_centroid` (0.85)
-5. **Price estimation** — `landprice_tokyo.py` uses IDW (k=3, p=3) or nearest-neighbor against ~3000 public land price points
+4. **Geocoding** — `geocode_tokyo.py` (Rust backend via `land_value_core`) converts address → (lat, lon, level). Three resolution levels with correction factors: `gaiku` (1.00) → `oaza_chome` (0.95) → `muni_centroid` (0.85)
+5. **Price estimation** — `landprice_tokyo.py` (Rust backend via `land_value_core`) uses IDW (k=3, p=3) or nearest-neighbor against ~3000 public land price points
 6. **Anomaly detection** — Critical anomalies exclude the company entirely; warnings flag in output only
 7. **Output** — Per-company CSV with 33 columns + aggregated "東京都合計" summary row
 
@@ -61,11 +62,10 @@ run.py
 ├── anomaly.py              # Anomaly detection & thresholds
 ├── cache.py                # JSON cache I/O (atomic write, sites cache)
 ├── pdf_extract.py          # Securities report table extraction
-├── geocode_tokyo.py        # Address → coordinates
-│   └── jp_address.py       # Japanese address normalization
-├── landprice_tokyo.py      # IDW/nearest price estimation (cKDTree + pyproj)
+├── geocode_tokyo.py        # Address → coordinates (re-exports from land_value_core)
+├── landprice_tokyo.py      # IDW/nearest price estimation (re-exports from land_value_core)
 ├── web_address_research.py # Web scraping for detailed addresses
-│   └── jp_address.py
+│   └── jp_address.py       # Japanese address normalization (Python, used by web scraping)
 ├── web_cache.py            # PDF download & validation
 ├── company_config.py       # YAML/CSV config loading
 ├── company_metadata_fallback.py  # IRBank API fallback
@@ -73,12 +73,20 @@ run.py
 
 rank_market_cap_ratio.py
 └── company_config.py
+
+land_value_core (Rust extension — rust_src/)
+├── lib.rs                  # PyO3 module definition
+├── types.rs                # PriceResult (#[pyclass(frozen)])
+├── coord.rs                # Coordinate transform (EPSG:4326→6677) + ellipsoid distance
+├── jp_address.rs           # Japanese address normalization (internal)
+├── geocode_tokyo.rs        # TokyoGeocoder (#[pyclass])
+└── landprice_tokyo.rs      # LandPriceTokyo (#[pyclass])
 ```
 
 **Key data structures:**
 
 - `FacilityLand` (frozen dataclass in `pdf_extract.py`) — site_name, location_short, land_area_m2, land_book_value_yen
-- `PriceResult` (frozen dataclass in `landprice_tokyo.py`) — unit_price, nearest_id, nearest_dist_m, knn_ids, knn_dist_m, knn_prices
+- `PriceResult` (Rust `#[pyclass(frozen)]` in `rust_src/types.rs`) — unit_price, nearest_id, nearest_dist_m, knn_ids, knn_dist_m, knn_prices
 - `OutputRow` (TypedDict in `anomaly.py`) — typed output row with 33 Japanese-keyed columns
 - `DuplicateHit` (dataclass in `anomaly.py`) — address, count, total_area_m2, detail, rows
 - `CompanyResult` (dataclass in `run.py`) — aggregates output rows, excluded rows, totals per company

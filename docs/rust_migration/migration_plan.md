@@ -37,9 +37,9 @@
 
 ## 移行戦略: PyO3 拡張モジュール方式
 
-既存 Python コードの中に Rust ワークスペースを配置し、`land_value_core` という Python 拡張モジュールとしてビルドする。各 Python モジュールは `try: from land_value_core import ... except ImportError: ...` のフォールバックパターンでラップし、Rust がビルドできない環境でも動作を保証する。
+プロジェクトルートに単一の `Cargo.toml` を配置し、`land_value_core` という Python 拡張モジュールとしてビルドする。Rust ソースは `rust_src/` ディレクトリに格納する。Rust バックエンドが唯一のランタイムパスとなり、Python フォールバックは削除済み。
 
-**注意:** `pyproject.toml` に maturin ビルド設定を追加し、`Cargo.toml` のワークスペースルートと共存させる必要がある（Phase 0 で設定）。
+**注意:** `pyproject.toml` に maturin ビルド設定を追加し、`Cargo.toml` の `[lib]` セクションで `path = "rust_src/lib.rs"` を指定する。
 
 ---
 
@@ -63,27 +63,25 @@ Rust 拡張が公開するクラス/型を import しているモジュール一
 
 ```
 land_value_research/
-├── Cargo.toml                    # ワークスペースルート
-├── pyproject.toml                # [tool.maturin] セクション追加
-├── rust/                         # Rust ソースツリー
-│   ├── Cargo.toml                # land_value_core クレート (cdylib)
-│   └── src/
-│       ├── lib.rs                # #[pymodule] 定義 + rust_available()
-│       ├── types.rs              # PriceResult (#[pyclass(frozen)])
-│       ├── coord.rs              # 座標変換 (EPSG:4326→6677) + 楕円体距離
-│       ├── jp_address.rs         # 住所正規化（Rust内部のみ、Python非公開）
-│       ├── geocode_tokyo.rs      # TokyoGeocoder (#[pyclass])
-│       └── landprice_tokyo.rs    # LandPriceTokyo (#[pyclass])
-├── src/                          # 既存Python
-│   ├── landprice_tokyo.py        # → Rustラッパー + Pythonフォールバック
-│   ├── geocode_tokyo.py          # → Rustラッパー + Pythonフォールバック
+├── Cargo.toml                    # 単一クレート (land_value_core)
+├── pyproject.toml                # [tool.maturin] manifest-path = "Cargo.toml"
+├── rust_src/                     # Rust ソースツリー
+│   ├── lib.rs                    # #[pymodule] 定義 + rust_available()
+│   ├── types.rs                  # PriceResult (#[pyclass(frozen)])
+│   ├── coord.rs                  # 座標変換 (EPSG:4326→6677) + 楕円体距離
+│   ├── jp_address.rs             # 住所正規化（Rust内部のみ、Python非公開）
+│   ├── geocode_tokyo.rs          # TokyoGeocoder (#[pyclass])
+│   └── landprice_tokyo.rs        # LandPriceTokyo (#[pyclass])
+├── src/                          # Python (Rust 再エクスポート)
+│   ├── landprice_tokyo.py        # → land_value_core から直接 import
+│   ├── geocode_tokyo.py          # → land_value_core から直接 import
 │   ├── jp_address.py             # → 変更なし（web_address_research.py が依存）
 │   └── ...                       # その他は変更なし
 └── tests/
     ├── test_landprice_tokyo.py   # 変更不要（ラッパー経由で透過的に動作）
     ├── test_geocode_tokyo.py     # 変更不要
     ├── test_jp_address.py        # 変更不要（Python版を直接テスト）
-    └── test_rust_parity.py       # 新規: Python/Rust一致性テスト
+    └── test_rust_parity.py       # Python/Rust一致性テスト
 ```
 
 ---
@@ -98,20 +96,10 @@ land_value_research/
 
 ### Step 0-2: Cargo ワークスペースの作成
 
-- [x] プロジェクトルートに `Cargo.toml`（ワークスペースルート）を作成
+- [x] プロジェクトルートに単一の `Cargo.toml` を作成
 
 ```toml
-# Cargo.toml (ワークスペースルート)
-[workspace]
-members = ["rust"]
-resolver = "2"
-```
-
-- [x] `rust/` ディレクトリを作成
-- [x] `rust/Cargo.toml` を作成
-
-```toml
-# rust/Cargo.toml
+# Cargo.toml (単一クレート)
 [package]
 name = "land_value_core"
 version = "0.1.0"
@@ -119,15 +107,19 @@ edition = "2021"
 
 [lib]
 name = "land_value_core"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
+path = "rust_src/lib.rs"
 
 [dependencies]
 pyo3 = { version = "0.24", features = ["extension-module"] }
+# ... (省略)
 ```
+
+- [x] `rust_src/` ディレクトリを作成
 
 ### Step 0-3: 最小限の PyO3 モジュール
 
-- [x] `rust/src/lib.rs` を作成
+- [x] `rust_src/lib.rs` を作成
 
 ```rust
 use pyo3::prelude::*;
@@ -157,13 +149,9 @@ requires = ["maturin>=1.5,<2.0"]
 build-backend = "maturin"
 
 [tool.maturin]
-manifest-path = "rust/Cargo.toml"
-python-source = "."
+manifest-path = "Cargo.toml"
 module-name = "land_value_core"
-features = ["pyo3/extension-module"]
 ```
-
-**注意:** `python-source = "."` により、ビルド成果物がプロジェクトルートに配置され `import land_value_core` で直接読み込める。
 
 ### Step 0-5: ビルド検証
 
@@ -172,7 +160,7 @@ features = ["pyo3/extension-module"]
 
 ### Step 0-6: types.rs — PriceResult の定義
 
-- [x] `rust/src/types.rs` を作成
+- [x] `rust_src/types.rs` を作成
 
 ```rust
 use pyo3::prelude::*;
@@ -197,7 +185,7 @@ pub struct PriceResult {
 
 ### Step 0-7: CP932 エンコーディングの検証
 
-- [x] `rust/Cargo.toml` に `encoding_rs = "0.8"` を追加
+- [x] `Cargo.toml` に `encoding_rs = "0.8"` を追加
 - [x] geocode 用 CSV（`data/geocoding/geocode_ref_oaza_chome_tokyo_2024/13_2024.csv`）を CP932 として読み込み、UTF-8 にデコードできることを `#[test]` で検証
 
 ```rust
@@ -234,7 +222,7 @@ mod tests {
 ### 依存クレートの追加
 
 ```toml
-# rust/Cargo.toml [dependencies] に追加
+# Cargo.toml [dependencies] に追加
 proj4rs = "0.1"
 geographiclib-rs = "0.2"
 ```
@@ -253,7 +241,7 @@ xs, ys = self._transformer.transform(self.lons, self.lats)
 Rust 実装:
 
 ```rust
-// rust/src/coord.rs
+// rust_src/coord.rs
 use proj4rs::Proj;
 
 /// (lon, lat) → (x, y) in EPSG:6677 (JGD2011 / Japan Plane Rectangular IX)
@@ -328,7 +316,7 @@ pub fn ellipsoid_distances(
 ### 依存クレートの追加
 
 ```toml
-# rust/Cargo.toml [dependencies] に追加
+# Cargo.toml [dependencies] に追加
 kiddo = "4"
 geojson = "0.24"
 serde_json = "1"
@@ -697,7 +685,7 @@ mod tests {
 ### 依存クレートの追加
 
 ```toml
-# rust/Cargo.toml [dependencies] に追加
+# Cargo.toml [dependencies] に追加
 regex = "1"
 once_cell = "1"
 ```
@@ -705,7 +693,7 @@ once_cell = "1"
 ### Step 1c-1: 全角→半角変換 + 正規化
 
 ```rust
-// rust/src/jp_address.rs
+// rust_src/jp_address.rs
 
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -908,7 +896,7 @@ mod tests {
 ### 依存クレートの追加
 
 ```toml
-# rust/Cargo.toml [dependencies] に追加
+# Cargo.toml [dependencies] に追加
 encoding_rs = "0.8"
 csv = "1"
 ```
@@ -1266,7 +1254,7 @@ pr = PriceResult(
 Rust 側に `#[new]` コンストラクタを追加:
 
 ```rust
-// rust/src/types.rs に追加
+// rust_src/types.rs に追加
 #[pymethods]
 impl PriceResult {
     #[new]
@@ -1444,7 +1432,6 @@ Rust バックエンドが利用可能な場合に不要になるパッケージ
 ```gitignore
 # Rust build artifacts
 /target/
-/rust/target/
 *.so
 *.pyd
 *.dll
