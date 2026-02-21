@@ -276,7 +276,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "pdfplumber" },
+    { name = "pdfplumber", specifier = ">=0.10,<1" },
     { name = "pyyaml", specifier = ">=6.0.3" },
 ]
 
