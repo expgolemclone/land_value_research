@@ -137,6 +137,7 @@ def collect_rank_rows(input_dir: Path, company_master: dict[str, dict[str, Any]]
                 "含み益(円)": (company_row.get("含み益(円)") or "").strip(),
                 "住所解決タグ": collect_unique_values(rows, "住所解決レベル"),
                 "タグ件数": count_unique_values(rows, "住所解決レベル"),
+                "地価推定信頼度": collect_unique_values(rows, "地価推定信頼度"),
                 "異常値警告": collect_unique_values(rows, "異常値警告"),
                 "元ファイル": csv_path.name,
             }
@@ -160,6 +161,7 @@ def write_rank_markdown(rows: list[dict[str, Any]], output_path: Path) -> None:
         "含み益(億円)",
         "住所解決タグ",
         "タグ件数",
+        "地価推定信頼度",
         "異常値警告",
         "元ファイル",
     ]
@@ -186,6 +188,7 @@ def write_rank_markdown(rows: list[dict[str, Any]], output_path: Path) -> None:
                 escape_md_cell(yen_to_oku_display(row["含み益(円)"])),
                 escape_md_cell(row.get("住所解決タグ", "")),
                 escape_md_cell(str(row.get("タグ件数", 0))),
+                escape_md_cell(row.get("地価推定信頼度", "")),
                 escape_md_cell(row.get("異常値警告", "")),
                 escape_md_cell(row["元ファイル"]),
             ]

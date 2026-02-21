@@ -26,6 +26,7 @@ class TestRankMarketCapRatio(unittest.TestCase):
             rows = collect_rank_rows(base, {})
             self.assertEqual(1, len(rows))
             self.assertEqual("9999", rows[0]["証券コード"])
+            self.assertIn("地価推定信頼度", rows[0])
 
     def test_write_rank_markdown_escapes_pipe(self) -> None:
         with tempfile.TemporaryDirectory() as td:
@@ -42,6 +43,7 @@ class TestRankMarketCapRatio(unittest.TestCase):
                     "含み益(円)": "500000000",
                     "住所解決タグ": "",
                     "タグ件数": 0,
+                    "地価推定信頼度": "high",
                     "異常値警告": "",
                     "元ファイル": "9998_output.csv",
                 }
