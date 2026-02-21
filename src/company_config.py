@@ -12,6 +12,8 @@ def load_company_master(path: str) -> dict[str, dict[str, Any]]:
         return {}
     with open(path, encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
+    if not isinstance(data, dict):
+        return {}
     # key: str code
     return {str(k): v for k, v in data.items()}
 
@@ -21,9 +23,13 @@ def load_address_overrides(path: str) -> dict[str, dict[str, str]]:
         return {}
     with open(path, encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
+    if not isinstance(data, dict):
+        return {}
     out: dict[str, dict[str, str]] = {}
     for code, mapping in data.items():
-        out[str(code)] = {str(k): str(v) for k, v in (mapping or {}).items()}
+        if not isinstance(mapping, dict):
+            continue
+        out[str(code)] = {str(k): str(v) for k, v in mapping.items()}
     return out
 
 
@@ -48,5 +54,8 @@ def load_market_caps(path: str) -> dict[str, float]:
             val = str(row.get("market_cap_yen", "")).replace(",", "").strip()
             if not val:
                 continue
-            out[code] = float(val)
+            try:
+                out[code] = float(val)
+            except ValueError:
+                continue
     return out

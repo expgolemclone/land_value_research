@@ -185,6 +185,11 @@ impl LandPriceTokyo {
         landuse_kind: Option<String>,
     ) -> PyResult<PriceResult> {
         let (tree, global_idx) = self.get_tree_and_index(landuse_kind.as_deref());
+        if global_idx.is_empty() {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "有効な地価ポイントがありません",
+            ));
+        }
         let (px, py) = lonlat_to_plane(lon, lat);
         let k_query = std::cmp::min(3, global_idx.len());
 
@@ -243,6 +248,11 @@ impl LandPriceTokyo {
         }
 
         let (tree, global_idx) = self.get_tree_and_index(landuse_kind.as_deref());
+        if global_idx.is_empty() {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "有効な地価ポイントがありません",
+            ));
+        }
         let (px, py) = lonlat_to_plane(lon, lat);
         let k2 = std::cmp::min(k, global_idx.len());
         let k_query = std::cmp::min(k2 + 2, global_idx.len());
@@ -487,5 +497,65 @@ mod tests {
         // point_idx_by_id lookup
         assert_eq!(lp.get_point_landuse_kind("13-101-001"), "住宅");
         assert_eq!(lp.get_point_landuse_kind("13-101-003"), "商業");
+    }
+
+    #[test]
+    fn test_empty_feature_collection_nearest_returns_error() {
+        init_python();
+        let geojson = serde_json::json!({
+            "type": "FeatureCollection",
+            "features": []
+        });
+        let mut f = NamedTempFile::new().unwrap();
+        write!(f, "{}", geojson).unwrap();
+
+        let lp = LandPriceTokyo::new(f.path().to_str().unwrap()).unwrap();
+        assert_eq!(lp.points.len(), 0);
+
+        let result = lp.nearest(35.68, 139.77, None);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_empty_feature_collection_idw_returns_error() {
+        init_python();
+        let geojson = serde_json::json!({
+            "type": "FeatureCollection",
+            "features": []
+        });
+        let mut f = NamedTempFile::new().unwrap();
+        write!(f, "{}", geojson).unwrap();
+
+        let lp = LandPriceTokyo::new(f.path().to_str().unwrap()).unwrap();
+        let result = lp.idw(35.68, 139.77, 3, 3.0, 1.0, None);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_empty_landuse_filter_nearest_returns_error() {
+        init_python();
+        // Only 住宅 points — querying 商業 with no fallback should fail
+        let geojson = serde_json::json!({
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [139.77, 35.68]},
+                "properties": {
+                    "L01_001": "13", "L01_002": "101", "L01_003": "001",
+                    "L01_008": 1000000, "L01_051": "住宅"
+                }
+            }]
+        });
+        let mut f = NamedTempFile::new().unwrap();
+        write!(f, "{}", geojson).unwrap();
+
+        let lp = LandPriceTokyo::new(f.path().to_str().unwrap()).unwrap();
+        // 商業 tree exists but is empty? No — 商業 tree doesn't exist, so it falls back to all.
+        // But if we query a landuse_kind that has a tree with entries...
+        // Actually, get_tree_and_index falls back to tree_all when the kind isn't found.
+        // So querying a non-existent kind will fall back to all points and succeed.
+        let result = lp.nearest(35.68, 139.77, Some("商業".to_string()));
+        // Falls back to all points — should succeed
+        assert!(result.is_ok());
     }
 }

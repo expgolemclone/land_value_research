@@ -111,5 +111,26 @@ class TestLandPriceTokyo(unittest.TestCase):
             self.lp.idw(lat=35.68, lon=139.77, k=0)
 
 
+class TestLandPriceTokyoEmptyData(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self.geojson_path = os.path.join(self._tmpdir.name, "empty.geojson")
+        geojson = json.dumps({"type": "FeatureCollection", "features": []})
+        with open(self.geojson_path, "w", encoding="utf-8") as f:
+            f.write(geojson)
+        self.lp = LandPriceTokyo(self.geojson_path)
+
+    def tearDown(self) -> None:
+        self._tmpdir.cleanup()
+
+    def test_nearest_empty_raises_value_error(self) -> None:
+        with self.assertRaises(ValueError):
+            self.lp.nearest(lat=35.68, lon=139.77)
+
+    def test_idw_empty_raises_value_error(self) -> None:
+        with self.assertRaises(ValueError):
+            self.lp.idw(lat=35.68, lon=139.77, k=3)
+
+
 if __name__ == "__main__":
     unittest.main()
