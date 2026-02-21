@@ -83,14 +83,21 @@ land_value_research/
 │   ├── anomaly.py                  # 異常値検出・閾値定数・OutputRow型
 │   ├── cache.py                    # JSONキャッシュI/O(アトミック書込み)
 │   ├── pdf_extract.py              # 有報PDFからの設備テーブル抽出
-│   ├── geocode_tokyo.py            # 住所→緯度経度変換
+│   ├── geocode_tokyo.py            # Rust拡張 land_value_core のラッパ
 │   ├── jp_address.py               # 日本語住所正規化
-│   ├── landprice_tokyo.py          # 公示地価による価格推定(cKDTree+IDW/最近傍)
+│   ├── landprice_tokyo.py          # Rust拡張 land_value_core のラッパ
 │   ├── web_address_research.py     # Webスクレイピングで住所補完
 │   ├── web_cache.py                # PDFダウンロード/検証
 │   ├── company_config.py           # YAML/CSV設定読込
 │   ├── company_metadata_fallback.py# IRBankフォールバック
 │   └── utils.py                    # ユーティリティ + SSRF保護
+├── rust_src/
+│   ├── lib.rs                      # Python拡張エントリ
+│   ├── types.rs                    # PriceResult等の共通型
+│   ├── jp_address.rs               # 住所正規化ロジック
+│   ├── geocode_tokyo.rs            # 住所→緯度経度変換
+│   ├── landprice_tokyo.rs          # 地価推定(IDW/最近傍)
+│   └── coord.rs                    # 測地距離計算
 ├── config/
 │   ├── company_master.yaml         # 企業マスタ(名前/PDF URL)
 │   ├── address_overrides.yaml      # 住所手動オーバーライド
@@ -222,6 +229,8 @@ flowchart TD
 
 ## 5. ジオコーディングフロー (`geocode_tokyo.py`)
 
+注: `src/geocode_tokyo.py` は `land_value_core.TokyoGeocoder` を公開する薄いラッパで、実処理は `rust_src/geocode_tokyo.rs` 側に実装されている。
+
 住所文字列を緯度経度に変換する。精度レベルに応じて地価補正係数が適用される。
 
 ```mermaid
@@ -270,6 +279,8 @@ flowchart TD
 ---
 
 ## 6. 地価推定フロー (`landprice_tokyo.py`)
+
+注: `src/landprice_tokyo.py` は `land_value_core.LandPriceTokyo` の薄いラッパで、実処理は `rust_src/landprice_tokyo.rs` 側に実装されている。
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"background":"#0d1117","primaryColor":"#161b22","primaryTextColor":"#c9d1d9","primaryBorderColor":"#58a6ff","secondaryColor":"#21262d","tertiaryColor":"#30363d","lineColor":"#8b949e","clusterBkg":"#0d1117","clusterBorder":"#30363d"}}}%%
@@ -607,7 +618,7 @@ flowchart LR
 
 | オプション | 型 | デフォルト | 説明 |
 |-----------|-----|-----------|------|
-| `--input` | str | config/input.csv | 入力CSVパス |
+| `--input` | str | "" (未指定時は `config/input.csv`) | 入力CSVパス |
 | `--output` | str | data/output | 出力ディレクトリ |
 | `--price-method` | idw/nearest | idw | 地価推定方法 |
 | `--k` | int | 3 | k近傍数 |
@@ -625,7 +636,7 @@ flowchart LR
 
 ---
 
-## 14. 出力CSVカラム (32列)
+## 14. 出力CSVカラム (33列)
 
 ### 企業別出力 (`<code>_output.csv`)
 

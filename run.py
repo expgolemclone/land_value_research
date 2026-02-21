@@ -6,9 +6,11 @@ import math
 import os
 import re
 import sys
+import threading
 import time
 import urllib.error
-from dataclasses import dataclass
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
@@ -35,17 +37,26 @@ from src.company_config import (
 from src.company_metadata_fallback import fetch_from_irbank
 from src.geocode_tokyo import TokyoGeocoder
 from src.landprice_tokyo import LandPriceTokyo, PriceResult
+from src.network import is_transient_network_error
 from src.pdf_extract import FacilityLand, extract_major_facilities_land
 from src.utils import ensure_dir
 from src.web_address_research import WebAddressResearcher
 from src.web_cache import download_file, is_pdf_file
-from src.network import is_transient_network_error
 
 logger = logging.getLogger(__name__)
 
 CACHE_SAVE_INTERVAL = 10
 COMPANY_RETRY_COUNT = 3
 COMPANY_RETRY_BASE_DELAY_SEC = 2.0
+
+_print_lock = threading.Lock()
+
+
+def _tprint(*args: object, **kwargs: object) -> None:
+    """Thread-safe print wrapper."""
+    with _print_lock:
+        print(*args, **kwargs)
+
 
 OUTPUT_FIELDNAMES = [
     "証券コード",
@@ -128,6 +139,7 @@ class RunContext:
     price_cache_disk: dict[str, Any]
     geocode_cache_disk: dict[str, Any]
     geocode_cache: dict[str, tuple[float, float, str]]
+    cache_lock: threading.Lock = field(default_factory=threading.Lock)
 
 
 @dataclass
@@ -434,6 +446,12 @@ def parse_args() -> argparse.Namespace:
         default=False,
         help=("critical anomalyのHIGH_UNIT_PRICE_LARGE_AREA判定を有効化するか(default: off)"),
     )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=4,
+        help="企業レベル並列処理のワーカー数(default: 4, 1で逐次処理)",
+    )
     return parser.parse_args()
 
 
@@ -526,7 +544,7 @@ def _resolve_company_metadata(
     code = t["code"]
     meta = ctx.company_master.get(code, {})
     company_name = t["_resolved_company_name"] or meta.get("company_name", "")
-    print(f"[{company_index}/{total_companies}] 開始: {code} {company_name}")
+    _tprint(f"[{company_index}/{total_companies}] 開始: {code} {company_name}")
     pdf_url = t["pdf_url"] or meta.get("securities_report_pdf_url", "")
     address_source_urls = t["address_source_urls"] or list(meta.get("address_source_urls", []) or [])
     fallback = None
@@ -540,19 +558,20 @@ def _resolve_company_metadata(
             address_source_urls.append(fallback.address_source_url)
         # IRBankから取得した情報をcompany_masterに追記（後続処理・永続化用）
         if fallback.company_name or fallback.securities_report_pdf_url:
-            existing = ctx.company_master.get(code, {})
-            updated = dict(existing)
-            if fallback.company_name and not existing.get("company_name"):
-                updated["company_name"] = fallback.company_name
-            if fallback.securities_report_pdf_url and not existing.get("securities_report_pdf_url"):
-                updated["securities_report_pdf_url"] = fallback.securities_report_pdf_url
-            if fallback.address_source_url:
-                existing_urls = list(existing.get("address_source_urls") or [])
-                if fallback.address_source_url not in existing_urls:
-                    existing_urls.append(fallback.address_source_url)
-                    updated["address_source_urls"] = existing_urls
-            if updated != existing:
-                ctx.company_master[code] = updated
+            with ctx.cache_lock:
+                existing = ctx.company_master.get(code, {})
+                updated = dict(existing)
+                if fallback.company_name and not existing.get("company_name"):
+                    updated["company_name"] = fallback.company_name
+                if fallback.securities_report_pdf_url and not existing.get("securities_report_pdf_url"):
+                    updated["securities_report_pdf_url"] = fallback.securities_report_pdf_url
+                if fallback.address_source_url:
+                    existing_urls = list(existing.get("address_source_urls") or [])
+                    if fallback.address_source_url not in existing_urls:
+                        existing_urls.append(fallback.address_source_url)
+                        updated["address_source_urls"] = existing_urls
+                if updated != existing:
+                    ctx.company_master[code] = updated
     if not company_name or not pdf_url:
         raise CompanySkipError(
             f"証券コード{code}の会社情報が不足しています."
@@ -568,17 +587,14 @@ def _resolve_company_metadata(
     if not os.path.exists(pdf_path):
         if not ctx.args.allow_download:
             raise CompanySkipError(
-                f"PDFが見つかりません: {pdf_path}"
-                " ネットワーク無し環境では, 事前にdata/cache/pdfへ配置してください."
+                f"PDFが見つかりません: {pdf_path} ネットワーク無し環境では, 事前にdata/cache/pdfへ配置してください."
             )
         try:
             download_file(pdf_url, pdf_path)
         except (ValueError, urllib.error.URLError, OSError) as e:
             if is_transient_network_error(e):
                 raise TransientNetworkError(f"証券コード{code}の有報PDF取得で一時通信エラー: {e}") from e
-            raise CompanySkipError(
-                f"証券コード{code}の有報PDF取得に失敗しました: {e}"
-            ) from e
+            raise CompanySkipError(f"証券コード{code}の有報PDF取得に失敗しました: {e}") from e
 
     sites_cache_path = os.path.join(ctx.facilities_cache_dir, f"{code}_sites.json")
     sites = load_sites_cache(sites_cache_path, pdf_path)
@@ -586,7 +602,7 @@ def _resolve_company_metadata(
         sites = extract_major_facilities_land(pdf_path)
         save_sites_cache(sites_cache_path, pdf_path, sites)
     tokyo_sites = [s for s in sites if s.location_short.startswith("東京都")]
-    print(f"[{company_index}/{total_companies}] 拠点: 全{len(sites)}件, 東京都対象{len(tokyo_sites)}件")
+    _tprint(f"[{company_index}/{total_companies}] 拠点: 全{len(sites)}件, 東京都対象{len(tokyo_sites)}件")
 
     mcap = t["market_cap"] if t["market_cap"] is not None else ctx.market_caps.get(code)
     if mcap is None and ctx.args.allow_auto_metadata:
@@ -636,15 +652,16 @@ def _process_site(
         full_addr = s.location_short
         addr_source = "securities_report"
 
-    geo = ctx.geocode_cache.get(full_addr)
-    if geo is None:
-        dg = ctx.geocode_cache_disk.get(full_addr)
-        if isinstance(dg, list) and len(dg) == 3:
-            geo = (float(dg[0]), float(dg[1]), str(dg[2]))
-        else:
-            geo = ctx.geocoder.geocode(full_addr)
-            ctx.geocode_cache_disk[full_addr] = [float(geo[0]), float(geo[1]), str(geo[2])]
-        ctx.geocode_cache[full_addr] = geo
+    with ctx.cache_lock:
+        geo = ctx.geocode_cache.get(full_addr)
+        if geo is None:
+            dg = ctx.geocode_cache_disk.get(full_addr)
+            if isinstance(dg, list) and len(dg) == 3:
+                geo = (float(dg[0]), float(dg[1]), str(dg[2]))
+            else:
+                geo = ctx.geocoder.geocode(full_addr)
+                ctx.geocode_cache_disk[full_addr] = [float(geo[0]), float(geo[1]), str(geo[2])]
+            ctx.geocode_cache[full_addr] = geo
     lat, lon, geocode_level = geo
 
     target_landuse_kind = ""
@@ -656,41 +673,42 @@ def _process_site(
         f"{repr(lat)}|{repr(lon)}|{ctx.args.price_method}|{int(ctx.args.k)}|{int(ctx.args.p)}|"
         f"{repr(float(ctx.args.eps))}|{target_landuse_kind}"
     )
-    dp = ctx.price_cache_disk.get(disk_key)
-    if isinstance(dp, dict) and "unit_price" in dp:
-        pr = PriceResult(
-            unit_price=int(dp["unit_price"]),
-            nearest_id=str(dp["nearest_id"]),
-            nearest_dist_m=float(dp["nearest_dist_m"]),
-            knn_ids=[str(x) for x in dp.get("knn_ids", [])],
-            knn_dist_m=[float(x) for x in dp.get("knn_dist_m", [])],
-            knn_prices=[int(x) for x in dp.get("knn_prices", [])],
-        )
-    else:
-        if ctx.args.price_method == "nearest":
-            pr = ctx.landprice.nearest(
-                lat=lat,
-                lon=lon,
-                landuse_kind=(target_landuse_kind or None),
+    with ctx.cache_lock:
+        dp = ctx.price_cache_disk.get(disk_key)
+        if isinstance(dp, dict) and "unit_price" in dp:
+            pr = PriceResult(
+                unit_price=int(dp["unit_price"]),
+                nearest_id=str(dp["nearest_id"]),
+                nearest_dist_m=float(dp["nearest_dist_m"]),
+                knn_ids=[str(x) for x in dp.get("knn_ids", [])],
+                knn_dist_m=[float(x) for x in dp.get("knn_dist_m", [])],
+                knn_prices=[int(x) for x in dp.get("knn_prices", [])],
             )
         else:
-            pr = ctx.landprice.idw(
-                lat=lat,
-                lon=lon,
-                k=ctx.args.k,
-                p=ctx.args.p,
-                eps=ctx.args.eps,
-                landuse_kind=(target_landuse_kind or None),
-            )
-        ctx.price_cache_disk[disk_key] = {
-            "unit_price": int(pr.unit_price),
-            "nearest_id": str(pr.nearest_id),
-            "nearest_dist_m": float(pr.nearest_dist_m),
-            "knn_ids": [str(x) for x in pr.knn_ids],
-            "knn_dist_m": [float(x) for x in pr.knn_dist_m],
-            "knn_prices": [int(x) for x in pr.knn_prices],
-            "landuse_kind": target_landuse_kind,
-        }
+            if ctx.args.price_method == "nearest":
+                pr = ctx.landprice.nearest(
+                    lat=lat,
+                    lon=lon,
+                    landuse_kind=(target_landuse_kind or None),
+                )
+            else:
+                pr = ctx.landprice.idw(
+                    lat=lat,
+                    lon=lon,
+                    k=ctx.args.k,
+                    p=ctx.args.p,
+                    eps=ctx.args.eps,
+                    landuse_kind=(target_landuse_kind or None),
+                )
+            ctx.price_cache_disk[disk_key] = {
+                "unit_price": int(pr.unit_price),
+                "nearest_id": str(pr.nearest_id),
+                "nearest_dist_m": float(pr.nearest_dist_m),
+                "knn_ids": [str(x) for x in pr.knn_ids],
+                "knn_dist_m": [float(x) for x in pr.knn_dist_m],
+                "knn_prices": [int(x) for x in pr.knn_prices],
+                "landuse_kind": target_landuse_kind,
+            }
 
     dist_var, max_knn_dist_m, confidence_score, confidence_label = calc_uncertainty_metrics(pr)
     geocode_factor = get_geocode_adjustment_factor(geocode_level, ctx.args)
@@ -720,7 +738,7 @@ def _process_site(
         anomaly_warnings.append("評価倍率閾値超過(単独では除外しない)")
     anomaly_text = " | ".join(anomaly_warnings)
     if anomaly_warnings:
-        print(
+        _tprint(
             f"Warn(anomaly): {code} {s.site_name} {geocode_level} "
             f"area={float(s.land_area_m2):.2f} warnings={anomaly_text}"
         )
@@ -755,7 +773,7 @@ def _process_site(
                     geocode_level=geocode_level,
                 )
             )
-        print(f"Exclude(critical anomaly): {code} {s.site_name} reasons={'|'.join([x[0] for x in critical_reasons])}")
+        _tprint(f"Exclude(critical anomaly): {code} {s.site_name} reasons={'|'.join([x[0] for x in critical_reasons])}")
 
     out_row: dict[str, object] = {
         "証券コード": code,
@@ -818,7 +836,7 @@ def _postprocess_duplicate_anomalies(
         duplicate_address_count[addr] = duplicate_address_count.get(addr, 0) + 1
 
     for hit in duplicate_warnings:
-        print(f"Warn(anomaly): {code} duplicate_address {hit.detail}")
+        _tprint(f"Warn(anomaly): {code} duplicate_address {hit.detail}")
         for row in hit.rows:
             warning_label = "同一住所かつ大面積の複数拠点"
             old = str(row.get("異常値警告", "") or "").strip()
@@ -890,7 +908,7 @@ def _postprocess_duplicate_anomalies(
                         duplicate_total_area=f"{hit.total_area_m2:.2f}",
                     )
                 )
-        print(f"Exclude(critical anomaly): {code} duplicate_address reasons=DUPLICATE_ADDRESS_LARGE_AREA")
+        _tprint(f"Exclude(critical anomaly): {code} duplicate_address reasons=DUPLICATE_ADDRESS_LARGE_AREA")
 
     return excluded_rows, is_critical
 
@@ -914,7 +932,7 @@ def process_company(
 
     total_tokyo_sites = len(tokyo_sites)
     for site_index, s in enumerate(tokyo_sites, start=1):
-        print(f"[{company_index}/{total_companies}][{site_index}/{total_tokyo_sites}] 解析中: {code} {s.site_name}")
+        _tprint(f"[{company_index}/{total_companies}][{site_index}/{total_tokyo_sites}] 解析中: {code} {s.site_name}")
         try:
             sr = _process_site(code, company_name, s, mcap, cm.address_source_urls, ctx)
         except Exception as e:
@@ -953,7 +971,7 @@ def process_company(
         company_critical = True
 
     if company_critical:
-        print(f"[{company_index}/{total_companies}] 除外: {code} critical anomaly")
+        _tprint(f"[{company_index}/{total_companies}] 除外: {code} critical anomaly")
         return CompanyResult(
             code=code,
             company_name=company_name,
@@ -989,7 +1007,9 @@ def process_company(
         }
     )
     out_rows.append(total_row)
-    print(f"[{company_index}/{total_companies}] 完了: {code} 東京都拠点{len(tokyo_sites)}件, 推定時価合計{sum_est:,}円")
+    _tprint(
+        f"[{company_index}/{total_companies}] 完了: {code} 東京都拠点{len(tokyo_sites)}件, 推定時価合計{sum_est:,}円"
+    )
 
     return CompanyResult(
         code=code,
@@ -1042,10 +1062,46 @@ def write_results(
 
 
 def save_caches(ctx: RunContext) -> None:
-    save_json_dict(ctx.price_cache_path, ctx.price_cache_disk)
-    save_json_dict(ctx.geocode_cache_path, ctx.geocode_cache_disk)
-    save_company_master(ctx.company_master_path, ctx.company_master)
+    with ctx.cache_lock:
+        save_json_dict(ctx.price_cache_path, ctx.price_cache_disk)
+        save_json_dict(ctx.geocode_cache_path, ctx.geocode_cache_disk)
+        save_company_master(ctx.company_master_path, ctx.company_master)
     ctx.web_addr.flush()
+
+
+def _process_company_with_retry(
+    t: dict[str, Any],
+    company_index: int,
+    total_companies: int,
+    ctx: RunContext,
+) -> tuple[CompanyResult | None, str]:
+    """Process a company with retry logic. Returns (result, error_message)."""
+    code = t["code"]
+    company_name = t.get("_resolved_company_name", code)
+    for attempt in range(1, COMPANY_RETRY_COUNT + 1):
+        try:
+            return process_company(t, company_index, total_companies, ctx), ""
+        except TransientNetworkError as e:
+            if attempt >= COMPANY_RETRY_COUNT:
+                msg = f"{type(e).__name__}: {e}"
+                logger.error("企業処理スキップ: %s %s %s", code, company_name, msg)
+                return None, msg
+            delay_sec = COMPANY_RETRY_BASE_DELAY_SEC * (2 ** (attempt - 1))
+            logger.warning(
+                "企業処理再試行: %s %s attempt=%d/%d wait=%.1fs reason=%s",
+                code,
+                company_name,
+                attempt,
+                COMPANY_RETRY_COUNT,
+                delay_sec,
+                e,
+            )
+            time.sleep(delay_sec)
+        except Exception as e:
+            msg = f"{type(e).__name__}: {e}"
+            logger.error("企業処理スキップ: %s %s %s", code, company_name, msg)
+            return None, msg
+    return None, "max retries exceeded"
 
 
 def main() -> None:
@@ -1072,42 +1128,36 @@ def main() -> None:
     total_companies = len(targets_to_process)
     if skipped:
         logger.info("調査済みスキップ件数: %d", len(skipped))
-    logger.info("処理開始: %d社", total_companies)
+
+    max_workers = max(1, min(args.workers, total_companies))
+    logger.info("処理開始: %d社 (workers=%d)", total_companies, max_workers)
 
     results: list[CompanyResult] = []
     failed_companies: list[tuple[str, str, str]] = []
     succeeded_targets: list[dict[str, Any]] = []
-    for company_index, t in enumerate(targets_to_process, start=1):
-        code = t["code"]
-        company_name = t.get("_resolved_company_name", code)
-        for attempt in range(1, COMPANY_RETRY_COUNT + 1):
-            try:
-                result = process_company(t, company_index, total_companies, ctx)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_target = {}
+        for company_index, t in enumerate(targets_to_process, start=1):
+            future = executor.submit(_process_company_with_retry, t, company_index, total_companies, ctx)
+            future_to_target[future] = t
+
+        completed_count = 0
+        for future in as_completed(future_to_target):
+            t = future_to_target[future]
+            code = t["code"]
+            company_name = t.get("_resolved_company_name", code)
+            completed_count += 1
+
+            result, error = future.result()
+            if result is not None:
                 results.append(result)
                 succeeded_targets.append(t)
-                break
-            except TransientNetworkError as e:
-                if attempt >= COMPANY_RETRY_COUNT:
-                    logger.error("企業処理スキップ: %s %s %s: %s", code, company_name, type(e).__name__, e)
-                    failed_companies.append((code, company_name, f"{type(e).__name__}: {e}"))
-                    break
-                delay_sec = COMPANY_RETRY_BASE_DELAY_SEC * (2 ** (attempt - 1))
-                logger.warning(
-                    "企業処理再試行: %s %s attempt=%d/%d wait=%.1fs reason=%s",
-                    code,
-                    company_name,
-                    attempt,
-                    COMPANY_RETRY_COUNT,
-                    delay_sec,
-                    e,
-                )
-                time.sleep(delay_sec)
-            except Exception as e:
-                logger.error("企業処理スキップ: %s %s %s: %s", code, company_name, type(e).__name__, e)
-                failed_companies.append((code, company_name, f"{type(e).__name__}: {e}"))
-                break
-        if company_index % CACHE_SAVE_INTERVAL == 0:
-            save_caches(ctx)
+            elif error:
+                failed_companies.append((code, company_name, error))
+
+            if completed_count % CACHE_SAVE_INTERVAL == 0:
+                save_caches(ctx)
 
     write_results(results, succeeded_targets, ctx)
     save_caches(ctx)

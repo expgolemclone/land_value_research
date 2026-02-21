@@ -7,8 +7,10 @@ import json
 import logging
 import os
 import re
+import threading
 import urllib.request
 from collections.abc import Iterable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
 import pdfplumber
@@ -40,6 +42,7 @@ class WebAddressResearcher:
         self._resolve_cache_path = os.path.join(self.cache_dir, "resolve_cache.json")
         self._resolve_cache: dict[str, dict[str, object]] = {}
         self._resolve_cache_dirty = False
+        self._lock = threading.Lock()
         if os.path.exists(self._resolve_cache_path):
             try:
                 with open(self._resolve_cache_path, encoding="utf-8") as f:
@@ -252,7 +255,8 @@ class WebAddressResearcher:
     ) -> AddressCandidate | None:
         urls = [u.strip() for u in source_urls if (u or "").strip()]
         key = "|".join([normalize_addr(site_name), normalize_addr(location_short), "||".join(urls)])
-        cached = self._resolve_cache.get(key)
+        with self._lock:
+            cached = self._resolve_cache.get(key)
         if isinstance(cached, dict):
             if "address" in cached and "score" in cached and "source_url" in cached:
                 return AddressCandidate(
@@ -263,10 +267,14 @@ class WebAddressResearcher:
             if cached.get("none") is True:
                 return None
 
+        # Fetch all URLs concurrently (I/O-bound), then score using cached results
+        valid_urls = [u for u in urls if u]
+        if len(valid_urls) > 1:
+            with ThreadPoolExecutor(max_workers=min(4, len(valid_urls))) as executor:
+                list(executor.map(self._extract_candidates_by_url, valid_urls))
+
         best: AddressCandidate | None = None
-        for url in urls:
-            if not url:
-                continue
+        for url in valid_urls:
             addrs = self._extract_candidates_by_url(url)
             text = self._text_cache.get(url, "")
             for addr in addrs:
@@ -279,24 +287,26 @@ class WebAddressResearcher:
                 elif cand.score == best.score and cand.address < best.address:
                     best = cand
 
-        if best is None:
-            self._resolve_cache[key] = {"none": True}
-        else:
-            self._resolve_cache[key] = {
-                "address": best.address,
-                "score": int(best.score),
-                "source_url": best.source_url,
-            }
-        self._resolve_cache_dirty = True
+        with self._lock:
+            if best is None:
+                self._resolve_cache[key] = {"none": True}
+            else:
+                self._resolve_cache[key] = {
+                    "address": best.address,
+                    "score": int(best.score),
+                    "source_url": best.source_url,
+                }
+            self._resolve_cache_dirty = True
         return best
 
     def flush(self) -> None:
         """Write resolve cache to disk if it has been modified."""
-        if not self._resolve_cache_dirty:
-            return
-        try:
-            with open(self._resolve_cache_path, "w", encoding="utf-8") as f:
-                json.dump(self._resolve_cache, f, ensure_ascii=False, separators=(",", ":"))
-            self._resolve_cache_dirty = False
-        except Exception:
-            logger.debug("resolve cache flush failed: %s", self._resolve_cache_path, exc_info=True)
+        with self._lock:
+            if not self._resolve_cache_dirty:
+                return
+            try:
+                with open(self._resolve_cache_path, "w", encoding="utf-8") as f:
+                    json.dump(self._resolve_cache, f, ensure_ascii=False, separators=(",", ":"))
+                self._resolve_cache_dirty = False
+            except Exception:
+                logger.debug("resolve cache flush failed: %s", self._resolve_cache_path, exc_info=True)

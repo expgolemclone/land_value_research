@@ -55,8 +55,8 @@ class TestMetadataCache(unittest.TestCase):
 
     def test_fetch_from_irbank_does_not_cache_transient_failure(self) -> None:
         company_metadata_fallback._METADATA_CACHE.clear()
-        ir_html = "<h1><a>1234 テスト株式会社</a></h1><dt>時価</dt><dd>100億円</dd>".encode("utf-8")
-        edinet_html = 'title="有価証券報告書 第1期" href="notes?f=S100ABCD"'.encode("utf-8")
+        ir_html = "<h1><a>1234 テスト株式会社</a></h1><dt>時価</dt><dd>100億円</dd>".encode()
+        edinet_html = 'title="有価証券報告書 第1期" href="notes?f=S100ABCD"'.encode()
         with patch(
             "src.company_metadata_fallback.urlopen_with_retry",
             side_effect=[
@@ -77,7 +77,7 @@ class TestWebFetchFailureCache(unittest.TestCase):
     def test_web_address_fetch_failure_is_not_pinned(self) -> None:
         with tempfile.TemporaryDirectory() as d:
             r = WebAddressResearcher(cache_dir=d, timeout_sec=1)
-            body = "<html><body>東京都中央区日本橋1-2-3</body></html>".encode("utf-8")
+            body = "<html><body>東京都中央区日本橋1-2-3</body></html>".encode()
             with patch.object(
                 r,
                 "_fetch_bytes",

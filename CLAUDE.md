@@ -45,11 +45,17 @@ python -m pytest tests/test_geocode_tokyo.py -v   # single file
 
 **Entry points:** `run.py` (main pipeline), `rank_market_cap_ratio.py` (ranking generation)
 
+**Parallel execution (3 levels):**
+
+- **Level 1 — Company-level:** `run.py` processes multiple companies concurrently via `ThreadPoolExecutor` (`--workers N`, default 4). Shared caches are protected by `RunContext.cache_lock`; console output uses `_tprint()` (thread-safe wrapper).
+- **Level 2 — IRBank prefetch:** `company_metadata_fallback.py` fetches IR page and EDINET page concurrently within `fetch_from_irbank()`.
+- **Level 3 — Web address resolution:** `WebAddressResearcher.resolve()` fetches multiple source URLs concurrently via `ThreadPoolExecutor`. Internal caches are protected by `WebAddressResearcher._lock`.
+
 **Processing pipeline per company (in `run.py`):**
 
-1. **Metadata** — `company_config.py` loads from YAML/CSV; `company_metadata_fallback.py` fills gaps from IRBank
+1. **Metadata** — `company_config.py` loads from YAML/CSV; `company_metadata_fallback.py` fills gaps from IRBank (parallel fetch)
 2. **PDF extraction** — `pdf_extract.py` extracts facility tables → `FacilityLand` dataclass (site name, location, area, book value)
-3. **Address resolution** (3-tier priority): override YAML → web scraping (score ≥ 40) → securities report as-is
+3. **Address resolution** (3-tier priority): override YAML → web scraping (score ≥ 40, parallel URL fetch) → securities report as-is
 4. **Geocoding** — `geocode_tokyo.py` (Rust backend via `land_value_core`) converts address → (lat, lon, level). Three resolution levels with correction factors: `gaiku` (1.00) → `oaza_chome` (0.95) → `muni_centroid` (0.85)
 5. **Price estimation** — `landprice_tokyo.py` (Rust backend via `land_value_core`) uses IDW (k=3, p=3) or nearest-neighbor against ~3000 public land price points
 6. **Anomaly detection** — Critical anomalies exclude the company entirely; warnings flag in output only

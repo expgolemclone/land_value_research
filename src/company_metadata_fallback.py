@@ -1,6 +1,7 @@
 import logging
 import re
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
 from src.network import urlopen_with_retry
@@ -67,30 +68,37 @@ def fetch_from_irbank(code: str) -> CompanyMetadata:
     ir_ok = False
     edinet_ok = False
 
-    try:
-        html_ir = _fetch_text(ir_url)
-        ir_ok = True
-        m_name = re.search(r"<h1><a[^>]*>\d+\s+([^<]+)</a></h1>", html_ir)
-        if m_name:
-            company_name = m_name.group(1).strip()
-        m_cap = re.search(r"<dt>時価</dt><dd>([^<]+)</dd>", html_ir)
-        if m_cap:
-            market_cap_yen = _parse_yen_text(m_cap.group(1))
-    except Exception:
-        logger.debug("IRBank IR page fetch failed: %s", ir_url, exc_info=True)
+    # Fetch IR page and EDINET page concurrently
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        ir_future = executor.submit(_fetch_text, ir_url)
+        edinet_future = executor.submit(_fetch_text, edinet_url)
 
-    try:
-        html_edinet = _fetch_text(edinet_url)
-        edinet_ok = True
-        # 有価証券報告書の最新 doc id を1件取得
-        doc_ids = re.findall(
-            r'title="有価証券報告書[^"]*" href="notes\?f=(S100[0-9A-Z]+)"',
-            html_edinet,
-        )
-        if doc_ids:
-            securities_report_pdf_url = f"https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/{doc_ids[0]}.pdf"
-    except Exception:
-        logger.debug("IRBank EDINET page fetch failed: %s", edinet_url, exc_info=True)
+        try:
+            html_ir = ir_future.result()
+            ir_ok = True
+            m_name = re.search(r"<h1><a[^>]*>\d+\s+([^<]+)</a></h1>", html_ir)
+            if m_name:
+                company_name = m_name.group(1).strip()
+            m_cap = re.search(r"<dt>時価</dt><dd>([^<]+)</dd>", html_ir)
+            if m_cap:
+                market_cap_yen = _parse_yen_text(m_cap.group(1))
+        except Exception:
+            logger.debug("IRBank IR page fetch failed: %s", ir_url, exc_info=True)
+
+        try:
+            html_edinet = edinet_future.result()
+            edinet_ok = True
+            # 有価証券報告書の最新 doc id を1件取得
+            doc_ids = re.findall(
+                r'title="有価証券報告書[^"]*" href="notes\?f=(S100[0-9A-Z]+)"',
+                html_edinet,
+            )
+            if doc_ids:
+                securities_report_pdf_url = (
+                    f"https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/{doc_ids[0]}.pdf"
+                )
+        except Exception:
+            logger.debug("IRBank EDINET page fetch failed: %s", edinet_url, exc_info=True)
 
     meta = CompanyMetadata(
         company_name=company_name,
@@ -99,6 +107,7 @@ def fetch_from_irbank(code: str) -> CompanyMetadata:
         address_source_url=(ir_url if ir_ok else ""),
     )
     # 通信断などの一時失敗を固定化しないため、空結果はキャッシュしない。
-    if meta.company_name or meta.securities_report_pdf_url or (meta.market_cap_yen is not None) or (ir_ok and edinet_ok):
+    has_data = meta.company_name or meta.securities_report_pdf_url or (meta.market_cap_yen is not None)
+    if has_data or (ir_ok and edinet_ok):
         _METADATA_CACHE[code] = meta
     return meta

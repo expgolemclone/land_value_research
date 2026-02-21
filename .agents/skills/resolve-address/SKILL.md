@@ -13,11 +13,19 @@ argument-hint: "[証券コード] [パッチファイルパス（例: config/add
 
 パイプライン実行後に `muni_centroid` や `oaza_chome` レベルでしかジオコーディングできなかった事業所について、Webで詳細住所を調査し `address_overrides.yaml` に登録することで精度を向上させる。
 
+## 0. 事前準備
+
+`data/output/ranking_market_cap_ratio.md` が無い場合は、先に生成する：
+
+```bash
+python rank_market_cap_ratio.py
+```
+
 ## デフォルト対象の選定
 
 引数 `$ARGUMENTS` が**指定されていない場合**、以下の手順で対象1銘柄を自動選定する：
 
-1. `data/output/ranking_market_cap_ratio.md` を読み込む
+1. `data/output/ranking_market_cap_ratio.md` を読み込む（未生成なら `python rank_market_cap_ratio.py` を先に実行）
 2. 「住所解決タグ」列に `muni_centroid` または `oaza_chome` を含む行をフィルタする
 3. フィルタ結果の中で**最も順位が高い（時価総額比が大きい）1銘柄**を対象とする
 4. 該当なしの場合はその旨を報告して終了する
@@ -70,7 +78,7 @@ argument-hint: "[証券コード] [パッチファイルパス（例: config/add
 
 ```bash
 # 対象企業の低解像度行を確認（例: 証券コード 9351）
-grep -E "muni_centroid|oaza_chome" data/output/9351_output.csv
+rg "muni_centroid|oaza_chome" data/output/9351_output.csv
 ```
 
 ### 2.3 優先度の判断（複数事業所がある場合）
@@ -223,7 +231,6 @@ grep -E "muni_centroid|oaza_chome" data/output/9351_output.csv
 
 ```python
 from src.geocode_tokyo import TokyoGeocoder
-from src.jp_address import normalize_addr
 
 geocoder = TokyoGeocoder(
     oaza_csv="data/geocoding/geocode_ref_oaza_chome_tokyo_2024/13_2024.csv",
@@ -247,9 +254,9 @@ print(f"{addr} → {level} ({lat}, {lon})")
 
 オーバーライド登録後、対象企業のキャッシュと出力を削除してパイプラインを再実行する：
 
-```bash
+```powershell
 # 対象企業の出力CSVを削除（例: 証券コード 4116）
-rm data/output/4116_output.csv
+Remove-Item data/output/4116_output.csv -ErrorAction SilentlyContinue
 
 # ジオコードキャッシュから該当住所を消す必要がある場合は
 # data/cache/geocode_result_cache.json を編集するか、全削除
@@ -257,6 +264,9 @@ rm data/output/4116_output.csv
 
 # 再実行
 python run.py
+
+# ランキング再生成
+python rank_market_cap_ratio.py
 ```
 
 ### 5.2 結果の確認

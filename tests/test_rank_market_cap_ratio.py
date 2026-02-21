@@ -4,7 +4,6 @@ from pathlib import Path
 
 from rank_market_cap_ratio import collect_excluded_codes, collect_rank_rows, write_rank_markdown
 
-
 CSV_HEADER = (
     "証券コード,企業名,事業所名,住所,住所取得元,住所取得元URL,住所解決レベル,土地面積(m2),"
     "地価単価(円/m2),地価単価補正係数,住所解像度補正係数,地価単価算出方法,基準用途区分,最近傍用途区分,"
@@ -29,8 +28,7 @@ class TestRankMarketCapRatio(unittest.TestCase):
             base = Path(td)
             out_csv = base / "9999_output.csv"
             out_csv.write_text(
-                CSV_HEADER
-                + "9999,テスト会社,東京都合計,,,,,,,,,,,,,,,,,,,,,,,,1000000000,500000000,500000000,"
+                CSV_HEADER + "9999,テスト会社,東京都合計,,,,,,,,,,,,,,,,,,,,,,,,1000000000,500000000,500000000,"
                 "2.0,2.000,10000000000,0.1,0.100\n",
                 encoding="utf-8",
             )
