@@ -29,6 +29,7 @@ from src.company_config import (
     load_address_overrides,
     load_company_master,
     load_market_caps,
+    save_company_master,
 )
 from src.company_metadata_fallback import fetch_from_irbank
 from src.geocode_tokyo import TokyoGeocoder
@@ -113,6 +114,7 @@ class RunContext:
     processed_lookup_dir: str
     price_cache_path: str
     geocode_cache_path: str
+    company_master_path: str
     company_master: dict[str, dict[str, Any]]
     addr_overrides: dict[str, dict[str, str]]
     market_caps: dict[str, float]
@@ -441,7 +443,8 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
     price_cache_path = os.path.join(cache_dir, "price_result_cache.json")
     geocode_cache_path = os.path.join(cache_dir, "geocode_result_cache.json")
 
-    company_master = load_company_master(os.path.join(config_dir, "company_master.yaml"))
+    company_master_path = os.path.join(config_dir, "company_master.yaml")
+    company_master = load_company_master(company_master_path)
     addr_overrides = load_address_overrides(os.path.join(config_dir, "address_overrides.yaml"))
     market_caps = load_market_caps(os.path.join(config_dir, "market_cap_overrides.csv"))
 
@@ -468,6 +471,7 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         processed_lookup_dir=processed_lookup_dir,
         price_cache_path=price_cache_path,
         geocode_cache_path=geocode_cache_path,
+        company_master_path=company_master_path,
         company_master=company_master,
         addr_overrides=addr_overrides,
         market_caps=market_caps,
@@ -518,14 +522,29 @@ def _resolve_company_metadata(
     pdf_url = t["pdf_url"] or meta.get("securities_report_pdf_url", "")
     address_source_urls = t["address_source_urls"] or list(meta.get("address_source_urls", []) or [])
     fallback = None
-    if ctx.args.allow_auto_metadata and (not company_name or not pdf_url):
+    if ctx.args.allow_auto_metadata and (not company_name or company_name == code or not pdf_url):
         fallback = fetch_from_irbank(code)
-        if not company_name and fallback.company_name:
+        if (not company_name or company_name == code) and fallback.company_name:
             company_name = fallback.company_name
         if not pdf_url and fallback.securities_report_pdf_url:
             pdf_url = fallback.securities_report_pdf_url
         if fallback.address_source_url and fallback.address_source_url not in address_source_urls:
             address_source_urls.append(fallback.address_source_url)
+        # IRBankから取得した情報をcompany_masterに追記（後続処理・永続化用）
+        if fallback.company_name or fallback.securities_report_pdf_url:
+            existing = ctx.company_master.get(code, {})
+            updated = dict(existing)
+            if fallback.company_name and not existing.get("company_name"):
+                updated["company_name"] = fallback.company_name
+            if fallback.securities_report_pdf_url and not existing.get("securities_report_pdf_url"):
+                updated["securities_report_pdf_url"] = fallback.securities_report_pdf_url
+            if fallback.address_source_url:
+                existing_urls = list(existing.get("address_source_urls") or [])
+                if fallback.address_source_url not in existing_urls:
+                    existing_urls.append(fallback.address_source_url)
+                    updated["address_source_urls"] = existing_urls
+            if updated != existing:
+                ctx.company_master[code] = updated
     if not company_name or not pdf_url:
         raise CompanySkipError(
             f"証券コード{code}の会社情報が不足しています."
@@ -1015,6 +1034,7 @@ def write_results(
 def save_caches(ctx: RunContext) -> None:
     save_json_dict(ctx.price_cache_path, ctx.price_cache_disk)
     save_json_dict(ctx.geocode_cache_path, ctx.geocode_cache_disk)
+    save_company_master(ctx.company_master_path, ctx.company_master)
     ctx.web_addr.flush()
 
 

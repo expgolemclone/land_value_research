@@ -27,6 +27,13 @@ def load_address_overrides(path: str) -> dict[str, dict[str, str]]:
     return out
 
 
+def save_company_master(path: str, data: dict[str, dict[str, Any]]) -> None:
+    """company_master.yaml に証券コード昇順で保存する."""
+    sorted_data = dict(sorted(data.items(), key=lambda x: x[0]))
+    with open(path, "w", encoding="utf-8") as f:
+        yaml.dump(sorted_data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+
 def load_market_caps(path: str) -> dict[str, float]:
     """時価総額(円). CSV: code,market_cap_yen"""
     if not os.path.exists(path):
