@@ -92,10 +92,14 @@ class TestJpAddressProperties(unittest.TestCase):
         rest=st.text(alphabet=st.characters(categories=("L", "N")), max_size=30),
     )
     def test_split_tokyo_municipality_with_tokyo_prefix(self, muni: str, rest: str) -> None:
-        """東京都+有効な区市町村で始まる住所は muni が非 None を返す."""
+        """東京都+有効な区市町村で始まる住所は正しい muni を返す."""
         addr = f"東京都{muni}{rest}"
-        result_muni, _ = split_tokyo_municipality(addr)
+        result_muni, result_rest = split_tokyo_municipality(addr)
         self.assertIsNotNone(result_muni)
+        self.assertEqual(result_muni, muni)
+        # normalize_addr 後の入力と再構成結果の一貫性を検証
+        normalized = normalize_addr(addr)
+        self.assertEqual(normalized, f"東京都{result_muni}{result_rest}")
 
     @given(
         town=st.text(min_size=1, max_size=20, alphabet=st.characters(categories=("L",))),
