@@ -7,10 +7,13 @@ deletes merged patch files, and reports statistics.
 
 from __future__ import annotations
 
+import logging
 import sys
 from pathlib import Path
 
 import yaml
+
+logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 OVERRIDES_FILE = PROJECT_ROOT / "config" / "address_overrides.yaml"
@@ -38,8 +41,83 @@ def save_yaml(path: Path, data: dict) -> None:
         )
 
 
+def merge_patches_safe(
+    patch_dir: Path | None = None,
+    overrides_file: Path | None = None,
+) -> int:
+    """Merge address patches without sys.exit. Returns count of merged files.
+
+    Safe to call from run.py pipeline. Does nothing if no patches exist.
+    """
+    _patch_dir = patch_dir or PATCH_DIR
+    _overrides_file = overrides_file or OVERRIDES_FILE
+
+    if not _patch_dir.exists():
+        logger.debug("パッチディレクトリが存在しません: %s", _patch_dir)
+        return 0
+
+    patch_files = sorted(_patch_dir.glob("*.yaml"))
+    if not patch_files:
+        logger.debug("パッチファイルなし: %s", _patch_dir)
+        return 0
+
+    logger.info("アドレスパッチマージ開始: %d件", len(patch_files))
+
+    overrides_raw = load_yaml(_overrides_file)
+    overrides: dict[str, dict] = {str(k): v for k, v in overrides_raw.items()}
+    added = 0
+    updated = 0
+    errors = 0
+    merged_patch_files: list[Path] = []
+
+    for pf in patch_files:
+        patch = load_yaml(pf)
+        if not patch:
+            logger.warning("スキップ (空): %s", pf.name)
+            errors += 1
+            continue
+
+        logger.info("  処理中: %s", pf.name)
+
+        for code, sites in patch.items():
+            code_key = str(code)
+            if not isinstance(sites, dict):
+                logger.warning("  警告: %s の値が辞書ではありません。スキップ。", code)
+                errors += 1
+                continue
+
+            if code_key in overrides:
+                existing = overrides[code_key]
+                if not isinstance(existing, dict):
+                    existing = {}
+                for site_name, address in sites.items():
+                    if site_name in existing:
+                        if existing[site_name] != address:
+                            logger.info("  上書き: %s / %s", code, site_name)
+                            updated += 1
+                    else:
+                        logger.info("  追加: %s / %s", code, site_name)
+                        added += 1
+                    existing[site_name] = address
+                overrides[code_key] = existing
+            else:
+                overrides[code_key] = sites
+                for site_name in sites:
+                    logger.info("  追加: %s / %s", code, site_name)
+                    added += 1
+
+        merged_patch_files.append(pf)
+
+    save_yaml(_overrides_file, overrides)
+    for pf in merged_patch_files:
+        pf.unlink()
+
+    logger.info("パッチマージ完了: 追加=%d, 上書き=%d, エラー=%d", added, updated, errors)
+    return len(merged_patch_files)
+
+
 def merge_patches() -> None:
-    """Main merge logic."""
+    """Main merge logic (standalone CLI entry point)."""
     if not PATCH_DIR.exists():
         print(f"パッチディレクトリが存在しません: {PATCH_DIR}")
         sys.exit(1)

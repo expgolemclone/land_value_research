@@ -12,9 +12,11 @@ import urllib.error
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from rank_market_cap_ratio import generate_ranking
+from scripts.merge_address_patches import merge_patches_safe
 from src.anomaly import (
     CRITICAL_AREA_M2,
     CRITICAL_EVAL_MULTIPLE,
@@ -1170,6 +1172,47 @@ def main() -> None:
 
     logger.info("ランキング生成開始")
     generate_ranking(input_dir=ctx.output_dir)
+
+    _post_pipeline_cleanup(ctx.base_dir)
+
+
+def _post_pipeline_cleanup(base_dir: str, keep_logs: int = 5) -> None:
+    """Post-pipeline cleanup: merge patches, prune old logs, delete .bak files."""
+    logger.info("パイプライン後クリーンアップ開始")
+
+    config_dir = Path(base_dir) / "config"
+
+    # 1. Merge pending address patches
+    try:
+        merged = merge_patches_safe(
+            patch_dir=config_dir / "address_patches",
+            overrides_file=config_dir / "address_overrides.yaml",
+        )
+        if merged:
+            logger.info("アドレスパッチをマージ: %d件", merged)
+    except Exception:
+        logger.warning("アドレスパッチのマージに失敗", exc_info=True)
+
+    # 2. Prune old log files (keep latest N)
+    docs_dir = Path(base_dir) / "docs"
+    try:
+        log_files = sorted(docs_dir.glob("*.log"))
+        if len(log_files) > keep_logs:
+            for lf in log_files[:-keep_logs]:
+                lf.unlink()
+                logger.info("古いログを削除: %s", lf.name)
+    except Exception:
+        logger.warning("ログファイルの整理に失敗", exc_info=True)
+
+    # 3. Delete .bak files
+    try:
+        for bf in config_dir.glob("*.bak"):
+            bf.unlink()
+            logger.info("バックアップを削除: %s", bf.name)
+    except Exception:
+        logger.warning(".bakファイルの削除に失敗", exc_info=True)
+
+    logger.info("クリーンアップ完了")
 
 
 if __name__ == "__main__":

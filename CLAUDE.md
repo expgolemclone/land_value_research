@@ -61,6 +61,13 @@ python -m pytest tests/test_geocode_tokyo.py -v   # single file
 6. **Anomaly detection** — Critical anomalies exclude the company entirely; warnings flag in output only
 7. **Output** — Per-company CSV with 33 columns + aggregated "東京都合計" summary row
 
+**Post-pipeline cleanup (in `run.py` → `_post_pipeline_cleanup()`):**
+
+8. **Cleanup** — Automatically runs after ranking generation:
+   - Merges pending address patches from `config/address_patches/` into `config/address_overrides.yaml` (via `merge_patches_safe()`)
+   - Prunes old log files in `docs/`, keeping the latest 5
+   - Deletes `.bak` backup files from `config/`
+
 **Module dependency graph:**
 
 ```
@@ -75,7 +82,8 @@ run.py
 ├── web_cache.py            # PDF download & validation
 ├── company_config.py       # YAML/CSV config loading
 ├── company_metadata_fallback.py  # IRBank API fallback
-└── utils.py                # Helpers + SSRF protection
+├── utils.py                # Helpers + SSRF protection
+└── scripts/merge_address_patches.py  # Address patch merge (merge_patches_safe)
 
 rank_market_cap_ratio.py
 └── company_config.py
