@@ -457,7 +457,7 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
 
     output_dir = resolve_path(base_dir, args.output)
     ensure_dir(output_dir)
-    processed_lookup_dir = os.path.join(base_dir, "data", "output")
+    processed_lookup_dir = output_dir
 
     price_cache_disk = load_json_dict(price_cache_path)
     geocode_cache_disk = load_json_dict(geocode_cache_path)
