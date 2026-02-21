@@ -11,6 +11,7 @@ DEFAULT_INPUT_DIR = BASE_DIR / "data" / "output"
 DEFAULT_OUTPUT_PATH = DEFAULT_INPUT_DIR / "ranking_market_cap_ratio.md"
 DEFAULT_EXCLUDED_OUTPUT_PATH = DEFAULT_INPUT_DIR / "ranking_market_cap_ratio_excluded.md"
 DEFAULT_COMPANY_MASTER_PATH = BASE_DIR / "config" / "company_master.yaml"
+NON_CRITICAL_EXCLUDED_REASON_CODES = {"SITE_PROCESSING_ERROR"}
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
@@ -111,7 +112,23 @@ def load_excluded_rows(input_dir: Path) -> list[dict[str, str]]:
 
 
 def collect_excluded_codes(excluded_rows: list[dict[str, str]]) -> set[str]:
-    return {(row.get("証券コード") or "").strip() for row in excluded_rows if (row.get("証券コード") or "").strip()}
+    codes: set[str] = set()
+    for row in excluded_rows:
+        reason_code = (row.get("理由コード") or "").strip()
+        if reason_code in NON_CRITICAL_EXCLUDED_REASON_CODES:
+            continue
+        code = (row.get("証券コード") or "").strip()
+        if code:
+            codes.add(code)
+    return codes
+
+
+def escape_md_cell(value: object) -> str:
+    s = str(value if value is not None else "")
+    s = s.replace("\r", "").replace("\n", "<br>")
+    s = s.replace("\\", "\\\\")
+    s = s.replace("|", "\\|")
+    return s
 
 
 def collect_rank_rows(
@@ -185,19 +202,19 @@ def write_rank_markdown(rows: list[dict[str, Any]], output_path: Path) -> None:
             else:
                 report_pdf_link = f"[有報PDF]({report_pdf_url})" if report_pdf_url else ""
             values = [
-                str(i),
-                row["証券コード"],
-                row["企業名"],
+                escape_md_cell(str(i)),
+                escape_md_cell(row["証券コード"]),
+                escape_md_cell(row["企業名"]),
                 report_pdf_link,
-                f"{row['時価総額比']:.6f}",
-                yen_to_oku_display(row["推定土地時価(円)"]),
-                yen_to_oku_display(row["時価総額(円)"]),
-                yen_to_oku_display(row["土地簿価(円)"]),
-                yen_to_oku_display(row["含み益(円)"]),
-                row.get("住所解決タグ", ""),
-                str(row.get("タグ件数", 0)),
-                row.get("異常値警告", ""),
-                row["元ファイル"],
+                escape_md_cell(f"{row['時価総額比']:.6f}"),
+                escape_md_cell(yen_to_oku_display(row["推定土地時価(円)"])),
+                escape_md_cell(yen_to_oku_display(row["時価総額(円)"])),
+                escape_md_cell(yen_to_oku_display(row["土地簿価(円)"])),
+                escape_md_cell(yen_to_oku_display(row["含み益(円)"])),
+                escape_md_cell(row.get("住所解決タグ", "")),
+                escape_md_cell(str(row.get("タグ件数", 0))),
+                escape_md_cell(row.get("異常値警告", "")),
+                escape_md_cell(row["元ファイル"]),
             ]
             f.write("| " + " | ".join(values) + " |\n")
 
@@ -348,28 +365,28 @@ def write_excluded_markdown(rows: list[dict[str, str]], output_path: Path, input
             pdf_link, csv_link = build_company_related_links(code, output_path, input_dir)
             ratio = to_float(row.get("時価総額比(実値)", ""))
             values = [
-                str(i),
-                code,
-                (row.get("企業名") or "").strip(),
-                f"{ratio:.6f}" if ratio is not None else "",
-                yen_to_oku_display(row.get("推定土地時価(円)", "")),
-                yen_to_oku_display(row.get("土地簿価(円)", "")),
-                (row.get("事業所名") or "").strip(),
-                (row.get("理由コード") or "").strip(),
-                (row.get("理由詳細") or "").strip(),
-                (row.get("土地面積(m2)") or "").strip(),
-                (row.get("地価単価(円/m2)") or "").strip(),
-                (row.get("評価倍率(実値)") or "").strip(),
-                (row.get("閾値_地価単価(円/m2)") or "").strip(),
-                (row.get("閾値_土地面積(m2)") or "").strip(),
-                (row.get("閾値_評価倍率") or "").strip(),
-                (row.get("同一住所件数") or "").strip(),
-                (row.get("同一住所合計面積(m2)") or "").strip(),
-                (row.get("閾値_同一住所件数") or "").strip(),
-                (row.get("閾値_同一住所合計面積(m2)") or "").strip(),
-                (row.get("住所") or "").strip(),
-                (row.get("住所取得元") or "").strip(),
-                (row.get("住所解決レベル") or "").strip(),
+                escape_md_cell(str(i)),
+                escape_md_cell(code),
+                escape_md_cell((row.get("企業名") or "").strip()),
+                escape_md_cell(f"{ratio:.6f}" if ratio is not None else ""),
+                escape_md_cell(yen_to_oku_display(row.get("推定土地時価(円)", ""))),
+                escape_md_cell(yen_to_oku_display(row.get("土地簿価(円)", ""))),
+                escape_md_cell((row.get("事業所名") or "").strip()),
+                escape_md_cell((row.get("理由コード") or "").strip()),
+                escape_md_cell((row.get("理由詳細") or "").strip()),
+                escape_md_cell((row.get("土地面積(m2)") or "").strip()),
+                escape_md_cell((row.get("地価単価(円/m2)") or "").strip()),
+                escape_md_cell((row.get("評価倍率(実値)") or "").strip()),
+                escape_md_cell((row.get("閾値_地価単価(円/m2)") or "").strip()),
+                escape_md_cell((row.get("閾値_土地面積(m2)") or "").strip()),
+                escape_md_cell((row.get("閾値_評価倍率") or "").strip()),
+                escape_md_cell((row.get("同一住所件数") or "").strip()),
+                escape_md_cell((row.get("同一住所合計面積(m2)") or "").strip()),
+                escape_md_cell((row.get("閾値_同一住所件数") or "").strip()),
+                escape_md_cell((row.get("閾値_同一住所合計面積(m2)") or "").strip()),
+                escape_md_cell((row.get("住所") or "").strip()),
+                escape_md_cell((row.get("住所取得元") or "").strip()),
+                escape_md_cell((row.get("住所解決レベル") or "").strip()),
                 pdf_link,
                 csv_link,
             ]

@@ -49,13 +49,22 @@ def location_hint(location_short: str) -> tuple[str, str]:
 
 def read_codes(path: Path) -> list[str]:
     codes: list[str] = []
-    with path.open("r", encoding="utf-8-sig", newline="") as f:
-        for row in csv.reader(f):
-            if not row:
-                continue
-            code = (row[0] or "").strip()
-            if code and code != "code":
-                codes.append(code)
+    last_error: UnicodeDecodeError | None = None
+    for enc in ("utf-8-sig", "cp932"):
+        try:
+            with path.open("r", encoding=enc, newline="") as f:
+                for row in csv.reader(f):
+                    if not row:
+                        continue
+                    code = (row[0] or "").strip()
+                    if code and code != "code":
+                        codes.append(code)
+                return codes
+        except UnicodeDecodeError as e:
+            last_error = e
+            codes = []
+    if last_error is not None:
+        raise last_error
     return codes
 
 

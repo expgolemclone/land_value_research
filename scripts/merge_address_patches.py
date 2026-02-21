@@ -57,6 +57,7 @@ def merge_patches() -> None:
     added = 0
     updated = 0
     errors = 0
+    merged_patch_files: list[Path] = []
 
     for pf in patch_files:
         patch = load_yaml(pf)
@@ -98,15 +99,16 @@ def merge_patches() -> None:
                     print(f"    追加: {code} / {site_name}")
                     added += 1
 
-        # パッチファイル削除
-        pf.unlink()
-        print(f"    削除済み: {pf.name}")
+        merged_patch_files.append(pf)
 
     print()
 
     # 保存
     save_yaml(OVERRIDES_FILE, overrides)
     print(f"マージ結果を保存しました: {OVERRIDES_FILE}")
+    for pf in merged_patch_files:
+        pf.unlink()
+        print(f"    削除済み: {pf.name}")
     print()
     print("--- 統計 ---")
     print(f"  新規追加: {added} 件")
