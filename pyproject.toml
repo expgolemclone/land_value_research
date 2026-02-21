@@ -8,7 +8,7 @@ requires = ["maturin>=1.5,<2.0"]
 build-backend = "maturin"
 
 [tool.maturin]
-manifest-path = "rust/Cargo.toml"
+manifest-path = "Cargo.toml"
 module-name = "land_value_core"
 
 [tool.ruff]
