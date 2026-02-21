@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
+from rank_market_cap_ratio import generate_ranking
 from src.anomaly import (
     CRITICAL_AREA_M2,
     CRITICAL_EVAL_MULTIPLE,
@@ -1166,6 +1167,9 @@ def main() -> None:
         logger.warning("処理失敗企業: %d社", len(failed_companies))
         for code, name, reason in failed_companies:
             logger.warning("  %s %s: %s", code, name, reason)
+
+    logger.info("ランキング生成開始")
+    generate_ranking(input_dir=ctx.output_dir)
 
 
 if __name__ == "__main__":

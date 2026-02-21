@@ -394,6 +394,36 @@ def write_excluded_markdown(rows: list[dict[str, str]], output_path: Path, input
     return open_script_path
 
 
+def generate_ranking(
+    input_dir: Path | str | None = None,
+    output_path: Path | str | None = None,
+    excluded_output_path: Path | str | None = None,
+    *,
+    open_files: bool = True,
+) -> None:
+    resolved_input_dir = Path(input_dir) if input_dir else DEFAULT_INPUT_DIR
+    resolved_output_path = Path(output_path) if output_path else DEFAULT_OUTPUT_PATH
+    resolved_excluded_output_path = Path(excluded_output_path) if excluded_output_path else DEFAULT_EXCLUDED_OUTPUT_PATH
+    if not resolved_output_path.is_absolute():
+        resolved_output_path = BASE_DIR / resolved_output_path
+    if not resolved_excluded_output_path.is_absolute():
+        resolved_excluded_output_path = BASE_DIR / resolved_excluded_output_path
+
+    company_master = load_company_master(str(DEFAULT_COMPANY_MASTER_PATH))
+    excluded_rows = load_excluded_rows(resolved_input_dir)
+    excluded_codes = collect_excluded_codes(excluded_rows)
+    rank_rows = collect_rank_rows(resolved_input_dir, company_master, excluded_codes)
+    write_rank_markdown(rank_rows, resolved_output_path)
+    open_script_path = write_excluded_markdown(excluded_rows, resolved_excluded_output_path, resolved_input_dir)
+    print(f"written: {resolved_output_path} ({len(rank_rows)} rows)")
+    print(f"written: {resolved_excluded_output_path} ({len(excluded_rows)} rows)")
+    print(f"written: {open_script_path}")
+
+    if open_files:
+        os.startfile(resolved_output_path)
+        os.startfile(resolved_excluded_output_path)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="data/output配下の時価総額比ランキングMarkdownを生成する")
     parser.add_argument("--input-dir", default=str(DEFAULT_INPUT_DIR), help="企業別CSVがあるフォルダ")
@@ -408,26 +438,11 @@ def main() -> None:
         help="除外銘柄Markdownの出力パス",
     )
     args = parser.parse_args()
-
-    input_dir = Path(args.input_dir)
-    output_path = Path(args.output)
-    excluded_output_path = Path(args.excluded_output)
-    if not output_path.is_absolute():
-        output_path = BASE_DIR / output_path
-    if not excluded_output_path.is_absolute():
-        excluded_output_path = BASE_DIR / excluded_output_path
-    company_master = load_company_master(str(DEFAULT_COMPANY_MASTER_PATH))
-    excluded_rows = load_excluded_rows(input_dir)
-    excluded_codes = collect_excluded_codes(excluded_rows)
-    rank_rows = collect_rank_rows(input_dir, company_master, excluded_codes)
-    write_rank_markdown(rank_rows, output_path)
-    open_script_path = write_excluded_markdown(excluded_rows, excluded_output_path, input_dir)
-    print(f"written: {output_path} ({len(rank_rows)} rows)")
-    print(f"written: {excluded_output_path} ({len(excluded_rows)} rows)")
-    print(f"written: {open_script_path}")
-
-    os.startfile(output_path)
-    os.startfile(excluded_output_path)
+    generate_ranking(
+        input_dir=args.input_dir,
+        output_path=args.output,
+        excluded_output_path=args.excluded_output,
+    )
 
 
 if __name__ == "__main__":
