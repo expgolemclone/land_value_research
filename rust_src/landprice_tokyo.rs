@@ -178,12 +178,7 @@ impl LandPriceTokyo {
     }
 
     #[pyo3(signature = (lat, lon, landuse_kind=None))]
-    fn nearest(
-        &self,
-        lat: f64,
-        lon: f64,
-        landuse_kind: Option<String>,
-    ) -> PyResult<PriceResult> {
+    fn nearest(&self, lat: f64, lon: f64, landuse_kind: Option<String>) -> PyResult<PriceResult> {
         let (tree, global_idx) = self.get_tree_and_index(landuse_kind.as_deref());
         if global_idx.is_empty() {
             return Err(pyo3::exceptions::PyValueError::new_err(
@@ -221,7 +216,12 @@ impl LandPriceTokyo {
                 .unwrap()
         };
 
-        let dist_m = ellipsoid_distance(lat, lon, self.points[best_idx].lat, self.points[best_idx].lon);
+        let dist_m = ellipsoid_distance(
+            lat,
+            lon,
+            self.points[best_idx].lat,
+            self.points[best_idx].lon,
+        );
 
         Ok(PriceResult {
             unit_price: self.points[best_idx].price.round() as i64,
@@ -269,14 +269,11 @@ impl LandPriceTokyo {
         // 距離昇順 → point_id 辞書順でソートし上位 k2 件を選択
         let mut order: Vec<usize> = (0..cands_global.len()).collect();
         order.sort_by(|&a, &b| {
-            dists[a]
-                .partial_cmp(&dists[b])
-                .unwrap()
-                .then_with(|| {
-                    self.points[cands_global[a]]
-                        .point_id
-                        .cmp(&self.points[cands_global[b]].point_id)
-                })
+            dists[a].partial_cmp(&dists[b]).unwrap().then_with(|| {
+                self.points[cands_global[a]]
+                    .point_id
+                    .cmp(&self.points[cands_global[b]].point_id)
+            })
         });
         let selected: Vec<usize> = order.iter().take(k2).map(|&i| cands_global[i]).collect();
         let d = self.ellipsoid_dists_for(lat, lon, &selected);
@@ -399,9 +396,7 @@ mod tests {
         init_python();
         let f = make_test_geojson();
         let lp = LandPriceTokyo::new(f.path().to_str().unwrap()).unwrap();
-        let pr = lp
-            .nearest(35.68, 139.77, Some("商業".to_string()))
-            .unwrap();
+        let pr = lp.nearest(35.68, 139.77, Some("商業".to_string())).unwrap();
         assert_eq!(lp.get_point_landuse_kind(&pr.nearest_id), "商業");
     }
 

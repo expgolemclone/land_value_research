@@ -57,10 +57,8 @@ pub struct TokyoGeocoder {
 impl TokyoGeocoder {
     #[new]
     fn new(oaza_csv: &str, gaiku_csv: &str) -> PyResult<Self> {
-        let oaza_rows =
-            read_csv_any(oaza_csv).map_err(|e| pyo3::exceptions::PyIOError::new_err(e))?;
-        let gaiku_rows =
-            read_csv_any(gaiku_csv).map_err(|e| pyo3::exceptions::PyIOError::new_err(e))?;
+        let oaza_rows = read_csv_any(oaza_csv).map_err(pyo3::exceptions::PyIOError::new_err)?;
+        let gaiku_rows = read_csv_any(gaiku_csv).map_err(pyo3::exceptions::PyIOError::new_err)?;
 
         // --- oaza_first: groupby(市区町村名, 大字町丁目名) → ソート後最初の行 ---
         let mut oaza_groups: HashMap<(String, String), Vec<(f64, f64)>> = HashMap::new();
@@ -70,15 +68,12 @@ impl TokyoGeocoder {
             }
             let muni = row.get("市区町村名").cloned().unwrap_or_default();
             let oaza = row.get("大字町丁目名").cloned().unwrap_or_default();
-            let lat: f64 = row
-                .get("緯度")
-                .and_then(|s| s.parse().ok())
-                .unwrap_or(0.0);
-            let lon: f64 = row
-                .get("経度")
-                .and_then(|s| s.parse().ok())
-                .unwrap_or(0.0);
-            oaza_groups.entry((muni, oaza)).or_default().push((lat, lon));
+            let lat: f64 = row.get("緯度").and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            let lon: f64 = row.get("経度").and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            oaza_groups
+                .entry((muni, oaza))
+                .or_default()
+                .push((lat, lon));
         }
         let mut oaza_first = HashMap::new();
         for ((muni, oaza), mut coords) in oaza_groups {
@@ -98,14 +93,8 @@ impl TokyoGeocoder {
                 continue;
             }
             let muni = row.get("市区町村名").cloned().unwrap_or_default();
-            let lat: f64 = row
-                .get("緯度")
-                .and_then(|s| s.parse().ok())
-                .unwrap_or(0.0);
-            let lon: f64 = row
-                .get("経度")
-                .and_then(|s| s.parse().ok())
-                .unwrap_or(0.0);
+            let lat: f64 = row.get("緯度").and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            let lon: f64 = row.get("経度").and_then(|s| s.parse().ok()).unwrap_or(0.0);
             let entry = muni_sums.entry(muni).or_insert((0.0, 0.0, 0));
             entry.0 += lat;
             entry.1 += lon;
@@ -117,8 +106,8 @@ impl TokyoGeocoder {
         }
 
         // --- gaiku_index: groupby(市区町村名, 大字・丁目名, 街区符号・地番) ---
-        let mut gaiku_groups: HashMap<(String, String, String), Vec<(i32, i32, f64, f64)>> =
-            HashMap::new();
+        type GaikuKey = (String, String, String);
+        let mut gaiku_groups: HashMap<GaikuKey, Vec<(i32, i32, f64, f64)>> = HashMap::new();
         for row in &gaiku_rows {
             if row.get("都道府県名").map(|s| s.as_str()) != Some("東京都") {
                 continue;
@@ -134,14 +123,8 @@ impl TokyoGeocoder {
                 .get("住居表示フラグ")
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(0);
-            let lat: f64 = row
-                .get("緯度")
-                .and_then(|s| s.parse().ok())
-                .unwrap_or(0.0);
-            let lon: f64 = row
-                .get("経度")
-                .and_then(|s| s.parse().ok())
-                .unwrap_or(0.0);
+            let lat: f64 = row.get("緯度").and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            let lon: f64 = row.get("経度").and_then(|s| s.parse().ok()).unwrap_or(0.0);
             gaiku_groups
                 .entry((muni, oaza, block))
                 .or_default()

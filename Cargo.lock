@@ -517,6 +517,7 @@ dependencies = [
  "encoding_rs",
  "geographiclib-rs",
  "geojson",
+ "indoc",
  "kiddo",
  "once_cell",
  "proj4rs",
