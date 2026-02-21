@@ -14,6 +14,7 @@ from dataclasses import dataclass
 import pdfplumber
 
 from src.jp_address import normalize_addr, split_tokyo_municipality
+from src.network import urlopen_with_retry
 from src.utils import validate_url_not_private
 
 logger = logging.getLogger(__name__)
@@ -68,8 +69,7 @@ class WebAddressResearcher:
             url,
             headers={"User-Agent": "Mozilla/5.0 (compatible; land_value_research/1.0)"},
         )
-        with urllib.request.urlopen(req, timeout=self.timeout_sec) as resp:
-            body = resp.read()
+        body = urlopen_with_retry(req, timeout_sec=self.timeout_sec)
         with open(cache_path, "wb") as f:
             f.write(body)
         return body
@@ -175,7 +175,6 @@ class WebAddressResearcher:
                 raw = self._fetch_bytes(url)
             except Exception:
                 logger.debug("fetch failed: %s", url, exc_info=True)
-                self._addr_cache[url] = []
                 return []
 
             if url.lower().endswith(".pdf") or raw[:5] == b"%PDF-":

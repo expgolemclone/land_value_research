@@ -6,6 +6,7 @@ import math
 import os
 import re
 import sys
+import time
 import urllib.error
 from dataclasses import dataclass
 from datetime import datetime
@@ -38,10 +39,13 @@ from src.pdf_extract import FacilityLand, extract_major_facilities_land
 from src.utils import ensure_dir
 from src.web_address_research import WebAddressResearcher
 from src.web_cache import download_file, is_pdf_file
+from src.network import is_transient_network_error
 
 logger = logging.getLogger(__name__)
 
 CACHE_SAVE_INTERVAL = 10
+COMPANY_RETRY_COUNT = 3
+COMPANY_RETRY_BASE_DELAY_SEC = 2.0
 
 OUTPUT_FIELDNAMES = [
     "証券コード",
@@ -160,6 +164,10 @@ class _SiteResult:
 
 class CompanySkipError(Exception):
     """企業単位の処理をスキップすべきエラー."""
+
+
+class TransientNetworkError(Exception):
+    """一時的な通信エラー。一定回数の再試行対象。"""
 
 
 def sanitize_filename_component(name: str) -> str:
@@ -566,6 +574,8 @@ def _resolve_company_metadata(
         try:
             download_file(pdf_url, pdf_path)
         except (ValueError, urllib.error.URLError, OSError) as e:
+            if is_transient_network_error(e):
+                raise TransientNetworkError(f"証券コード{code}の有報PDF取得で一時通信エラー: {e}") from e
             raise CompanySkipError(
                 f"証券コード{code}の有報PDF取得に失敗しました: {e}"
             ) from e
@@ -1068,15 +1078,34 @@ def main() -> None:
     failed_companies: list[tuple[str, str, str]] = []
     succeeded_targets: list[dict[str, Any]] = []
     for company_index, t in enumerate(targets_to_process, start=1):
-        try:
-            result = process_company(t, company_index, total_companies, ctx)
-            results.append(result)
-            succeeded_targets.append(t)
-        except Exception as e:
-            code = t["code"]
-            company_name = t.get("_resolved_company_name", code)
-            logger.error("企業処理スキップ: %s %s %s: %s", code, company_name, type(e).__name__, e)
-            failed_companies.append((code, company_name, f"{type(e).__name__}: {e}"))
+        code = t["code"]
+        company_name = t.get("_resolved_company_name", code)
+        for attempt in range(1, COMPANY_RETRY_COUNT + 1):
+            try:
+                result = process_company(t, company_index, total_companies, ctx)
+                results.append(result)
+                succeeded_targets.append(t)
+                break
+            except TransientNetworkError as e:
+                if attempt >= COMPANY_RETRY_COUNT:
+                    logger.error("企業処理スキップ: %s %s %s: %s", code, company_name, type(e).__name__, e)
+                    failed_companies.append((code, company_name, f"{type(e).__name__}: {e}"))
+                    break
+                delay_sec = COMPANY_RETRY_BASE_DELAY_SEC * (2 ** (attempt - 1))
+                logger.warning(
+                    "企業処理再試行: %s %s attempt=%d/%d wait=%.1fs reason=%s",
+                    code,
+                    company_name,
+                    attempt,
+                    COMPANY_RETRY_COUNT,
+                    delay_sec,
+                    e,
+                )
+                time.sleep(delay_sec)
+            except Exception as e:
+                logger.error("企業処理スキップ: %s %s %s: %s", code, company_name, type(e).__name__, e)
+                failed_companies.append((code, company_name, f"{type(e).__name__}: {e}"))
+                break
         if company_index % CACHE_SAVE_INTERVAL == 0:
             save_caches(ctx)
 

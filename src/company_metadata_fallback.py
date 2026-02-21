@@ -2,8 +2,8 @@ import logging
 import re
 import urllib.request
 from dataclasses import dataclass
-from functools import lru_cache
 
+from src.network import urlopen_with_retry
 from src.utils import validate_url_not_private
 
 logger = logging.getLogger(__name__)
@@ -19,14 +19,17 @@ class CompanyMetadata:
     address_source_url: str = ""
 
 
+_METADATA_CACHE: dict[str, CompanyMetadata] = {}
+
+
 def _fetch_text(url: str) -> str:
     validate_url_not_private(url)
     req = urllib.request.Request(
         url,
         headers={"User-Agent": "Mozilla/5.0 (compatible; land_value_research/1.0)"},
     )
-    with urllib.request.urlopen(req, timeout=DEFAULT_TIMEOUT_SEC) as resp:
-        return resp.read().decode("utf-8", errors="ignore")
+    body = urlopen_with_retry(req, timeout_sec=DEFAULT_TIMEOUT_SEC)
+    return body.decode("utf-8", errors="ignore")
 
 
 def _parse_yen_text(text: str) -> int | None:
@@ -47,11 +50,13 @@ def _parse_yen_text(text: str) -> int | None:
     return None
 
 
-@lru_cache(maxsize=4096)
 def fetch_from_irbank(code: str) -> CompanyMetadata:
     code = str(code).strip()
     if not code or not re.fullmatch(r"\d{4}", code):
         return CompanyMetadata()
+    cached = _METADATA_CACHE.get(code)
+    if cached is not None:
+        return cached
 
     ir_url = f"https://irbank.net/{code}/ir"
     edinet_url = f"https://irbank.net/{code}/edinet"
@@ -59,9 +64,12 @@ def fetch_from_irbank(code: str) -> CompanyMetadata:
     company_name = ""
     market_cap_yen: int | None = None
     securities_report_pdf_url = ""
+    ir_ok = False
+    edinet_ok = False
 
     try:
         html_ir = _fetch_text(ir_url)
+        ir_ok = True
         m_name = re.search(r"<h1><a[^>]*>\d+\s+([^<]+)</a></h1>", html_ir)
         if m_name:
             company_name = m_name.group(1).strip()
@@ -73,6 +81,7 @@ def fetch_from_irbank(code: str) -> CompanyMetadata:
 
     try:
         html_edinet = _fetch_text(edinet_url)
+        edinet_ok = True
         # 有価証券報告書の最新 doc id を1件取得
         doc_ids = re.findall(
             r'title="有価証券報告書[^"]*" href="notes\?f=(S100[0-9A-Z]+)"',
@@ -83,9 +92,13 @@ def fetch_from_irbank(code: str) -> CompanyMetadata:
     except Exception:
         logger.debug("IRBank EDINET page fetch failed: %s", edinet_url, exc_info=True)
 
-    return CompanyMetadata(
+    meta = CompanyMetadata(
         company_name=company_name,
         securities_report_pdf_url=securities_report_pdf_url,
         market_cap_yen=market_cap_yen,
-        address_source_url=ir_url,
+        address_source_url=(ir_url if ir_ok else ""),
     )
+    # 通信断などの一時失敗を固定化しないため、空結果はキャッシュしない。
+    if meta.company_name or meta.securities_report_pdf_url or (meta.market_cap_yen is not None) or (ir_ok and edinet_ok):
+        _METADATA_CACHE[code] = meta
+    return meta
