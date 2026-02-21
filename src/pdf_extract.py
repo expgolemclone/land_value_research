@@ -108,7 +108,13 @@ def _book_multiplier(header_text: str) -> int:
 
 
 def _area_scale(header_text: str) -> float:
-    if "面積千㎡" in header_text or "(千㎡)" in header_text or "（千㎡）" in header_text:
+    if (
+        "面積千㎡" in header_text
+        or "(千㎡)" in header_text
+        or "（千㎡）" in header_text
+        or "(千m2)" in header_text
+        or "（千m2）" in header_text
+    ):
         return 1_000.0
     return 1.0
 

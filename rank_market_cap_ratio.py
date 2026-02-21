@@ -124,7 +124,9 @@ def collect_rank_rows(
         if company_row is None:
             continue
 
-        ratio = to_float(company_row.get("時価総額比", ""))
+        ratio = to_float(company_row.get("時価総額比(実値)", ""))
+        if ratio is None:
+            ratio = to_float(company_row.get("時価総額比", ""))
         if ratio is None:
             continue
 

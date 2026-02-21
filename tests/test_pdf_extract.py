@@ -132,6 +132,10 @@ class TestAreaScale(unittest.TestCase):
         self.assertAlmostEqual(_area_scale("面積千㎡"), 1000.0)
         self.assertAlmostEqual(_area_scale("面積(千㎡)"), 1000.0)
 
+    def test_sen_m2_ascii(self) -> None:
+        self.assertAlmostEqual(_area_scale("面積(千m2)"), 1000.0)
+        self.assertAlmostEqual(_area_scale("面積（千m2）"), 1000.0)
+
     def test_m2(self) -> None:
         self.assertAlmostEqual(_area_scale("面積(㎡)"), 1.0)
 
