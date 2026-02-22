@@ -232,7 +232,9 @@ for ($i = 0; $i -lt $count; $i++) {
     $codexPrompt = '$' + "split-address $code $patchFile$precheckContext"
     Write-Host "  [$($i + 1)] codex `$split-address $code  -> $patchFile"
 
-    $innerCmd = "`$env:CD = '$projectRoot'; codex --full-auto '$codexPrompt'"
+    # Escape single quotes for nested PowerShell invocation (' -> '')
+    $escapedPrompt = $codexPrompt -replace "'", "''"
+    $innerCmd = "`$env:CD = '$projectRoot'; codex --full-auto '$escapedPrompt'"
 
     $proc = Start-Process -FilePath "powershell.exe" `
         -WorkingDirectory $projectRoot `
