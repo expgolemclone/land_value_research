@@ -25,6 +25,7 @@ if str(PROJECT_ROOT) not in sys.path:
 import yaml
 
 OVERRIDES_FILE = PROJECT_ROOT / "config" / "address_overrides.yaml"
+CODEX_CHECK_FILE = PROJECT_ROOT / "config" / "codex_check_status.yaml"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "output"
 
 # High-price wards where large area is suspicious (BAD_PATTERN_1)
@@ -76,10 +77,32 @@ def _load_overrides() -> dict[str, dict]:
     return {str(k): v for k, v in data.items()}
 
 
+def _load_codex_check_status() -> dict[str, int]:
+    if not CODEX_CHECK_FILE.exists():
+        return {}
+    with open(CODEX_CHECK_FILE, encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    if not isinstance(data, dict):
+        return {}
+    return {str(k): int(v) for k, v in data.items() if isinstance(v, int)}
+
+
 def precheck(code: str) -> dict:
     csv_path = OUTPUT_DIR / f"{code}_output.csv"
+    codex_check = _load_codex_check_status().get(code, 0)
+
     if not csv_path.exists():
-        return {"code": code, "error": f"CSV not found: {csv_path}", "sites": [], "all_gaiku": False, "has_risk": False}
+        result: dict = {
+            "code": code,
+            "error": f"CSV not found: {csv_path}",
+            "sites": [],
+            "all_gaiku": False,
+            "has_risk": False,
+            "codex_check": codex_check,
+        }
+        if codex_check >= 2:
+            result["skip"] = True
+        return result
 
     overrides = _load_overrides()
     company_overrides = overrides.get(code, {})
@@ -140,12 +163,16 @@ def precheck(code: str) -> dict:
                 }
             )
 
-    return {
+    result = {
         "code": code,
         "sites": sites,
         "all_gaiku": all_gaiku,
         "has_risk": has_risk,
+        "codex_check": codex_check,
     }
+    if codex_check >= 2:
+        result["skip"] = True
+    return result
 
 
 def main(argv: list[str]) -> int:

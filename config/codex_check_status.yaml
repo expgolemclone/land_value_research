@@ -1,0 +1,2 @@
+# Codex split-address 調査回数トラッカー
+# key: 証券コード (文字列), value: 調査回数 (整数)

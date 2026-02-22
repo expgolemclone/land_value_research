@@ -3,12 +3,15 @@ import os
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from src.company_config import load_company_master
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_INPUT_DIR = BASE_DIR / "data" / "output"
 DEFAULT_OUTPUT_PATH = DEFAULT_INPUT_DIR / "ranking_market_cap_ratio.md"
 DEFAULT_COMPANY_MASTER_PATH = BASE_DIR / "config" / "company_master.yaml"
+CODEX_CHECK_FILE = BASE_DIR / "config" / "codex_check_status.yaml"
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
@@ -108,7 +111,18 @@ def escape_md_cell(value: object) -> str:
     return s
 
 
+def _load_codex_check_status() -> dict[str, int]:
+    if not CODEX_CHECK_FILE.exists():
+        return {}
+    with open(CODEX_CHECK_FILE, encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    if not isinstance(data, dict):
+        return {}
+    return {str(k): int(v) for k, v in data.items() if isinstance(v, int)}
+
+
 def collect_rank_rows(input_dir: Path, company_master: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    codex_check_status = _load_codex_check_status()
     rank_rows: list[dict[str, Any]] = []
     for csv_path in sorted(input_dir.glob("*_output.csv")):
         rows = read_csv_rows(csv_path)
@@ -125,6 +139,9 @@ def collect_rank_rows(input_dir: Path, company_master: dict[str, dict[str, Any]]
         code = (company_row.get("証券コード") or "").strip()
         company_name = normalize_company_name(code, company_row.get("企業名", ""), company_master)
 
+        check_count = codex_check_status.get(code, 0)
+        codex_check_label = f"CODEX_CHECK_{check_count}" if check_count > 0 else ""
+
         rank_rows.append(
             {
                 "証券コード": code,
@@ -136,6 +153,7 @@ def collect_rank_rows(input_dir: Path, company_master: dict[str, dict[str, Any]]
                 "土地簿価(円)": (company_row.get("土地簿価(円)") or "").strip(),
                 "含み益(円)": (company_row.get("含み益(円)") or "").strip(),
                 "住所解決タグ": collect_unique_values(rows, "住所解決レベル"),
+                "CODEX_CHECK": codex_check_label,
                 "タグ件数": count_unique_values(rows, "住所解決レベル"),
                 "地価推定信頼度": collect_unique_values(rows, "地価推定信頼度"),
                 "異常値警告": collect_unique_values(rows, "異常値警告"),
@@ -160,6 +178,7 @@ def write_rank_markdown(rows: list[dict[str, Any]], output_path: Path) -> None:
         "土地簿価(億円)",
         "含み益(億円)",
         "住所解決タグ",
+        "CODEX_CHECK",
         "タグ件数",
         "地価推定信頼度",
         "異常値警告",
@@ -187,6 +206,7 @@ def write_rank_markdown(rows: list[dict[str, Any]], output_path: Path) -> None:
                 escape_md_cell(yen_to_oku_display(row["土地簿価(円)"])),
                 escape_md_cell(yen_to_oku_display(row["含み益(円)"])),
                 escape_md_cell(row.get("住所解決タグ", "")),
+                escape_md_cell(row.get("CODEX_CHECK", "")),
                 escape_md_cell(str(row.get("タグ件数", 0))),
                 escape_md_cell(row.get("地価推定信頼度", "")),
                 escape_md_cell(row.get("異常値警告", "")),
