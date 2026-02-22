@@ -219,22 +219,17 @@ $processes = @()
 for ($i = 0; $i -lt $count; $i++) {
     $code = $selected[$i].Code
 
-    $patchFile = "config/address_patches/$code.yaml"
-
-    # Build Codex prompt with precheck context
+    # Write precheck result to JSON file for the skill to read
     $precheckResult = $precheckResults[$code]
-    $precheckContext = ""
     if ($null -ne $precheckResult) {
-        $precheckJson = ($precheckResult | ConvertTo-Json -Depth 5 -Compress)
-        $precheckContext = " --precheck-json '$precheckJson'"
+        $precheckFile = Join-Path $patchDir "$code.precheck.json"
+        $precheckResult | ConvertTo-Json -Depth 5 | Set-Content -Path $precheckFile -Encoding UTF8
     }
 
-    $codexPrompt = '$' + "split-address $code $patchFile$precheckContext"
-    Write-Host "  [$($i + 1)] codex `$split-address $code  -> $patchFile"
+    $codexPrompt = '$' + "split-address $code"
+    Write-Host "  [$($i + 1)] codex `$split-address $code"
 
-    # Escape single quotes for nested PowerShell invocation (' -> '')
-    $escapedPrompt = $codexPrompt -replace "'", "''"
-    $innerCmd = "`$env:CD = '$projectRoot'; codex --full-auto '$escapedPrompt'"
+    $innerCmd = "`$env:CD = '$projectRoot'; codex --full-auto '$codexPrompt'"
 
     $proc = Start-Process -FilePath "powershell.exe" `
         -WorkingDirectory $projectRoot `

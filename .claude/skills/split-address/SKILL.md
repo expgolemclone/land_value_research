@@ -1,7 +1,7 @@
 ---
 name: split-address
-description: 時価総額比の上位銘柄について合算された住所を分割してパッチファイルに登録する。parallel_resolve_address_full.ps1 経由で呼び出される。
-argument-hint: "<証券コード> <パッチファイルパス（例: config/address_patches/1234.yaml）>"
+description: 時価総額比の上位銘柄について合算された住所を分割してパッチファイルに登録する。split-address.ps1 経由で呼び出される。
+argument-hint: "<証券コード>"
 ---
 
 <!-- !!SYNC!! このファイルは以下の2箇所で同一内容を維持すること:
@@ -13,15 +13,20 @@ argument-hint: "<証券コード> <パッチファイルパス（例: config/add
 
 | 位置 | 内容 | 例 |
 |------|------|-----|
-| 1 | 証券コード | `$ARGUMENTS` |
-| 2 | パッチファイルパス | `config/address_patches/$ARGUMENTS.yaml` |
+| 1 | 証券コード | `4031` |
+
+引数から以下のパスが導出される：
+
+- **パッチファイル:** `config/address_patches/{証券コード}.yaml`
+- **事前検証ファイル:** `config/address_patches/{証券コード}.precheck.json`（存在する場合）
 
 > **重要**: 調査結果は**必ず**パッチファイルに書き出すこと。`address_overrides.yaml` は直接編集しない。ファイルが書き出されなければリサーチ結果が失われる。
 
-## 事前検証フラグ（`--precheck-json`）
+## 事前検証フラグ
 
-`parallel_resolve_address_full.ps1` が `$ARGUMENTS` に `--precheck-json '<JSON>'` を付加する場合がある。
+`split-address.ps1` が事前に `config/address_patches/{証券コード}.precheck.json` を生成している場合がある。
 この JSON は `_codex_precheck.py` の出力で、各事業所の自動判定結果を含む。
+ファイルが存在する場合は読み込んで調査の優先度付けに使用する。
 
 **フラグの解釈:**
 
@@ -193,8 +198,8 @@ print(f"{addr} → {level} ({lat}, {lon})")
 
 ### 5.2 ファイル構造
 
-引数で指定されたパッチファイル（例: `config/address_patches/9351.yaml`）に以下の形式で**新規作成**する。
-パッチファイルは `parallel_resolve_address_full.ps1` が実行開始時にディレクトリをクリアし、各 Codex ウィンドウが新規作成する。完了後 `merge_address_patches.py` で `address_overrides.yaml` に一括マージされる。
+パッチファイル `config/address_patches/{証券コード}.yaml` に以下の形式で**新規作成**する。
+パッチファイルは `split-address.ps1` が実行開始時にディレクトリをクリアし、各 Codex ウィンドウが新規作成する。完了後 `merge_address_patches.py` で `address_overrides.yaml` に一括マージされる。
 
 ```yaml
 '9351':
@@ -222,4 +227,3 @@ cat config/address_patches/9351.yaml
 
 - **集約名の事業所**（「本社他」「本社・○○」「○○等」）は、複数の土地が1行に集約されている。代表的な住所（通常は本社住所）を設定する。
 - **移転情報に注意** — 検索で見つかる住所が最新でない場合がある。有報の事業年度末時点の住所であることを確認する。
-

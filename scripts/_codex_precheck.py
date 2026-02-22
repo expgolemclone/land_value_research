@@ -1,7 +1,7 @@
 # ruff: noqa: E402
 """Pre-check tool for split-address parallel execution.
 
-Called by parallel_resolve_address_full.ps1 before each Codex window launch.
+Called by split-address.ps1 before each Codex window launch.
 Reads the output CSV for a given company and produces a JSON summary of
 risk flags and geocode levels that the ps1 script can embed into the
 Codex prompt to save context.
