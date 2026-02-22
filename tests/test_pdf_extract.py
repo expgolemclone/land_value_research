@@ -117,6 +117,26 @@ class TestExtractLocation(unittest.TestCase):
         self.assertEqual(loc, "東京都港区")
         self.assertTrue(has_hoka)
 
+    def test_oyobi_detection(self) -> None:
+        loc, has_hoka = _extract_location("本社\n(東京都千代田区\n及び大阪府大阪市)")
+        self.assertEqual(loc, "東京都千代田区")
+        self.assertTrue(has_hoka)
+
+    def test_tou_detection(self) -> None:
+        loc, has_hoka = _extract_location("東京都港区等")
+        self.assertEqual(loc, "東京都港区")
+        self.assertTrue(has_hoka)
+
+    def test_soto_detection(self) -> None:
+        loc, has_hoka = _extract_location("東京都千代田区外3箇所")
+        self.assertEqual(loc, "東京都千代田区")
+        self.assertTrue(has_hoka)
+
+    def test_sonota_detection(self) -> None:
+        loc, has_hoka = _extract_location("本社\n(東京都千代田区\nその他)")
+        self.assertEqual(loc, "東京都千代田区")
+        self.assertTrue(has_hoka)
+
     def test_no_hoka(self) -> None:
         loc, has_hoka = _extract_location("東京都中央区")
         self.assertEqual(loc, "東京都中央区")

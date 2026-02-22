@@ -80,7 +80,14 @@ def _extract_location(site_cell: str) -> tuple[str, bool]:
         return "", False
     loc = m.group(0)
     rest = flat[m.end() :]
-    has_hoka = rest.startswith("他") or "ほか" in rest
+    has_hoka = (
+        rest.startswith("他")
+        or rest.startswith("等")
+        or rest.startswith("外")
+        or "ほか" in rest
+        or "及び" in rest
+        or "その他" in rest
+    )
     loc = re.sub(r"他$", "", loc)
     loc = re.sub(r"ほか.*$", "", loc)
     return loc, has_hoka
