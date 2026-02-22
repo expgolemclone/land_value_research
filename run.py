@@ -1114,51 +1114,50 @@ def main() -> None:
     for code, company_name, out_path in skipped:
         logger.info("Skip(調査済み): %s %s -> %s", code, company_name, out_path)
 
-    if not targets_to_process:
-        logger.info("処理対象がありません. すべて調査済みとしてスキップしました.")
-        return
-
-    total_companies = len(targets_to_process)
     if skipped:
         logger.info("調査済みスキップ件数: %d", len(skipped))
 
-    max_workers = max(1, min(args.workers, total_companies))
-    logger.info("処理開始: %d社 (workers=%d)", total_companies, max_workers)
+    if targets_to_process:
+        total_companies = len(targets_to_process)
+        max_workers = max(1, min(args.workers, total_companies))
+        logger.info("処理開始: %d社 (workers=%d)", total_companies, max_workers)
 
-    results: list[CompanyResult] = []
-    failed_companies: list[tuple[str, str, str]] = []
-    succeeded_targets: list[dict[str, Any]] = []
+        results: list[CompanyResult] = []
+        failed_companies: list[tuple[str, str, str]] = []
+        succeeded_targets: list[dict[str, Any]] = []
 
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_target = {}
-        for company_index, t in enumerate(targets_to_process, start=1):
-            future = executor.submit(_process_company_with_retry, t, company_index, total_companies, ctx)
-            future_to_target[future] = t
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_target = {}
+            for company_index, t in enumerate(targets_to_process, start=1):
+                future = executor.submit(_process_company_with_retry, t, company_index, total_companies, ctx)
+                future_to_target[future] = t
 
-        completed_count = 0
-        for future in as_completed(future_to_target):
-            t = future_to_target[future]
-            code = t["code"]
-            company_name = t.get("_resolved_company_name", code)
-            completed_count += 1
+            completed_count = 0
+            for future in as_completed(future_to_target):
+                t = future_to_target[future]
+                code = t["code"]
+                company_name = t.get("_resolved_company_name", code)
+                completed_count += 1
 
-            result, error = future.result()
-            if result is not None:
-                results.append(result)
-                succeeded_targets.append(t)
-            elif error:
-                failed_companies.append((code, company_name, error))
+                result, error = future.result()
+                if result is not None:
+                    results.append(result)
+                    succeeded_targets.append(t)
+                elif error:
+                    failed_companies.append((code, company_name, error))
 
-            if completed_count % CACHE_SAVE_INTERVAL == 0:
-                save_caches(ctx)
+                if completed_count % CACHE_SAVE_INTERVAL == 0:
+                    save_caches(ctx)
 
-    write_results(results, succeeded_targets, ctx)
-    save_caches(ctx)
+        write_results(results, succeeded_targets, ctx)
+        save_caches(ctx)
 
-    if failed_companies:
-        logger.warning("処理失敗企業: %d社", len(failed_companies))
-        for code, name, reason in failed_companies:
-            logger.warning("  %s %s: %s", code, name, reason)
+        if failed_companies:
+            logger.warning("処理失敗企業: %d社", len(failed_companies))
+            for code, name, reason in failed_companies:
+                logger.warning("  %s %s: %s", code, name, reason)
+    else:
+        logger.info("処理対象がありません. すべて調査済みとしてスキップしました.")
 
     logger.info("ランキング生成開始")
     generate_ranking(input_dir=ctx.output_dir)
