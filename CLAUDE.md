@@ -34,7 +34,7 @@ uv run python -m unittest tests.test_geocode_tokyo -v   # single module
 |-----------|----------|
 | `config/` | `company_master.yaml`, `address_overrides.yaml`, `market_cap_overrides.csv`, `input.csv` |
 | `docs/` | `ARCHITECTURE.md` (detailed system architecture documentation) |
-| `scripts/` | `validate_ocr_accuracy.py`, `parallel_resolve_address.ps1`, `merge_address_patches.py` (auxiliary scripts) |
+| `scripts/` | `validate_ocr_accuracy.py`, `split-address.ps1`, `merge_address_patches.py` (auxiliary scripts) |
 | `data/geocoding/` | Address reference CSVs (oaza_chome, gaiku levels) |
 | `data/landprice/tokyo_2025/` | Public land price GeoJSON (`L01-25_13.geojson`) |
 | `rust_src/` | Rust source for `land_value_core` PyO3 extension (geocoder, land price, address normalization) |

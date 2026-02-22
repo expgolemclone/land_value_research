@@ -101,7 +101,7 @@ land_value_research/
 │   └── input.csv                   # 入力: 証券コード一覧
 ├── scripts/
 │   ├── validate_ocr_accuracy.py    # OCR精度検証
-│   └── parallel_resolve_address.ps1     # 並列住所解決
+│   └── split-address.ps1                # 並列住所解決
 ├── docs/
 │   └── ARCHITECTURE.md             # システムアーキテクチャ詳細
 └── data/

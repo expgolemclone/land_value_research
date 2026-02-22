@@ -37,7 +37,7 @@ while ($i -lt $_args.Count) {
         }
         default {
             Write-Host "エラー: 不明なオプション: $($_args[$i])" -ForegroundColor Red
-            Write-Host "使用法: parallel_resolve_address_full.ps1 [--N <num>] [--dry-run]" -ForegroundColor Yellow
+            Write-Host "使用法: split-address.ps1 [--N <num>] [--dry-run]" -ForegroundColor Yellow
             exit 1
         }
     }
