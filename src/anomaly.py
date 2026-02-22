@@ -87,8 +87,11 @@ def detect_anomaly_warnings(
     geocode_level: str,
     confidence_label: str,
     max_knn_dist_m: float,
+    location_has_hoka: bool = False,
 ) -> list[str]:
     warnings: list[str] = []
+    if location_has_hoka:
+        warnings.append("所在地に「ほか」を含む(複数所在地の合算面積の可能性)")
     if geocode_level == "muni_centroid" and land_area_m2 >= ANOMALY_MUNI_CENTROID_AREA_M2:
         warnings.append("muni_centroidかつ土地面積10000m2以上")
     if geocode_level == "oaza_chome" and land_area_m2 >= ANOMALY_OAZA_CHOME_AREA_M2:

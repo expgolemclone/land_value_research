@@ -744,6 +744,7 @@ def _process_site(
         geocode_level=geocode_level,
         confidence_label=confidence_label,
         max_knn_dist_m=max_knn_dist_m,
+        location_has_hoka=s.location_has_hoka,
     )
     if mult_raw is not None and mult_raw >= CRITICAL_EVAL_MULTIPLE:
         anomaly_warnings.append("評価倍率閾値超過(単独では除外しない)")

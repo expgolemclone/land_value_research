@@ -10,6 +10,7 @@ from src.pdf_extract import (
     _parse_land_area_cell,
     _parse_land_cell,
     _parse_number,
+    _should_skip_hq_row,
 )
 
 
@@ -86,19 +87,40 @@ class TestParseLandAreaCell(unittest.TestCase):
 
 class TestExtractLocation(unittest.TestCase):
     def test_tokyo_ku(self) -> None:
-        self.assertEqual(_extract_location("本社\n東京都中央区"), "東京都中央区")
+        loc, has_hoka = _extract_location("本社\n東京都中央区")
+        self.assertEqual(loc, "東京都中央区")
+        self.assertFalse(has_hoka)
 
     def test_prefecture_city(self) -> None:
-        result = _extract_location("大阪府大阪市")
-        self.assertIn("大阪府", result)
-        self.assertIn("大阪市", result)
+        loc, has_hoka = _extract_location("大阪府大阪市")
+        self.assertIn("大阪府", loc)
+        self.assertIn("大阪市", loc)
+        self.assertFalse(has_hoka)
 
     def test_no_location(self) -> None:
-        self.assertEqual(_extract_location("本社ビル"), "")
+        loc, has_hoka = _extract_location("本社ビル")
+        self.assertEqual(loc, "")
+        self.assertFalse(has_hoka)
 
     def test_strips_trailing_ta(self) -> None:
-        result = _extract_location("東京都港区他")
-        self.assertEqual(result, "東京都港区")
+        loc, has_hoka = _extract_location("東京都港区他")
+        self.assertEqual(loc, "東京都港区")
+        self.assertTrue(has_hoka)
+
+    def test_hoka_detection(self) -> None:
+        loc, has_hoka = _extract_location("本社\n(東京都千代田区\nほか)")
+        self.assertEqual(loc, "東京都千代田区")
+        self.assertTrue(has_hoka)
+
+    def test_ta_detection(self) -> None:
+        loc, has_hoka = _extract_location("東京都港区他")
+        self.assertEqual(loc, "東京都港区")
+        self.assertTrue(has_hoka)
+
+    def test_no_hoka(self) -> None:
+        loc, has_hoka = _extract_location("東京都中央区")
+        self.assertEqual(loc, "東京都中央区")
+        self.assertFalse(has_hoka)
 
 
 class TestExtractSiteName(unittest.TestCase):
@@ -150,6 +172,16 @@ class TestExtractFromTable(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].site_name, "本社")
         self.assertEqual(results[0].location_short, "東京都中央区")
+        self.assertFalse(results[0].location_has_hoka)
+
+    def test_hoka_table(self) -> None:
+        table: list[list[str | None]] = [
+            ["事業所名(所在地)", "土地", "面積"],
+            ["本社・管理部門\n(東京都千代田区\nほか)", "200 (100)", "100"],
+        ]
+        results, errors = _extract_from_table(table)
+        self.assertEqual(len(results), 1)
+        self.assertTrue(results[0].location_has_hoka)
 
     def test_empty_table(self) -> None:
         results, errors = _extract_from_table([])
@@ -161,6 +193,20 @@ class TestExtractFromTable(unittest.TestCase):
         ]
         results, errors = _extract_from_table(table)
         self.assertEqual(results, [])
+
+
+class TestShouldSkipHqRow(unittest.TestCase):
+    def test_detects_hq_land_various_places_note(self) -> None:
+        txt = "（注）本社欄に記載の土地は各所に所在しております。"
+        self.assertTrue(_should_skip_hq_row(txt))
+
+    def test_detects_hq_mining_land_note(self) -> None:
+        txt = "本社の土地のなかに鉱業用地77千㎡7百万円が含まれております。土地(面積千㎡)"
+        self.assertTrue(_should_skip_hq_row(txt))
+
+    def test_non_match(self) -> None:
+        txt = "主要な設備の状況 帳簿価額（百万円） 土地 (面積千㎡)"
+        self.assertFalse(_should_skip_hq_row(txt))
 
 
 if __name__ == "__main__":

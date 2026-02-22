@@ -123,6 +123,7 @@ def expand_site_splits(
                         location_short=entry.address,
                         land_area_m2=entry.area_m2,
                         land_book_value_yen=entry.book_value_yen,
+                        location_has_hoka=False,
                     )
                 )
         else:

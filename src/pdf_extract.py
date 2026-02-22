@@ -15,6 +15,7 @@ class FacilityLand:
     location_short: str
     land_area_m2: float
     land_book_value_yen: float
+    location_has_hoka: bool = False
 
 
 _FW_TRANSLATE = str.maketrans("０１２３４５６７８９，．（）－", "0123456789,.()-")
@@ -72,15 +73,17 @@ def _parse_land_area_cell(cell: str) -> float | None:
     return _parse_number(flat)
 
 
-def _extract_location(site_cell: str) -> str:
+def _extract_location(site_cell: str) -> tuple[str, bool]:
     flat = re.sub(r"\s+", "", _normalize_text(site_cell))
     m = _RE_LOCATION.search(flat)
     if not m:
-        return ""
+        return "", False
     loc = m.group(0)
+    rest = flat[m.end() :]
+    has_hoka = rest.startswith("他") or "ほか" in rest
     loc = re.sub(r"他$", "", loc)
     loc = re.sub(r"ほか.*$", "", loc)
-    return loc
+    return loc, has_hoka
 
 
 def _extract_site_name(site_cell: str) -> str:
@@ -183,7 +186,7 @@ def _extract_from_table(
         if skip_hq_row and site_name == "本社":
             continue
 
-        location = _extract_location(site_cell)
+        location, has_hoka = _extract_location(site_cell)
         if not location:
             continue
 
@@ -250,6 +253,7 @@ def _extract_from_table(
                 location_short=location,
                 land_area_m2=area * area_scale,
                 land_book_value_yen=land * book_mult,
+                location_has_hoka=has_hoka,
             )
         )
 
@@ -277,8 +281,7 @@ def extract_major_facilities_land(pdf_path: str) -> list[FacilityLand]:
                 in_section = True
             if not in_section:
                 continue
-            txt_compact = re.sub(r"\s+", "", txt)
-            if ("本社欄に記載の土地" in txt_compact) and ("各所に所在" in txt_compact):
+            if _should_skip_hq_row(txt):
                 skip_hq_row = True
             for table in page.extract_tables() or []:
                 rows, errs = _extract_from_table(table, skip_hq_row=skip_hq_row)
@@ -300,3 +303,15 @@ def extract_major_facilities_land(pdf_path: str) -> list[FacilityLand]:
     if skip_hq_row:
         values = [x for x in values if x.site_name != "本社"]
     return values
+
+
+def _should_skip_hq_row(page_text: str) -> bool:
+    txt_compact = re.sub(r"\s+", "", _normalize_text(page_text))
+    if ("本社欄に記載の土地" in txt_compact) and ("各所に所在" in txt_compact):
+        return True
+    # 一部の有報では、本社行の「土地(面積千㎡)」に鉱業用地等が混在し、
+    # 本社所在地へ機械的に割り当てると過大評価になりやすい。
+    # 例: 「本社の土地のなかに鉱業用地…」の注記。
+    if ("本社の土地のなかに鉱業用地" in txt_compact) and ("面積千" in txt_compact):
+        return True
+    return False
