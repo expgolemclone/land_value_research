@@ -115,7 +115,7 @@ foreach ($t in $selected) {
 
         if ($result.has_risk) {
             $riskSites = ($result.sites | Where-Object { $_.bad_pattern_1_risk -or $_.geocode_level -ne 'gaiku' -or $_.has_multi_loc_warning })
-            Write-Host " リスクあり (${$riskSites.Count}拠点)" -ForegroundColor Yellow
+            Write-Host " リスクあり ($($riskSites.Count)拠点)" -ForegroundColor Yellow
         } else {
             Write-Host " リスクなし (全gaiku)" -ForegroundColor Green
         }
@@ -134,7 +134,7 @@ if ($DryRun) {
         $code = $t.Code
         $result = $precheckResults[$code]
         if ($null -eq $result) {
-            Write-Host "  $code: (検証失敗)" -ForegroundColor Red
+            Write-Host "  ${code}: (検証失敗)" -ForegroundColor Red
             continue
         }
         Write-Host "  $code $($t.Name):" -ForegroundColor White
