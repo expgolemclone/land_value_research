@@ -226,7 +226,7 @@ for ($i = 0; $i -lt $count; $i++) {
         $precheckResult | ConvertTo-Json -Depth 5 | Set-Content -Path $precheckFile -Encoding UTF8
     }
 
-    $codexPrompt = '$' + "split-address $code"
+    $codexPrompt = '$' + "split-address $code の時価総額比の土地の含み益が高すぎておかしいだろ?. 分割できないか調査しろ."
     Write-Host "  [$($i + 1)] codex `$split-address $code"
 
     $innerCmd = "`$env:CD = '$projectRoot'; codex --full-auto '$codexPrompt'"
