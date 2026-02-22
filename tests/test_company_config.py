@@ -1,8 +1,10 @@
 import os
 import tempfile
+import textwrap
 import unittest
 
 from src.company_config import (
+    SiteSplitEntry,
     load_address_overrides,
     load_company_master,
     load_market_caps,
@@ -99,6 +101,93 @@ class TestLoadAddressOverridesMalformed(unittest.TestCase):
             result = load_address_overrides(path)
             self.assertNotIn("1234", result)
             self.assertIn("5678", result)
+        finally:
+            os.unlink(path)
+
+
+class TestLoadAddressOverridesSplit(unittest.TestCase):
+    def test_load_split_entries(self) -> None:
+        """List values are parsed as list[SiteSplitEntry]."""
+        yaml_content = textwrap.dedent("""\
+            '1234':
+              本社他:
+                - name: 本社
+                  address: 東京都港区芝5丁目33-1
+                  area_m2: 5000
+                  book_value_yen: 1000000000
+                - name: 倉庫
+                  address: 東京都大田区城南島2丁目6-1
+                  area_m2: 22000
+        """)
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False, encoding="utf-8") as f:
+            f.write(yaml_content)
+            path = f.name
+        try:
+            result = load_address_overrides(path)
+            self.assertIn("1234", result)
+            entries = result["1234"]["本社他"]
+            self.assertIsInstance(entries, list)
+            self.assertEqual(len(entries), 2)
+            self.assertIsInstance(entries[0], SiteSplitEntry)
+            self.assertEqual(entries[0].name, "本社")
+            self.assertEqual(entries[0].address, "東京都港区芝5丁目33-1")
+            self.assertAlmostEqual(entries[0].area_m2, 5000.0)
+            self.assertAlmostEqual(entries[0].book_value_yen, 1_000_000_000.0)
+            self.assertEqual(entries[1].name, "倉庫")
+            self.assertIsNone(entries[1].book_value_yen)
+        finally:
+            os.unlink(path)
+
+    def test_mixed_string_and_split(self) -> None:
+        """String and list values coexist under the same company code."""
+        yaml_content = textwrap.dedent("""\
+            '1234':
+              本社: 東京都千代田区丸の内1-9-2
+              支店他:
+                - name: 新宿支店
+                  address: 東京都新宿区西新宿1-1-1
+                  area_m2: 3000
+        """)
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False, encoding="utf-8") as f:
+            f.write(yaml_content)
+            path = f.name
+        try:
+            result = load_address_overrides(path)
+            self.assertIsInstance(result["1234"]["本社"], str)
+            self.assertIsInstance(result["1234"]["支店他"], list)
+        finally:
+            os.unlink(path)
+
+    def test_split_missing_required_field_raises(self) -> None:
+        """Missing name/address/area_m2 in split entry raises ValueError."""
+        yaml_content = textwrap.dedent("""\
+            '1234':
+              本社他:
+                - name: 本社
+                  area_m2: 5000
+        """)
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False, encoding="utf-8") as f:
+            f.write(yaml_content)
+            path = f.name
+        try:
+            with self.assertRaises(ValueError) as cm:
+                load_address_overrides(path)
+            self.assertIn("address", str(cm.exception))
+        finally:
+            os.unlink(path)
+
+    def test_empty_split_list_raises(self) -> None:
+        """Empty list value raises ValueError."""
+        yaml_content = textwrap.dedent("""\
+            '1234':
+              本社他: []
+        """)
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False, encoding="utf-8") as f:
+            f.write(yaml_content)
+            path = f.name
+        try:
+            with self.assertRaises(ValueError):
+                load_address_overrides(path)
         finally:
             os.unlink(path)
 

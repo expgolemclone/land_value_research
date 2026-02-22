@@ -29,6 +29,13 @@ def load_yaml(path: Path) -> dict:
     return data if isinstance(data, dict) else {}
 
 
+def _format_value_for_display(value: object) -> str:
+    """Format an override value for display in logs/prints."""
+    if isinstance(value, list):
+        return f"(分割: {len(value)}件)"
+    return str(value)
+
+
 def save_yaml(path: Path, data: dict) -> None:
     """Save a dict to a YAML file with Japanese-friendly formatting."""
     with open(path, "w", encoding="utf-8") as f:
@@ -162,8 +169,8 @@ def merge_patches() -> None:
                     if site_name in existing:
                         if existing[site_name] != address:
                             print(f"    上書き: {code} / {site_name}")
-                            print(f"      旧: {existing[site_name]}")
-                            print(f"      新: {address}")
+                            print(f"      旧: {_format_value_for_display(existing[site_name])}")
+                            print(f"      新: {_format_value_for_display(address)}")
                             updated += 1
                         else:
                             print(f"    同一 (変更なし): {code} / {site_name}")

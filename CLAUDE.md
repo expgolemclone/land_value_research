@@ -55,15 +55,16 @@ uv run python -m unittest tests.test_geocode_tokyo -v   # single module
 
 1. **Metadata** — `company_config.py` loads from YAML/CSV; `company_metadata_fallback.py` fills gaps from IRBank (parallel fetch)
 2. **PDF extraction** — `pdf_extract.py` extracts facility tables → `FacilityLand` dataclass (site name, location, area, book value)
-3. **Address resolution** (3-tier priority): override YAML → web scraping (score ≥ 40, parallel URL fetch) → securities report as-is
-4. **Geocoding** — `geocode_tokyo.py` (Rust backend via `land_value_core`) converts address → (lat, lon, level). Three resolution levels with correction factors: `gaiku` (1.00) → `oaza_chome` (0.95) → `muni_centroid` (0.85)
-5. **Price estimation** — `landprice_tokyo.py` (Rust backend via `land_value_core`) uses IDW (k=3, p=3) or nearest-neighbor against ~3000 public land price points
-6. **Anomaly detection** — Critical anomalies are logged but do not exclude companies from ranking; warnings flag in output only
-7. **Output** — Per-company CSV with 33 columns + aggregated "東京都合計" summary row
+3. **Site split expansion** — If `address_overrides.yaml` has list-type entries for a site, expand that single `FacilityLand` into multiple sub-sites with individual addresses and areas (via `expand_site_splits()` in `company_config.py`). Book values are distributed proportionally by area when not explicitly specified.
+4. **Address resolution** (3-tier priority): override YAML → web scraping (score ≥ 40, parallel URL fetch) → securities report as-is
+5. **Geocoding** — `geocode_tokyo.py` (Rust backend via `land_value_core`) converts address → (lat, lon, level). Three resolution levels with correction factors: `gaiku` (1.00) → `oaza_chome` (0.95) → `muni_centroid` (0.85)
+6. **Price estimation** — `landprice_tokyo.py` (Rust backend via `land_value_core`) uses IDW (k=3, p=3) or nearest-neighbor against ~3000 public land price points
+7. **Anomaly detection** — Critical anomalies are logged but do not exclude companies from ranking; warnings flag in output only
+8. **Output** — Per-company CSV with 33 columns + aggregated "東京都合計" summary row
 
 **Post-pipeline cleanup (in `run.py` → `_post_pipeline_cleanup()`):**
 
-8. **Cleanup** — Automatically runs after ranking generation:
+9. **Cleanup** — Automatically runs after ranking generation:
    - Merges pending address patches from `config/address_patches/` into `config/address_overrides.yaml` (via `merge_patches_safe()`)
    - Prunes old log files in `docs/`, keeping the latest 5
    - Deletes `.bak` backup files from `config/`
@@ -100,6 +101,7 @@ land_value_core (Rust extension — rust_src/)
 **Key data structures:**
 
 - `FacilityLand` (frozen dataclass in `pdf_extract.py`) — site_name, location_short, land_area_m2, land_book_value_yen
+- `SiteSplitEntry` (frozen dataclass in `company_config.py`) — name, address, area_m2, book_value_yen (optional). Used for site splitting in `address_overrides.yaml`.
 - `PriceResult` (Rust `#[pyclass(frozen)]` in `rust_src/types.rs`) — unit_price, nearest_id, nearest_dist_m, knn_ids, knn_dist_m, knn_prices
 - `OutputRow` (TypedDict in `anomaly.py`) — typed output row with 33 Japanese-keyed columns
 - `DuplicateHit` (dataclass in `anomaly.py`) — address, count, total_area_m2, detail, rows

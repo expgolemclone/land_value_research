@@ -32,6 +32,8 @@ from src.anomaly import (
 )
 from src.cache import load_json_dict, load_sites_cache, save_json_dict, save_sites_cache
 from src.company_config import (
+    SiteSplitEntry,
+    expand_site_splits,
     load_address_overrides,
     load_company_master,
     load_market_caps,
@@ -134,7 +136,7 @@ class RunContext:
     geocode_cache_path: str
     company_master_path: str
     company_master: dict[str, dict[str, Any]]
-    addr_overrides: dict[str, dict[str, str]]
+    addr_overrides: dict[str, dict[str, str | list[SiteSplitEntry]]]
     market_caps: dict[str, float]
     geocoder: TokyoGeocoder
     web_addr: WebAddressResearcher
@@ -604,6 +606,12 @@ def _resolve_company_metadata(
     if sites is None:
         sites = extract_major_facilities_land(pdf_path)
         save_sites_cache(sites_cache_path, pdf_path, sites)
+    # サイト分割展開（tokyoフィルタ前に実施: 分割先が他県になるケースに対応）
+    company_overrides = ctx.addr_overrides.get(code, {})
+    if any(isinstance(v, list) for v in company_overrides.values()):
+        sites, flat_overrides = expand_site_splits(sites, company_overrides)
+        with ctx.cache_lock:
+            ctx.addr_overrides[code] = flat_overrides
     tokyo_sites = [s for s in sites if s.location_short.startswith("東京都")]
     _tprint(f"[{company_index}/{total_companies}] 拠点: 全{len(sites)}件, 東京都対象{len(tokyo_sites)}件")
 
