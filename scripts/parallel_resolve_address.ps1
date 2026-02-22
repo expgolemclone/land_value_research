@@ -1,33 +1,38 @@
 ﻿<#
 .SYNOPSIS
-    低解像度住所を持つ上位N銘柄を並行でリサーチするスクリプト。
+    ランキング上位銘柄を並行でリサーチするスクリプト.
 .DESCRIPTION
-    ranking_market_cap_ratio.md から muni_centroid / oaza_chome を含む企業を抽出し、
-    N個の Codex CLI ウィンドウを同時起動してタイル配置する。
-    各インスタンスは address_overrides.yaml を直接編集せず、
-    config/address_patches/{証券コード}.yaml に個別出力する。
+    ranking_market_cap_ratio.md から対象企業を抽出し,
+    N個の Codex CLI ウィンドウを同時起動してタイル配置する.
+    起動時に調査モードを対話的に選択する:
+      [1] resolve-address     — 低解像度住所(muni_centroid/oaza_chome)の番地特定
+      [2] resolve-all-address — タグ無関係で上位銘柄の含み益を検証
 .PARAMETER N
-    同時起動するウィンドウ数（デフォルト: 1）。
-    --N <num> または -N <num> の形式で指定可能。
+    同時起動するウィンドウ数.
+    --N <num> または -N <num> の形式で指定可能.
 .PARAMETER DryRun
-    対象一覧を表示するだけで起動しない。
-    --dry-run または -DryRun で指定可能。
+    対象一覧を表示するだけで起動しない.
+    --dry-run または -DryRun で指定可能.
+.PARAMETER Mode
+    調査モードを直接指定 (対話プロンプトをスキップ).
+    --mode resolve-address または --mode resolve-all-address
 #>
 param(
     [Parameter(ValueFromRemainingArguments)]
     [string[]]$_args
 )
 
-# --- Argument parsing (supports --N <num>, -N <num>, --dry-run, -DryRun) ---
+# --- Argument parsing (supports --N, -N, --dry-run, -DryRun, --mode) ---
 $N = 1
 $DryRun = $false
+$Mode = ""
 $i = 0
 while ($i -lt $_args.Count) {
     switch ($_args[$i]) {
         { $_ -in '--N', '-N' } {
             $i++
             if ($i -ge $_args.Count) {
-                Write-Host "エラー: $_($_args[$i-1]) には値が必要です" -ForegroundColor Red
+                Write-Host "エラー: $($_args[$i-1]) には値が必要です" -ForegroundColor Red
                 exit 1
             }
             $N = [int]$_args[$i]
@@ -35,9 +40,22 @@ while ($i -lt $_args.Count) {
         { $_ -in '--dry-run', '-DryRun' } {
             $DryRun = $true
         }
+        { $_ -in '--mode', '-Mode' } {
+            $i++
+            if ($i -ge $_args.Count) {
+                Write-Host "エラー: --mode には値が必要です" -ForegroundColor Red
+                exit 1
+            }
+            $Mode = $_args[$i]
+            if ($Mode -notin 'resolve-address', 'resolve-all-address') {
+                Write-Host "エラー: 不明なモード: $Mode" -ForegroundColor Red
+                Write-Host "  有効値: resolve-address, resolve-all-address" -ForegroundColor Yellow
+                exit 1
+            }
+        }
         default {
             Write-Host "エラー: 不明なオプション: $($_args[$i])" -ForegroundColor Red
-            Write-Host "使用法: parallel_resolve_address.ps1 [--N <num>] [--dry-run]" -ForegroundColor Yellow
+            Write-Host "使用法: parallel_resolve_address.ps1 [--N <num>] [--dry-run] [--mode <mode>]" -ForegroundColor Yellow
             exit 1
         }
     }
@@ -51,11 +69,32 @@ $projectRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Pa
 $rankingFile = Join-Path $projectRoot "data\output\ranking_market_cap_ratio.md"
 $patchDir = Join-Path $projectRoot "config\address_patches"
 
+# --- Step 0: 調査モード選択 ---
+
+if ($Mode -eq "") {
+    Write-Host ""
+    Write-Host "=== 調査モード選択 ===" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "  [1] resolve-address      低解像度住所(muni_centroid/oaza_chome)の番地特定" -ForegroundColor White
+    Write-Host "  [2] resolve-all-address   上位銘柄の含み益を検証(タグ無関係)" -ForegroundColor White
+    Write-Host ""
+    do {
+        $choice = Read-Host "モードを選択してください (1/2)"
+    } while ($choice -notin '1', '2')
+
+    if ($choice -eq '1') {
+        $Mode = 'resolve-address'
+    } else {
+        $Mode = 'resolve-all-address'
+    }
+}
+
+Write-Host ""
+
 # --- Step 1: ランキング読み込み＆フィルタ ---
 
-Write-Host "=== 並行 resolve-address ===" -ForegroundColor Cyan
-Write-Host "ランキングから低解像度企業を抽出中..."
-Write-Host ""
+$modeLabel = if ($Mode -eq 'resolve-address') { '並行 resolve-address' } else { '並行 resolve-all-address' }
+Write-Host "=== $modeLabel ===" -ForegroundColor Cyan
 
 if (-not (Test-Path $rankingFile)) {
     Write-Host "エラー: ランキングファイルが見つかりません: $rankingFile" -ForegroundColor Red
@@ -69,15 +108,26 @@ $dataLines = $lines | Where-Object {
     $_ -match '^\|' -and $_ -notmatch '^\| ---' -and $_ -notmatch '^\| 順位'
 }
 
-# muni_centroid または oaza_chome を住所解決タグ列に含む行を抽出
 $targets = @()
 foreach ($line in $dataLines) {
     $cols = $line -split '\|'
-    # cols[0]は空、cols[1]=順位, cols[2]=証券コード, cols[3]=企業名, ..., cols[10]=住所解決タグ
+    # cols[0]は空,cols[1]=順位, cols[2]=証券コード, cols[3]=企業名, ..., cols[10]=住所解決タグ
     if ($cols.Count -lt 11) { continue }
 
     $tag = $cols[10].Trim()
-    if ($tag -match 'muni_centroid|oaza_chome') {
+
+    if ($Mode -eq 'resolve-address') {
+        # 低解像度タグを含む企業のみ抽出
+        if ($tag -match 'muni_centroid|oaza_chome') {
+            $targets += [PSCustomObject]@{
+                Rank = $cols[1].Trim()
+                Code = $cols[2].Trim()
+                Name = $cols[3].Trim()
+                Tag  = $tag
+            }
+        }
+    } else {
+        # resolve-all-address: ランキング上位から全企業を対象
         $targets += [PSCustomObject]@{
             Rank = $cols[1].Trim()
             Code = $cols[2].Trim()
@@ -88,7 +138,11 @@ foreach ($line in $dataLines) {
 }
 
 if ($targets.Count -eq 0) {
-    Write-Host "低解像度企業は見つかりませんでした。" -ForegroundColor Green
+    if ($Mode -eq 'resolve-address') {
+        Write-Host "低解像度企業は見つかりませんでした." -ForegroundColor Green
+    } else {
+        Write-Host "ランキングに企業が見つかりませんでした." -ForegroundColor Green
+    }
     exit 0
 }
 
@@ -96,6 +150,7 @@ if ($targets.Count -eq 0) {
 $count = [Math]::Min($N, $targets.Count)
 $selected = $targets[0..($count - 1)]
 
+Write-Host ""
 Write-Host "対象企業 ($($selected.Count)件):" -ForegroundColor Yellow
 foreach ($t in $selected) {
     $rankStr = $t.Rank.PadLeft(4)
@@ -108,7 +163,7 @@ if ($DryRun) {
     exit 0
 }
 
-# --- Step 2: パッチディレクトリ準備 ---
+# --- Step 2: パッチディレクトリ準備 (両モード共通) ---
 
 if (Test-Path $patchDir) {
     Remove-Item (Join-Path $patchDir "*.yaml") -ErrorAction SilentlyContinue
@@ -146,13 +201,13 @@ Write-Host "$count ウィンドウを起動します..." -ForegroundColor Yellow
 $processes = @()
 for ($i = 0; $i -lt $count; $i++) {
     $code = $selected[$i].Code
+
     $patchFile = "config/address_patches/$code.yaml"
-
     # SKILL.md が config/address_patches/ パスを検出してパッチモードで動作する
-    $codexPrompt = '$' + "resolve-address $code $patchFile"
-    $innerCmd = "Set-Location '$projectRoot'; codex --full-auto '$codexPrompt'"
+    $codexPrompt = '$' + "$Mode $code $patchFile"
+    Write-Host "  [$($i + 1)] codex `$$Mode $code  -> $patchFile"
 
-    Write-Host "  [$($i + 1)] codex `$resolve-address $code  -> $patchFile"
+    $innerCmd = "Set-Location '$projectRoot'; codex --full-auto '$codexPrompt'"
 
     $proc = Start-Process -FilePath "powershell.exe" `
         -ArgumentList "-NoExit", "-Command", $innerCmd `
@@ -200,6 +255,7 @@ foreach ($p in $processes) {
 }
 
 Write-Host ""
-Write-Host "起動完了。各ウィンドウでリサーチが終わったら:" -ForegroundColor Green
+Write-Host "起動完了." -ForegroundColor Green
+Write-Host "各ウィンドウでリサーチが終わったら:" -ForegroundColor Green
 Write-Host "  python scripts/merge_address_patches.py" -ForegroundColor White
-Write-Host "でパッチを address_overrides.yaml にマージしてください。" -ForegroundColor Green
+Write-Host "でパッチを address_overrides.yaml にマージしてください." -ForegroundColor Green
