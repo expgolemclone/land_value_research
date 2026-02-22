@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    ランキング上位銘柄の含み益検証を並行で実行するスクリプト (resolve-all-address 専用).
+    ランキング上位銘柄の含み益検証を並行で実行するスクリプト (split-address 専用).
 .DESCRIPTION
     ranking_market_cap_ratio.md から対象企業を抽出し,
     各企業に対して _codex_precheck.py で事前検証を行い,
@@ -54,7 +54,7 @@ $patchDir = Join-Path $projectRoot "config\address_patches"
 # --- Step 1: ランキング読み込み ---
 
 Write-Host ""
-Write-Host "=== 並行 resolve-all-address (full) ===" -ForegroundColor Cyan
+Write-Host "=== 並行 split-address (full) ===" -ForegroundColor Cyan
 
 if (-not (Test-Path $rankingFile)) {
     Write-Host "エラー: ランキングファイルが見つかりません: $rankingFile" -ForegroundColor Red
@@ -203,8 +203,8 @@ for ($i = 0; $i -lt $count; $i++) {
         $precheckContext = " --precheck-json '$precheckJson'"
     }
 
-    $codexPrompt = '$' + "resolve-all-address $code $patchFile$precheckContext"
-    Write-Host "  [$($i + 1)] codex `$resolve-all-address $code  -> $patchFile"
+    $codexPrompt = '$' + "split-address $code $patchFile$precheckContext"
+    Write-Host "  [$($i + 1)] codex `$split-address $code  -> $patchFile"
 
     $innerCmd = "`$env:CD = '$projectRoot'; codex --full-auto '$codexPrompt'"
 

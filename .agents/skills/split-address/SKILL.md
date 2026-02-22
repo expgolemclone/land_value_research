@@ -1,17 +1,17 @@
 ---
-name: resolve-all-address
+name: split-address
 description: 時価総額比の上位銘柄について、土地の含み益の正当性を検証し、住所精度を改善してパッチファイルに登録する。parallel_resolve_address_full.ps1 経由で呼び出される。
 argument-hint: "<証券コード> <パッチファイルパス（例: config/address_patches/1234.yaml）>"
 ---
 
 <!-- !!SYNC!! このファイルは以下の2箇所で同一内容を維持すること:
-     - .claude/skills/resolve-all-address/SKILL.md  (Claude Code用)
-     - .agents/skills/resolve-all-address/SKILL.md  (Codex CLI用)
+     - .claude/skills/split-address/SKILL.md  (Claude Code用)
+     - .agents/skills/split-address/SKILL.md  (Codex CLI用)
      編集時は必ず両方を同時に更新する。 -->
 
 # 上位銘柄の含み益検証・住所精度改善手順
 
-`parallel_resolve_address_full.ps1` から `$resolve-all-address <証券コード> <パッチファイル>` の形式で呼び出される。
+`parallel_resolve_address_full.ps1` から `$split-address <証券コード> <パッチファイル>` の形式で呼び出される。
 指定された企業の全事業所を検証し、番地レベル住所を**必ずパッチファイルに書き出す**。
 
 ## 引数
@@ -248,3 +248,5 @@ cat config/address_patches/9351.yaml
 - **集約名の事業所**（「本社他」「本社・○○」「○○等」）は、複数の土地が1行に集約されている。代表的な住所（通常は本社住所）を設定する。
 - **移転情報に注意** — 検索で見つかる住所が最新でない場合がある。有報の事業年度末時点の住所であることを確認する。
 - **ジオコーディング参照データの範囲** — `data/geocoding/` の参照CSVは東京都2024年版。参照データに存在しない新しい街区番号の場合、番地付きでも `oaza_chome` にフォールバックする。この場合は改善の余地がない。
+
+#TODO: 調べた企業は`CODEX_CHECK_num`を付けてわかるようにする.mdにも表示する. 2回調べて分割が無理そうなら諦める. ランキングからは除外しない.(タグでわかるので) 

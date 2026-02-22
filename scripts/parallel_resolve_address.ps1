@@ -6,7 +6,7 @@
     N個の Codex CLI ウィンドウを同時起動してタイル配置する.
     起動時に調査モードを対話的に選択する:
       [1] resolve-address     — 低解像度住所(muni_centroid/oaza_chome)の番地特定
-      [2] resolve-all-address — タグ無関係で上位銘柄の含み益を検証
+      [2] split-address — タグ無関係で上位銘柄の含み益を検証
 .PARAMETER N
     同時起動するウィンドウ数.
     --N <num> または -N <num> の形式で指定可能.
@@ -15,7 +15,7 @@
     --dry-run または -DryRun で指定可能.
 .PARAMETER Mode
     調査モードを直接指定 (対話プロンプトをスキップ).
-    --mode resolve-address または --mode resolve-all-address
+    --mode resolve-address または --mode split-address
 #>
 param(
     [Parameter(ValueFromRemainingArguments)]
@@ -47,9 +47,9 @@ while ($i -lt $_args.Count) {
                 exit 1
             }
             $Mode = $_args[$i]
-            if ($Mode -notin 'resolve-address', 'resolve-all-address') {
+            if ($Mode -notin 'resolve-address', 'split-address') {
                 Write-Host "エラー: 不明なモード: $Mode" -ForegroundColor Red
-                Write-Host "  有効値: resolve-address, resolve-all-address" -ForegroundColor Yellow
+                Write-Host "  有効値: resolve-address, split-address" -ForegroundColor Yellow
                 exit 1
             }
         }
@@ -76,7 +76,7 @@ if ($Mode -eq "") {
     Write-Host "=== 調査モード選択 ===" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "  [1] resolve-address      低解像度住所(muni_centroid/oaza_chome)の番地特定" -ForegroundColor White
-    Write-Host "  [2] resolve-all-address   上位銘柄の含み益を検証(タグ無関係)" -ForegroundColor White
+    Write-Host "  [2] split-address   上位銘柄の含み益を検証(タグ無関係)" -ForegroundColor White
     Write-Host ""
     do {
         $choice = Read-Host "モードを選択してください (1/2)"
@@ -85,7 +85,7 @@ if ($Mode -eq "") {
     if ($choice -eq '1') {
         $Mode = 'resolve-address'
     } else {
-        $Mode = 'resolve-all-address'
+        $Mode = 'split-address'
     }
 }
 
@@ -93,7 +93,7 @@ Write-Host ""
 
 # --- Step 1: ランキング読み込み＆フィルタ ---
 
-$modeLabel = if ($Mode -eq 'resolve-address') { '並行 resolve-address' } else { '並行 resolve-all-address' }
+$modeLabel = if ($Mode -eq 'resolve-address') { '並行 resolve-address' } else { '並行 split-address' }
 Write-Host "=== $modeLabel ===" -ForegroundColor Cyan
 
 if (-not (Test-Path $rankingFile)) {
@@ -127,7 +127,7 @@ foreach ($line in $dataLines) {
             }
         }
     } else {
-        # resolve-all-address: ランキング上位から全企業を対象
+        # split-address: ランキング上位から全企業を対象
         $targets += [PSCustomObject]@{
             Rank = $cols[1].Trim()
             Code = $cols[2].Trim()
@@ -207,9 +207,10 @@ for ($i = 0; $i -lt $count; $i++) {
     $codexPrompt = '$' + "$Mode $code $patchFile"
     Write-Host "  [$($i + 1)] codex `$$Mode $code  -> $patchFile"
 
-    $innerCmd = "Set-Location '$projectRoot'; codex --full-auto '$codexPrompt'"
+    $innerCmd = "`$env:CD = '$projectRoot'; codex --full-auto '$codexPrompt'"
 
     $proc = Start-Process -FilePath "powershell.exe" `
+        -WorkingDirectory $projectRoot `
         -ArgumentList "-NoExit", "-Command", $innerCmd `
         -PassThru
 
