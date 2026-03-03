@@ -10,10 +10,19 @@
 '1887':
   本社:
   - address: 東京都港区虎ノ門4丁目3番13号
-    area_m2: 0.0
+    area_m2: 656.46
+    area_m2_is_estimated: true
+    area_m2_source: IR資料(建物敷地面積と本社フロア情報から推定)
+    area_m2_source_url: https://www.hulic-reit.co.jp/ja/portfolio/detail.html?asset_id=31
+      | https://www.n-kokudo.co.jp/company/network/
+    area_m2_note: 7221.10m2 × (5F/11F) = 656.46m2
     name: 本社(虎ノ門)
-  - address: 茨城県つくば市
-    area_m2: 1876169.0
+  - address: 茨城県つくば市みどりの東18-1
+    area_m2: 1875512.54
+    area_m2_is_estimated: true
+    area_m2_source: 有価証券報告書注記(本社に含む)から差分配分
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100WKKV.pdf
+    area_m2_note: 1876169.00m2 - 656.46m2 = 1875512.54m2
     name: つくば未来センター
   東京支店: 東京都港区虎ノ門4丁目3番13号
 '1911':
@@ -50,10 +59,45 @@
   城北サービスセンター: 東京都文京区湯島2丁目7番16号
   城南サービスセンター城西サービスセンター: 東京都渋谷区幡ケ谷1丁目34番14号
   新橋オフィス: 東京都港区新橋2丁目13番8号
-  本社、営業所他: 東京都千代田区内幸町1丁目5番2号
+  本社、営業所他:
+  - address: 東京都千代田区内幸町1丁目5番2号
+    area_m2: 523.3
+    area_m2_is_estimated: true
+    area_m2_source: 賃貸オフィス情報の基準階面積による推定
+    area_m2_source_url: https://www.officetar.jp/building/27291/
+    area_m2_note: 内幸町平和ビル基準階面積 523.30m2
+    name: 本社、営業所他(本社推定)
+  - address: 東京都千代田区内幸町1丁目3番2号
+    area_m2: 823.99
+    area_m2_is_estimated: true
+    area_m2_source: 賃貸オフィス情報の基準階面積による推定
+    area_m2_source_url: https://www.officetar.jp/building/8392/
+    area_m2_note: 内幸町東急ビル基準階面積 823.99m2
+    name: 本社、営業所他(東京第一・第二支店推定)
+  - address: 全国各所
+    area_m2: 122056.71
+    area_m2_is_estimated: true
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VUIQ.pdf
+    area_m2_note: 123404.00 - 523.30 - 823.99 = 122056.71
+    name: 本社、営業所他(営業所・全国合算)
   東京物流サービスセンター: 東京都江戸川区南篠崎町1丁目7番14号
 '3863':
-  本店事務所他: 東京都千代田区神田駿河台4-6
+  本店事務所他:
+  - address: 東京都千代田区神田駿河台4丁目6番地
+    area_m2: 9547.0
+    area_m2_is_estimated: true
+    area_m2_source: 御茶ノ水ソラシティの公開敷地面積
+    area_m2_source_url: https://www.hulic.co.jp/company/portfolio/14.html
+    area_m2_note: 神田駿河台4-6の敷地面積 9,547.05m2 を四捨五入
+    name: 本店事務所他(本店・東京代表)
+  - address: 全国各所
+    area_m2: 7983453.0
+    area_m2_is_estimated: true
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W5KI.pdf
+    area_m2_note: 7,993,000.0 - 9,547.0 = 7,983,453.0
+    name: 本店事務所他(営業支社・営業所・厚生施設等)
 '3865':
   本社他: 東京都中央区日本橋本石町3-2-2
 '3878':
@@ -78,7 +122,13 @@
 '4951':
   本社・首都圏支店: 東京都新宿区下落合1丁目4番10号
 '5011':
-  本社: 東京都千代田区九段北4丁目3番29号
+  本社:
+  - address: 東京都千代田区九段北4丁目3番29号
+    area_m2: 0.0
+    name: 本社(九段北)
+  - address: 全国各所
+    area_m2: 564981.0
+    name: 本社(全国貸与資産・合算)
 '5019':
   本社: 東京都千代田区丸の内1丁目4番1号
   東京都合計: 東京都千代田区丸の内1丁目4番1号
