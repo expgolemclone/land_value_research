@@ -21,6 +21,10 @@ class SiteSplitEntry:
     address: str
     area_m2: float
     book_value_yen: float | None = None  # None = 面積比按分
+    area_m2_is_estimated: bool = False
+    area_m2_source: str | None = None
+    area_m2_source_url: str | None = None
+    area_m2_note: str | None = None
 
 
 def load_company_master(path: str) -> dict[str, dict[str, Any]]:
@@ -72,12 +76,31 @@ def _parse_split_entries(code: str, site_name: str, raw_list: list) -> list[Site
             raise ValueError(
                 f"サイト分割エントリに必須フィールドがありません: {code} / {site_name}[{i}]: {', '.join(missing)}"
             )
+        area_m2 = float(item["area_m2"])
+        if area_m2 < 0:
+            raise ValueError(f"area_m2 は0以上である必要があります: {code} / {site_name}[{i}] = {area_m2}")
+
+        area_m2_is_estimated = bool(item.get("area_m2_is_estimated", False))
+        area_m2_source = str(item.get("area_m2_source", "")).strip() or None
+        area_m2_source_url = str(item.get("area_m2_source_url", "")).strip() or None
+        area_m2_note = str(item.get("area_m2_note", "")).strip() or None
+
+        if area_m2_is_estimated and not area_m2_source:
+            raise ValueError(
+                "area_m2_is_estimated=true の場合は area_m2_source が必要です: "
+                f"{code} / {site_name}[{i}]"
+            )
+
         result.append(
             SiteSplitEntry(
                 name=str(item["name"]),
                 address=str(item["address"]),
-                area_m2=float(item["area_m2"]),
+                area_m2=area_m2,
                 book_value_yen=float(item["book_value_yen"]) if "book_value_yen" in item else None,
+                area_m2_is_estimated=area_m2_is_estimated,
+                area_m2_source=area_m2_source,
+                area_m2_source_url=area_m2_source_url,
+                area_m2_note=area_m2_note,
             )
         )
     return result
@@ -160,6 +183,10 @@ def _allocate_book_values(
                     address=e.address,
                     area_m2=e.area_m2,
                     book_value_yen=allocated,
+                    area_m2_is_estimated=e.area_m2_is_estimated,
+                    area_m2_source=e.area_m2_source,
+                    area_m2_source_url=e.area_m2_source_url,
+                    area_m2_note=e.area_m2_note,
                 )
             )
     return result
