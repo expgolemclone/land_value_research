@@ -636,22 +636,50 @@ def _resolve_company_metadata(
 
 
 def _geocode_address(full_addr: str, ctx: RunContext) -> tuple[float, float, str]:
-    """Geocode an address using 2-level cache (memory → disk → geocoder)."""
+    """Geocode an address using 2-level cache (memory → disk → geocoder).
+
+    Uses double-checked locking so that the heavy geocoder.geocode() call
+    runs outside the lock, allowing other threads to proceed concurrently.
+    """
     with ctx.cache_lock:
         geo = ctx.geocode_cache.get(full_addr)
-        if geo is None:
-            dg = ctx.geocode_cache_disk.get(full_addr)
-            if isinstance(dg, list) and len(dg) == 3:
-                geo = (float(dg[0]), float(dg[1]), str(dg[2]))
-            else:
-                geo = ctx.geocoder.geocode(full_addr)
-                ctx.geocode_cache_disk[full_addr] = [float(geo[0]), float(geo[1]), str(geo[2])]
+        if geo is not None:
+            return geo
+        dg = ctx.geocode_cache_disk.get(full_addr)
+        if isinstance(dg, list) and len(dg) == 3:
+            geo = (float(dg[0]), float(dg[1]), str(dg[2]))
             ctx.geocode_cache[full_addr] = geo
+            return geo
+
+    # Compute outside lock — geocoder is thread-safe (Rust &self, no interior mutation)
+    geo = ctx.geocoder.geocode(full_addr)
+
+    with ctx.cache_lock:
+        existing = ctx.geocode_cache.get(full_addr)
+        if existing is not None:
+            return existing
+        ctx.geocode_cache_disk[full_addr] = [float(geo[0]), float(geo[1]), str(geo[2])]
+        ctx.geocode_cache[full_addr] = geo
     return geo
 
 
+def _deserialize_price_result(dp: dict[str, Any]) -> PriceResult:
+    return PriceResult(
+        unit_price=int(dp["unit_price"]),
+        nearest_id=str(dp["nearest_id"]),
+        nearest_dist_m=float(dp["nearest_dist_m"]),
+        knn_ids=[str(x) for x in dp.get("knn_ids", [])],
+        knn_dist_m=[float(x) for x in dp.get("knn_dist_m", [])],
+        knn_prices=[int(x) for x in dp.get("knn_prices", [])],
+    )
+
+
 def _estimate_price(lat: float, lon: float, target_landuse_kind: str, ctx: RunContext) -> PriceResult:
-    """Estimate land price using disk cache or landprice engine."""
+    """Estimate land price using disk cache or landprice engine.
+
+    Uses double-checked locking so that the heavy landprice computation
+    runs outside the lock, allowing other threads to proceed concurrently.
+    """
     disk_key = (
         f"{lat:.15f}|{lon:.15f}|{ctx.args.price_method}|{int(ctx.args.k)}|{int(ctx.args.p)}|"
         f"{float(ctx.args.eps):.15f}|{target_landuse_kind}"
@@ -659,29 +687,29 @@ def _estimate_price(lat: float, lon: float, target_landuse_kind: str, ctx: RunCo
     with ctx.cache_lock:
         dp = ctx.price_cache_disk.get(disk_key)
         if isinstance(dp, dict) and "unit_price" in dp:
-            return PriceResult(
-                unit_price=int(dp["unit_price"]),
-                nearest_id=str(dp["nearest_id"]),
-                nearest_dist_m=float(dp["nearest_dist_m"]),
-                knn_ids=[str(x) for x in dp.get("knn_ids", [])],
-                knn_dist_m=[float(x) for x in dp.get("knn_dist_m", [])],
-                knn_prices=[int(x) for x in dp.get("knn_prices", [])],
-            )
-        if ctx.args.price_method == "nearest":
-            pr = ctx.landprice.nearest(
-                lat=lat,
-                lon=lon,
-                landuse_kind=(target_landuse_kind or None),
-            )
-        else:
-            pr = ctx.landprice.idw(
-                lat=lat,
-                lon=lon,
-                k=ctx.args.k,
-                p=ctx.args.p,
-                eps=ctx.args.eps,
-                landuse_kind=(target_landuse_kind or None),
-            )
+            return _deserialize_price_result(dp)
+
+    # Compute outside lock — landprice engine is thread-safe (Rust &self, no interior mutation)
+    if ctx.args.price_method == "nearest":
+        pr = ctx.landprice.nearest(
+            lat=lat,
+            lon=lon,
+            landuse_kind=(target_landuse_kind or None),
+        )
+    else:
+        pr = ctx.landprice.idw(
+            lat=lat,
+            lon=lon,
+            k=ctx.args.k,
+            p=ctx.args.p,
+            eps=ctx.args.eps,
+            landuse_kind=(target_landuse_kind or None),
+        )
+
+    with ctx.cache_lock:
+        dp = ctx.price_cache_disk.get(disk_key)
+        if isinstance(dp, dict) and "unit_price" in dp:
+            return _deserialize_price_result(dp)
         ctx.price_cache_disk[disk_key] = {
             "unit_price": int(pr.unit_price),
             "nearest_id": str(pr.nearest_id),
