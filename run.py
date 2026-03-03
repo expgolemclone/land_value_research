@@ -211,14 +211,14 @@ def load_csv_rows(input_path: str) -> list[list[str]]:
             last_error = e
     if last_error is not None:
         raise last_error
-    return []
+    return []  # pragma: no cover – encodings list is never empty
 
 
 def parse_market_cap(raw: str) -> int | None:
     v = (raw or "").strip().replace(",", "")
     if not v:
         return None
-    return int(float(v))
+    return round(float(v))
 
 
 def parse_address_urls(raw: str) -> list[str]:
@@ -389,7 +389,6 @@ def _setup_logging() -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    _setup_logging()
     parser = argparse.ArgumentParser(description="東京都の土地推定時価を算出する")
     parser.add_argument("--input", default="")
     parser.add_argument("--output", default="data/output")
@@ -636,6 +635,65 @@ def _resolve_company_metadata(
     )
 
 
+def _geocode_address(full_addr: str, ctx: RunContext) -> tuple[float, float, str]:
+    """Geocode an address using 2-level cache (memory → disk → geocoder)."""
+    with ctx.cache_lock:
+        geo = ctx.geocode_cache.get(full_addr)
+        if geo is None:
+            dg = ctx.geocode_cache_disk.get(full_addr)
+            if isinstance(dg, list) and len(dg) == 3:
+                geo = (float(dg[0]), float(dg[1]), str(dg[2]))
+            else:
+                geo = ctx.geocoder.geocode(full_addr)
+                ctx.geocode_cache_disk[full_addr] = [float(geo[0]), float(geo[1]), str(geo[2])]
+            ctx.geocode_cache[full_addr] = geo
+    return geo
+
+
+def _estimate_price(lat: float, lon: float, target_landuse_kind: str, ctx: RunContext) -> PriceResult:
+    """Estimate land price using disk cache or landprice engine."""
+    disk_key = (
+        f"{lat:.15f}|{lon:.15f}|{ctx.args.price_method}|{int(ctx.args.k)}|{int(ctx.args.p)}|"
+        f"{float(ctx.args.eps):.15f}|{target_landuse_kind}"
+    )
+    with ctx.cache_lock:
+        dp = ctx.price_cache_disk.get(disk_key)
+        if isinstance(dp, dict) and "unit_price" in dp:
+            return PriceResult(
+                unit_price=int(dp["unit_price"]),
+                nearest_id=str(dp["nearest_id"]),
+                nearest_dist_m=float(dp["nearest_dist_m"]),
+                knn_ids=[str(x) for x in dp.get("knn_ids", [])],
+                knn_dist_m=[float(x) for x in dp.get("knn_dist_m", [])],
+                knn_prices=[int(x) for x in dp.get("knn_prices", [])],
+            )
+        if ctx.args.price_method == "nearest":
+            pr = ctx.landprice.nearest(
+                lat=lat,
+                lon=lon,
+                landuse_kind=(target_landuse_kind or None),
+            )
+        else:
+            pr = ctx.landprice.idw(
+                lat=lat,
+                lon=lon,
+                k=ctx.args.k,
+                p=ctx.args.p,
+                eps=ctx.args.eps,
+                landuse_kind=(target_landuse_kind or None),
+            )
+        ctx.price_cache_disk[disk_key] = {
+            "unit_price": int(pr.unit_price),
+            "nearest_id": str(pr.nearest_id),
+            "nearest_dist_m": float(pr.nearest_dist_m),
+            "knn_ids": [str(x) for x in pr.knn_ids],
+            "knn_dist_m": [float(x) for x in pr.knn_dist_m],
+            "knn_prices": [int(x) for x in pr.knn_prices],
+            "landuse_kind": target_landuse_kind,
+        }
+    return pr
+
+
 def _process_site(
     code: str,
     company_name: str,
@@ -663,63 +721,14 @@ def _process_site(
         full_addr = s.location_short
         addr_source = "securities_report"
 
-    with ctx.cache_lock:
-        geo = ctx.geocode_cache.get(full_addr)
-        if geo is None:
-            dg = ctx.geocode_cache_disk.get(full_addr)
-            if isinstance(dg, list) and len(dg) == 3:
-                geo = (float(dg[0]), float(dg[1]), str(dg[2]))
-            else:
-                geo = ctx.geocoder.geocode(full_addr)
-                ctx.geocode_cache_disk[full_addr] = [float(geo[0]), float(geo[1]), str(geo[2])]
-            ctx.geocode_cache[full_addr] = geo
-    lat, lon, geocode_level = geo
+    lat, lon, geocode_level = _geocode_address(full_addr, ctx)
 
     target_landuse_kind = ""
     if ctx.args.landuse_match:
         seed_pr = ctx.landprice.nearest(lat=lat, lon=lon)
         target_landuse_kind = ctx.landprice.get_point_landuse_kind(seed_pr.nearest_id)
 
-    disk_key = (
-        f"{repr(lat)}|{repr(lon)}|{ctx.args.price_method}|{int(ctx.args.k)}|{int(ctx.args.p)}|"
-        f"{repr(float(ctx.args.eps))}|{target_landuse_kind}"
-    )
-    with ctx.cache_lock:
-        dp = ctx.price_cache_disk.get(disk_key)
-        if isinstance(dp, dict) and "unit_price" in dp:
-            pr = PriceResult(
-                unit_price=int(dp["unit_price"]),
-                nearest_id=str(dp["nearest_id"]),
-                nearest_dist_m=float(dp["nearest_dist_m"]),
-                knn_ids=[str(x) for x in dp.get("knn_ids", [])],
-                knn_dist_m=[float(x) for x in dp.get("knn_dist_m", [])],
-                knn_prices=[int(x) for x in dp.get("knn_prices", [])],
-            )
-        else:
-            if ctx.args.price_method == "nearest":
-                pr = ctx.landprice.nearest(
-                    lat=lat,
-                    lon=lon,
-                    landuse_kind=(target_landuse_kind or None),
-                )
-            else:
-                pr = ctx.landprice.idw(
-                    lat=lat,
-                    lon=lon,
-                    k=ctx.args.k,
-                    p=ctx.args.p,
-                    eps=ctx.args.eps,
-                    landuse_kind=(target_landuse_kind or None),
-                )
-            ctx.price_cache_disk[disk_key] = {
-                "unit_price": int(pr.unit_price),
-                "nearest_id": str(pr.nearest_id),
-                "nearest_dist_m": float(pr.nearest_dist_m),
-                "knn_ids": [str(x) for x in pr.knn_ids],
-                "knn_dist_m": [float(x) for x in pr.knn_dist_m],
-                "knn_prices": [int(x) for x in pr.knn_prices],
-                "landuse_kind": target_landuse_kind,
-            }
+    pr = _estimate_price(lat, lon, target_landuse_kind, ctx)
 
     dist_var, max_knn_dist_m, confidence_score, confidence_label = calc_uncertainty_metrics(pr)
     geocode_factor = get_geocode_adjustment_factor(geocode_level, ctx.args)
@@ -841,11 +850,17 @@ def _postprocess_duplicate_anomalies(
     """Detect duplicate-address anomalies and return (excluded_rows, is_critical)."""
     duplicate_warnings, duplicate_criticals = detect_duplicate_address_large_area(out_rows)
     duplicate_address_count: dict[str, int] = {}
+    duplicate_address_area: dict[str, float] = {}
     for row in out_rows:
         addr = str(row.get("住所", "") or "").strip()
         if not addr:
             continue
         duplicate_address_count[addr] = duplicate_address_count.get(addr, 0) + 1
+        try:
+            area = float(str(row.get("土地面積(m2)", "") or "0").replace(",", ""))
+        except ValueError:
+            area = 0.0
+        duplicate_address_area[addr] = duplicate_address_area.get(addr, 0.0) + area
 
     for hit in duplicate_warnings:
         _tprint(f"Warn(anomaly): {code} duplicate_address {hit.detail}")
@@ -893,6 +908,7 @@ def _postprocess_duplicate_anomalies(
                     address_source=str(row.get("住所取得元", "") or ""),
                     geocode_level=row_geocode_level,
                     duplicate_count=str(duplicate_count),
+                    duplicate_total_area=f"{duplicate_address_area.get(addr, 0.0):.2f}",
                 )
             )
 
@@ -1103,6 +1119,7 @@ def main() -> None:
     sys.stderr.reconfigure(encoding="utf-8")
 
     args = parse_args()
+    _setup_logging()
     ctx = setup_environment(args)
 
     input_path = resolve_path(ctx.base_dir, args.input) if args.input else resolve_default_input(ctx.base_dir)
@@ -1170,13 +1187,13 @@ def _post_pipeline_cleanup(base_dir: str, keep_logs: int = 5) -> None:
     """Post-pipeline cleanup: merge patches, prune old logs, delete .bak files."""
     logger.info("パイプライン後クリーンアップ開始")
 
-    config_dir = Path(base_dir) / "config"
+    config_dir = os.path.join(base_dir, "config")
 
     # 1. Merge pending address patches
     try:
         merged = merge_patches_safe(
-            patch_dir=config_dir / "address_patches",
-            overrides_file=config_dir / "address_overrides.yaml",
+            patch_dir=Path(os.path.join(config_dir, "address_patches")),
+            overrides_file=Path(os.path.join(config_dir, "address_overrides.yaml")),
         )
         if merged:
             logger.info("アドレスパッチをマージ: %d件", merged)
@@ -1184,21 +1201,22 @@ def _post_pipeline_cleanup(base_dir: str, keep_logs: int = 5) -> None:
         logger.warning("アドレスパッチのマージに失敗", exc_info=True)
 
     # 2. Prune old log files (keep latest N)
-    docs_dir = Path(base_dir) / "docs"
+    docs_dir = os.path.join(base_dir, "docs")
     try:
-        log_files = sorted(docs_dir.glob("*.log"))
+        log_files = sorted(f for f in os.listdir(docs_dir) if f.endswith(".log"))
         if len(log_files) > keep_logs:
             for lf in log_files[:-keep_logs]:
-                lf.unlink()
-                logger.info("古いログを削除: %s", lf.name)
+                os.remove(os.path.join(docs_dir, lf))
+                logger.info("古いログを削除: %s", lf)
     except Exception:
         logger.warning("ログファイルの整理に失敗", exc_info=True)
 
     # 3. Delete .bak files
     try:
-        for bf in config_dir.glob("*.bak"):
-            bf.unlink()
-            logger.info("バックアップを削除: %s", bf.name)
+        for bf in os.listdir(config_dir):
+            if bf.endswith(".bak"):
+                os.remove(os.path.join(config_dir, bf))
+                logger.info("バックアップを削除: %s", bf)
     except Exception:
         logger.warning(".bakファイルの削除に失敗", exc_info=True)
 
