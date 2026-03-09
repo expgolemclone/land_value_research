@@ -1,5 +1,7 @@
 import argparse
-import os
+import logging
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +14,23 @@ DEFAULT_INPUT_DIR = BASE_DIR / "data" / "output"
 DEFAULT_OUTPUT_PATH = DEFAULT_INPUT_DIR / "ranking_market_cap_ratio.md"
 DEFAULT_COMPANY_MASTER_PATH = BASE_DIR / "config" / "company_master.yaml"
 CODEX_CHECK_FILE = BASE_DIR / "config" / "codex_check_status.yaml"
+
+logger = logging.getLogger(__name__)
+
+
+def _open_file(path: Path) -> None:
+    """Open a file with the OS default application (cross-platform)."""
+    try:
+        if sys.platform == "win32":
+            import os
+
+            os.startfile(path)
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", str(path)])
+        else:
+            subprocess.Popen(["xdg-open", str(path)])
+    except OSError:
+        logger.warning("ファイルを開けませんでした: %s", path)
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
@@ -241,8 +260,8 @@ def generate_ranking(
     print(f"written: {resolved_output_path} ({len(rank_rows)} rows)")
 
     if open_files:
-        os.startfile(resolved_output_path)
-        os.startfile(BASE_DIR / "scripts" / "split-address.ps1")
+        _open_file(resolved_output_path)
+        _open_file(BASE_DIR / "scripts" / "split-address.ps1")
 
 
 def main() -> None:
