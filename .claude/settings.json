@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_git_add_all.sh\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_git_add_all.py\""
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_edit_lint.sh\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_edit_lint.py\""
           }
         ]
       },
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_commit_push.sh\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_commit_push.py\""
           }
         ]
       }
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_run_tests.sh\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_run_tests.py\""
           }
         ]
       }
@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session_end_push.sh\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/session_end_push.py\""
           }
         ]
       }
