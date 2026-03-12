@@ -141,7 +141,7 @@ def run_split_address(args: argparse.Namespace) -> None:
 
     selected = targets[: args.n]
 
-    print(f"\n=== 並行 split-address ===\n")
+    print("\n=== 並行 split-address ===\n")
     _print_targets(selected)
 
     precheck_results = _run_precheck(selected)
@@ -193,7 +193,7 @@ def run_resolve_address(args: argparse.Namespace) -> None:
 
     selected = filtered[: args.n]
 
-    print(f"\n=== 並行 resolve-address ===\n")
+    print("\n=== 並行 resolve-address ===\n")
     _print_targets(selected)
 
     if args.dry_run:
@@ -259,7 +259,7 @@ def _launch_processes(
         )
         running.append({"proc": proc, "code": code, "name": t["name"], "fh": fh, "log": log_file})
 
-    print(f"\n全プロセス起動完了. 完了を待機中...\n")
+    print("\n全プロセス起動完了. 完了を待機中...\n")
 
     for p in running:
         p["proc"].wait()
