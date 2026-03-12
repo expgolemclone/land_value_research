@@ -8,10 +8,6 @@ dependencies = [
     "shtab>=1.7",
 ]
 
-[project.scripts]
-land-value-run = "run:main"
-land-value-rank = "rank_market_cap_ratio:main"
-
 [dependency-groups]
 dev = [
     "hypothesis",

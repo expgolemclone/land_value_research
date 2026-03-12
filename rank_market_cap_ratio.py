@@ -268,7 +268,10 @@ def generate_ranking(
 def main() -> None:
     import shtab
 
-    parser = argparse.ArgumentParser(description="data/output配下の時価総額比ランキングMarkdownを生成する")
+    parser = argparse.ArgumentParser(
+        prog="land-value-rank",
+        description="data/output配下の時価総額比ランキングMarkdownを生成する",
+    )
     shtab.add_argument_to(parser)
     parser.add_argument("--input-dir", default=str(DEFAULT_INPUT_DIR), help="企業別CSVがあるフォルダ")
     parser.add_argument(

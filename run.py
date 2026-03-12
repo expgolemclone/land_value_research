@@ -391,7 +391,7 @@ def _setup_logging() -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="東京都の土地推定時価を算出する")
+    parser = argparse.ArgumentParser(prog="land-value-run", description="東京都の土地推定時価を算出する")
     shtab.add_argument_to(parser)
     parser.add_argument("--input", default="")
     parser.add_argument("--output", default="data/output")

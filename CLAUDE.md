@@ -14,9 +14,9 @@ uv sync --group dev
 maturin develop
 
 # Run main pipeline
-uv run python run.py          # or: uv run land-value-run
+uv run python run.py
 # Generate rankings from output CSVs
-uv run python rank_market_cap_ratio.py  # or: uv run land-value-rank
+uv run python rank_market_cap_ratio.py
 
 # Lint & format
 uv run ruff check .
@@ -26,9 +26,12 @@ uv run ruff format .
 uv run python -m unittest discover -s tests -v
 uv run python -m unittest tests.test_geocode_tokyo -v   # single module
 
-# Generate zsh completion scripts (for Tab completion in kitty/zsh)
-uv run land-value-run --print-completion zsh > ~/.cache/oh-my-zsh/completions/_land-value-run
-uv run land-value-rank --print-completion zsh > ~/.cache/oh-my-zsh/completions/_land-value-rank
+# Generate zsh tab completion (requires shell aliases, see below)
+uv run python run.py --print-completion zsh > ~/.cache/oh-my-zsh/completions/_land-value-run
+uv run python rank_market_cap_ratio.py --print-completion zsh > ~/.cache/oh-my-zsh/completions/_land-value-rank
+# Then add to shell config (e.g. nix-config/home/shell.nix shellAliases):
+#   land-value-run  = "uv run python <project-path>/run.py";
+#   land-value-rank = "uv run python <project-path>/rank_market_cap_ratio.py";
 ```
 
 ## Project Structure
