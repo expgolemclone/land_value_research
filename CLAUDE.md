@@ -14,10 +14,9 @@ uv sync --group dev
 maturin develop
 
 # Run main pipeline
-uv run python run.py
-
+uv run python run.py          # or: uv run land-value-run
 # Generate rankings from output CSVs
-uv run python rank_market_cap_ratio.py
+uv run python rank_market_cap_ratio.py  # or: uv run land-value-rank
 
 # Lint & format
 uv run ruff check .
@@ -26,6 +25,10 @@ uv run ruff format .
 # Tests
 uv run python -m unittest discover -s tests -v
 uv run python -m unittest tests.test_geocode_tokyo -v   # single module
+
+# Generate zsh completion scripts (for Tab completion in kitty/zsh)
+uv run land-value-run --print-completion zsh > ~/.cache/oh-my-zsh/completions/_land-value-run
+uv run land-value-rank --print-completion zsh > ~/.cache/oh-my-zsh/completions/_land-value-rank
 ```
 
 ## Project Structure

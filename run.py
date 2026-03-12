@@ -15,6 +15,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import shtab
+
 from rank_market_cap_ratio import generate_ranking
 from scripts.merge_address_patches import merge_patches_safe
 from src.anomaly import (
@@ -390,6 +392,7 @@ def _setup_logging() -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="東京都の土地推定時価を算出する")
+    shtab.add_argument_to(parser)
     parser.add_argument("--input", default="")
     parser.add_argument("--output", default="data/output")
     parser.add_argument("--price-method", choices=["idw", "nearest"], default="idw")
