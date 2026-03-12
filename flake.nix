@@ -26,6 +26,7 @@
           # Build tools
           pkgs.maturin
           pkgs.uv
+          pkgs.ruff
         ];
 
         env = {
