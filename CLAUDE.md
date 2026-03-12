@@ -26,12 +26,12 @@ uv run ruff format .
 uv run python -m unittest discover -s tests -v
 uv run python -m unittest tests.test_geocode_tokyo -v   # single module
 
-# Generate zsh tab completion (requires shell aliases, see below)
+# Generate zsh tab completion (requires shell functions, see below)
 uv run python run.py --print-completion zsh > ~/.cache/oh-my-zsh/completions/_land-value-run
 uv run python rank_market_cap_ratio.py --print-completion zsh > ~/.cache/oh-my-zsh/completions/_land-value-rank
-# Then add to shell config (e.g. nix-config/home/shell.nix shellAliases):
-#   land-value-run  = "uv run python <project-path>/run.py";
-#   land-value-rank = "uv run python <project-path>/rank_market_cap_ratio.py";
+# Then add to shell config (e.g. nix-config/home/shell.nix initContent):
+#   land-value-run() { uv run python <project-path>/run.py "$@" }
+#   land-value-rank() { uv run python <project-path>/rank_market_cap_ratio.py "$@" }
 ```
 
 ## Project Structure
