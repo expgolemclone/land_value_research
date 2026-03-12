@@ -1,6 +1,5 @@
 """Cross-platform launcher for parallel address research.
 
-Replaces split-address.ps1 and resolve_address.ps1.
 Reads ranking_market_cap_ratio.md, filters target companies, and launches
 parallel Claude Code CLI processes to run address research skills.
 
@@ -284,7 +283,7 @@ def _launch_processes(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="並行住所調査ランチャー (split-address.ps1 / resolve_address.ps1 の Python 版)",
+        description="並行住所調査ランチャー (split-address / resolve-address)",
     )
     parser.add_argument(
         "mode",

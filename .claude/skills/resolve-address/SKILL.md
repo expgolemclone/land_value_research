@@ -34,7 +34,7 @@ python rank_market_cap_ratio.py
 
 ## パッチモード（並行実行時）
 
-`$ARGUMENTS` に `config/address_patches/` で始まるファイルパスが含まれている場合、**パッチモード**で動作する。これは `resolve_address.ps1` による並行実行時に使用される。
+`$ARGUMENTS` に `config/address_patches/` で始まるファイルパスが含まれている場合、**パッチモード**で動作する。これは `parallel_research.py` による並行実行時に使用される。
 
 **パッチモードの動作:**
 

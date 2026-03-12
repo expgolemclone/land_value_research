@@ -1,10 +1,9 @@
 # ruff: noqa: E402
 """Pre-check tool for split-address parallel execution.
 
-Called by split-address.ps1 before each Codex window launch.
+Called by parallel_research.py before each process launch.
 Reads the output CSV for a given company and produces a JSON summary of
-risk flags and geocode levels that the ps1 script can embed into the
-Codex prompt to save context.
+risk flags and geocode levels to save context.
 
 Usage:
     uv run python scripts/_codex_precheck.py <証券コード>

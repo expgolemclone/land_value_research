@@ -1,6 +1,6 @@
 ---
 name: split-address
-description: 時価総額比の上位銘柄について合算された住所を分割してパッチファイルに登録する。split-address.ps1 経由で呼び出される。
+description: 時価総額比の上位銘柄について合算された住所を分割してパッチファイルに登録する。parallel_research.py 経由で呼び出される。
 argument-hint: "<証券コード>"
 ---
 
@@ -24,7 +24,7 @@ argument-hint: "<証券コード>"
 
 ## 事前検証フラグ
 
-`split-address.ps1` が事前に `config/address_patches/{証券コード}.precheck.json` を生成している場合がある。
+`parallel_research.py` が事前に `config/address_patches/{証券コード}.precheck.json` を生成している場合がある。
 この JSON は `_codex_precheck.py` の出力で、各事業所の自動判定結果を含む。
 ファイルが存在する場合は読み込んで調査の優先度付けに使用する。
 
@@ -199,7 +199,7 @@ print(f"{addr} → {level} ({lat}, {lon})")
 ### 5.2 ファイル構造
 
 パッチファイル `config/address_patches/{証券コード}.yaml` に以下の形式で**新規作成**する。
-パッチファイルは `split-address.ps1` が実行開始時にディレクトリをクリアし、各 Codex ウィンドウが新規作成する。完了後 `merge_address_patches.py` で `address_overrides.yaml` に一括マージされる。
+パッチファイルは `parallel_research.py` が実行開始時にディレクトリをクリアし、各プロセスが新規作成する。完了後 `merge_address_patches.py` で `address_overrides.yaml` に一括マージされる。
 
 ```yaml
 '9351':

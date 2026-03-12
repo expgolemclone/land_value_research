@@ -261,7 +261,7 @@ def generate_ranking(
 
     if open_files:
         _open_file(resolved_output_path)
-        _open_file(BASE_DIR / "scripts" / "split-address.ps1")
+        _open_file(BASE_DIR / "scripts" / "parallel_research.py")
 
 
 def main() -> None:
