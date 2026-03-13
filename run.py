@@ -1073,37 +1073,12 @@ def process_company(
     )
 
 
-def write_results(
-    results: list[CompanyResult],
-    targets: list[dict[str, Any]],
-    ctx: RunContext,
-) -> None:
-    total = len(targets)
-    result_by_code: dict[str, CompanyResult] = {r.code: r for r in results}
-
-    for write_index, t in enumerate(targets, start=1):
-        code = t["code"]
-        out_path = t["_output_path"]
-        result = result_by_code.get(code)
-        with open(out_path, "w", newline="", encoding="utf-8") as f:
-            w = csv.DictWriter(f, fieldnames=OUTPUT_FIELDNAMES)
-            w.writeheader()
-            if result is not None:
-                for r in result.out_rows:
-                    w.writerow(r)
-        print(f"[{write_index}/{total}] Wrote: {out_path}")
-
-    all_excluded: list[dict[str, str]] = []
-    for r in results:
-        all_excluded.extend(r.excluded_rows)
-
-    excluded_path = os.path.join(ctx.output_dir, "anomaly_excluded_companies.csv")
-    with open(excluded_path, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=EXCLUDED_FIELDNAMES)
+def _write_single_result(result: CompanyResult, out_path: str) -> None:
+    with open(out_path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=OUTPUT_FIELDNAMES)
         w.writeheader()
-        for r in all_excluded:
+        for r in result.out_rows:
             w.writerow(r)
-    print(f"Wrote: {excluded_path} ({len(all_excluded)} rows)")
 
 
 def save_caches(ctx: RunContext) -> None:
@@ -1177,11 +1152,18 @@ def main() -> None:
         max_workers = max(1, min(args.workers, total_companies))
         logger.info("処理開始: %d社 (workers=%d)", total_companies, max_workers)
 
-        results: list[CompanyResult] = []
         failed_companies: list[tuple[str, str, str]] = []
-        succeeded_targets: list[dict[str, Any]] = []
+        written_count = 0
+        excluded_count = 0
 
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        excluded_path = os.path.join(ctx.output_dir, "anomaly_excluded_companies.csv")
+        with (
+            open(excluded_path, "w", newline="", encoding="utf-8") as excl_f,
+            ThreadPoolExecutor(max_workers=max_workers) as executor,
+        ):
+            excl_writer = csv.DictWriter(excl_f, fieldnames=EXCLUDED_FIELDNAMES)
+            excl_writer.writeheader()
+
             future_to_target = {}
             for company_index, t in enumerate(targets_to_process, start=1):
                 future = executor.submit(_process_company_with_retry, t, company_index, total_companies, ctx)
@@ -1196,15 +1178,21 @@ def main() -> None:
 
                 result, error = future.result()
                 if result is not None:
-                    results.append(result)
-                    succeeded_targets.append(t)
+                    _write_single_result(result, t["_output_path"])
+                    written_count += 1
+                    print(f"[{written_count}/{total_companies}] Wrote: {t['_output_path']}")
+                    if result.excluded_rows:
+                        excl_writer.writerows(result.excluded_rows)
+                        excl_f.flush()
+                        excluded_count += len(result.excluded_rows)
                 elif error:
                     failed_companies.append((code, company_name, error))
 
                 if completed_count % CACHE_SAVE_INTERVAL == 0:
                     save_caches(ctx)
+                    ctx.web_addr.clear_text_cache()
 
-        write_results(results, succeeded_targets, ctx)
+        print(f"Wrote: {excluded_path} ({excluded_count} rows)")
         save_caches(ctx)
 
         if failed_companies:
