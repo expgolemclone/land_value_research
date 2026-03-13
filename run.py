@@ -603,6 +603,10 @@ def _resolve_company_metadata(
                 raise TransientNetworkError(f"証券コード{code}の有報PDF取得で一時通信エラー: {e}") from e
             raise CompanySkipError(f"証券コード{code}の有報PDF取得に失敗しました: {e}") from e
 
+    # PDFをWeb住所調査キャッシュにも登録（二重ダウンロード防止）
+    if os.path.exists(pdf_path) and pdf_url:
+        ctx.web_addr.seed_cache(pdf_url, pdf_path)
+
     sites_cache_path = os.path.join(ctx.facilities_cache_dir, f"{code}_sites.json")
     sites = load_sites_cache(sites_cache_path, pdf_path)
     if sites is None:

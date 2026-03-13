@@ -53,6 +53,14 @@ class WebAddressResearcher:
                 logger.debug("resolve cache load failed: %s", self._resolve_cache_path, exc_info=True)
                 self._resolve_cache = {}
 
+    def seed_cache(self, url: str, local_path: str) -> None:
+        """Register an already-downloaded file to avoid re-downloading."""
+        cache_path = self._cache_path(url)
+        if not os.path.exists(cache_path):
+            import shutil
+
+            shutil.copy2(local_path, cache_path)
+
     def _cache_path(self, url: str) -> str:
         key = hashlib.sha1(url.encode("utf-8")).hexdigest()
         return os.path.join(self.cache_dir, key)
