@@ -51,7 +51,7 @@ def load_sites_cache(cache_path: str, pdf_path: str) -> list[FacilityLand] | Non
             d = json.load(f)
         stat = os.stat(pdf_path)
         if (
-            d.get("cache_version") != 3
+            d.get("cache_version") != 4
             or int(d.get("pdf_size", -1)) != int(stat.st_size)
             or float(d.get("pdf_mtime", -1.0)) != float(stat.st_mtime)
         ):
@@ -76,7 +76,7 @@ def load_sites_cache(cache_path: str, pdf_path: str) -> list[FacilityLand] | Non
 def save_sites_cache(cache_path: str, pdf_path: str, sites: list[FacilityLand]) -> None:
     stat = os.stat(pdf_path)
     payload = {
-        "cache_version": 3,
+        "cache_version": 4,
         "pdf_size": int(stat.st_size),
         "pdf_mtime": float(stat.st_mtime),
         "sites": [
