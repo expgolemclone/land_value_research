@@ -1,6 +1,6 @@
 """Cross-platform launcher for parallel address research.
 
-Reads ranking_market_cap_ratio.md, filters target companies, and launches
+Reads ranking_market_cap_ratio.html, filters target companies, and launches
 parallel Claude Code CLI processes to run address research skills.
 
 Usage:
@@ -29,7 +29,7 @@ from scripts._codex_check_tracker import get as get_check_count
 from scripts._codex_check_tracker import increment as increment_check
 from scripts._codex_precheck import precheck
 
-RANKING_FILE = PROJECT_ROOT / "data" / "output" / "ranking_market_cap_ratio.md"
+RANKING_FILE = PROJECT_ROOT / "data" / "output" / "ranking_market_cap_ratio.html"
 PATCH_DIR = PROJECT_ROOT / "config" / "address_patches"
 LOG_DIR = PROJECT_ROOT / "data" / "output" / "research_logs"
 
@@ -40,24 +40,57 @@ LOG_DIR = PROJECT_ROOT / "data" / "output" / "research_logs"
 
 
 def parse_ranking() -> list[dict[str, str]]:
-    """Parse ranking markdown table into list of company dicts."""
+    """Parse ranking HTML table into list of company dicts."""
+    from html.parser import HTMLParser
+
     if not RANKING_FILE.exists():
         print(f"エラー: ランキングファイルが見つかりません: {RANKING_FILE}", file=sys.stderr)
         sys.exit(1)
 
+    class _TableParser(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__()
+            self.rows: list[list[str]] = []
+            self._in_td = False
+            self._current_row: list[str] = []
+            self._current_cell = ""
+            self._in_tbody = False
+
+        def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            if tag == "tbody":
+                self._in_tbody = True
+            elif tag == "tr" and self._in_tbody:
+                self._current_row = []
+            elif tag == "td" and self._in_tbody:
+                self._in_td = True
+                self._current_cell = ""
+
+        def handle_endtag(self, tag: str) -> None:
+            if tag == "tbody":
+                self._in_tbody = False
+            elif tag == "td" and self._in_td:
+                self._current_row.append(self._current_cell.strip())
+                self._in_td = False
+            elif tag == "tr" and self._in_tbody and self._current_row:
+                self.rows.append(self._current_row)
+
+        def handle_data(self, data: str) -> None:
+            if self._in_td:
+                self._current_cell += data
+
+    parser = _TableParser()
+    parser.feed(RANKING_FILE.read_text(encoding="utf-8"))
+
     targets: list[dict[str, str]] = []
-    for line in RANKING_FILE.read_text(encoding="utf-8").splitlines():
-        if not line.startswith("|") or "---" in line or "順位" in line:
-            continue
-        cols = line.split("|")
+    for cols in parser.rows:
         if len(cols) < 11:
             continue
         targets.append(
             {
-                "rank": cols[1].strip(),
-                "code": cols[2].strip(),
-                "name": cols[3].strip(),
-                "tag": cols[10].strip(),
+                "rank": cols[0],
+                "code": cols[1],
+                "name": cols[2],
+                "tag": cols[9],
             }
         )
     return targets

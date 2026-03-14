@@ -15,7 +15,7 @@ argument-hint: "[証券コード] [パッチファイルパス（例: config/add
 
 ## 0. 事前準備
 
-`data/output/ranking_market_cap_ratio.md` が無い場合は、先に生成する：
+`data/output/ranking_market_cap_ratio.html` が無い場合は、先に生成する：
 
 ```bash
 python rank_market_cap_ratio.py
@@ -25,7 +25,7 @@ python rank_market_cap_ratio.py
 
 引数 `$ARGUMENTS` が**指定されていない場合**、以下の手順で対象1銘柄を自動選定する：
 
-1. `data/output/ranking_market_cap_ratio.md` を読み込む（未生成なら `python rank_market_cap_ratio.py` を先に実行）
+1. `data/output/ranking_market_cap_ratio.html` を読み込む（未生成なら `python rank_market_cap_ratio.py` を先に実行）
 2. 「住所解決タグ」列に `muni_centroid` または `oaza_chome` を含む行をフィルタする
 3. フィルタ結果の中で**最も順位が高い（時価総額比が大きい）1銘柄**を対象とする
 4. 該当なしの場合はその旨を報告して終了する
@@ -61,11 +61,11 @@ python rank_market_cap_ratio.py
 
 **引数なし（デフォルト）の場合:**
 
-`data/output/ranking_market_cap_ratio.md` のMarkdownテーブルを読み込み、「住所解決タグ」列に `muni_centroid` または `oaza_chome` を含む最上位1銘柄の証券コードを取得する。
+`data/output/ranking_market_cap_ratio.html` のHTMLテーブルを読み込み、「住所解決タグ」列に `muni_centroid` または `oaza_chome` を含む最上位1銘柄の証券コードを取得する。
 
-テーブルの形式:
+テーブルの列順:
 ```
-| 順位 | 証券コード | 企業名 | ... | 住所解決タグ | タグ件数 | ... |
+順位 | 証券コード | 企業名 | 有報PDF | 時価総額比 | ... | 住所解決タグ | CODEX_CHECK | タグ件数 | ...
 ```
 
 **引数ありの場合:**

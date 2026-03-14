@@ -45,7 +45,7 @@ flowchart TB
 
     subgraph RANK["rank_market_cap_ratio.py"]
         RANK_PROC["ランキング生成"]
-        RANK_MD[/"ranking_market_cap_ratio.md"/]
+        RANK_HTML[/"ranking_market_cap_ratio.html"/]
     end
 
     CSV --> LOAD
@@ -65,7 +65,7 @@ flowchart TB
     WRITE --> EXCL_CSV
 
     OUT_CSV --> RANK_PROC
-    RANK_PROC --> RANK_MD
+    RANK_PROC --> RANK_HTML
 ```
 
 ---
@@ -75,7 +75,7 @@ flowchart TB
 ```
 land_value_research/
 ├── run.py                          # メインエントリポイント
-├── rank_market_cap_ratio.py        # ランキングMarkdown生成
+├── rank_market_cap_ratio.py        # ランキングHTML生成
 ├── src/
 │   ├── anomaly.py                  # 異常値検出・閾値定数・OutputRow型
 │   ├── cache.py                    # JSONキャッシュI/O(アトミック書込み)
@@ -526,13 +526,13 @@ flowchart TD
     PICK["pick_company_row()<br>東京都合計行を選択"]
     SORT["時価総額比で降順ソート"]
 
-    RANK_MD["ranking_market_cap_ratio.md<br>ランキングテーブル"]
-    VSCODE["VS Codeで<br>Markdownプレビュー"]
+    RANK_HTML["ranking_market_cap_ratio.html<br>ランキングテーブル"]
+    BROWSER["ブラウザで<br>HTMLプレビュー"]
 
     INPUT --> LOAD
     LOAD --> PICK --> SORT
-    SORT --> RANK_MD
-    RANK_MD --> VSCODE
+    SORT --> RANK_HTML
+    RANK_HTML --> BROWSER
 ```
 
 ---
