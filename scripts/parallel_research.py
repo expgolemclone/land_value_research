@@ -277,7 +277,7 @@ def _launch_processes(
         prompt = prompts[code]
         log_file = LOG_DIR / f"{timestamp}_{code}.log"
 
-        cmd = [cli_cmd, "-p", prompt, "--permission-mode", "bypassPermissions"]
+        cmd = [cli_cmd, "exec", "--full-auto", prompt]
         print(f"  [{i + 1}] {code} {t['name']}")
         print(f"      log: {log_file}")
 
@@ -338,7 +338,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--cli",
-        default="claude",
+        default="codex",
         help="CLI コマンド (default: claude)",
     )
 
