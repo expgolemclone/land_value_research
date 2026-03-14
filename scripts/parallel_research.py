@@ -278,7 +278,7 @@ def _launch_processes(
         prompt = prompts[code]
         log_file = LOG_DIR / f"{timestamp}_{code}.log"
 
-        cmd = [cli_cmd, "-p", prompt]
+        cmd = [cli_cmd, "-p", prompt, "--permission-mode", "bypassPermissions"]
         print(f"  [{i + 1}] {code} {t['name']}")
         print(f"      log: {log_file}")
 
@@ -300,6 +300,9 @@ def _launch_processes(
         rc = p["proc"].returncode
         status = "完了" if rc == 0 else f"エラー (code={rc})"
         print(f"  {p['code']} {p['name']}: {status}")
+        log_size = p["log"].stat().st_size
+        if log_size == 0:
+            print(f"  {p['code']} {p['name']}: 警告 - ログが空です")
 
     print("\n=== 全プロセス完了 ===\n")
     print("次の手順:")
