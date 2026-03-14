@@ -323,7 +323,30 @@ def _launch_processes(
 # ---------------------------------------------------------------------------
 
 
+def _ensure_nix_devshell() -> None:
+    """nix develop 外なら自動で re-exec する."""
+    import shutil
+
+    if shutil.which("rustc"):
+        return
+    if os.environ.get("_IN_NIX_DEVELOP"):
+        print("エラー: nix develop 内でも rustc が見つかりません", file=sys.stderr)
+        sys.exit(1)
+    print("[parallel_research] rustc not found, re-launching via nix develop...")
+    nix = shutil.which("nix")
+    if not nix:
+        print("エラー: nix が見つかりません", file=sys.stderr)
+        sys.exit(1)
+    env = {**os.environ, "_IN_NIX_DEVELOP": "1"}
+    os.execve(
+        nix,
+        ["nix", "develop", "--command", sys.executable, *sys.argv],
+        env,
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
+    _ensure_nix_devshell()
     parser = argparse.ArgumentParser(
         description="並行住所調査ランチャー (split-address / resolve-address)",
     )
