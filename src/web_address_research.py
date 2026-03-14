@@ -307,11 +307,13 @@ class WebAddressResearcher:
             self._resolve_cache_dirty = True
         return best
 
-    def clear_text_cache(self) -> None:
-        """Free in-memory text/address caches to reduce memory usage."""
+    def clear_transient_caches(self) -> None:
+        """Flush resolve cache to disk, then free all in-memory caches."""
+        self.flush()
         with self._lock:
             self._text_cache.clear()
             self._addr_cache.clear()
+            self._resolve_cache.clear()
 
     def flush(self) -> None:
         """Write resolve cache to disk if it has been modified."""

@@ -1,6 +1,7 @@
 import argparse
 import atexit
 import csv
+import gc
 import logging
 import math
 import os
@@ -145,7 +146,6 @@ class RunContext:
     landprice: LandPriceTokyo
     price_cache_disk: dict[str, Any]
     geocode_cache_disk: dict[str, Any]
-    geocode_cache: dict[str, tuple[float, float, str]]
     cache_lock: threading.Lock = field(default_factory=threading.Lock)
 
 
@@ -513,7 +513,6 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         landprice=landprice,
         price_cache_disk=price_cache_disk,
         geocode_cache_disk=geocode_cache_disk,
-        geocode_cache={},
     )
     atexit.register(save_caches, ctx)
     return ctx
@@ -643,30 +642,24 @@ def _resolve_company_metadata(
 
 
 def _geocode_address(full_addr: str, ctx: RunContext) -> tuple[float, float, str]:
-    """Geocode an address using 2-level cache (memory → disk → geocoder).
+    """Geocode an address using disk cache or geocoder.
 
     Uses double-checked locking so that the heavy geocoder.geocode() call
     runs outside the lock, allowing other threads to proceed concurrently.
     """
     with ctx.cache_lock:
-        geo = ctx.geocode_cache.get(full_addr)
-        if geo is not None:
-            return geo
         dg = ctx.geocode_cache_disk.get(full_addr)
         if isinstance(dg, list) and len(dg) == 3:
-            geo = (float(dg[0]), float(dg[1]), str(dg[2]))
-            ctx.geocode_cache[full_addr] = geo
-            return geo
+            return (float(dg[0]), float(dg[1]), str(dg[2]))
 
     # Compute outside lock — geocoder is thread-safe (Rust &self, no interior mutation)
     geo = ctx.geocoder.geocode(full_addr)
 
     with ctx.cache_lock:
-        existing = ctx.geocode_cache.get(full_addr)
-        if existing is not None:
-            return existing
+        existing = ctx.geocode_cache_disk.get(full_addr)
+        if isinstance(existing, list) and len(existing) == 3:
+            return (float(existing[0]), float(existing[1]), str(existing[2]))
         ctx.geocode_cache_disk[full_addr] = [float(geo[0]), float(geo[1]), str(geo[2])]
-        ctx.geocode_cache[full_addr] = geo
     return geo
 
 
@@ -1188,9 +1181,12 @@ def main() -> None:
                 elif error:
                     failed_companies.append((code, company_name, error))
 
+                del future_to_target[future]
+
                 if completed_count % CACHE_SAVE_INTERVAL == 0:
                     save_caches(ctx)
-                    ctx.web_addr.clear_text_cache()
+                    ctx.web_addr.clear_transient_caches()
+                    gc.collect()
 
         print(f"Wrote: {excluded_path} ({excluded_count} rows)")
         save_caches(ctx)

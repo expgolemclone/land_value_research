@@ -494,9 +494,9 @@ flowchart LR
     end
 
     subgraph MEM_CACHE["メモリキャッシュ"]
-        RT_GEO["geocode_cache<br>実行時ジオコード"]
-        RT_TXT["_text_cache<br>Webテキスト"]
-        LRU["@lru_cache<br>IRBankメタデータ"]
+        RT_GEO["geocode_cache_disk<br>ジオコード(10社毎保存)"]
+        RT_TXT["_text_cache<br>Webテキスト(10社毎クリア)"]
+        LRU["_METADATA_CACHE<br>IRBankメタデータ"]
     end
 
     PC -.->|"10社毎に保存"| PC
