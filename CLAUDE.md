@@ -15,6 +15,9 @@ maturin develop
 
 # Run main pipeline
 uv run python run.py
+# Run with auto-restart on memory limit (restarts up to 10 times by default)
+uv run python run_with_restart.py
+uv run python run_with_restart.py --max-restarts 5  # custom limit
 # Generate rankings from output CSVs
 uv run python rank_market_cap_ratio.py
 
