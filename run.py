@@ -459,6 +459,12 @@ def parse_args() -> argparse.Namespace:
         default=4,
         help="企業レベル並列処理のワーカー数(default: 4, 1で逐次処理)",
     )
+    parser.add_argument(
+        "--memory-limit",
+        type=float,
+        default=90,
+        help="メモリ使用率(%%%%)がこの値を超えたらキャッシュを保存して終了する(default: 90, 0で無効化)",
+    )
     return parser.parse_args()
 
 
@@ -1074,6 +1080,35 @@ def _write_single_result(result: CompanyResult, out_path: str) -> None:
             w.writerow(r)
 
 
+def _get_memory_usage_percent() -> float:
+    """Read system memory usage from /proc/meminfo. Returns percentage (0-100)."""
+    with open("/proc/meminfo") as f:
+        info: dict[str, int] = {}
+        for line in f:
+            parts = line.split()
+            if parts[0] in ("MemTotal:", "MemAvailable:"):
+                info[parts[0]] = int(parts[1])
+            if len(info) == 2:
+                break
+    total = info["MemTotal:"]
+    available = info["MemAvailable:"]
+    return (total - available) / total * 100
+
+
+def _memory_watchdog(ctx: RunContext, limit_percent: float, check_interval: float = 5.0) -> None:
+    """Daemon thread: check memory usage periodically, terminate if over limit."""
+    while True:
+        time.sleep(check_interval)
+        usage = _get_memory_usage_percent()
+        if usage >= limit_percent:
+            logger.critical("メモリ使用率 %.1f%% (閾値 %.0f%%) — キャッシュ保存して終了します", usage, limit_percent)
+            try:
+                save_caches(ctx)
+            except Exception:
+                logger.exception("キャッシュ保存に失敗しました")
+            os._exit(1)
+
+
 def save_caches(ctx: RunContext) -> None:
     with ctx.cache_lock:
         save_json_dict(ctx.price_cache_path, ctx.price_cache_disk)
@@ -1126,6 +1161,10 @@ def main() -> None:
     args = parse_args()
     _setup_logging()
     ctx = setup_environment(args)
+
+    if args.memory_limit > 0:
+        watchdog = threading.Thread(target=_memory_watchdog, args=(ctx, args.memory_limit), daemon=True)
+        watchdog.start()
 
     input_path = resolve_path(ctx.base_dir, args.input) if args.input else resolve_default_input(ctx.base_dir)
     targets = load_targets(input_path)
