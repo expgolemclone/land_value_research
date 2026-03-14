@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from rank_market_cap_ratio import collect_rank_rows, write_rank_markdown
+from rank_market_cap_ratio import collect_rank_rows, write_rank_html
 
 CSV_HEADER = (
     "証券コード,企業名,事業所名,住所,住所取得元,住所取得元URL,住所解決レベル,土地面積(m2),"
@@ -28,13 +28,13 @@ class TestRankMarketCapRatio(unittest.TestCase):
             self.assertEqual("9999", rows[0]["証券コード"])
             self.assertIn("地価推定信頼度", rows[0])
 
-    def test_write_rank_markdown_escapes_pipe(self) -> None:
+    def test_write_rank_html_escapes_special_chars(self) -> None:
         with tempfile.TemporaryDirectory() as td:
-            out = Path(td) / "ranking.md"
+            out = Path(td) / "ranking.html"
             rows = [
                 {
                     "証券コード": "9998",
-                    "企業名": "A|B",
+                    "企業名": "A<B>&C",
                     "有報PDF_URL": "",
                     "時価総額比": 0.1,
                     "推定土地時価(円)": "1000000000",
@@ -48,9 +48,11 @@ class TestRankMarketCapRatio(unittest.TestCase):
                     "元ファイル": "9998_output.csv",
                 }
             ]
-            write_rank_markdown(rows, out)
+            write_rank_html(rows, out)
             text = out.read_text(encoding="utf-8")
-            self.assertIn("A\\|B", text)
+            self.assertIn("A&lt;B&gt;&amp;C", text)
+            self.assertIn("<table>", text)
+            self.assertIn("</html>", text)
 
 
 if __name__ == "__main__":

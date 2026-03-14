@@ -1,6 +1,5 @@
 import argparse
 import logging
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -12,7 +11,7 @@ from src.company_config import load_company_master
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_INPUT_DIR = BASE_DIR / "data" / "output"
-DEFAULT_OUTPUT_PATH = DEFAULT_INPUT_DIR / "ranking_market_cap_ratio.md"
+DEFAULT_OUTPUT_PATH = DEFAULT_INPUT_DIR / "ranking_market_cap_ratio.html"
 DEFAULT_COMPANY_MASTER_PATH = BASE_DIR / "config" / "company_master.yaml"
 CODEX_CHECK_FILE = BASE_DIR / "config" / "codex_check_status.yaml"
 
@@ -29,7 +28,7 @@ def _open_file(path: Path) -> None:
         elif sys.platform == "darwin":
             subprocess.Popen(["open", str(path)])
         else:
-            subprocess.run(["mdcat", str(path)])
+            subprocess.Popen(["xdg-open", str(path)])
     except OSError:
         logger.warning("ファイルを開けませんでした: %s", path)
 
@@ -123,11 +122,12 @@ def count_unique_values(rows: list[dict[str, str]], key: str) -> int:
     return len(seen)
 
 
-def escape_md_cell(value: object) -> str:
+def escape_html_cell(value: object) -> str:
+    import html
+
     s = str(value if value is not None else "")
+    s = html.escape(s)
     s = s.replace("\r", "").replace("\n", "<br>")
-    s = s.replace("\\", "\\\\")
-    s = s.replace("|", "\\|")
     return s
 
 
@@ -185,7 +185,62 @@ def collect_rank_rows(input_dir: Path, company_master: dict[str, dict[str, Any]]
     return rank_rows
 
 
-def write_rank_markdown(rows: list[dict[str, Any]], output_path: Path) -> None:
+def _html_pdf_link(code: str, report_pdf_url: str, output_path: Path) -> str:
+    import html
+
+    local_pdf_path = BASE_DIR / "data" / "cache" / "pdf" / f"{code}_securities_report.pdf"
+    if local_pdf_path.exists():
+        href = html.escape(local_pdf_path.as_uri())
+        return f'<a href="{href}" target="_blank">{html.escape(local_pdf_path.name)}</a>'
+    if report_pdf_url:
+        href = html.escape(report_pdf_url)
+        return f'<a href="{href}" target="_blank">有報PDF</a>'
+    return ""
+
+
+_HTML_STYLE = """\
+<style>
+  body { font-family: sans-serif; margin: 20px; background: #fafafa; }
+  h1 { font-size: 1.3em; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.85em; }
+  thead { position: sticky; top: 0; z-index: 1; }
+  th { background: #2c3e50; color: #fff; padding: 8px 6px; text-align: left;
+       cursor: pointer; user-select: none; white-space: nowrap; }
+  th:hover { background: #34495e; }
+  td { padding: 6px; border-bottom: 1px solid #ddd; white-space: nowrap; }
+  tr:nth-child(even) { background: #f2f2f2; }
+  tr:hover { background: #e8f4fd; }
+  a { color: #2980b9; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .right { text-align: right; }
+</style>
+"""
+
+_HTML_SORT_SCRIPT = """\
+<script>
+document.querySelectorAll('th').forEach((th, idx) => {
+  th.addEventListener('click', () => {
+    const table = th.closest('table');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const dir = th.dataset.dir === 'asc' ? 'desc' : 'asc';
+    table.querySelectorAll('th').forEach(h => delete h.dataset.dir);
+    th.dataset.dir = dir;
+    rows.sort((a, b) => {
+      let av = a.cells[idx].textContent.trim().replace(/,/g, '');
+      let bv = b.cells[idx].textContent.trim().replace(/,/g, '');
+      const an = parseFloat(av), bn = parseFloat(bv);
+      if (!isNaN(an) && !isNaN(bn)) return dir === 'asc' ? an - bn : bn - an;
+      return dir === 'asc' ? av.localeCompare(bv, 'ja') : bv.localeCompare(av, 'ja');
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  });
+});
+</script>
+"""
+
+
+def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     headers = [
         "順位",
@@ -204,44 +259,58 @@ def write_rank_markdown(rows: list[dict[str, Any]], output_path: Path) -> None:
         "異常値警告",
         "元ファイル",
     ]
+    right_cols = {
+        "順位", "時価総額比", "推定土地時価(億円)", "時価総額(億円)",
+        "土地簿価(億円)", "含み益(億円)", "タグ件数",
+    }
+
     with output_path.open("w", encoding="utf-8", newline="\n") as f:
-        f.write("| " + " | ".join(headers) + " |\n")
-        f.write("| " + " | ".join(["---"] * len(headers)) + " |\n")
+        f.write("<!DOCTYPE html>\n<html lang=\"ja\">\n<head>\n")
+        f.write('<meta charset="utf-8">\n')
+        f.write("<title>時価総額比ランキング</title>\n")
+        f.write(_HTML_STYLE)
+        f.write("</head>\n<body>\n")
+        f.write(f"<h1>時価総額比ランキング ({len(rows)} 社)</h1>\n")
+        f.write("<table>\n<thead><tr>\n")
+        for h in headers:
+            f.write(f"  <th>{escape_html_cell(h)}</th>\n")
+        f.write("</tr></thead>\n<tbody>\n")
+
         for i, row in enumerate(rows, start=1):
-            report_pdf_url = (row.get("有報PDF_URL") or "").strip()
             code = (row.get("証券コード") or "").strip()
-            local_pdf_path = BASE_DIR / "data" / "cache" / "pdf" / f"{code}_securities_report.pdf"
-            if local_pdf_path.exists():
-                report_pdf_link = to_md_link(output_path, local_pdf_path)
-            else:
-                report_pdf_link = f"[有報PDF]({report_pdf_url})" if report_pdf_url else ""
+            report_pdf_url = (row.get("有報PDF_URL") or "").strip()
+            pdf_link = _html_pdf_link(code, report_pdf_url, output_path)
+
             values = [
-                escape_md_cell(str(i)),
-                escape_md_cell(row["証券コード"]),
-                escape_md_cell(row["企業名"]),
-                report_pdf_link,
-                escape_md_cell(f"{row['時価総額比']:.6f}"),
-                escape_md_cell(yen_to_oku_display(row["推定土地時価(円)"])),
-                escape_md_cell(yen_to_oku_display(row["時価総額(円)"])),
-                escape_md_cell(yen_to_oku_display(row["土地簿価(円)"])),
-                escape_md_cell(yen_to_oku_display(row["含み益(円)"])),
-                escape_md_cell(row.get("住所解決タグ", "")),
-                escape_md_cell(row.get("CODEX_CHECK", "")),
-                escape_md_cell(str(row.get("タグ件数", 0))),
-                escape_md_cell(row.get("地価推定信頼度", "")),
-                escape_md_cell(row.get("異常値警告", "")),
-                escape_md_cell(row["元ファイル"]),
+                (str(i), "順位"),
+                (row["証券コード"], "証券コード"),
+                (row["企業名"], "企業名"),
+                (None, "有報PDF"),  # handled separately
+                (f"{row['時価総額比']:.6f}", "時価総額比"),
+                (yen_to_oku_display(row["推定土地時価(円)"]), "推定土地時価(億円)"),
+                (yen_to_oku_display(row["時価総額(円)"]), "時価総額(億円)"),
+                (yen_to_oku_display(row["土地簿価(円)"]), "土地簿価(億円)"),
+                (yen_to_oku_display(row["含み益(円)"]), "含み益(億円)"),
+                (row.get("住所解決タグ", ""), "住所解決タグ"),
+                (row.get("CODEX_CHECK", ""), "CODEX_CHECK"),
+                (str(row.get("タグ件数", 0)), "タグ件数"),
+                (row.get("地価推定信頼度", ""), "地価推定信頼度"),
+                (row.get("異常値警告", ""), "異常値警告"),
+                (row["元ファイル"], "元ファイル"),
             ]
-            f.write("| " + " | ".join(values) + " |\n")
 
+            f.write("<tr>\n")
+            for val, header in values:
+                cls = ' class="right"' if header in right_cols else ""
+                if header == "有報PDF":
+                    f.write(f"  <td{cls}>{pdf_link}</td>\n")
+                else:
+                    f.write(f"  <td{cls}>{escape_html_cell(val)}</td>\n")
+            f.write("</tr>\n")
 
-def to_md_rel_path(base_path: Path, target_path: Path) -> str:
-    rel = os.path.relpath(target_path, start=base_path.parent)
-    return rel.replace("\\", "/")
-
-
-def to_md_link(base_path: Path, target_path: Path) -> str:
-    return f"[{target_path.name}]({to_md_rel_path(base_path, target_path)})"
+        f.write("</tbody>\n</table>\n")
+        f.write(_HTML_SORT_SCRIPT)
+        f.write("</body>\n</html>\n")
 
 
 def generate_ranking(
@@ -257,7 +326,7 @@ def generate_ranking(
 
     company_master = load_company_master(str(DEFAULT_COMPANY_MASTER_PATH))
     rank_rows = collect_rank_rows(resolved_input_dir, company_master)
-    write_rank_markdown(rank_rows, resolved_output_path)
+    write_rank_html(rank_rows, resolved_output_path)
     print(f"written: {resolved_output_path} ({len(rank_rows)} rows)")
 
     if open_files:
@@ -269,14 +338,14 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(
         prog="land-value-rank",
-        description="data/output配下の時価総額比ランキングMarkdownを生成する",
+        description="data/output配下の時価総額比ランキングHTMLを生成する",
     )
     shtab.add_argument_to(parser)
     parser.add_argument("--input-dir", default=str(DEFAULT_INPUT_DIR), help="企業別CSVがあるフォルダ")
     parser.add_argument(
         "--output",
         default=str(DEFAULT_OUTPUT_PATH),
-        help="ランキングMarkdownの出力パス",
+        help="ランキングHTMLの出力パス",
     )
     args = parser.parse_args()
     generate_ranking(
