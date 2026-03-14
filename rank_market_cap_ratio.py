@@ -29,7 +29,7 @@ def _open_file(path: Path) -> None:
         elif sys.platform == "darwin":
             subprocess.Popen(["open", str(path)])
         else:
-            subprocess.Popen(["qutebrowser", str(path)])
+            subprocess.run(["mdcat", str(path)])
     except OSError:
         logger.warning("ファイルを開けませんでした: %s", path)
 
@@ -262,7 +262,6 @@ def generate_ranking(
 
     if open_files:
         _open_file(resolved_output_path)
-        _open_file(BASE_DIR / "scripts" / "parallel_research.py")
 
 
 def main() -> None:
