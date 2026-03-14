@@ -13,11 +13,10 @@ Tool that estimates land values of Tokyo-based assets held by Japanese listed co
 uv sync --group dev
 maturin develop
 
-# Run main pipeline
+# Run main pipeline (auto-restarts on memory limit, up to 10 times by default)
 uv run python run.py
-# Run with auto-restart on memory limit (restarts up to 10 times by default)
-uv run python run_with_restart.py
-uv run python run_with_restart.py --max-restarts 5  # custom limit
+uv run python run.py --max-restarts 5   # custom restart limit
+uv run python run.py --no-auto-restart  # disable auto-restart
 # Generate rankings from output CSVs
 uv run python rank_market_cap_ratio.py
 
@@ -41,13 +40,13 @@ uv run python rank_market_cap_ratio.py --print-completion zsh > ~/.cache/oh-my-z
 
 | Directory | Contents |
 |-----------|----------|
-| `config/` | `company_master.yaml`, `address_overrides.yaml`, `market_cap_overrides.csv`, `input.csv` |
+| `config/` | `company_master.yaml`, `address_overrides.yaml`, `input.csv` |
 | `docs/` | `ARCHITECTURE.md` (detailed system architecture documentation) |
 | `scripts/` | `validate_ocr_accuracy.py`, `parallel_research.py`, `merge_address_patches.py` (auxiliary scripts) |
 | `data/geocoding/` | Address reference CSVs (oaza_chome, gaiku levels) |
 | `data/landprice/tokyo_2025/` | Public land price GeoJSON (`L01-25_13.geojson`) |
 | `rust_src/` | Rust source for `land_value_core` PyO3 extension (geocoder, land price, address normalization) |
-| `data/cache/` | PDF, web scraping, and facility extraction caches |
+| `data/cache/` | PDF, web scraping, facility extraction, and market cap caches |
 | `data/output/` | Per-company CSVs, anomaly exclusions, ranking markdowns |
 
 ## Architecture

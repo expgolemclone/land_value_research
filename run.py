@@ -12,7 +12,7 @@ import time
 import urllib.error
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -39,7 +39,6 @@ from src.company_config import (
     expand_site_splits,
     load_address_overrides,
     load_company_master,
-    load_market_caps,
     save_company_master,
 )
 from src.company_metadata_fallback import fetch_from_irbank
@@ -141,7 +140,8 @@ class RunContext:
     company_master_path: str
     company_master: dict[str, dict[str, Any]]
     addr_overrides: dict[str, dict[str, str | list[SiteSplitEntry]]]
-    market_caps: dict[str, float]
+    market_cap_cache_path: str
+    market_cap_cache: dict[str, Any]
     geocoder: TokyoGeocoder
     web_addr: WebAddressResearcher
     landprice: LandPriceTokyo
@@ -466,6 +466,18 @@ def parse_args() -> argparse.Namespace:
         default=90,
         help="メモリ使用率(%%%%)がこの値を超えたらキャッシュを保存して終了する(default: 90, 0で無効化)",
     )
+    parser.add_argument(
+        "--max-restarts",
+        type=int,
+        default=10,
+        help="メモリ制限終了時の最大再起動回数(default: 10, 0で無制限)",
+    )
+    parser.add_argument(
+        "--no-auto-restart",
+        action="store_true",
+        default=False,
+        help="メモリ制限終了時の自動再起動を無効化する",
+    )
     return parser.parse_args()
 
 
@@ -486,7 +498,8 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
     company_master_path = os.path.join(config_dir, "company_master.yaml")
     company_master = load_company_master(company_master_path)
     addr_overrides = load_address_overrides(os.path.join(config_dir, "address_overrides.yaml"))
-    market_caps = load_market_caps(os.path.join(config_dir, "market_cap_overrides.csv"))
+    market_cap_cache_path = os.path.join(cache_dir, "market_cap_cache.json")
+    market_cap_cache = load_json_dict(market_cap_cache_path)
 
     geocoder = TokyoGeocoder(
         oaza_csv=os.path.join(data_dir, "geocoding", "geocode_ref_oaza_chome_tokyo_2024", "13_2024.csv"),
@@ -514,7 +527,8 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         company_master_path=company_master_path,
         company_master=company_master,
         addr_overrides=addr_overrides,
-        market_caps=market_caps,
+        market_cap_cache_path=market_cap_cache_path,
+        market_cap_cache=market_cap_cache,
         geocoder=geocoder,
         web_addr=web_addr,
         landprice=landprice,
@@ -627,16 +641,23 @@ def _resolve_company_metadata(
     tokyo_sites = [s for s in sites if s.location_short.startswith("東京都")]
     _tprint(f"[{company_index}/{total_companies}] 拠点: 全{len(sites)}件, 東京都対象{len(tokyo_sites)}件")
 
-    mcap = t["market_cap"] if t["market_cap"] is not None else ctx.market_caps.get(code)
-    if mcap is None and ctx.args.allow_auto_metadata:
-        if fallback is None:
-            fallback = fetch_from_irbank(code)
-        if fallback.market_cap_yen is not None:
-            mcap = fallback.market_cap_yen
+    mcap = t["market_cap"]
+    if mcap is None:
+        today = date.today().isoformat()
+        with ctx.cache_lock:
+            cached = ctx.market_cap_cache.get(code)
+        if cached and cached.get("fetched_date") == today:
+            mcap = cached["market_cap_yen"]
+        elif ctx.args.allow_auto_metadata:
+            if fallback is None:
+                fallback = fetch_from_irbank(code)
+            if fallback.market_cap_yen is not None:
+                mcap = fallback.market_cap_yen
+                with ctx.cache_lock:
+                    ctx.market_cap_cache[code] = {"market_cap_yen": mcap, "fetched_date": today}
     if mcap is None:
         raise CompanySkipError(
-            f"証券コード{code}の時価総額が不足しています."
-            " config/input.csvに market_cap を追加するか, market_cap_overrides.csvへ登録してください."
+            f"証券コード{code}の時価総額が不足しています. config/input.csvに market_cap を追加してください."
         )
     return _CompanyMeta(
         code=code,
@@ -1114,6 +1135,7 @@ def save_caches(ctx: RunContext) -> None:
     with ctx.cache_lock:
         save_json_dict(ctx.price_cache_path, ctx.price_cache_disk)
         save_json_dict(ctx.geocode_cache_path, ctx.geocode_cache_disk)
+        save_json_dict(ctx.market_cap_cache_path, ctx.market_cap_cache)
         save_company_master(ctx.company_master_path, ctx.company_master)
     ctx.web_addr.flush()
 
@@ -1153,6 +1175,40 @@ def _process_company_with_retry(
     return None, "max retries exceeded"
 
 
+_WORKER_ENV_VAR = "_LAND_VALUE_WORKER"
+_RESTART_DELAY_SEC = 3
+
+
+def _run_with_restart(args: argparse.Namespace) -> None:
+    """Subprocess loop: re-launch run.py in worker mode on memory-limit exit."""
+    import subprocess
+
+    run_py = os.path.abspath(__file__)
+    cmd = [sys.executable, run_py, *sys.argv[1:]]
+    env = {**os.environ, _WORKER_ENV_VAR: "1"}
+
+    restart_count = 0
+    while True:
+        print(f"--- run.py 起動 (restart #{restart_count}) ---")
+        result = subprocess.run(cmd, env=env)
+
+        if result.returncode == 0:
+            print("--- run.py 正常終了 ---")
+            break
+
+        if result.returncode == EXIT_CODE_MEMORY_LIMIT:
+            restart_count += 1
+            if args.max_restarts > 0 and restart_count >= args.max_restarts:
+                print(f"--- 最大再起動回数 ({args.max_restarts}) に達しました。終了します ---")
+                sys.exit(EXIT_CODE_MEMORY_LIMIT)
+            print(f"--- メモリ制限により終了。{_RESTART_DELAY_SEC}秒後に再起動します (#{restart_count}) ---")
+            time.sleep(_RESTART_DELAY_SEC)
+            continue
+
+        print(f"--- run.py がエラー終了しました (exit code: {result.returncode})。再起動しません ---")
+        sys.exit(result.returncode)
+
+
 def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -1160,6 +1216,17 @@ def main() -> None:
         sys.stderr.reconfigure(encoding="utf-8")
 
     args = parse_args()
+
+    # Wrapper mode: if not in worker subprocess, launch restart loop
+    if not args.no_auto_restart and os.environ.get(_WORKER_ENV_VAR) != "1":
+        _run_with_restart(args)
+        return
+
+    _main_worker(args)
+
+
+def _main_worker(args: argparse.Namespace) -> None:
+    """Main processing pipeline (runs inside worker subprocess or with --no-auto-restart)."""
     _setup_logging()
     ctx = setup_environment(args)
 
