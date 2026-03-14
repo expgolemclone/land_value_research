@@ -7,7 +7,6 @@ from src.company_config import (
     SiteSplitEntry,
     load_address_overrides,
     load_company_master,
-    load_market_caps,
 )
 
 
@@ -188,49 +187,6 @@ class TestLoadAddressOverridesSplit(unittest.TestCase):
         try:
             with self.assertRaises(ValueError):
                 load_address_overrides(path)
-        finally:
-            os.unlink(path)
-
-
-class TestLoadMarketCaps(unittest.TestCase):
-    def test_load_valid_csv(self) -> None:
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False, encoding="utf-8") as f:
-            f.write("code,market_cap_yen\n1234,1000000000\n")
-            path = f.name
-        try:
-            result = load_market_caps(path)
-            self.assertIn("1234", result)
-            self.assertAlmostEqual(result["1234"], 1_000_000_000.0)
-        finally:
-            os.unlink(path)
-
-    def test_load_missing_file(self) -> None:
-        result = load_market_caps("/nonexistent/path.csv")
-        self.assertEqual(result, {})
-
-    def test_skip_empty_code(self) -> None:
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False, encoding="utf-8") as f:
-            f.write("code,market_cap_yen\n,1000000000\n1234,\n")
-            path = f.name
-        try:
-            result = load_market_caps(path)
-            self.assertNotIn("", result)
-            self.assertNotIn("1234", result)
-        finally:
-            os.unlink(path)
-
-
-class TestLoadMarketCapsMalformed(unittest.TestCase):
-    def test_non_numeric_value_skipped(self) -> None:
-        """Non-numeric market_cap_yen values should be skipped, not raise."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False, encoding="utf-8") as f:
-            f.write("code,market_cap_yen\n1234,abc\n5678,2000000000\n")
-            path = f.name
-        try:
-            result = load_market_caps(path)
-            self.assertNotIn("1234", result)
-            self.assertIn("5678", result)
-            self.assertAlmostEqual(result["5678"], 2_000_000_000.0)
         finally:
             os.unlink(path)
 

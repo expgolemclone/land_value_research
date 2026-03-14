@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import csv
 import logging
 import os
 from dataclasses import dataclass
@@ -199,22 +198,3 @@ def save_company_master(path: str, data: dict[str, dict[str, Any]]) -> None:
         yaml.dump(sorted_data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
 
-def load_market_caps(path: str) -> dict[str, float]:
-    """時価総額(円). CSV: code,market_cap_yen"""
-    if not os.path.exists(path):
-        return {}
-    out: dict[str, float] = {}
-    with open(path, encoding="utf-8") as f:
-        r = csv.DictReader(f)
-        for row in r:
-            code = str(row.get("code", "")).strip()
-            if not code:
-                continue
-            val = str(row.get("market_cap_yen", "")).replace(",", "").strip()
-            if not val:
-                continue
-            try:
-                out[code] = float(val)
-            except ValueError:
-                continue
-    return out

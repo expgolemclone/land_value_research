@@ -13,7 +13,7 @@ flowchart TB
         CSV[/"config/input.csv<br>(証券コード一覧)"/]
         YAML1[/"company_master.yaml<br>(企業メタデータ)"/]
         YAML2[/"address_overrides.yaml<br>(住所手動補正)"/]
-        MCAP[/"market_cap_overrides.csv<br>(時価総額)"/]
+        MCAP[/"market_cap_cache.json<br>(時価総額キャッシュ)"/]
     end
 
     subgraph REF["参照データ"]
