@@ -265,11 +265,13 @@ def _launch_processes(
     prompts: dict[str, str],
     cli_cmd: str,
 ) -> None:
-    """Launch parallel CLI processes and wait for completion."""
+    """Launch parallel CLI processes in new kitty windows."""
+    import shlex
+
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    print(f"{len(selected)} プロセスを起動します...\n")
+    print(f"{len(selected)} プロセスを kitty ウィンドウで起動します...\n")
 
     running: list[dict] = []
     for i, t in enumerate(selected):
@@ -277,30 +279,32 @@ def _launch_processes(
         prompt = prompts[code]
         log_file = LOG_DIR / f"{timestamp}_{code}.log"
 
-        cmd = [cli_cmd, "exec", "--full-auto", prompt]
-        print(f"  [{i + 1}] {code} {t['name']}")
+        title = f"{code} {t['name']}"
+        shell_cmd = (
+            f"{cli_cmd} exec --full-auto {shlex.quote(prompt)}"
+            f" 2>&1 | tee {shlex.quote(str(log_file))};"
+            f' echo "\\n--- 完了 (Enter で閉じる) ---"; read'
+        )
+        cmd = ["kitty", "--title", title, "-e", "bash", "-c", shell_cmd]
+
+        print(f"  [{i + 1}] {title}")
         print(f"      log: {log_file}")
 
-        fh = open(log_file, "w", encoding="utf-8")  # noqa: SIM115
         proc = subprocess.Popen(
             cmd,
             cwd=PROJECT_ROOT,
-            stdout=fh,
-            stderr=subprocess.STDOUT,
             env={**os.environ, "NO_COLOR": "1"},
         )
-        running.append({"proc": proc, "code": code, "name": t["name"], "fh": fh, "log": log_file})
+        running.append({"proc": proc, "code": code, "name": t["name"], "log": log_file})
 
     print("\n全プロセス起動完了. 完了を待機中...\n")
 
     for p in running:
         p["proc"].wait()
-        p["fh"].close()
         rc = p["proc"].returncode
         status = "完了" if rc == 0 else f"エラー (code={rc})"
         print(f"  {p['code']} {p['name']}: {status}")
-        log_size = p["log"].stat().st_size
-        if log_size == 0:
+        if p["log"].exists() and p["log"].stat().st_size == 0:
             print(f"  {p['code']} {p['name']}: 警告 - ログが空です")
 
     print("\n=== 全プロセス完了 ===\n")
