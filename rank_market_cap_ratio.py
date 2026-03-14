@@ -28,7 +28,7 @@ def _open_file(path: Path) -> None:
         elif sys.platform == "darwin":
             subprocess.Popen(["open", str(path)])
         else:
-            subprocess.Popen(["xdg-open", str(path)])
+            subprocess.Popen(["qutebrowser", str(path)])
     except OSError:
         logger.warning("ファイルを開けませんでした: %s", path)
 
