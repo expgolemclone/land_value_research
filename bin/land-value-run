@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+# rustc が見つからなければ nix develop 経由で再実行
+if ! command -v rustc &>/dev/null; then
+    if [[ -n "${_IN_NIX_DEVELOP:-}" ]]; then
+        echo "エラー: nix develop 内でも rustc が見つかりません" >&2
+        exit 1
+    fi
+    echo "[land-value-run] rustc not found, re-launching via nix develop..." >&2
+    export _IN_NIX_DEVELOP=1
+    exec nix develop "${REPO_DIR}" --command "$0" "$@"
+fi
+
+exec uv run python "${REPO_DIR}/run.py" "$@"
