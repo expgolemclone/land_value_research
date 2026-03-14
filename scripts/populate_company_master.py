@@ -9,11 +9,12 @@ and merges results into the YAML.
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sys
+import tempfile
 import threading
 import time
-import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -23,7 +24,9 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.company_config import load_company_master, save_company_master
+import yaml
+
+from src.company_config import load_company_master
 from src.network import urlopen_with_retry
 from src.utils import validate_url_not_private
 
@@ -32,6 +35,20 @@ INPUT_FULL_PATH = str(PROJECT_ROOT / "config" / "input_full.csv")
 
 DEFAULT_TIMEOUT_SEC = 20
 SAVE_INTERVAL = 100
+
+
+def _atomic_save_company_master(path: str, data: dict[str, dict[str, Any]]) -> None:
+    """Write company_master.yaml atomically via temp file + rename."""
+    sorted_data = dict(sorted(data.items(), key=lambda x: x[0]))
+    dir_path = os.path.dirname(os.path.abspath(path))
+    fd, tmp_path = tempfile.mkstemp(suffix=".yaml", dir=dir_path)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            yaml.dump(sorted_data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+        os.replace(tmp_path, path)
+    except BaseException:
+        os.unlink(tmp_path)
+        raise
 
 
 def _fetch_text(url: str) -> str:
@@ -149,11 +166,11 @@ def main() -> None:
                     print(f"  Progress: {processed}/{len(missing)} (succeeded: {succeeded}, failed: {n_fail})")
 
                 if not args.dry_run and processed % SAVE_INTERVAL == 0:
-                    save_company_master(COMPANY_MASTER_PATH, master)
+                    _atomic_save_company_master(COMPANY_MASTER_PATH, master)
                     print(f"  Saved (interim) — {len(master)} entries")
 
     if not args.dry_run:
-        save_company_master(COMPANY_MASTER_PATH, master)
+        _atomic_save_company_master(COMPANY_MASTER_PATH, master)
         print(f"Saved final — {len(master)} entries in company_master.yaml")
     else:
         print(f"[DRY RUN] Would have {len(master)} entries total")
