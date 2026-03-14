@@ -172,19 +172,18 @@ def run_split_address(args: argparse.Namespace) -> None:
         print("ランキングに企業が見つかりませんでした.")
         return
 
+    # CODEX_CHECK filter (上限到達済みの企業を事前に除外)
+    targets = _codex_check_filter(targets)
+    if not targets:
+        print("全企業が CODEX_CHECK 上限に達しています.")
+        return
+
     selected = targets[: args.n]
 
     print("\n=== 並行 split-address ===\n")
     _print_targets(selected)
 
     precheck_results = _run_precheck(selected)
-
-    # CODEX_CHECK filter
-    selected = _codex_check_filter(selected)
-    if not selected:
-        print("全企業が CODEX_CHECK 上限に達しています.")
-        return
-    print(f"CODEX_CHECK フィルタ後: {len(selected)} 件\n")
 
     if args.dry_run:
         _print_precheck_details(selected, precheck_results)
