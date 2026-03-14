@@ -55,6 +55,7 @@ logger = logging.getLogger(__name__)
 
 CACHE_SAVE_INTERVAL = 10
 COMPANY_RETRY_COUNT = 3
+EXIT_CODE_MEMORY_LIMIT = 75
 COMPANY_RETRY_BASE_DELAY_SEC = 2.0
 
 _print_lock = threading.Lock()
@@ -1106,7 +1107,7 @@ def _memory_watchdog(ctx: RunContext, limit_percent: float, check_interval: floa
                 save_caches(ctx)
             except Exception:
                 logger.exception("キャッシュ保存に失敗しました")
-            os._exit(1)
+            os._exit(EXIT_CODE_MEMORY_LIMIT)
 
 
 def save_caches(ctx: RunContext) -> None:
