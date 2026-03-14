@@ -12,22 +12,23 @@ trap 'restore_permissions; rm -f "$LOCKDOWN_LIST"' EXIT INT TERM
 
 find_targets() {
     cd "$PROJECT_DIR"
-    # トップレベルの .py ファイル
-    find . -maxdepth 1 -name '*.py' -printf '%P\n' 2>/dev/null
-    # src/ 内（geocode_tokyo.py と __init__.py は除外 — import に必要）
-    find src -name '*.py' \
-        ! -name 'geocode_tokyo.py' \
-        ! -name '__init__.py' \
-        -printf '%P\n' 2>/dev/null
-    # Rust ソース・スクリプト・テスト
-    find rust_src scripts tests -type f -printf '%P\n' 2>/dev/null
+    {
+        # トップレベルの .py ファイル
+        find . -maxdepth 1 -name '*.py'
+        # src/ 内（geocode_tokyo.py と __init__.py は除外 — import に必要）
+        find ./src -name '*.py' \
+            ! -name 'geocode_tokyo.py' \
+            ! -name '__init__.py'
+        # Rust ソース・スクリプト・テスト
+        find ./rust_src ./scripts ./tests -type f
+        # Claude Code 設定
+        find ./.claude -type f
+    } 2>/dev/null | sed 's|^\./||'
     # ビルド設定
     for f in Cargo.toml Cargo.lock pyproject.toml flake.nix flake.lock \
              uv.lock rust-toolchain.toml .gitattributes; do
         [ -f "$f" ] && echo "$f"
     done
-    # Claude Code 設定
-    find .claude -type f -printf '%P\n' 2>/dev/null
 }
 
 lock_permissions() {
