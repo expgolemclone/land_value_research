@@ -7,7 +7,8 @@ from typing import Any
 
 import yaml
 
-from src.company_config import load_company_master
+from src.company_config import load_company_master, save_company_master
+from src.company_metadata_fallback import fetch_from_irbank
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_INPUT_DIR = BASE_DIR / "data" / "output"
@@ -313,6 +314,35 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
         f.write("</body>\n</html>\n")
 
 
+def _resolve_missing_names(rank_rows: list[dict[str, Any]], company_master: dict[str, dict[str, Any]]) -> None:
+    """企業名がtickerコードのままの行をIRBankから名前解決し、company_masterに保存する."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    unresolved = [(i, row) for i, row in enumerate(rank_rows) if row["企業名"].replace(" ", "") == row["証券コード"]]
+    if not unresolved:
+        return
+
+    codes = [row["証券コード"] for _, row in unresolved]
+    print(f"IRBankから企業名を取得中... ({len(codes)} 社)")
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        results = list(executor.map(fetch_from_irbank, codes))
+
+    updated = 0
+    for (idx, row), meta in zip(unresolved, results):
+        if meta.company_name:
+            rank_rows[idx]["企業名"] = meta.company_name
+            code = row["証券コード"]
+            if code not in company_master:
+                company_master[code] = {}
+            company_master[code]["company_name"] = meta.company_name
+            updated += 1
+
+    if updated:
+        save_company_master(str(DEFAULT_COMPANY_MASTER_PATH), company_master)
+        print(f"企業名を {updated} 件取得し company_master.yaml に保存しました")
+
+
 def generate_ranking(
     input_dir: Path | str | None = None,
     output_path: Path | str | None = None,
@@ -326,6 +356,7 @@ def generate_ranking(
 
     company_master = load_company_master(str(DEFAULT_COMPANY_MASTER_PATH))
     rank_rows = collect_rank_rows(resolved_input_dir, company_master)
+    _resolve_missing_names(rank_rows, company_master)
     write_rank_html(rank_rows, resolved_output_path)
     print(f"written: {resolved_output_path} ({len(rank_rows)} rows)")
 
