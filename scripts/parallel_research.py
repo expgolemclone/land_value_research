@@ -28,6 +28,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from scripts._codex_check_tracker import get as get_check_count
 from scripts._codex_check_tracker import increment as increment_check
 from scripts._codex_precheck import precheck
+from scripts.codex_lockdown import codex_lockdown
 
 RANKING_FILE = PROJECT_ROOT / "data" / "ranking" / "ranking_market_cap_ratio.html"
 PATCH_DIR = PROJECT_ROOT / "config" / "address_patches"
@@ -208,7 +209,8 @@ def run_split_address(args: argparse.Namespace) -> None:
         t["code"]: f"/split-address {t['code']} の時価総額比の土地の含み益が高すぎておかしいだろ?. 分割できないか調査しろ."
         for t in selected
     }
-    _launch_processes(selected, prompts, args.cli)
+    with codex_lockdown():
+        _launch_processes(selected, prompts, args.cli)
 
 
 # ---------------------------------------------------------------------------
@@ -235,7 +237,8 @@ def run_resolve_address(args: argparse.Namespace) -> None:
     _prepare_patch_dir()
 
     prompts = {t["code"]: f"/resolve-address {t['code']} config/address_patches/{t['code']}.yaml" for t in selected}
-    _launch_processes(selected, prompts, args.cli)
+    with codex_lockdown():
+        _launch_processes(selected, prompts, args.cli)
 
 
 # ---------------------------------------------------------------------------
