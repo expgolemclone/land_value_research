@@ -1256,7 +1256,9 @@ def _main_worker(args: argparse.Namespace) -> None:
         written_count = 0
         excluded_count = 0
 
-        excluded_path = os.path.join(ctx.output_dir, "anomaly_excluded_companies.csv")
+        ranking_dir = os.path.join(ctx.base_dir, "data", "ranking")
+        os.makedirs(ranking_dir, exist_ok=True)
+        excluded_path = os.path.join(ranking_dir, "anomaly_excluded_companies.csv")
         with (
             open(excluded_path, "w", newline="", encoding="utf-8") as excl_f,
             ThreadPoolExecutor(max_workers=max_workers) as executor,

@@ -5,6 +5,7 @@ data/cache/facilities_land/
 data/cache/*.json
 data/output/
 data/output_*/
+data/ranking/
 input_enriched.csv
 __pycache__/
 *.pyc

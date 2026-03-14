@@ -47,7 +47,8 @@ uv run python rank_market_cap_ratio.py --print-completion zsh > ~/.cache/oh-my-z
 | `data/landprice/tokyo_2025/` | Public land price GeoJSON (`L01-25_13.geojson`) |
 | `rust_src/` | Rust source for `land_value_core` PyO3 extension (geocoder, land price, address normalization) |
 | `data/cache/` | PDF, web scraping, facility extraction, and market cap caches |
-| `data/output/` | Per-company CSVs, anomaly exclusions, ranking markdowns |
+| `data/output/` | Per-company CSVs (individual company results) |
+| `data/ranking/` | Ranking HTML, anomaly exclusion CSV |
 
 ## Architecture
 
@@ -155,6 +156,6 @@ After every change, ensure the entire workspace remains consistent. This is mand
 Before ending each session, perform the following cleanup. This is mandatory.
 
 1. **Delete temporary files.** Remove context files (e.g., `context.md`), debug scripts, scratch notes, temporary test outputs, and any other files created for in-session use that are not part of the permanent codebase.
-   - **Do NOT delete:** files under `data/cache/`, `data/output/`, `config/`, or any file tracked by git.
+   - **Do NOT delete:** files under `data/cache/`, `data/output/`, `data/ranking/`, `config/`, or any file tracked by git.
 2. **Verify clean state.** Run `git status` — there should be no untracked temporary files remaining.
 3. **Push all commits.** After cleanup, push all session commits to the remote repository (`git push`). Do not ask for confirmation.

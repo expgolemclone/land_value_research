@@ -29,7 +29,7 @@ from scripts._codex_check_tracker import get as get_check_count
 from scripts._codex_check_tracker import increment as increment_check
 from scripts._codex_precheck import precheck
 
-RANKING_FILE = PROJECT_ROOT / "data" / "output" / "ranking_market_cap_ratio.html"
+RANKING_FILE = PROJECT_ROOT / "data" / "ranking" / "ranking_market_cap_ratio.html"
 PATCH_DIR = PROJECT_ROOT / "config" / "address_patches"
 LOG_DIR = PROJECT_ROOT / "data" / "output" / "research_logs"
 

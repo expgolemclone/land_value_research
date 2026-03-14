@@ -11,7 +11,7 @@ from src.company_config import load_company_master
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_INPUT_DIR = BASE_DIR / "data" / "output"
-DEFAULT_OUTPUT_PATH = DEFAULT_INPUT_DIR / "ranking_market_cap_ratio.html"
+DEFAULT_OUTPUT_PATH = BASE_DIR / "data" / "ranking" / "ranking_market_cap_ratio.html"
 DEFAULT_COMPANY_MASTER_PATH = BASE_DIR / "config" / "company_master.yaml"
 CODEX_CHECK_FILE = BASE_DIR / "config" / "codex_check_status.yaml"
 
@@ -338,7 +338,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(
         prog="land-value-rank",
-        description="data/output配下の時価総額比ランキングHTMLを生成する",
+        description="data/ranking配下の時価総額比ランキングHTMLを生成する",
     )
     shtab.add_argument_to(parser)
     parser.add_argument("--input-dir", default=str(DEFAULT_INPUT_DIR), help="企業別CSVがあるフォルダ")
