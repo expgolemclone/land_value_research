@@ -1,0 +1,20 @@
+{
+  "code": "4031",
+  "sites": [
+    {
+      "site_name": "本社",
+      "geocode_level": "gaiku",
+      "address_source": "override",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 157000.0,
+      "ward": "千代田区",
+      "has_override": true,
+      "bad_pattern_1_risk": true,
+      "has_multi_loc_warning": false
+    }
+  ],
+  "all_gaiku": true,
+  "has_risk": true,
+  "docs_exists": false
+}

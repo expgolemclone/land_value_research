@@ -1,0 +1,16 @@
+'4031':
+  本社:
+    - name: KCA SHIBUYA bldg.
+      address: 東京都渋谷区神南1丁目22番1号
+      area_m2: 353.61
+      area_m2_is_estimated: false
+      area_m2_source: 公式サイト（TOPICS: KCA SHIBUYA bldg.竣工）
+      area_m2_source_url: https://www.katakuraco-op.com/news/2025/09/18/2208/
+      area_m2_note: 敷地面積353.61㎡
+    - name: 賃貸等不動産（その他・合算）
+      address: 全国各所
+      area_m2: 156646.39
+      area_m2_is_estimated: true
+      area_m2_source: 有価証券報告書の「主要な設備の状況」本社(土地面積157千㎡)から、公式サイト記載のKCA SHIBUYA bldg.(敷地面積353.61㎡)を控除
+      area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W2EP.pdf
+      area_m2_note: 157,000㎡ - 353.61㎡ = 156,646.39㎡
