@@ -1,6 +1,6 @@
 ---
 name: split-address
-description: 時価総額比の上位銘柄について合算された住所を分割してパッチファイルに登録する。parallel_research.py 経由で呼び出される。
+description: 時価総額比の上位銘柄について合算された住所を分割してパッチファイルに登録する。parallel_research.py 経由で呼び出される。コードは見るな. webでのリサーチに集中しろ.
 argument-hint: "<証券コード>"
 ---
 

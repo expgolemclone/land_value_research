@@ -230,6 +230,17 @@ def run_split_address(args: argparse.Namespace) -> None:
             pcheck_file = PATCH_DIR / f"{code}.precheck.json"
             pcheck_file.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    # Ensure docs/{code}.md exists before lockdown (docs/ will be 0o111)
+    docs_dir = PROJECT_ROOT / "docs"
+    docs_dir.mkdir(parents=True, exist_ok=True)
+    for t in selected:
+        docs_md = docs_dir / f"{t['code']}.md"
+        if not docs_md.exists():
+            docs_md.touch()
+
+    # Ensure log dir exists before lockdown (data/output/ will be 0o111)
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+
     # Build prompts
     prompts = {
         t["code"]: f"/split-address {t['code']} の時価総額比の土地の含み益が高すぎておかしいだろ?. 分割できないか調査しろ."
@@ -262,6 +273,9 @@ def run_resolve_address(args: argparse.Namespace) -> None:
         return
 
     _prepare_patch_dir()
+
+    # Ensure log dir exists before lockdown (data/output/ will be 0o111)
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
 
     prompts = {t["code"]: f"/resolve-address {t['code']} config/address_patches/{t['code']}.yaml" for t in selected}
     codes = [t["code"] for t in selected]
@@ -301,7 +315,6 @@ def _launch_processes(
     """Launch parallel CLI processes in new kitty windows."""
     import shlex
 
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     print(f"{len(selected)} プロセスを kitty ウィンドウで起動します...\n")

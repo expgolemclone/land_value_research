@@ -59,12 +59,13 @@ def _find_targets(
         p = PROJECT_ROOT / name
         if p.is_file():
             targets.append(p)
-    # .claude/
-    claude_dir = PROJECT_ROOT / ".claude"
-    if claude_dir.exists():
-        for p in claude_dir.rglob("*"):
-            if p.is_file():
-                targets.append(p)
+    # .claude/ and .agents/
+    for d in [".claude", ".agents"]:
+        dp = PROJECT_ROOT / d
+        if dp.exists():
+            for p in dp.rglob("*"):
+                if p.is_file():
+                    targets.append(p)
 
     # --- 追加: docs/ ディレクトリ制限 ---
     docs_dir = PROJECT_ROOT / "docs"
@@ -86,13 +87,10 @@ def _find_targets(
     if ranking_html.is_file():
         targets.append(ranking_html)
 
-    # --- 追加: 対象外スキルのロック ---
-    if mode:
-        other_skill = "resolve-address" if mode == "split-address" else "split-address"
-        for base in [".agents", ".claude"]:
-            skill_md = PROJECT_ROOT / base / "skills" / other_skill / "SKILL.md"
-            if skill_md.is_file():
-                targets.append(skill_md)
+    # --- 追加: address_overrides.yaml ロック ---
+    overrides_yaml = PROJECT_ROOT / "config" / "address_overrides.yaml"
+    if overrides_yaml.is_file():
+        targets.append(overrides_yaml)
 
     return targets, dirs_to_restrict
 
