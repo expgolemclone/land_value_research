@@ -14,4 +14,4 @@ if ! command -v rustc &>/dev/null; then
     exec nix develop "${REPO_DIR}" --command "$0" "$@"
 fi
 
-exec uv run python "${REPO_DIR}/run.py" "$@"
+exec uv run --no-build-isolation python "${REPO_DIR}/run.py" "$@"
