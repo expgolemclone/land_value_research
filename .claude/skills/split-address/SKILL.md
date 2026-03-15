@@ -24,9 +24,9 @@ argument-hint: "<証券コード>"
 
 ## 事前検証フラグ
 
-`parallel_research.py` が事前に `config/address_patches/{証券コード}.precheck.json` を生成している場合がある。
+`parallel_research.py` が事前に `config/address_patches/{証券コード}.precheck.json` を生成し、プロンプトに注入済み。
 この JSON は `_codex_precheck.py` の出力で、各事業所の自動判定結果を含む。
-ファイルが存在する場合は読み込んで調査の優先度付けに使用する。
+以下のフラグを参照して調査の優先度付けに使用する。
 
 **フラグの解釈:**
 
@@ -59,11 +59,7 @@ argument-hint: "<証券コード>"
 
 ## 2. 対象事業所の抽出と分析
 
-`data/output/{証券コード}_output.csv` を読み込み、**全行**を確認する。
-
-```bash
-cat data/output/****_output.csv
-```
+`data/output/{証券コード}_output.csv` はプロンプトに注入済み。**全行**を確認する。
 
 各事業所について以下の観点でフラグを立てる：
 

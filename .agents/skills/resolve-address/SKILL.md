@@ -74,12 +74,7 @@ python rank_market_cap_ratio.py
 
 ### 2.2 対象事業所の抽出
 
-対象企業が決まったら、`data/output/{証券コード}_output.csv` の「住所解決レベル」列が `muni_centroid` または `oaza_chome` の行を抽出する。
-
-```bash
-# 対象企業の低解像度行を確認（例: 証券コード 9351）
-rg "muni_centroid|oaza_chome" data/output/9351_output.csv
-```
+`data/output/{証券コード}_output.csv` はプロンプトに注入済み。「住所解決レベル」列が `muni_centroid` または `oaza_chome` の行を抽出する。
 
 ### 2.3 優先度の判断（複数事業所がある場合）
 
