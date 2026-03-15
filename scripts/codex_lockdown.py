@@ -59,12 +59,12 @@ def _find_targets(
         p = PROJECT_ROOT / name
         if p.is_file():
             targets.append(p)
-    # .claude/ and .agents/
+    # .claude/ and .agents/ (SKILL.md はスキル定義なので除外)
     for d in [".claude", ".agents"]:
         dp = PROJECT_ROOT / d
         if dp.exists():
             for p in dp.rglob("*"):
-                if p.is_file():
+                if p.is_file() and p.name != "SKILL.md":
                     targets.append(p)
 
     # --- 追加: docs/ ディレクトリ制限 ---
