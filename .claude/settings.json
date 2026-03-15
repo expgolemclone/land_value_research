@@ -24,15 +24,6 @@
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate_address_patch.py\""
           }
         ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_commit_push.py\""
-          }
-        ]
       }
     ],
     "Stop": [
@@ -46,17 +37,6 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate_geocode_patches.py\""
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/session_end_push.py\""
           }
         ]
       }
