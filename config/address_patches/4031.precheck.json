@@ -1,5 +1,5 @@
 {
-  "code": "7602",
+  "code": "4031",
   "sites": [
     {
       "site_name": "本社",
@@ -7,7 +7,7 @@
       "address_source": "override",
       "has_hoka": false,
       "is_aggregate": false,
-      "area_m2": 16465.57,
+      "area_m2": 157000.0,
       "ward": "千代田区",
       "has_override": true,
       "bad_pattern_1_risk": true,
@@ -16,5 +16,5 @@
   ],
   "all_gaiku": true,
   "has_risk": true,
-  "codex_check": 1
+  "docs_exists": false
 }
