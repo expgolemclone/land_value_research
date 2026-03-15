@@ -113,8 +113,8 @@ class TestPostPipelineCleanup(unittest.TestCase):
         from run import _post_pipeline_cleanup
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            docs_dir = Path(tmpdir) / "docs"
-            docs_dir.mkdir()
+            log_dir = Path(tmpdir) / "data" / "output" / "run_logs"
+            log_dir.mkdir(parents=True)
             config_dir = Path(tmpdir) / "config"
             config_dir.mkdir()
 
@@ -129,11 +129,11 @@ class TestPostPipelineCleanup(unittest.TestCase):
                 "20260107_000000.log",
             ]
             for name in names:
-                (docs_dir / name).write_text("log", encoding="utf-8")
+                (log_dir / name).write_text("log", encoding="utf-8")
 
             _post_pipeline_cleanup(tmpdir, keep_logs=5)
 
-            remaining = sorted(f.name for f in docs_dir.glob("*.log"))
+            remaining = sorted(f.name for f in log_dir.glob("*.log"))
             self.assertEqual(len(remaining), 5)
             # Oldest 2 should be deleted
             self.assertNotIn("20260101_000000.log", remaining)
@@ -147,16 +147,16 @@ class TestPostPipelineCleanup(unittest.TestCase):
         from run import _post_pipeline_cleanup
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            docs_dir = Path(tmpdir) / "docs"
-            docs_dir.mkdir()
+            log_dir = Path(tmpdir) / "data" / "output" / "run_logs"
+            log_dir.mkdir(parents=True)
             config_dir = Path(tmpdir) / "config"
             config_dir.mkdir()
 
-            (docs_dir / "20260101_000000.log").write_text("log", encoding="utf-8")
+            (log_dir / "20260101_000000.log").write_text("log", encoding="utf-8")
 
             _post_pipeline_cleanup(tmpdir, keep_logs=5)
 
-            remaining = list(docs_dir.glob("*.log"))
+            remaining = list(log_dir.glob("*.log"))
             self.assertEqual(len(remaining), 1)
 
     def test_delete_bak_files(self):

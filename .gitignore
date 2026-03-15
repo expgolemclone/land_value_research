@@ -23,7 +23,7 @@ __pycache__/
 land_value_core/
 
 # Pipeline run logs
-docs/*.log
+data/output/run_logs/
 
 # Backup files
 *.bak

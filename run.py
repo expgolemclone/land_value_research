@@ -311,7 +311,7 @@ def build_excluded_row(
 
 
 def _setup_logging() -> None:
-    log_dir = os.path.join(os.path.dirname(__file__), "docs")
+    log_dir = os.path.join(os.path.dirname(__file__), "data", "output", "run_logs")
     os.makedirs(log_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = os.path.join(log_dir, f"{timestamp}.log")
@@ -1274,12 +1274,12 @@ def _post_pipeline_cleanup(base_dir: str, keep_logs: int = 5) -> None:
         logger.warning("アドレスパッチのマージに失敗", exc_info=True)
 
     # 2. Prune old log files (keep latest N)
-    docs_dir = os.path.join(base_dir, "docs")
+    log_dir = os.path.join(base_dir, "data", "output", "run_logs")
     try:
-        log_files = sorted(f for f in os.listdir(docs_dir) if f.endswith(".log"))
+        log_files = sorted(f for f in os.listdir(log_dir) if f.endswith(".log"))
         if len(log_files) > keep_logs:
             for lf in log_files[:-keep_logs]:
-                os.remove(os.path.join(docs_dir, lf))
+                os.remove(os.path.join(log_dir, lf))
                 logger.info("古いログを削除: %s", lf)
     except Exception:
         logger.warning("ログファイルの整理に失敗", exc_info=True)
