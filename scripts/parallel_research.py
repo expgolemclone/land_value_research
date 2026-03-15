@@ -30,7 +30,7 @@ from scripts.codex_lockdown import codex_lockdown
 
 RANKING_FILE = PROJECT_ROOT / "data" / "ranking" / "ranking_market_cap_ratio.html"
 PATCH_DIR = PROJECT_ROOT / "config" / "address_patches"
-LOG_DIR = PROJECT_ROOT / "data" / "output" / "research_logs"
+LOG_DIR = PROJECT_ROOT / "docs" / "research_logs"
 
 
 # ---------------------------------------------------------------------------
@@ -238,7 +238,7 @@ def run_split_address(args: argparse.Namespace) -> None:
         if not docs_md.exists():
             docs_md.touch()
 
-    # Ensure log dir exists before lockdown (data/output/ will be 0o111)
+    # Ensure log dir exists before lockdown (docs/ will be 0o111)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
     # Build prompts
@@ -279,7 +279,7 @@ def run_resolve_address(args: argparse.Namespace) -> None:
 
     _prepare_patch_dir()
 
-    # Ensure log dir exists before lockdown (data/output/ will be 0o111)
+    # Ensure log dir exists before lockdown (docs/ will be 0o111)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
     prompts = {

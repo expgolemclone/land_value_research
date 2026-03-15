@@ -25,6 +25,9 @@ land_value_core/
 # Pipeline run logs
 data/output/run_logs/
 
+# Research logs
+docs/research_logs/
+
 # Backup files
 *.bak
 
