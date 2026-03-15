@@ -235,7 +235,8 @@ def run_split_address(args: argparse.Namespace) -> None:
         t["code"]: f"/split-address {t['code']} の時価総額比の土地の含み益が高すぎておかしいだろ?. 分割できないか調査しろ."
         for t in selected
     }
-    with codex_lockdown():
+    codes = [t["code"] for t in selected]
+    with codex_lockdown(target_codes=codes, mode="split-address"):
         _launch_processes(selected, prompts, args.cli)
 
 
@@ -263,7 +264,8 @@ def run_resolve_address(args: argparse.Namespace) -> None:
     _prepare_patch_dir()
 
     prompts = {t["code"]: f"/resolve-address {t['code']} config/address_patches/{t['code']}.yaml" for t in selected}
-    with codex_lockdown():
+    codes = [t["code"] for t in selected]
+    with codex_lockdown(target_codes=codes, mode="resolve-address"):
         _launch_processes(selected, prompts, args.cli)
 
 
@@ -280,9 +282,11 @@ def _print_targets(selected: list[dict[str, str]]) -> None:
 
 
 def _prepare_patch_dir() -> None:
-    """Clean YAML files in patch dir or create it."""
+    """Clean patch dir (YAML + precheck JSON) or create it."""
     if PATCH_DIR.exists():
         for f in PATCH_DIR.glob("*.yaml"):
+            f.unlink()
+        for f in PATCH_DIR.glob("*.precheck.json"):
             f.unlink()
     else:
         PATCH_DIR.mkdir(parents=True)
