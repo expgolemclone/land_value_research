@@ -248,7 +248,7 @@ def run_split_address(args: argparse.Namespace) -> None:
     }
     codes = [t["code"] for t in selected]
     with codex_lockdown(target_codes=codes, mode="split-address"):
-        _launch_processes(selected, prompts, args.cli)
+        _launch_processes(selected, prompts, args.cli, check_docs=True)
 
 
 # ---------------------------------------------------------------------------
@@ -311,6 +311,8 @@ def _launch_processes(
     selected: list[dict[str, str]],
     prompts: dict[str, str],
     cli_cmd: str,
+    *,
+    check_docs: bool = False,
 ) -> None:
     """Launch parallel CLI processes in new kitty windows."""
     import shlex
@@ -352,6 +354,12 @@ def _launch_processes(
         print(f"  {p['code']} {p['name']}: {status}")
         if p["log"].exists() and p["log"].stat().st_size == 0:
             print(f"  {p['code']} {p['name']}: 警告 - ログが空です")
+        if check_docs:
+            docs_md = PROJECT_ROOT / "docs" / f"{p['code']}.md"
+            if not docs_md.exists():
+                print(f"  {p['code']} {p['name']}: エラー - docs/{p['code']}.md が存在しません")
+            elif docs_md.stat().st_size == 0:
+                print(f"  {p['code']} {p['name']}: エラー - docs/{p['code']}.md が空です (推論メモ未保存)")
 
     print("\n=== 全プロセス完了 ===\n")
     print("次の手順:")

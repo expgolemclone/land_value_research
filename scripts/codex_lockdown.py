@@ -67,10 +67,9 @@ def _find_targets(
                 if p.is_file() and p.name != "SKILL.md":
                     targets.append(p)
 
-    # --- 追加: docs/ ディレクトリ制限 ---
+    # --- 追加: docs/ ファイル個別ロック ---
     docs_dir = PROJECT_ROOT / "docs"
     if docs_dir.exists():
-        dirs_to_restrict.append(docs_dir)
         for p in docs_dir.glob("*.md"):
             # 対象企業の docs は書き込み/参照用にロックしない
             if codes and p.stem in codes:
