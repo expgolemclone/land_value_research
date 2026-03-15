@@ -44,7 +44,7 @@ from src.company_metadata_fallback import fetch_from_irbank
 from src.geocode_tokyo import TokyoGeocoder
 from src.landprice_tokyo import LandPriceTokyo, PriceResult
 from src.network import is_transient_network_error
-from src.pdf_extract import FacilityLand, extract_major_facilities_land
+from src.pdf_extract import FacilityLand, extract_facilities_section_text, extract_major_facilities_land
 from src.schema import EXCLUDED_COLUMNS, OUTPUT_COLUMNS, OutputRow
 from src.utils import ensure_dir
 from src.web_address_research import WebAddressResearcher
@@ -575,6 +575,15 @@ def _resolve_company_metadata(
     if sites is None:
         sites = extract_major_facilities_land(pdf_path)
         save_sites_cache(sites_cache_path, pdf_path, sites)
+
+    # 設備の状況テキストキャッシュ
+    text_cache_path = os.path.join(ctx.facilities_cache_dir, f"{code}_facilities_text.txt")
+    if not os.path.exists(text_cache_path):
+        facilities_text = extract_facilities_section_text(pdf_path)
+        if facilities_text:
+            with open(text_cache_path, "w", encoding="utf-8") as f:
+                f.write(facilities_text)
+
     # サイト分割展開（tokyoフィルタ前に実施: 分割先が他県になるケースに対応）
     company_overrides = ctx.addr_overrides.get(code, {})
     if any(isinstance(v, list) for v in company_overrides.values()):

@@ -337,6 +337,14 @@ def _build_injected_prompt(
             f'<context path="data/cache/facilities_land/{code}_sites.json">\n{sites_content}\n</context>'
         )
 
+    # facilities_text (有報 設備の状況 ページテキスト) 注入
+    text_path = PROJECT_ROOT / "data" / "cache" / "facilities_land" / f"{code}_facilities_text.txt"
+    if text_path.exists():
+        text_content = text_path.read_text(encoding="utf-8")
+        parts.append(
+            f'<context path="data/cache/facilities_land/{code}_facilities_text.txt">\n{text_content}\n</context>'
+        )
+
     # output CSV 注入
     csv_path = PROJECT_ROOT / "data" / "output" / f"{code}_output.csv"
     if csv_path.exists():

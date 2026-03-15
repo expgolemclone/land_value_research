@@ -314,6 +314,33 @@ def extract_major_facilities_land(pdf_path: str) -> list[FacilityLand]:
     return values
 
 
+def extract_facilities_section_text(pdf_path: str) -> str:
+    """有報PDFの「主要な設備の状況」セクションのページテキストを抽出."""
+    pages_text: list[str] = []
+    in_section = False
+
+    try:
+        pdf_file = pdfplumber.open(pdf_path)
+    except Exception as e:
+        logger.warning("PDF解析失敗(破損の可能性): %s: %s: %s", pdf_path, type(e).__name__, e)
+        return ""
+
+    with pdf_file as pdf:
+        for page in pdf.pages:
+            txt = _normalize_text(page.extract_text() or "")
+            if not txt:
+                continue
+            if (not in_section) and ("主要な設備の状況" in txt) and ("帳簿価額" in txt):
+                in_section = True
+            if not in_section:
+                continue
+            pages_text.append(txt)
+            if re.search(r"[３3]\s*【\s*設備の新設", txt):
+                break
+
+    return "\n\n".join(pages_text)
+
+
 def _should_skip_hq_row(page_text: str) -> bool:
     txt_compact = re.sub(r"\s+", "", _normalize_text(page_text))
     if ("本社欄に記載の土地" in txt_compact) and ("各所に所在" in txt_compact):
