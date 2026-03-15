@@ -243,7 +243,12 @@ def run_split_address(args: argparse.Namespace) -> None:
 
     # Build prompts
     prompts = {
-        t["code"]: f"/split-address {t['code']} の時価総額比の土地の含み益が高すぎておかしいだろ?. 分割できないか調査しろ."
+        t["code"]: _build_injected_prompt(
+            code=t["code"],
+            mode="split-address",
+            cli=args.cli,
+            user_instruction=f"{t['code']} の時価総額比の土地の含み益が高すぎておかしいだろ?. 分割できないか調査しろ.",
+        )
         for t in selected
     }
     codes = [t["code"] for t in selected]
@@ -277,7 +282,15 @@ def run_resolve_address(args: argparse.Namespace) -> None:
     # Ensure log dir exists before lockdown (data/output/ will be 0o111)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-    prompts = {t["code"]: f"/resolve-address {t['code']} config/address_patches/{t['code']}.yaml" for t in selected}
+    prompts = {
+        t["code"]: _build_injected_prompt(
+            code=t["code"],
+            mode="resolve-address",
+            cli=args.cli,
+            user_instruction=f"{t['code']} config/address_patches/{t['code']}.yaml",
+        )
+        for t in selected
+    }
     codes = [t["code"] for t in selected]
     with codex_lockdown(target_codes=codes, mode="resolve-address"):
         _launch_processes(selected, prompts, args.cli)
@@ -286,6 +299,48 @@ def run_resolve_address(args: argparse.Namespace) -> None:
 # ---------------------------------------------------------------------------
 # Shared helpers
 # ---------------------------------------------------------------------------
+
+
+def _build_injected_prompt(
+    code: str,
+    mode: str,
+    cli: str,
+    user_instruction: str,
+) -> str:
+    """SKILL.md + 参照ファイルを結合したプロンプトを構築."""
+    if cli == "codex":
+        skill_dir = PROJECT_ROOT / ".agents" / "skills" / mode
+    else:
+        skill_dir = PROJECT_ROOT / ".claude" / "skills" / mode
+
+    skill_content = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+
+    parts: list[str] = []
+
+    # SKILL.md 注入
+    parts.append(f"<skill>\n{skill_content}\n</skill>")
+
+    # precheck JSON 注入 (split-address のみ)
+    if mode == "split-address":
+        pcheck = PATCH_DIR / f"{code}.precheck.json"
+        if pcheck.exists():
+            pcheck_content = pcheck.read_text(encoding="utf-8")
+            parts.append(
+                f'<context path="config/address_patches/{code}.precheck.json">\n{pcheck_content}\n</context>'
+            )
+
+    # output CSV 注入
+    csv_path = PROJECT_ROOT / "data" / "output" / f"{code}_output.csv"
+    if csv_path.exists():
+        csv_content = csv_path.read_text(encoding="utf-8")
+        parts.append(
+            f'<context path="data/output/{code}_output.csv">\n{csv_content}\n</context>'
+        )
+
+    # ユーザー指示
+    parts.append(user_instruction)
+
+    return "\n\n".join(parts)
 
 
 def _print_targets(selected: list[dict[str, str]]) -> None:
@@ -327,10 +382,14 @@ def _launch_processes(
         prompt = prompts[code]
         log_file = LOG_DIR / f"{timestamp}_{code}.log"
 
+        # プロンプトをファイル経由で渡す (シェルエスケープ問題を回避)
+        prompt_file = LOG_DIR / f"{timestamp}_{code}.prompt.txt"
+        prompt_file.write_text(prompt, encoding="utf-8")
+
         title = f"{code} {t['name']}"
         shell_cmd = (
-            f"{cli_cmd} exec --full-auto {shlex.quote(prompt)}"
-            f" 2>&1 | tee {shlex.quote(str(log_file))};"
+            f"{cli_cmd} exec --full-auto \"$(<{shlex.quote(str(prompt_file))})\" "
+            f"2>&1 | tee {shlex.quote(str(log_file))};"
             f' echo "\\n--- 完了 (Enter で閉じる) ---"; read'
         )
         cmd = ["kitty", "--title", title, "-e", "bash", "-c", shell_cmd]
