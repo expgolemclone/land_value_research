@@ -25,8 +25,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from scripts._codex_check_tracker import get as get_check_count
-from scripts._codex_check_tracker import increment as increment_check
 from scripts._codex_precheck import precheck
 from scripts.codex_lockdown import codex_lockdown
 
@@ -129,12 +127,12 @@ def _run_precheck(selected: list[dict[str, str]]) -> dict[str, dict | None]:
 
 
 def _codex_check_filter(selected: list[dict[str, str]]) -> list[dict[str, str]]:
-    """Filter out companies that have reached CODEX_CHECK limit (>=2)."""
+    """Filter out companies whose docs/{code}.md already exists."""
     filtered: list[dict[str, str]] = []
     for t in selected:
-        count = get_check_count(t["code"])
-        if count >= 2:
-            print(f"  スキップ: {t['code']} {t['name']} (CODEX_CHECK_{count}, 調査上限)")
+        docs_md = PROJECT_ROOT / "docs" / f"{t['code']}.md"
+        if docs_md.exists():
+            print(f"  スキップ: {t['code']} {t['name']} (調査済み: docs/{t['code']}.md)")
         else:
             filtered.append(t)
     return filtered
@@ -173,10 +171,10 @@ def run_split_address(args: argparse.Namespace) -> None:
         print("ランキングに企業が見つかりませんでした.")
         return
 
-    # CODEX_CHECK filter (上限到達済みの企業を事前に除外)
+    # docs/{code}.md 存在チェック (調査済み企業を除外)
     targets = _codex_check_filter(targets)
     if not targets:
-        print("全企業が CODEX_CHECK 上限に達しています.")
+        print("全企業が調査済みです (docs/*.md が存在).")
         return
 
     selected = targets[: args.n]
@@ -189,10 +187,6 @@ def run_split_address(args: argparse.Namespace) -> None:
     if args.dry_run:
         _print_precheck_details(selected, precheck_results)
         return
-
-    # Increment counters
-    for t in selected:
-        increment_check(t["code"])
 
     _prepare_patch_dir()
 

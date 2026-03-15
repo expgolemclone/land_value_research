@@ -37,8 +37,7 @@ argument-hint: "<証券コード>"
 | `sites[].bad_pattern_1_risk` | 合算名 or 都心高面積 → 重点調査が必要 |
 | `sites[].has_override` | 既に `address_overrides.yaml` に登録済み |
 | `sites[].has_hoka` | 事業所名に「他」「及び」等の複数所在地シグナル |
-| `codex_check` | この企業の split-address 調査回数（0=未調査） |
-| `skip` | `codex_check >= 2` の場合 `true`（ps1 側でスキップ済み、通常到達しない） |
+| `docs_exists` | `docs/{code}.md` が既に存在する（調査済み） |
 
 **調査の優先度:**
 
