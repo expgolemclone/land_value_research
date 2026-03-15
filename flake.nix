@@ -35,6 +35,7 @@
         };
 
         shellHook = ''
+          export PATH="$PWD/bin:$PATH"
           echo "land_value_research dev shell"
           echo "  rustc: $(rustc --version)"
           echo "  cargo: $(cargo --version)"
