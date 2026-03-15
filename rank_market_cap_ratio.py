@@ -7,6 +7,21 @@ from typing import Any
 
 from src.company_config import load_company_master, save_company_master
 from src.company_metadata_fallback import fetch_from_irbank
+from src.schema import (
+    COL_ANOMALY_WARNING,
+    COL_BOOK_VALUE,
+    COL_CODE,
+    COL_COMPANY_NAME,
+    COL_CONFIDENCE,
+    COL_ESTIMATED_VALUE,
+    COL_GEOCODE_LEVEL,
+    COL_MARKET_CAP,
+    COL_RATIO,
+    COL_RATIO_RAW,
+    COL_SITE_NAME,
+    COL_UNREALIZED_GAIN,
+    RANKING_COLUMNS,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_INPUT_DIR = BASE_DIR / "data" / "output"
@@ -82,15 +97,15 @@ def pick_company_row(rows: list[dict[str, str]]) -> dict[str, str] | None:
     if not rows:
         return None
 
-    total_rows = [r for r in rows if (r.get("事業所名") or "").strip() == "東京都合計"]
+    total_rows = [r for r in rows if (r.get(COL_SITE_NAME) or "").strip() == "東京都合計"]
     candidates = total_rows if total_rows else rows
 
     best_row: dict[str, str] | None = None
     best_ratio = float("-inf")
     for row in candidates:
-        ratio = to_float(row.get("時価総額比(実値)", ""))
+        ratio = to_float(row.get(COL_RATIO_RAW, ""))
         if ratio is None:
-            ratio = to_float(row.get("時価総額比", ""))
+            ratio = to_float(row.get(COL_RATIO, ""))
         if ratio is None:
             continue
         if ratio > best_ratio:
@@ -138,37 +153,37 @@ def collect_rank_rows(input_dir: Path, company_master: dict[str, dict[str, Any]]
         if company_row is None:
             continue
 
-        ratio = to_float(company_row.get("時価総額比(実値)", ""))
+        ratio = to_float(company_row.get(COL_RATIO_RAW, ""))
         if ratio is None:
-            ratio = to_float(company_row.get("時価総額比", ""))
+            ratio = to_float(company_row.get(COL_RATIO, ""))
         if ratio is None:
             continue
 
-        code = (company_row.get("証券コード") or "").strip()
-        company_name = normalize_company_name(code, company_row.get("企業名", ""), company_master)
+        code = (company_row.get(COL_CODE) or "").strip()
+        company_name = normalize_company_name(code, company_row.get(COL_COMPANY_NAME, ""), company_master)
 
         docs_exists = (DOCS_DIR / f"{code}.md").exists()
 
         rank_rows.append(
             {
-                "証券コード": code,
-                "企業名": company_name,
+                COL_CODE: code,
+                COL_COMPANY_NAME: company_name,
                 "有報PDF_URL": company_master.get(code, {}).get("securities_report_pdf_url", "").strip(),
-                "時価総額比": ratio,
-                "推定土地時価(円)": (company_row.get("推定土地時価(円)") or "").strip(),
-                "時価総額(円)": (company_row.get("時価総額(円)") or "").strip(),
-                "土地簿価(円)": (company_row.get("土地簿価(円)") or "").strip(),
-                "含み益(円)": (company_row.get("含み益(円)") or "").strip(),
-                "住所解決タグ": collect_unique_values(rows, "住所解決レベル"),
+                COL_RATIO: ratio,
+                COL_ESTIMATED_VALUE: (company_row.get(COL_ESTIMATED_VALUE) or "").strip(),
+                COL_MARKET_CAP: (company_row.get(COL_MARKET_CAP) or "").strip(),
+                COL_BOOK_VALUE: (company_row.get(COL_BOOK_VALUE) or "").strip(),
+                COL_UNREALIZED_GAIN: (company_row.get(COL_UNREALIZED_GAIN) or "").strip(),
+                "住所解決タグ": collect_unique_values(rows, COL_GEOCODE_LEVEL),
                 "調査済": "済" if docs_exists else "",
-                "タグ件数": count_unique_values(rows, "住所解決レベル"),
-                "地価推定信頼度": collect_unique_values(rows, "地価推定信頼度"),
-                "異常値警告": collect_unique_values(rows, "異常値警告"),
+                "タグ件数": count_unique_values(rows, COL_GEOCODE_LEVEL),
+                COL_CONFIDENCE: collect_unique_values(rows, COL_CONFIDENCE),
+                COL_ANOMALY_WARNING: collect_unique_values(rows, COL_ANOMALY_WARNING),
                 "元ファイル": csv_path.name,
             }
         )
 
-    rank_rows.sort(key=lambda r: r["時価総額比"], reverse=True)
+    rank_rows.sort(key=lambda r: r[COL_RATIO], reverse=True)
     return rank_rows
 
 
@@ -229,23 +244,7 @@ document.querySelectorAll('th').forEach((th, idx) => {
 
 def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    headers = [
-        "順位",
-        "証券コード",
-        "企業名",
-        "有報PDF",
-        "時価総額比",
-        "推定土地時価(億円)",
-        "時価総額(億円)",
-        "土地簿価(億円)",
-        "含み益(億円)",
-        "住所解決タグ",
-        "調査済",
-        "タグ件数",
-        "地価推定信頼度",
-        "異常値警告",
-        "元ファイル",
-    ]
+    headers = list(RANKING_COLUMNS)
     right_cols = {
         "順位", "時価総額比", "推定土地時価(億円)", "時価総額(億円)",
         "土地簿価(億円)", "含み益(億円)", "タグ件数",
@@ -264,25 +263,25 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
         f.write("</tr></thead>\n<tbody>\n")
 
         for i, row in enumerate(rows, start=1):
-            code = (row.get("証券コード") or "").strip()
+            code = (row.get(COL_CODE) or "").strip()
             report_pdf_url = (row.get("有報PDF_URL") or "").strip()
             pdf_link = _html_pdf_link(code, report_pdf_url, output_path)
 
             values = [
                 (str(i), "順位"),
-                (row["証券コード"], "証券コード"),
-                (row["企業名"], "企業名"),
+                (row[COL_CODE], "証券コード"),
+                (row[COL_COMPANY_NAME], "企業名"),
                 (None, "有報PDF"),  # handled separately
-                (f"{row['時価総額比']:.6f}", "時価総額比"),
-                (yen_to_oku_display(row["推定土地時価(円)"]), "推定土地時価(億円)"),
-                (yen_to_oku_display(row["時価総額(円)"]), "時価総額(億円)"),
-                (yen_to_oku_display(row["土地簿価(円)"]), "土地簿価(億円)"),
-                (yen_to_oku_display(row["含み益(円)"]), "含み益(億円)"),
+                (f"{row[COL_RATIO]:.6f}", "時価総額比"),
+                (yen_to_oku_display(row[COL_ESTIMATED_VALUE]), "推定土地時価(億円)"),
+                (yen_to_oku_display(row[COL_MARKET_CAP]), "時価総額(億円)"),
+                (yen_to_oku_display(row[COL_BOOK_VALUE]), "土地簿価(億円)"),
+                (yen_to_oku_display(row[COL_UNREALIZED_GAIN]), "含み益(億円)"),
                 (row.get("住所解決タグ", ""), "住所解決タグ"),
                 (row.get("調査済", ""), "調査済"),
                 (str(row.get("タグ件数", 0)), "タグ件数"),
-                (row.get("地価推定信頼度", ""), "地価推定信頼度"),
-                (row.get("異常値警告", ""), "異常値警告"),
+                (row.get(COL_CONFIDENCE, ""), "地価推定信頼度"),
+                (row.get(COL_ANOMALY_WARNING, ""), "異常値警告"),
                 (row["元ファイル"], "元ファイル"),
             ]
 

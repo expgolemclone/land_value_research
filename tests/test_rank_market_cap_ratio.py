@@ -3,14 +3,9 @@ import unittest
 from pathlib import Path
 
 from rank_market_cap_ratio import collect_rank_rows, write_rank_html
+from src.schema import OUTPUT_COLUMNS
 
-CSV_HEADER = (
-    "証券コード,企業名,事業所名,住所,住所取得元,住所取得元URL,住所解決レベル,土地面積(m2),"
-    "地価単価(円/m2),地価単価補正係数,住所解像度補正係数,地価単価算出方法,基準用途区分,最近傍用途区分,"
-    "公示点ID,公示点距離(m),k近傍ID,k近傍用途区分,k近傍距離(m),k近傍単価(円/m2),k近傍距離分散(m2),"
-    "k近傍最遠距離(m),地価推定信頼度スコア,地価推定信頼度,異常値警告,推定土地時価(円),土地簿価(円),"
-    "含み益(円),評価倍率(実値),評価倍率,時価総額(円),時価総額比(実値),時価総額比\n"
-)
+CSV_HEADER = ",".join(OUTPUT_COLUMNS) + "\n"
 
 
 class TestRankMarketCapRatio(unittest.TestCase):

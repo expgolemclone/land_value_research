@@ -26,7 +26,6 @@ from src.anomaly import (
     CRITICAL_UNIT_PRICE_YEN_PER_M2,
     DUPLICATE_ADDRESS_CRITICAL_AREA_M2,
     DUPLICATE_ADDRESS_CRITICAL_SITE_COUNT,
-    OutputRow,
     calc_uncertainty_metrics,
     detect_anomaly_warnings,
     detect_critical_anomaly,
@@ -46,6 +45,7 @@ from src.geocode_tokyo import TokyoGeocoder
 from src.landprice_tokyo import LandPriceTokyo, PriceResult
 from src.network import is_transient_network_error
 from src.pdf_extract import FacilityLand, extract_major_facilities_land
+from src.schema import EXCLUDED_COLUMNS, OUTPUT_COLUMNS, OutputRow
 from src.utils import ensure_dir
 from src.web_address_research import WebAddressResearcher
 from src.web_cache import download_file, is_pdf_file
@@ -66,65 +66,8 @@ def _tprint(*args: object, **kwargs: object) -> None:
         print(*args, **kwargs)
 
 
-OUTPUT_FIELDNAMES = [
-    "証券コード",
-    "企業名",
-    "事業所名",
-    "住所",
-    "住所取得元",
-    "住所取得元URL",
-    "住所解決レベル",
-    "土地面積(m2)",
-    "地価単価(円/m2)",
-    "地価単価補正係数",
-    "住所解像度補正係数",
-    "地価単価算出方法",
-    "基準用途区分",
-    "最近傍用途区分",
-    "公示点ID",
-    "公示点距離(m)",
-    "k近傍ID",
-    "k近傍用途区分",
-    "k近傍距離(m)",
-    "k近傍単価(円/m2)",
-    "k近傍距離分散(m2)",
-    "k近傍最遠距離(m)",
-    "地価推定信頼度スコア",
-    "地価推定信頼度",
-    "異常値警告",
-    "推定土地時価(円)",
-    "土地簿価(円)",
-    "含み益(円)",
-    "評価倍率(実値)",
-    "評価倍率",
-    "時価総額(円)",
-    "時価総額比(実値)",
-    "時価総額比",
-]
-
-EXCLUDED_FIELDNAMES = [
-    "証券コード",
-    "企業名",
-    "事業所名",
-    "理由コード",
-    "理由詳細",
-    "推定土地時価(円)",
-    "土地簿価(円)",
-    "時価総額比(実値)",
-    "土地面積(m2)",
-    "地価単価(円/m2)",
-    "評価倍率(実値)",
-    "閾値_地価単価(円/m2)",
-    "閾値_土地面積(m2)",
-    "閾値_評価倍率",
-    "同一住所件数",
-    "同一住所合計面積(m2)",
-    "閾値_同一住所件数",
-    "閾値_同一住所合計面積(m2)",
-    "住所",
-    "住所取得元",
-    "住所解決レベル",
-]
+OUTPUT_FIELDNAMES = list(OUTPUT_COLUMNS)
+EXCLUDED_FIELDNAMES = list(EXCLUDED_COLUMNS)
 
 
 @dataclass

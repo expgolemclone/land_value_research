@@ -39,8 +39,14 @@ LOG_DIR = PROJECT_ROOT / "data" / "output" / "research_logs"
 
 
 def parse_ranking() -> list[dict[str, str]]:
-    """Parse ranking HTML table into list of company dicts."""
+    """Parse ranking HTML table into list of company dicts.
+
+    Reads <th> headers first, then maps each <td> row by header name
+    instead of relying on fragile column indices.
+    """
     from html.parser import HTMLParser
+
+    from src.schema import RANKING_COLUMNS
 
     if not RANKING_FILE.exists():
         print(f"エラー: ランキングファイルが見つかりません: {RANKING_FILE}", file=sys.stderr)
@@ -49,15 +55,23 @@ def parse_ranking() -> list[dict[str, str]]:
     class _TableParser(HTMLParser):
         def __init__(self) -> None:
             super().__init__()
+            self.headers: list[str] = []
             self.rows: list[list[str]] = []
+            self._in_th = False
             self._in_td = False
             self._current_row: list[str] = []
             self._current_cell = ""
+            self._in_thead = False
             self._in_tbody = False
 
         def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-            if tag == "tbody":
+            if tag == "thead":
+                self._in_thead = True
+            elif tag == "tbody":
                 self._in_tbody = True
+            elif tag == "th" and self._in_thead:
+                self._in_th = True
+                self._current_cell = ""
             elif tag == "tr" and self._in_tbody:
                 self._current_row = []
             elif tag == "td" and self._in_tbody:
@@ -65,8 +79,13 @@ def parse_ranking() -> list[dict[str, str]]:
                 self._current_cell = ""
 
         def handle_endtag(self, tag: str) -> None:
-            if tag == "tbody":
+            if tag == "thead":
+                self._in_thead = False
+            elif tag == "tbody":
                 self._in_tbody = False
+            elif tag == "th" and self._in_th:
+                self.headers.append(self._current_cell.strip())
+                self._in_th = False
             elif tag == "td" and self._in_td:
                 self._current_row.append(self._current_cell.strip())
                 self._in_td = False
@@ -74,22 +93,35 @@ def parse_ranking() -> list[dict[str, str]]:
                 self.rows.append(self._current_row)
 
         def handle_data(self, data: str) -> None:
-            if self._in_td:
+            if self._in_th:
+                self._current_cell += data
+            elif self._in_td:
                 self._current_cell += data
 
     parser = _TableParser()
     parser.feed(RANKING_FILE.read_text(encoding="utf-8"))
 
+    # Validate headers against schema
+    if tuple(parser.headers) != RANKING_COLUMNS:
+        print(
+            f"エラー: ランキングHTMLのヘッダーがスキーマと不一致\n"
+            f"  期待: {list(RANKING_COLUMNS)}\n"
+            f"  実際: {parser.headers}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     targets: list[dict[str, str]] = []
     for cols in parser.rows:
-        if len(cols) < 11:
+        if len(cols) != len(parser.headers):
             continue
+        row = dict(zip(parser.headers, cols))
         targets.append(
             {
-                "rank": cols[0],
-                "code": cols[1],
-                "name": cols[2],
-                "tag": cols[9],
+                "rank": row["順位"],
+                "code": row["証券コード"],
+                "name": row["企業名"],
+                "tag": row["住所解決タグ"],
             }
         )
     return targets

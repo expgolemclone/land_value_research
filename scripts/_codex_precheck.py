@@ -23,6 +23,15 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import yaml
 
+from src.schema import (
+    COL_ADDRESS,
+    COL_ADDRESS_SOURCE,
+    COL_ANOMALY_WARNING,
+    COL_GEOCODE_LEVEL,
+    COL_LAND_AREA,
+    COL_SITE_NAME,
+)
+
 OVERRIDES_FILE = PROJECT_ROOT / "config" / "address_overrides.yaml"
 DOCS_DIR = PROJECT_ROOT / "docs"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "output"
@@ -101,18 +110,18 @@ def precheck(code: str) -> dict:
     with open(csv_path, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            site_name = row.get("事業所名", "")
+            site_name = row.get(COL_SITE_NAME, "")
             # Skip aggregate summary row
             if site_name == "東京都合計":
                 continue
 
-            geocode_level = row.get("住所解決レベル", "")
-            address = row.get("住所", "")
-            address_source = row.get("住所取得元", "")
-            anomaly_warning = row.get("異常値警告", "")
+            geocode_level = row.get(COL_GEOCODE_LEVEL, "")
+            address = row.get(COL_ADDRESS, "")
+            address_source = row.get(COL_ADDRESS_SOURCE, "")
+            anomaly_warning = row.get(COL_ANOMALY_WARNING, "")
 
             try:
-                area_m2 = float(row.get("土地面積(m2)", "0"))
+                area_m2 = float(row.get(COL_LAND_AREA, "0"))
             except (ValueError, TypeError):
                 area_m2 = 0.0
 
