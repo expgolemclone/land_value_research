@@ -9,7 +9,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # import に必要なため除外
-_SRC_ALLOW = {"geocode_tokyo.py", "__init__.py"}
+_SRC_ALLOW = {"geocode_tokyo.py", "__init__.py", "pdf_extract.py"}
 
 _BUILD_FILES = [
     "Cargo.toml",
