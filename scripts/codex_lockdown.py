@@ -92,6 +92,11 @@ def _find_targets(
     if overrides_yaml.is_file():
         targets.append(overrides_yaml)
 
+    # --- 追加: .git/ ディレクトリ制限 (git コマンドをブロック) ---
+    git_dir = PROJECT_ROOT / ".git"
+    if git_dir.exists():
+        dirs_to_restrict.append(git_dir)
+
     return targets, dirs_to_restrict
 
 
