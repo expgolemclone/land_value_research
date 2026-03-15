@@ -329,6 +329,14 @@ def _build_injected_prompt(
                 f'<context path="config/address_patches/{code}.precheck.json">\n{pcheck_content}\n</context>'
             )
 
+    # facilities_land (有報 設備の状況) 注入 — 両モード共通
+    sites_path = PROJECT_ROOT / "data" / "cache" / "facilities_land" / f"{code}_sites.json"
+    if sites_path.exists():
+        sites_content = sites_path.read_text(encoding="utf-8")
+        parts.append(
+            f'<context path="data/cache/facilities_land/{code}_sites.json">\n{sites_content}\n</context>'
+        )
+
     # output CSV 注入
     csv_path = PROJECT_ROOT / "data" / "output" / f"{code}_output.csv"
     if csv_path.exists():
