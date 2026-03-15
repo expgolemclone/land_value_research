@@ -342,7 +342,7 @@ def _build_injected_prompt(
     if text_path.exists():
         text_content = text_path.read_text(encoding="utf-8")
         parts.append(
-            f'<context path="data/cache/facilities_land/{code}_facilities_text.txt">\n{text_content}\n</context>'
+            f'<context path="data/cache/facilities_land/{code}_facilities_text.txt" description="有報「設備の状況」セクション全文（注記含む）">\n{text_content}\n</context>'
         )
 
     # output CSV 注入
