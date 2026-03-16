@@ -394,16 +394,16 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
                 (row[COL_CODE], "証券コード"),
                 (row[COL_COMPANY_NAME], "企業名"),
                 (None, "調査メモ"),  # handled separately
-                (None, "有報PDF"),  # handled separately
                 (f"{row[COL_RATIO]:.6f}", "時価総額比"),
+                (row.get("住所解決タグ", ""), "住所解決タグ"),
+                (row.get(COL_CONFIDENCE, ""), "地価推定信頼度"),
+                (row.get(COL_ANOMALY_WARNING, ""), "異常値警告"),
+                (None, "有報PDF"),  # handled separately
                 (yen_to_oku_display(row[COL_ESTIMATED_VALUE]), "推定土地時価(億円)"),
                 (yen_to_oku_display(row[COL_MARKET_CAP]), "時価総額(億円)"),
                 (yen_to_oku_display(row[COL_BOOK_VALUE]), "土地簿価(億円)"),
                 (yen_to_oku_display(row[COL_UNREALIZED_GAIN]), "含み益(億円)"),
-                (row.get("住所解決タグ", ""), "住所解決タグ"),
                 (str(row.get("タグ件数", 0)), "タグ件数"),
-                (row.get(COL_CONFIDENCE, ""), "地価推定信頼度"),
-                (row.get(COL_ANOMALY_WARNING, ""), "異常値警告"),
                 (row["元ファイル"], "元ファイル"),
             ]
 
