@@ -1,0 +1,44 @@
+{
+  "code": "6181",
+  "sites": [
+    {
+      "site_name": "本社",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 542.2,
+      "ward": "品川区",
+      "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "銀座店",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 2983.82,
+      "ward": "千代田区",
+      "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": true
+    },
+    {
+      "site_name": "お台場店",
+      "geocode_level": "gaiku",
+      "address_source": "override",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 2924.93,
+      "ward": "江東区",
+      "has_override": true,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": true
+    }
+  ],
+  "all_gaiku": true,
+  "has_risk": true,
+  "docs_exists": false
+}

@@ -1,0 +1,20 @@
+{
+  "code": "1815",
+  "sites": [
+    {
+      "site_name": "本店",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 24316.03,
+      "ward": "千代田区",
+      "has_override": false,
+      "bad_pattern_1_risk": true,
+      "has_multi_loc_warning": false
+    }
+  ],
+  "all_gaiku": true,
+  "has_risk": true,
+  "docs_exists": false
+}
