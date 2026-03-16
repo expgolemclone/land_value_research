@@ -482,6 +482,35 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
     return ctx
 
 
+def _invalidate_stale_override_csvs(ctx: RunContext) -> list[str]:
+    """Delete output CSVs for companies whose addr_overrides changed since last run."""
+    import hashlib
+    import json
+
+    hash_path = os.path.join(ctx.cache_dir, "addr_overrides_hash.json")
+    old_hashes = load_json_dict(hash_path)
+    new_hashes: dict[str, str] = {}
+    invalidated: list[str] = []
+
+    for code, overrides in ctx.addr_overrides.items():
+        serialized = json.dumps(overrides, sort_keys=True, ensure_ascii=False, default=str)
+        h = hashlib.md5(serialized.encode()).hexdigest()
+        new_hashes[code] = h
+
+        if old_hashes.get(code) != h:
+            csv_path = os.path.join(
+                ctx.processed_lookup_dir,
+                f"{sanitize_filename_component(code)}_output.csv",
+            )
+            if os.path.exists(csv_path):
+                os.remove(csv_path)
+                invalidated.append(code)
+                logger.info("住所オーバーライド変更: %s のCSVを削除", code)
+
+    save_json_dict(hash_path, new_hashes)
+    return invalidated
+
+
 def _filter_targets(
     targets: list[dict[str, Any]],
     ctx: RunContext,
@@ -1185,6 +1214,10 @@ def _main_worker(args: argparse.Namespace) -> None:
     if args.memory_limit > 0:
         watchdog = threading.Thread(target=_memory_watchdog, args=(ctx, args.memory_limit), daemon=True)
         watchdog.start()
+
+    invalidated = _invalidate_stale_override_csvs(ctx)
+    if invalidated:
+        logger.info("住所オーバーライド変更によりCSV削除: %d社", len(invalidated))
 
     input_path = resolve_path(ctx.base_dir, args.input) if args.input else resolve_default_input(ctx.base_dir)
     targets = load_targets(input_path)
