@@ -473,11 +473,20 @@ def _launch_processes(
                 print(f"  {p['code']} {p['name']}: 注意 - パッチ未作成 (address_patches/{p['code']}.yaml)")
 
     print("\n=== 全プロセス完了 ===\n")
+
+    # パッチファイルが存在すればマージを自動実行
+    patch_files = list(PATCH_DIR.glob("*.yaml"))
+    if patch_files:
+        print("=== パッチマージ実行 ===\n")
+        subprocess.run(
+            [sys.executable, str(PROJECT_ROOT / "scripts" / "merge_address_patches.py")],
+            cwd=PROJECT_ROOT,
+        )
+        print()
+
     print("次の手順:")
     print(f"  1. ログ確認:    ls {LOG_DIR}/{timestamp}_*.log")
-    print(f"  2. パッチ確認:  ls {PATCH_DIR}/")
-    print("  3. マージ:      uv run python scripts/merge_address_patches.py")
-    print("  4. 再実行:      uv run python run.py")
+    print("  2. 再実行:      uv run python run.py")
 
 
 # ---------------------------------------------------------------------------
