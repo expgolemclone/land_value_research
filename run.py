@@ -21,14 +21,9 @@ import shtab
 from rank_market_cap_ratio import generate_ranking
 from scripts.merge_address_patches import merge_patches_safe
 from src.anomaly import (
-    CRITICAL_AREA_M2,
     CRITICAL_EVAL_MULTIPLE,
-    CRITICAL_UNIT_PRICE_YEN_PER_M2,
-    DUPLICATE_ADDRESS_CRITICAL_AREA_M2,
-    DUPLICATE_ADDRESS_CRITICAL_SITE_COUNT,
     calc_uncertainty_metrics,
     detect_anomaly_warnings,
-    detect_critical_anomaly,
     detect_duplicate_address_large_area,
     should_accept_web_address,
 )
@@ -45,7 +40,7 @@ from src.geocode_tokyo import TokyoGeocoder
 from src.landprice_tokyo import LandPriceTokyo, PriceResult
 from src.network import is_transient_network_error
 from src.pdf_extract import FacilityLand, extract_facilities_section_text, extract_major_facilities_land
-from src.schema import EXCLUDED_COLUMNS, OUTPUT_COLUMNS, OutputRow
+from src.schema import OUTPUT_COLUMNS, OutputRow
 from src.utils import ensure_dir
 from src.web_address_research import WebAddressResearcher
 from src.web_cache import download_file, is_pdf_file
@@ -67,7 +62,6 @@ def _tprint(*args: object, **kwargs: object) -> None:
 
 
 OUTPUT_FIELDNAMES = list(OUTPUT_COLUMNS)
-EXCLUDED_FIELDNAMES = list(EXCLUDED_COLUMNS)
 
 
 @dataclass
@@ -98,8 +92,6 @@ class CompanyResult:
     code: str
     company_name: str
     out_rows: list[OutputRow]
-    excluded_rows: list[dict[str, str]]
-    is_critical: bool
     sum_est: int
     tokyo_site_count: int
 
@@ -117,8 +109,6 @@ class _CompanyMeta:
 @dataclass
 class _SiteResult:
     out_row: OutputRow
-    excluded_rows: list[dict[str, str]]
-    is_critical: bool
     est: int
     book: int
     est_raw: float
@@ -267,49 +257,6 @@ def get_geocode_adjustment_factor(level: str, args: argparse.Namespace) -> float
     return 1.0
 
 
-def build_excluded_row(
-    code: str,
-    company_name: str,
-    site_name: str,
-    reason_code: str,
-    reason_detail: str,
-    est: str,
-    book: str,
-    mcap_ratio_raw: str,
-    area_m2: str,
-    unit_price: str,
-    eval_multiple_raw: str,
-    address: str,
-    address_source: str,
-    geocode_level: str,
-    duplicate_count: str = "",
-    duplicate_total_area: str = "",
-) -> dict[str, str]:
-    return {
-        "証券コード": code,
-        "企業名": company_name,
-        "事業所名": site_name,
-        "理由コード": reason_code,
-        "理由詳細": reason_detail,
-        "推定土地時価(円)": est,
-        "土地簿価(円)": book,
-        "時価総額比(実値)": mcap_ratio_raw,
-        "土地面積(m2)": area_m2,
-        "地価単価(円/m2)": unit_price,
-        "評価倍率(実値)": eval_multiple_raw,
-        "閾値_地価単価(円/m2)": str(CRITICAL_UNIT_PRICE_YEN_PER_M2),
-        "閾値_土地面積(m2)": f"{CRITICAL_AREA_M2:.2f}",
-        "閾値_評価倍率": f"{CRITICAL_EVAL_MULTIPLE:.3f}",
-        "同一住所件数": duplicate_count,
-        "同一住所合計面積(m2)": duplicate_total_area,
-        "閾値_同一住所件数": str(DUPLICATE_ADDRESS_CRITICAL_SITE_COUNT) if duplicate_count else "",
-        "閾値_同一住所合計面積(m2)": f"{DUPLICATE_ADDRESS_CRITICAL_AREA_M2:.2f}" if duplicate_count else "",
-        "住所": address,
-        "住所取得元": address_source,
-        "住所解決レベル": geocode_level,
-    }
-
-
 def _setup_logging() -> None:
     log_dir = os.path.join(os.path.dirname(__file__), "data", "output", "run_logs")
     os.makedirs(log_dir, exist_ok=True)
@@ -390,12 +337,6 @@ def parse_args() -> argparse.Namespace:
         action=argparse.BooleanOptionalAction,
         default=True,
         help="対象地点の最近傍公示点と同じ用途区分のみで地価推定するか(default: on)",
-    )
-    parser.add_argument(
-        "--enable-high-unit-price-large-area",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        help=("critical anomalyのHIGH_UNIT_PRICE_LARGE_AREA判定を有効化するか(default: off)"),
     )
     parser.add_argument(
         "--workers",
@@ -793,46 +734,13 @@ def _process_site(
         location_has_hoka=s.location_has_hoka,
     )
     if mult_raw is not None and mult_raw >= CRITICAL_EVAL_MULTIPLE:
-        anomaly_warnings.append("評価倍率閾値超過(単独では除外しない)")
+        anomaly_warnings.append("評価倍率閾値超過")
     anomaly_text = " | ".join(anomaly_warnings)
     if anomaly_warnings:
         _tprint(
             f"Warn(anomaly): {code} {s.site_name} {geocode_level} "
             f"area={float(s.land_area_m2):.2f} warnings={anomaly_text}"
         )
-    critical_reasons = detect_critical_anomaly(
-        site_name=s.site_name,
-        address_source=addr_source,
-        geocode_level=geocode_level,
-        unit_price_yen_per_m2=unit_price,
-        land_area_m2=float(s.land_area_m2),
-        enable_high_unit_price_large_area=ctx.args.enable_high_unit_price_large_area,
-    )
-    excluded_rows: list[dict[str, str]] = []
-    is_critical = False
-    if critical_reasons:
-        is_critical = True
-        for reason_code, reason_detail in critical_reasons:
-            excluded_rows.append(
-                build_excluded_row(
-                    code=code,
-                    company_name=company_name,
-                    site_name=s.site_name,
-                    reason_code=reason_code,
-                    reason_detail=reason_detail,
-                    est=str(est),
-                    book=str(book),
-                    mcap_ratio_raw=("" if mcap_ratio_raw is None else f"{mcap_ratio_raw:.12f}"),
-                    area_m2=f"{float(s.land_area_m2):.2f}",
-                    unit_price=str(unit_price),
-                    eval_multiple_raw=("" if mult_raw is None else f"{mult_raw:.12f}"),
-                    address=full_addr,
-                    address_source=addr_source,
-                    geocode_level=geocode_level,
-                )
-            )
-        _tprint(f"Exclude(critical anomaly): {code} {s.site_name} reasons={'|'.join([x[0] for x in critical_reasons])}")
-
     out_row: dict[str, object] = {
         "証券コード": code,
         "企業名": company_name,
@@ -870,8 +778,6 @@ def _process_site(
     }
     return _SiteResult(
         out_row=out_row,
-        excluded_rows=excluded_rows,
-        is_critical=is_critical,
         est=est,
         book=book,
         est_raw=est_raw,
@@ -881,23 +787,10 @@ def _process_site(
 
 def _postprocess_duplicate_anomalies(
     code: str,
-    company_name: str,
     out_rows: list[OutputRow],
-) -> tuple[list[dict[str, str]], bool]:
-    """Detect duplicate-address anomalies and return (excluded_rows, is_critical)."""
-    duplicate_warnings, duplicate_criticals = detect_duplicate_address_large_area(out_rows)
-    duplicate_address_count: dict[str, int] = {}
-    duplicate_address_area: dict[str, float] = {}
-    for row in out_rows:
-        addr = str(row.get("住所", "") or "").strip()
-        if not addr:
-            continue
-        duplicate_address_count[addr] = duplicate_address_count.get(addr, 0) + 1
-        try:
-            area = float(str(row.get("土地面積(m2)", "") or "0").replace(",", ""))
-        except ValueError:
-            area = 0.0
-        duplicate_address_area[addr] = duplicate_address_area.get(addr, 0.0) + area
+) -> None:
+    """Detect duplicate-address anomalies and append warning labels to rows."""
+    duplicate_warnings = detect_duplicate_address_large_area(out_rows)
 
     for hit in duplicate_warnings:
         _tprint(f"Warn(anomaly): {code} duplicate_address {hit.detail}")
@@ -905,77 +798,6 @@ def _postprocess_duplicate_anomalies(
             warning_label = "同一住所かつ大面積の複数拠点"
             old = str(row.get("異常値警告", "") or "").strip()
             row["異常値警告"] = f"{old} | {warning_label}" if old else warning_label
-
-    excluded_rows: list[dict[str, str]] = []
-    is_critical = False
-
-    for row in out_rows:
-        eval_multiple_raw: float | None = None
-        eval_raw_str = str(row.get("評価倍率(実値)", "") or "").strip()
-        if eval_raw_str:
-            try:
-                eval_multiple_raw = float(eval_raw_str.replace(",", ""))
-            except ValueError:
-                eval_multiple_raw = None
-        row_geocode_level = str(row.get("住所解決レベル", "") or "").strip()
-        addr = str(row.get("住所", "") or "").strip()
-        duplicate_count = duplicate_address_count.get(addr, 0)
-        is_coarse_geocode = row_geocode_level in {"muni_centroid", "oaza_chome"}
-        if (
-            eval_multiple_raw is not None
-            and eval_multiple_raw >= CRITICAL_EVAL_MULTIPLE
-            and is_coarse_geocode
-            and duplicate_count >= DUPLICATE_ADDRESS_CRITICAL_SITE_COUNT
-        ):
-            is_critical = True
-            excluded_rows.append(
-                build_excluded_row(
-                    code=code,
-                    company_name=company_name,
-                    site_name=str(row.get("事業所名", "") or ""),
-                    reason_code="HIGH_EVAL_MULTIPLE_COMPOSITE",
-                    reason_detail=(f"評価倍率閾値超過かつ住所解像度が粗く,同一住所に{duplicate_count}拠点あります."),
-                    est=str(row.get("推定土地時価(円)", "") or ""),
-                    book=str(row.get("土地簿価(円)", "") or ""),
-                    mcap_ratio_raw=str(row.get("時価総額比(実値)", "") or ""),
-                    area_m2=str(row.get("土地面積(m2)", "") or ""),
-                    unit_price=str(row.get("地価単価(円/m2)", "") or ""),
-                    eval_multiple_raw=str(row.get("評価倍率(実値)", "") or ""),
-                    address=addr,
-                    address_source=str(row.get("住所取得元", "") or ""),
-                    geocode_level=row_geocode_level,
-                    duplicate_count=str(duplicate_count),
-                    duplicate_total_area=f"{duplicate_address_area.get(addr, 0.0):.2f}",
-                )
-            )
-
-    if duplicate_criticals:
-        is_critical = True
-        for hit in duplicate_criticals:
-            for row in hit.rows:
-                excluded_rows.append(
-                    build_excluded_row(
-                        code=code,
-                        company_name=company_name,
-                        site_name=str(row.get("事業所名", "") or ""),
-                        reason_code="DUPLICATE_ADDRESS_LARGE_AREA",
-                        reason_detail=hit.detail,
-                        est=str(row.get("推定土地時価(円)", "") or ""),
-                        book=str(row.get("土地簿価(円)", "") or ""),
-                        mcap_ratio_raw=str(row.get("時価総額比(実値)", "") or ""),
-                        area_m2=str(row.get("土地面積(m2)", "") or ""),
-                        unit_price=str(row.get("地価単価(円/m2)", "") or ""),
-                        eval_multiple_raw=str(row.get("評価倍率(実値)", "") or ""),
-                        address=str(row.get("住所", "") or ""),
-                        address_source=str(row.get("住所取得元", "") or ""),
-                        geocode_level=str(row.get("住所解決レベル", "") or ""),
-                        duplicate_count=str(hit.count),
-                        duplicate_total_area=f"{hit.total_area_m2:.2f}",
-                    )
-                )
-        _tprint(f"Exclude(critical anomaly): {code} duplicate_address reasons=DUPLICATE_ADDRESS_LARGE_AREA")
-
-    return excluded_rows, is_critical
 
 
 def process_company(
@@ -991,9 +813,7 @@ def process_company(
     sum_book = 0
     sum_est_raw = 0.0
     sum_book_raw = 0.0
-    company_critical = False
     out_rows: list[OutputRow] = []
-    excluded_rows: list[dict[str, str]] = []
 
     total_tokyo_sites = len(tokyo_sites)
     for site_index, s in enumerate(tokyo_sites, start=1):
@@ -1002,38 +822,14 @@ def process_company(
             sr = _process_site(code, company_name, s, mcap, cm.address_source_urls, ctx)
         except Exception as e:
             logger.warning("サイト処理スキップ: %s %s %s: %s", code, s.site_name, type(e).__name__, e)
-            excluded_rows.append(
-                build_excluded_row(
-                    code=code,
-                    company_name=company_name,
-                    site_name=s.site_name,
-                    reason_code="SITE_PROCESSING_ERROR",
-                    reason_detail=f"{type(e).__name__}: {e}",
-                    est="",
-                    book=str(int(round(float(s.land_book_value_yen)))),
-                    mcap_ratio_raw="",
-                    area_m2=f"{float(s.land_area_m2):.2f}",
-                    unit_price="",
-                    eval_multiple_raw="",
-                    address=s.location_short,
-                    address_source="",
-                    geocode_level="",
-                )
-            )
             continue
         out_rows.append(sr.out_row)
-        excluded_rows.extend(sr.excluded_rows)
-        if sr.is_critical:
-            company_critical = True
         sum_est += sr.est
         sum_book += sr.book
         sum_est_raw += sr.est_raw
         sum_book_raw += sr.book_raw
 
-    dup_excluded, dup_critical = _postprocess_duplicate_anomalies(code, company_name, out_rows)
-    excluded_rows.extend(dup_excluded)
-    if dup_critical:
-        company_critical = True
+    _postprocess_duplicate_anomalies(code, out_rows)
 
     # 東京都合計行(東京都の対象が0件でも必ず出力する)
     profit = sum_est - sum_book
@@ -1068,8 +864,6 @@ def process_company(
         code=code,
         company_name=company_name,
         out_rows=out_rows,
-        excluded_rows=excluded_rows,
-        is_critical=company_critical,
         sum_est=sum_est,
         tokyo_site_count=len(tokyo_sites),
     )
@@ -1239,18 +1033,8 @@ def _main_worker(args: argparse.Namespace) -> None:
 
         failed_companies: list[tuple[str, str, str]] = []
         written_count = 0
-        excluded_count = 0
 
-        ranking_dir = os.path.join(ctx.base_dir, "data", "ranking")
-        os.makedirs(ranking_dir, exist_ok=True)
-        excluded_path = os.path.join(ranking_dir, "anomaly_excluded_companies.csv")
-        with (
-            open(excluded_path, "w", newline="", encoding="utf-8") as excl_f,
-            ThreadPoolExecutor(max_workers=max_workers) as executor,
-        ):
-            excl_writer = csv.DictWriter(excl_f, fieldnames=EXCLUDED_FIELDNAMES)
-            excl_writer.writeheader()
-
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_target = {}
             for company_index, t in enumerate(targets_to_process, start=1):
                 future = executor.submit(_process_company_with_retry, t, company_index, total_companies, ctx)
@@ -1268,10 +1052,6 @@ def _main_worker(args: argparse.Namespace) -> None:
                     _write_single_result(result, t["_output_path"])
                     written_count += 1
                     print(f"[{written_count}/{total_companies}] Wrote: {t['_output_path']}")
-                    if result.excluded_rows:
-                        excl_writer.writerows(result.excluded_rows)
-                        excl_f.flush()
-                        excluded_count += len(result.excluded_rows)
                 elif error:
                     failed_companies.append((code, company_name, error))
 
@@ -1282,7 +1062,6 @@ def _main_worker(args: argparse.Namespace) -> None:
                     ctx.web_addr.clear_transient_caches()
                     gc.collect()
 
-        print(f"Wrote: {excluded_path} ({excluded_count} rows)")
         save_caches(ctx)
 
         if failed_companies:

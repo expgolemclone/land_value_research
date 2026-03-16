@@ -149,34 +149,23 @@ class TestDetectDuplicateAddressLargeArea(unittest.TestCase):
             self._make_row("東京都中央区日本橋1-1", 1000.0),
             self._make_row("東京都港区六本木3-4", 2000.0),
         ]
-        warnings, criticals = detect_duplicate_address_large_area(rows)
+        warnings = detect_duplicate_address_large_area(rows)
         self.assertEqual(len(warnings), 0)
-        self.assertEqual(len(criticals), 0)
 
     def test_duplicate_warning(self) -> None:
         rows = [
             self._make_row("東京都中央区", 30000.0),
             self._make_row("東京都中央区", 30000.0),
         ]
-        warnings, criticals = detect_duplicate_address_large_area(rows)
+        warnings = detect_duplicate_address_large_area(rows)
         self.assertEqual(len(warnings), 1)
         self.assertEqual(warnings[0].count, 2)
         self.assertAlmostEqual(warnings[0].total_area_m2, 60000.0)
 
-    def test_duplicate_critical(self) -> None:
-        rows = [
-            self._make_row("東京都中央区", 60000.0),
-            self._make_row("東京都中央区", 60000.0),
-        ]
-        warnings, criticals = detect_duplicate_address_large_area(rows)
-        self.assertEqual(len(criticals), 1)
-        self.assertEqual(criticals[0].count, 2)
-
     def test_single_site_not_flagged(self) -> None:
         rows = [self._make_row("東京都中央区", 200000.0)]
-        warnings, criticals = detect_duplicate_address_large_area(rows)
+        warnings = detect_duplicate_address_large_area(rows)
         self.assertEqual(len(warnings), 0)
-        self.assertEqual(len(criticals), 0)
 
 
 if __name__ == "__main__":

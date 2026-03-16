@@ -7,11 +7,8 @@ from src.landprice_tokyo import PriceResult
 from src.schema import OutputRow
 
 WEB_ADDRESS_SCORE_MIN = 40
-CRITICAL_UNIT_PRICE_YEN_PER_M2 = 20_000_000
-CRITICAL_AREA_M2 = 5_000.0
 CRITICAL_EVAL_MULTIPLE = 500.0
 DUPLICATE_ADDRESS_WARNING_AREA_M2 = 50_000.0
-DUPLICATE_ADDRESS_CRITICAL_AREA_M2 = 100_000.0
 DUPLICATE_ADDRESS_CRITICAL_SITE_COUNT = 2
 UNCERTAINTY_MAX_DIST_REF_M = 5_000.0
 UNCERTAINTY_DIST_VAR_REF_M2 = 1_000_000.0
@@ -78,36 +75,6 @@ def should_accept_web_address(site_name: str, score: int) -> bool:
     return score >= WEB_ADDRESS_SCORE_MIN
 
 
-def detect_critical_anomaly(
-    site_name: str,
-    address_source: str,
-    geocode_level: str,
-    unit_price_yen_per_m2: int,
-    land_area_m2: float,
-    enable_high_unit_price_large_area: bool,
-) -> list[tuple[str, str]]:
-    reasons: list[tuple[str, str]] = []
-    if is_aggregate_site_name(site_name) and address_source == "web" and geocode_level == "gaiku":
-        reasons.append(
-            (
-                "AGGREGATE_WEB_GAIKU",
-                "集約名拠点にweb由来の街区住所が採用されています.",
-            )
-        )
-    if (
-        enable_high_unit_price_large_area
-        and unit_price_yen_per_m2 >= CRITICAL_UNIT_PRICE_YEN_PER_M2
-        and land_area_m2 >= CRITICAL_AREA_M2
-    ):
-        reasons.append(
-            (
-                "HIGH_UNIT_PRICE_LARGE_AREA",
-                "高単価かつ大面積のため過大評価リスクが高いです.",
-            )
-        )
-    return reasons
-
-
 @dataclass
 class _DuplicateBucket:
     address: str
@@ -126,7 +93,7 @@ class DuplicateHit:
 
 def detect_duplicate_address_large_area(
     site_rows: list[OutputRow],
-) -> tuple[list[DuplicateHit], list[DuplicateHit]]:
+) -> list[DuplicateHit]:
     buckets: dict[str, _DuplicateBucket] = {}
     for row in site_rows:
         addr = str(row.get("住所", "") or "").strip()
@@ -147,7 +114,6 @@ def detect_duplicate_address_large_area(
         b.rows.append(row)
 
     warnings: list[DuplicateHit] = []
-    criticals: list[DuplicateHit] = []
     for addr, b in buckets.items():
         count = len(b.rows)
         if count < DUPLICATE_ADDRESS_CRITICAL_SITE_COUNT:
@@ -163,6 +129,4 @@ def detect_duplicate_address_large_area(
         )
         if b.total_area_m2 >= DUPLICATE_ADDRESS_WARNING_AREA_M2:
             warnings.append(hit)
-        if b.total_area_m2 >= DUPLICATE_ADDRESS_CRITICAL_AREA_M2:
-            criticals.append(hit)
-    return warnings, criticals
+    return warnings
