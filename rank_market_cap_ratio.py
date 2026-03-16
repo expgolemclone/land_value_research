@@ -145,6 +145,98 @@ def escape_html_cell(value: object) -> str:
     return s
 
 
+def _md_to_html(text: str) -> str:
+    """Markdownテキストを簡易HTMLに変換する（外部ライブラリ不要）."""
+    import html
+    import re
+
+    lines = text.replace("\r", "").split("\n")
+    out: list[str] = []
+    in_ul = False
+    in_table = False
+    table_has_header = False
+
+    def _inline(s: str) -> str:
+        s = html.escape(s)
+        s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
+        s = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", s)
+        # リンク [text](url)
+        s = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2" target="_blank">\1</a>', s)
+        return s
+
+    def _close_list() -> None:
+        nonlocal in_ul
+        if in_ul:
+            out.append("</ul>")
+            in_ul = False
+
+    def _close_table() -> None:
+        nonlocal in_table, table_has_header
+        if in_table:
+            out.append("</tbody></table>")
+            in_table = False
+            table_has_header = False
+
+    for line in lines:
+        stripped = line.strip()
+
+        # 空行
+        if not stripped:
+            _close_list()
+            _close_table()
+            continue
+
+        # 見出し
+        m = re.match(r"^(#{1,4})\s+(.*)", stripped)
+        if m:
+            _close_list()
+            _close_table()
+            level = min(len(m.group(1)) + 2, 6)  # # → h3, ## → h4
+            out.append(f"<h{level}>{_inline(m.group(2))}</h{level}>")
+            continue
+
+        # テーブル区切り行（| --- | --- |）
+        if re.match(r"^\|[\s\-:|]+\|$", stripped):
+            table_has_header = True
+            continue
+
+        # テーブル行
+        if stripped.startswith("|") and stripped.endswith("|"):
+            cells = [c.strip() for c in stripped.strip("|").split("|")]
+            if not in_table:
+                _close_list()
+                in_table = True
+                table_has_header = False
+                out.append('<table class="md-table"><thead><tr>')
+                out.append("".join(f"<th>{_inline(c)}</th>" for c in cells))
+                out.append("</tr></thead><tbody>")
+                continue
+            if not table_has_header:
+                # まだヘッダ区切りが来ていない → thead の続き扱い
+                pass
+            out.append("<tr>" + "".join(f"<td>{_inline(c)}</td>" for c in cells) + "</tr>")
+            continue
+
+        # リスト項目
+        m = re.match(r"^[-*]\s+(.*)", stripped)
+        if m:
+            _close_table()
+            if not in_ul:
+                in_ul = True
+                out.append("<ul>")
+            out.append(f"<li>{_inline(m.group(1))}</li>")
+            continue
+
+        # 通常テキスト
+        _close_list()
+        _close_table()
+        out.append(f"<p>{_inline(stripped)}</p>")
+
+    _close_list()
+    _close_table()
+    return "\n".join(out)
+
+
 def collect_rank_rows(input_dir: Path, company_master: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
     rank_rows: list[dict[str, Any]] = []
     for csv_path in sorted(input_dir.glob("*_output.csv")):
@@ -221,11 +313,28 @@ _HTML_STYLE = """\
   a { color: #5dade2; text-decoration: none; }
   a:hover { text-decoration: underline; }
   .right { text-align: right; }
-  td.docs-cell { white-space: normal; max-width: 500px; }
+  td.docs-cell { position: relative; white-space: normal; }
   td.docs-cell details summary { cursor: pointer; color: #5dade2; font-weight: bold; }
-  td.docs-cell details pre { white-space: pre-wrap; word-break: break-word;
-    font-size: 0.8em; margin: 4px 0; padding: 6px; background: #0d1117;
-    color: #c9d1d9; border-radius: 4px; max-height: 400px; overflow-y: auto; }
+  td.docs-cell details summary::marker { color: #5dade2; }
+  td.docs-cell .docs-body {
+    position: absolute; z-index: 20; left: 0; top: 100%;
+    width: 600px; max-height: 500px; overflow-y: auto;
+    background: #0d1117; color: #c9d1d9; border: 1px solid #444c6a;
+    border-radius: 8px; padding: 16px 20px; margin-top: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    font-size: 0.85em; line-height: 1.6;
+  }
+  .docs-body h3 { font-size: 1.1em; color: #e0e0e0; margin: 12px 0 6px; border-bottom: 1px solid #2a2a4a; padding-bottom: 4px; }
+  .docs-body h4 { font-size: 1em; color: #d0d0d0; margin: 10px 0 4px; }
+  .docs-body h5 { font-size: 0.95em; color: #c0c0c0; margin: 8px 0 4px; }
+  .docs-body ul { margin: 4px 0 4px 18px; padding: 0; }
+  .docs-body li { margin: 2px 0; }
+  .docs-body p { margin: 4px 0; }
+  .docs-body code { background: #1a1a2e; padding: 1px 5px; border-radius: 3px; font-size: 0.9em; color: #f0c674; }
+  .docs-body a { color: #5dade2; }
+  .docs-body .md-table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 0.9em; }
+  .docs-body .md-table th { background: #16213e; padding: 5px 8px; text-align: left; border-bottom: 2px solid #444c6a; white-space: normal; }
+  .docs-body .md-table td { padding: 4px 8px; border-bottom: 1px solid #2a2a4a; white-space: normal; }
 </style>
 """
 
@@ -303,8 +412,8 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
                 cls = ' class="right"' if header in right_cols else ""
                 if header == "調査メモ":
                     if docs_content:
-                        escaped = escape_html_cell(docs_content)
-                        f.write(f'  <td class="docs-cell"><details><summary>済</summary><pre>{escaped}</pre></details></td>\n')
+                        rendered = _md_to_html(docs_content)
+                        f.write(f'  <td class="docs-cell"><details><summary>\u25b6 済</summary><div class="docs-body">{rendered}</div></details></td>\n')
                     else:
                         f.write("  <td></td>\n")
                 elif header == "有報PDF":
