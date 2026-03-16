@@ -448,6 +448,18 @@ def _invalidate_stale_override_csvs(ctx: RunContext) -> list[str]:
                 invalidated.append(code)
                 logger.info("住所オーバーライド変更: %s のCSVを削除", code)
 
+    # override が削除された企業も再計算対象にする
+    for code in old_hashes:
+        if code not in new_hashes:
+            csv_path = os.path.join(
+                ctx.processed_lookup_dir,
+                f"{sanitize_filename_component(code)}_output.csv",
+            )
+            if os.path.exists(csv_path):
+                os.remove(csv_path)
+                invalidated.append(code)
+                logger.info("住所オーバーライド削除: %s のCSVを削除", code)
+
     save_json_dict(hash_path, new_hashes)
     return invalidated
 
