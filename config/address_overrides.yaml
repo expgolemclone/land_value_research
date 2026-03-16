@@ -4,6 +4,22 @@
 '1810':
   本社: 東京都中央区新川1丁目17番22号
   東京支店: 東京都中央区新川1丁目17番22号
+'1833':
+  投資開発事業本部:
+  - address: 全国各所
+    area_m2: 273183.0
+    area_m2_is_estimated: false
+    area_m2_note: 賃貸等不動産は大阪府その他の地域
+    area_m2_source: 有報注記「賃貸中の主なもの」の土地面積
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VWHS.pdf
+    name: 投資開発事業本部(賃貸中・合算)
+  - address: 全国各所
+    area_m2: 52560.0
+    area_m2_is_estimated: true
+    area_m2_note: 325,743 - 273,183 = 52,560
+    area_m2_source: 有報の合計面積から賃貸中面積を控除
+    name: 投資開発事業本部(賃貸以外・合算)
+  東日本支社: 東京都港区芝5丁目6番1号
 '1841':
   本社・町田営業所他: 東京都大田区南雪谷2丁目17番8号
   賃貸用不動産: 東京都中野区中央3丁目24番15号
@@ -12,17 +28,17 @@
   - address: 東京都港区虎ノ門4丁目3番13号
     area_m2: 656.46
     area_m2_is_estimated: true
+    area_m2_note: 7221.10m2 × (5F/11F) = 656.46m2
     area_m2_source: IR資料(建物敷地面積と本社フロア情報から推定)
     area_m2_source_url: https://www.hulic-reit.co.jp/ja/portfolio/detail.html?asset_id=31
       | https://www.n-kokudo.co.jp/company/network/
-    area_m2_note: 7221.10m2 × (5F/11F) = 656.46m2
     name: 本社(虎ノ門)
   - address: 茨城県つくば市みどりの東18-1
     area_m2: 1875512.54
     area_m2_is_estimated: true
+    area_m2_note: 1876169.00m2 - 656.46m2 = 1875512.54m2
     area_m2_source: 有価証券報告書注記(本社に含む)から差分配分
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100WKKV.pdf
-    area_m2_note: 1876169.00m2 - 656.46m2 = 1875512.54m2
     name: つくば未来センター
   東京支店: 東京都港区虎ノ門4丁目3番13号
 '1911':
@@ -44,12 +60,74 @@
   東京都合計: 東京都千代田区大手町1丁目3番2号
 '1945':
   本社他: 東京都中央区日本橋茅場町1丁目3番1号
+'1960':
+  本社:
+  - address: 東京都千代田区麹町4丁目8番
+    area_m2: 3878.26
+    area_m2_is_estimated: true
+    area_m2_note: 20,986.72 - 17,108.46 = 3,878.26。代表住所は二番町重心から最短gaiku(麹町4-8)
+    area_m2_source: 有報合計面積から群馬倉庫面積を控除した残差
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W44F.pdf
+    name: 本社(東京・麹町)
+  - address: 群馬県邑楽郡
+    area_m2: 17108.46
+    area_m2_is_estimated: false
+    area_m2_note: 有報の倉庫明細で群馬県邑楽郡(本社・倉庫)の土地面積17,108.46m2
+    area_m2_source: 有報注記2「群馬県邑楽郡にある倉庫の土地」+ 倉庫明細の面積
+    name: 本社(群馬倉庫)
 '1968':
   本社等: 東京都千代田区神田神保町2丁目4番地
+'2120':
+  本社:
+  - address: 東京都千代田区麹町1丁目4番4号
+    area_m2: 708.0
+    area_m2_is_estimated: true
+    area_m2_note: 麹町1-4-4と同一住所の公示点(千代田5-22)地積708m2
+    area_m2_source: 公示地価標準地(千代田5-22)の地積を代理値として採用
+    area_m2_source_url: https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131010522.html
+    name: 本社(麹町・本店所在地)
+  - address: 全国各所
+    area_m2: 30292.0
+    area_m2_is_estimated: true
+    area_m2_note: 31,000.0 - 708.0 = 30,292.0
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 本社(Rakuten STAY VILLA 4物件・全国合算)
+  東京都合計: 東京都千代田区麹町1丁目4番4号
 '2207':
   八王子工場および東京研究所: 東京都八王子市石川町2973番2号
 '2579':
-  本社他: 東京都港区赤坂9-7-1
+  本社他:
+  - address: 東京都港区赤坂9丁目7番1号
+    area_m2: 132.0
+    area_m2_is_estimated: true
+    area_m2_note: 港5-2(六本木4-9-5)の地積132m2
+    area_m2_source: 近傍公示地価標準地(港5-2)の地積を代理値として採用
+    area_m2_source_url: https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/20251131030153
+    name: 本社(港区赤坂)
+  - address: 全国各所
+    area_m2: 1393868.0
+    area_m2_is_estimated: true
+    area_m2_note: 1,394,000 - 132 = 1,393,868
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 本社他(全国各所・合算)
+'3238':
+  本社: 東京都千代田区飯田橋3丁目3番7号
+  東京都合計: 東京都千代田区飯田橋3丁目3番7号
+'3407':
+  本社:
+  - address: 東京都千代田区有楽町1丁目1番2号
+    area_m2: 10700.0
+    area_m2_is_estimated: true
+    area_m2_note: 設計者資料の敷地面積10,702.32m2を丸めて採用
+    area_m2_source: 東京ミッドタウン日比谷(日比谷三井タワー)の敷地面積約10,700m2
+    area_m2_source_url: https://www.mitsuifudosan.co.jp/corporate/news/2018/0130/
+    name: 本社(有楽町・東京ミッドタウン日比谷)
+  - address: 全国各所
+    area_m2: 3079300.0
+    area_m2_is_estimated: true
+    area_m2_note: 3,090,000.0 - 10,700.0 = 3,079,300.0
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 本社(全国資産・合算)
 '3494':
   マリオン浅草雷門他2棟: 東京都台東区雷門2-15-2
   マリオン田端: 東京都荒川区西尾久4-6-10
@@ -63,48 +141,121 @@
   - address: 東京都千代田区内幸町1丁目5番2号
     area_m2: 523.3
     area_m2_is_estimated: true
+    area_m2_note: 内幸町平和ビル基準階面積 523.30m2
     area_m2_source: 賃貸オフィス情報の基準階面積による推定
     area_m2_source_url: https://www.officetar.jp/building/27291/
-    area_m2_note: 内幸町平和ビル基準階面積 523.30m2
     name: 本社、営業所他(本社推定)
   - address: 東京都千代田区内幸町1丁目3番2号
     area_m2: 823.99
     area_m2_is_estimated: true
+    area_m2_note: 内幸町東急ビル基準階面積 823.99m2
     area_m2_source: 賃貸オフィス情報の基準階面積による推定
     area_m2_source_url: https://www.officetar.jp/building/8392/
-    area_m2_note: 内幸町東急ビル基準階面積 823.99m2
     name: 本社、営業所他(東京第一・第二支店推定)
   - address: 全国各所
     area_m2: 122056.71
     area_m2_is_estimated: true
+    area_m2_note: 123404.00 - 523.30 - 823.99 = 122056.71
     area_m2_source: 有報の合計面積から東京推定面積を控除
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VUIQ.pdf
-    area_m2_note: 123404.00 - 523.30 - 823.99 = 122056.71
     name: 本社、営業所他(営業所・全国合算)
   東京物流サービスセンター: 東京都江戸川区南篠崎町1丁目7番14号
+'3856':
+  本社:
+  - address: 東京都品川区東品川2丁目2番4号
+    area_m2: 1031.0
+    area_m2_is_estimated: true
+    area_m2_note: 公示点13109-005-025(東品川2-2-28)の地積1031m2
+    area_m2_source: 近傍公示地価標準地(13109-005-025)の地積を代理値として採用
+    name: 本社(東品川)
+  - address: 全国各所
+    area_m2: 200467.0
+    area_m2_is_estimated: true
+    area_m2_note: 201,498.0 - 1,031.0 = 200,467.0
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 本社(賃貸中土地・合算)
 '3863':
   本店事務所他:
   - address: 東京都千代田区神田駿河台4丁目6番地
     area_m2: 9547.0
     area_m2_is_estimated: true
+    area_m2_note: 神田駿河台4-6の敷地面積 9,547.05m2 を四捨五入
     area_m2_source: 御茶ノ水ソラシティの公開敷地面積
     area_m2_source_url: https://www.hulic.co.jp/company/portfolio/14.html
-    area_m2_note: 神田駿河台4-6の敷地面積 9,547.05m2 を四捨五入
     name: 本店事務所他(本店・東京代表)
   - address: 全国各所
     area_m2: 7983453.0
     area_m2_is_estimated: true
+    area_m2_note: 7,993,000.0 - 9,547.0 = 7,983,453.0
     area_m2_source: 有報の合計面積から東京推定面積を控除
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W5KI.pdf
-    area_m2_note: 7,993,000.0 - 9,547.0 = 7,983,453.0
     name: 本店事務所他(営業支社・営業所・厚生施設等)
 '3865':
   本社他: 東京都中央区日本橋本石町3-2-2
 '3878':
-  本社他: 東京都中央区京橋2丁目1番3号
+  本社他:
+  - address: 東京都中央区京橋2丁目1番3号
+    area_m2: 0.0
+    area_m2_is_estimated: true
+    area_m2_note: 公式サイトで「京橋トラストタワー 7F」表記
+    area_m2_source: 京橋トラストタワー7F入居のためオフィスビル賃借、自社土地なし
+    name: 本社(京橋・オフィス)
+  - address: 静岡県静岡市駿河区用宗巴町3番1号
+    area_m2: 12000.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報表紙の「最寄りの連絡場所」が静岡県静岡市駿河区用宗巴町3番1号
+    area_m2_source: 有報の面積値(12千m2)を静岡側に割当(所在地割当が推定)
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W2Y3.pdf
+    name: 本社他(用宗・保有土地/合算)
 '4031':
-  本社: 東京都千代田区丸の内1丁目3番3号
+  本社:
+  - address: 東京都渋谷区神南1丁目22番1号
+    area_m2: 354.0
+    area_m2_is_estimated: true
+    area_m2_note: KCA SHIBUYA bldg. 敷地面積353.61㎡を採用。土地交換で東急から取得した区画。
+    area_m2_source: 建築計画のお知らせ看板データベース(KCA渋谷プロジェクト敷地面積353.61㎡)
+    area_m2_source_url: https://kenchiku-keikaku.co.jp/tokyoto/shibuyaku-city/14344
+    name: 本社(渋谷区神南)
+  - address: 全国各所
+    area_m2: 156646.0
+    area_m2_is_estimated: false
+    name: 本社(全国賃貸等不動産・合算)
   東京都合計: 東京都千代田区丸の内1丁目3番3号
+'4043':
+  東京本部:
+  - address: 東京都千代田区外神田1丁目7番5号
+    area_m2: 998.16
+    area_m2_is_estimated: true
+    area_m2_source: フロントプレイス秋葉原の敷地面積998.16m2を代理値として採用
+    area_m2_source_url: https://www.itochu.co.jp/ja/news/press/2016/161024.html
+    name: 東京本部(外神田・連絡場所)
+  - address: 全国各所
+    area_m2: 80000.0
+    area_m2_is_estimated: false
+    area_m2_source: 有報注記(注)4の貸与中土地80千m2
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W2LH.pdf
+    name: 東京本部(貸与中土地)
+  - address: 全国各所
+    area_m2: 84001.84
+    area_m2_is_estimated: true
+    area_m2_note: 165,000 - 80,000 - 998.16 = 84,001.84
+    area_m2_source: 有報の合計面積から東京推定面積と貸与中土地を控除
+    name: 東京本部(その他・合算)
+'4044':
+  本社:
+  - address: 東京都千代田区神田錦町3丁目7番1号
+    area_m2: 751.0
+    area_m2_is_estimated: true
+    area_m2_note: 千代田5-42(神田錦町3-18-1外)の地積751m2
+    area_m2_source: 近傍公示地価標準地(千代田5-42)の地積を代理値として採用
+    area_m2_source_url: https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131010542.html
+    name: 本社(東京・神田錦町)
+  - address: 全国各所
+    area_m2: 112849.0
+    area_m2_is_estimated: true
+    area_m2_note: 113,600 - 751 = 112,849
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 本社(他拠点・合算)
 '4182':
   東京研究所: 東京都葛飾区新宿6-1-1
 '4220':
@@ -133,18 +284,153 @@
   本社: 東京都千代田区丸の内1丁目4番1号
   東京都合計: 東京都千代田区丸の内1丁目4番1号
   関東第一支店: 東京都千代田区丸の内1丁目4番1号
+'5021':
+  本社:
+  - address: 千葉県市原市五井海岸2
+    area_m2: 1086801.0
+    area_m2_is_estimated: true
+    area_m2_note: scale=3,191,606/3,434,607=0.9292; 1,169,547*0.9292=1,086,801
+    area_m2_source: 公式面積(1,169,547m2)を有報合計(3,191,606m2)で按分
+    area_m2_source_url: https://www.cosmo-energy.co.jp/ja/about/group/cosmooil/chiba.html
+    name: 千葉製油所
+  - address: 三重県四日市市大協町1-1
+    area_m2: 946292.0
+    area_m2_is_estimated: true
+    area_m2_note: 1,018,340*0.9292=946,292
+    area_m2_source: 公式面積(1,018,340m2)を有報合計で按分
+    area_m2_source_url: https://www.cosmo-energy.co.jp/ja/about/group/cosmooil/yokkaichi.html
+    name: 四日市製油所
+  - address: 大阪府堺市西区築港新町3-16
+    area_m2: 1158513.0
+    area_m2_is_estimated: true
+    area_m2_note: 合計が3,191,606に一致するよう端数調整
+    area_m2_source: 公式面積(1,246,720m2)を有報合計で按分(端数調整)
+    area_m2_source_url: https://www.cosmo-energy.co.jp/ja/about/group/cosmooil/sakai.html
+    name: 堺製油所
 '5189':
   本社他: 東京都渋谷区笹塚1丁目48番3号 笹塚太陽ビル5階
   笹塚ショッピングモール他: 東京都渋谷区笹塚1丁目21番17号
 '5202':
-  本社・他営業所等: 東京都港区三田3丁目5番27号
+  本社・他営業所等:
+  - address: 東京都港区三田3丁目5番27号
+    area_m2: 709.0
+    area_m2_is_estimated: true
+    area_m2_note: 港5-13の地積709m2
+    area_m2_source: 近傍公示地価標準地(港5-13)の地積を代理値として採用
+    area_m2_source_url: https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131030513.html
+    name: 本社(三田)
+  - address: 全国各所
+    area_m2: 239291.0
+    area_m2_is_estimated: true
+    area_m2_note: 240,000.0 - 709.0 = 239,291.0
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 他営業所等(全国合算)
+'5269':
+  本社:
+  - address: 東京都港区芝浦4丁目6番14号
+    area_m2: 993.0
+    area_m2_is_estimated: true
+    area_m2_note: 芝浦エリア近傍の公示地価標準地の地積993m2を代理値として採用
+    area_m2_source: 近傍公示地価標準地(港区芝浦2-3-27)の地積を代理値として採用
+    area_m2_source_url: https://chika.m47.jp/13/2024/k13103000017.html
+    name: 本社(芝浦・本店所在地)
+  - address: 全国各所
+    area_m2: 116007.0
+    area_m2_is_estimated: true
+    area_m2_note: 117,000.0 - 993.0 = 116,007.0
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 本社(全国資産・合算)
 '5388':
   本社: 東京都千代田区丸の内1丁目4番5号
   本社その他(推定): 東京都千代田区岩本町1丁目10番5号
 '5480':
-  本社等: 東京都中央区京橋1丁目5番8号
+  本社等:
+  - address: 東京都中央区京橋1丁目5番8号
+    area_m2: 930.0
+    area_m2_is_estimated: true
+    area_m2_note: 743.80 / 0.80 = 929.75 ≒ 930.0
+    area_m2_source: 基準階面積743.80m2 / 建ぺい率80%で推定
+    area_m2_source_url: https://www.officetar.jp/building/13011/
+    name: 本社等(京橋)
+  - address: 全国各所
+    area_m2: 190239.0
+    area_m2_is_estimated: true
+    area_m2_note: 191,169 - 930.0 = 190,239.0
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 本社等(全国合算)
+'5706':
+  本店:
+  - address: 東京都品川区大崎1丁目11番1号
+    area_m2: 2000.0
+    area_m2_is_estimated: false
+    area_m2_source: 有報注記3の明記値(東京都2千m2)
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VZ5R.pdf
+    name: 本店(一般用地・東京都)
+  - address: 埼玉県
+    area_m2: 250000.0
+    area_m2_is_estimated: false
+    area_m2_source: 有報注記3の明記値(埼玉県250千m2)
+    name: 本店(工場用地・埼玉県)
+  - address: 山梨県
+    area_m2: 215000.0
+    area_m2_is_estimated: false
+    area_m2_source: 有報注記3の明記値(山梨県215千m2)
+    name: 本店(工場用地・山梨県)
+  - address: 全国各所
+    area_m2: 40604000.0
+    area_m2_is_estimated: false
+    area_m2_source: 有報注記3の明記値(ペルー40,604千m2)
+    name: 本店(鉱業採石地・ペルー)
+  - address: 全国各所
+    area_m2: 545000.0
+    area_m2_is_estimated: true
+    area_m2_note: 41,616,000 - 2,000 - 250,000 - 215,000 - 40,604,000 = 545,000
+    area_m2_source: 有報合計面積から注記内訳4項の差分
+    name: 本店(その他・合算)
 '5715':
-  本支店他: 東京都千代田区大手町2丁目6番4号
+  本支店他:
+  - address: 東京都中央区日本橋室町2丁目3番1号
+    area_m2: 3723.0
+    area_m2_is_estimated: true
+    area_m2_source: 室町古河三井ビルディング(COREDO室町2)の敷地面積約3,723m2
+    area_m2_source_url: https://www.mitsuifudosan.co.jp/corporate/news/2014/0129/
+    name: 本支店他(室町古河三井ビルディング)
+  - address: 全国各所
+    area_m2: 240277.0
+    area_m2_is_estimated: true
+    area_m2_note: 244,000 - 3,723 = 240,277
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 本支店他(全国合算)
+'5852':
+  東京本社:
+  - address: 東京都中野区本町2丁目46番1号
+    area_m2: 10331.9
+    area_m2_is_estimated: true
+    area_m2_note: 3,125.40坪 = 10,331.9m2
+    area_m2_source: 中野坂上サンブライトツイン敷地面積10,331.9m2を上限代理値として採用
+    area_m2_source_url: https://japan-cor.com/nakanosakaue-sunbright-twin/
+    name: 東京本社(中野坂上サンブライトツイン)
+  - address: 全国各所
+    area_m2: 143495.11
+    area_m2_is_estimated: true
+    area_m2_note: 153,827.01 - 10,331.9 = 143,495.11
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 東京本社(全国合算)
+'5965':
+  本社:
+  - address: 東京都港区南麻布1丁目7番23号
+    area_m2: 274.99
+    area_m2_is_estimated: true
+    area_m2_note: 設計者(Plantec)資料の敷地面積274.99m2
+    area_m2_source: 新本社ビルの敷地面積274.99m2
+    area_m2_source_url: https://www.plantec.co.jp/works/fujimak/
+    name: 本社(南麻布・本店所在地)
+  - address: 全国各所
+    area_m2: 47837.15
+    area_m2_is_estimated: true
+    area_m2_note: 48,112.14 - 274.99 = 47,837.15
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 本社(子会社貸与資産等・合算)
 '6140':
   本社他: 東京都千代田区丸の内1丁目4番1号
 '6181':
@@ -158,31 +444,139 @@
   - address: 東京都江東区豊洲3丁目1番1号
     area_m2: 16242.0
     area_m2_is_estimated: true
+    area_m2_note: 公示点 13108-005-017 (東京都江東区豊洲3丁目1番54) の地積 16,242m2 を代理値として採用
     area_m2_source: 公示地価標準地(豊洲3丁目近傍)の地積(L01_027)による推定
     area_m2_source_url: https://www.reinfolib.mlit.go.jp/
-    area_m2_note: 公示点 13108-005-017 (東京都江東区豊洲3丁目1番54) の地積 16,242m2 を代理値として採用
     name: 本社(豊洲)
   - address: 全国各所
     area_m2: 129909758.0
     area_m2_is_estimated: true
+    area_m2_note: 129,926,000 - 16,242 = 129,909,758m2
     area_m2_source: 有報(本社行の所在地が「東京都江東区他」)の合算面積から東京推定面積を控除
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W1K1.pdf
-    area_m2_note: 129,926,000 - 16,242 = 129,909,758m2
     name: 本社(全国各所・合算)
 '7042':
   世田谷オフィス: 東京都世田谷区瀬田3丁目15番10号
   渋谷オフィス: 東京都渋谷区渋谷2丁目15番1号
+'7414':
+  東京支店:
+  - address: 東京都中央区八重洲1丁目3番22号
+    area_m2: 0.0
+    area_m2_note: 事務所拠点のため土地0m2
+    name: 東京支店(八重洲・事務所)
+  - address: 茨城県神栖市居切字砂山1613-1
+    area_m2: 23814.73
+    area_m2_is_estimated: true
+    area_m2_source: 5拠点均等配分(119,073.63 / 5)
+    area_m2_source_url: https://f.irbank.net/files/0000/7414/20240528/2/S100W97U.pdf
+    name: 鹿島センター(物流倉庫)
+  - address: 群馬県高崎市東中里町81-1
+    area_m2: 23814.73
+    area_m2_is_estimated: true
+    area_m2_source: 5拠点均等配分
+    name: 高崎センター(物流倉庫)
+  - address: 千葉県浦安市港76-7
+    area_m2: 23814.73
+    area_m2_is_estimated: true
+    area_m2_source: 5拠点均等配分
+    name: 浦安センター(物流倉庫)
+  - address: 神奈川県川崎市川崎区水江町4-11
+    area_m2: 23814.73
+    area_m2_is_estimated: true
+    area_m2_source: 5拠点均等配分
+    name: 川崎センター(物流倉庫・コイルセンター)
+  - address: 静岡県静岡市清水区三保3924-1
+    area_m2: 23814.71
+    area_m2_is_estimated: true
+    area_m2_note: 23,814.71で合計が119,073.63に一致
+    area_m2_source: 5拠点均等配分(端数調整)
+    name: 静岡センター/清水工場(物流倉庫等)
+'7462':
+  巣鴨SS:
+  - address: 東京都豊島区巣鴨1丁目11番1号
+    area_m2: 62.0
+    area_m2_is_estimated: false
+    area_m2_note: 3,012 - 2,950 = 62
+    area_m2_source: 有報の土地面積(3,012)から賃借部分(2,950)を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W8M6.pdf
+    name: 巣鴨SS(保有土地)
+  - address: 全国各所
+    area_m2: 2950.0
+    area_m2_is_estimated: false
+    area_m2_note: 賃借土地のため簿外。評価対象外
+    area_m2_source: 有報注記の賃借部分
+    name: 巣鴨SS(賃借土地・簿外)
+  賃貸用建物:
+  - address: 東京都豊島区巣鴨1丁目11番1号
+    area_m2: 652.0
+    area_m2_is_estimated: true
+    area_m2_note: 32,585 - 31,933 = 652
+    area_m2_source: 有報の土地面積(32,585)から賃貸部分(31,933)を控除
+    name: 賃貸用建物(巣鴨ダイヤビル・自社使用)
+  - address: 全国各所
+    area_m2: 31933.0
+    area_m2_is_estimated: false
+    area_m2_source: 有報注記の賃貸部分
+    name: 賃貸用建物(賃貸部分・合算)
 '7567':
   西東京営業所: 東京都昭島市玉川町3-10-1
 '7602':
   本社: 東京都千代田区紀尾井町4番1号
   東京都合計: 東京都千代田区紀尾井町4番1号
+'7942':
+  本社:
+  - address: 東京都千代田区丸の内3丁目4番2号
+    area_m2: 2457.45
+    area_m2_is_estimated: true
+    area_m2_source: 新日石ビルの敷地面積2,457.45m2
+    area_m2_source_url: https://kenchiku.city/chiyoda/238
+    name: 本社(丸の内・新日石ビル)
+  - address: 全国各所
+    area_m2: 55542.55
+    area_m2_is_estimated: true
+    area_m2_note: 58,000 - 2,457.45 = 55,542.55
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 本社(賃貸設備・合算)
 '8066':
   その他賃貸資産等: 東京都千代田区丸の内1-6-5
+'8181':
+  上野店:
+  - address: 東京都台東区池之端1丁目4番1号
+    area_m2: 2000.4
+    area_m2_is_estimated: false
+    area_m2_source: 元の土地面積を維持(住所のみ補正)
+    name: 上野店(池之端・本店所在地)
+  上野賃貸不動産:
+  - address: 東京都台東区上野4丁目8番4号
+    area_m2: 109.0
+    area_m2_is_estimated: true
+    area_m2_note: 公示点13106-005-020の地積109m2
+    area_m2_source: 近傍公示点(13106-005-020)の地積を代理値として採用
+    name: 上野賃貸不動産(台東区)
+  - address: 全国各所
+    area_m2: 3657.4
+    area_m2_is_estimated: true
+    area_m2_note: 3,766.4 - 109.0 = 3,657.4
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 上野賃貸不動産(その他地域・合算)
+  東京都合計: 東京都台東区池之端1丁目4番1号
 '8253':
   本社他: 東京都豊島区東池袋3-1-1
 '8944':
-  原宿プラザビル: 東京都渋谷区千駄ケ谷3丁目16番1号
+  原宿プラザビル:
+  - address: 東京都渋谷区千駄ケ谷3丁目16番1号
+    area_m2: 321.0
+    area_m2_is_estimated: true
+    area_m2_note: 公示点13113-005-019の地積321m2
+    area_m2_source: 出力CSVの最寄り公示点(13113-005-019)の地積を代理値として採用
+    area_m2_source_url: https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131130519.html
+    name: 原宿プラザビル(渋谷区千駄ケ谷)
+  - address: 全国各所
+    area_m2: 122228.73
+    area_m2_is_estimated: true
+    area_m2_note: 122,549.73 - 321.0 = 122,228.73
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 原宿プラザビル(他・合算)
 '9057':
   関東事業部: 東京都港区芝1丁目12番7号
 '9059':
@@ -195,7 +589,7 @@
 '9305':
   立川営業所: 東京都立川市富士見町1-14-5
 '9351':
-  本社: 東京都中央区日本橋2丁目7番1号
+  本社: 東京都中央区晴海1丁目8番8号
   東京支店: 東京都江東区有明4丁目3番22号
 '9602':
   東京宝塚ビル他: 東京都千代田区有楽町1-1-3
@@ -215,8 +609,47 @@
   神山ビル他: 東京都渋谷区神山町4-14
 '9845':
   本社・テクニカルセンター 他: 東京都中央区日本橋人形町2-22-1
+'9896':
+  本社:
+  - address: 東京都江東区新木場1丁目7番22号
+    area_m2: 6332.0
+    area_m2_is_estimated: true
+    area_m2_note: 1,747,499 - 271,427 - 21,626 - 1,448,114 = 6,332
+    area_m2_source: 有報合計面積から注記3の内訳3項を控除した差分
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W1Y4.pdf
+    name: 本社(統括業務設備・新木場)
+  - address: 全国各所
+    area_m2: 271427.0
+    area_m2_is_estimated: false
+    area_m2_source: 有報注記3の明記値
+    name: 本社(賃貸用地・合算)
+  - address: 全国各所
+    area_m2: 21626.0
+    area_m2_is_estimated: false
+    area_m2_source: 有報注記3の明記値
+    name: 本社(厚生施設・合算)
+  - address: 全国各所
+    area_m2: 1448114.0
+    area_m2_is_estimated: false
+    area_m2_source: 有報注記3の明記値
+    name: 本社(遊休資産・合算)
 '9929':
   本社・東京本店: 東京都中央区新川1丁目22番11号
 '9930':
   代々木上原マンション: 東京都渋谷区上原3丁目33-17
   本社及び本社別館: 東京都渋谷区東2丁目23-10
+'9997':
+  東京都合計: 東京都中央区京橋2丁目13番10号
+  賃貸用資産:
+  - address: 東京都中央区京橋2丁目13番10号
+    area_m2: 1300.0
+    area_m2_is_estimated: true
+    area_m2_source: 京橋MIDビルの敷地面積約1,300m2を代理値として採用
+    area_m2_source_url: https://www.re-port.net/article/news/0000035499/
+    name: 賃貸用資産(東京・京橋)
+  - address: 全国各所
+    area_m2: 618946.49
+    area_m2_is_estimated: true
+    area_m2_note: 620,246.49 - 1,300.0 = 618,946.49
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    name: 賃貸用資産(他20ヶ所・合算)
