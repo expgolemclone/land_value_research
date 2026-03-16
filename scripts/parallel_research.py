@@ -403,11 +403,27 @@ def _launch_processes(
         prompt_file.write_text(prompt, encoding="utf-8")
 
         title = f"{code} {t['name']}"
-        shell_cmd = (
-            f"{cli_cmd} exec --full-auto \"$(<{shlex.quote(str(prompt_file))})\" "
-            f"2>&1 | tee {shlex.quote(str(log_file))};"
-            f' echo "\\n--- 完了 (Enter で閉じる) ---"; read'
-        )
+        log_q = shlex.quote(str(log_file))
+        prompt_q = shlex.quote(str(prompt_file))
+        docs_md = f"docs/{code}.md"
+
+        if check_docs:
+            shell_cmd = (
+                f"{cli_cmd} exec --full-auto \"$(<{prompt_q})\" 2>&1 | tee {log_q}; "
+                f"if [ ! -s {shlex.quote(str(PROJECT_ROOT / docs_md))} ]; then "
+                f"  SID=$(grep -m1 'session id: ' {log_q} | awk '{{print $3}}'); "
+                f'  echo "\\n--- {docs_md} が空. resume リトライ (SID=$SID) ---"; '
+                f"  {cli_cmd} exec resume \"$SID\" --full-auto "
+                f'"{docs_md} が空のままです。調査結果を書き込んでください。" '
+                f"2>&1 | tee -a {log_q}; "
+                f"fi; "
+                f'echo "\\n--- 完了 (Enter で閉じる) ---"; read'
+            )
+        else:
+            shell_cmd = (
+                f"{cli_cmd} exec --full-auto \"$(<{prompt_q})\" "
+                f"2>&1 | tee {log_q}"
+            )
         cmd = ["kitty", "--title", title, "-e", "bash", "-c", shell_cmd]
 
         print(f"  [{i + 1}] {title}")
