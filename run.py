@@ -40,7 +40,43 @@ from src.geocode_tokyo import TokyoGeocoder
 from src.landprice_tokyo import LandPriceTokyo, PriceResult
 from src.network import is_transient_network_error
 from src.pdf_extract import FacilityLand, extract_facilities_section_text, extract_major_facilities_land
-from src.schema import OUTPUT_COLUMNS, OutputRow
+from src.schema import (
+    COL_ADDRESS,
+    COL_ADDRESS_SOURCE,
+    COL_ADDRESS_SOURCE_URL,
+    COL_ANOMALY_WARNING,
+    COL_BOOK_VALUE,
+    COL_CODE,
+    COL_COMPANY_NAME,
+    COL_CONFIDENCE,
+    COL_CONFIDENCE_SCORE,
+    COL_ESTIMATED_VALUE,
+    COL_GEOCODE_FACTOR,
+    COL_GEOCODE_LEVEL,
+    COL_KNN_DIST,
+    COL_KNN_DIST_VAR,
+    COL_KNN_IDS,
+    COL_KNN_LANDUSE,
+    COL_KNN_MAX_DIST,
+    COL_KNN_PRICES,
+    COL_LAND_AREA,
+    COL_MARKET_CAP,
+    COL_MULT,
+    COL_MULT_RAW,
+    COL_NEAREST_DIST,
+    COL_NEAREST_ID,
+    COL_NEAREST_LANDUSE,
+    COL_PRICE_FACTOR,
+    COL_PRICE_METHOD,
+    COL_RATIO,
+    COL_RATIO_RAW,
+    COL_SITE_NAME,
+    COL_TARGET_LANDUSE,
+    COL_UNIT_PRICE,
+    COL_UNREALIZED_GAIN,
+    OUTPUT_COLUMNS,
+    OutputRow,
+)
 from src.utils import ensure_dir
 from src.web_address_research import WebAddressResearcher
 from src.web_cache import download_file, is_pdf_file
@@ -754,39 +790,39 @@ def _process_site(
             f"area={float(s.land_area_m2):.2f} warnings={anomaly_text}"
         )
     out_row: dict[str, object] = {
-        "証券コード": code,
-        "企業名": company_name,
-        "事業所名": s.site_name,
-        "住所": full_addr,
-        "住所取得元": addr_source,
-        "住所取得元URL": addr_source_url,
-        "住所解決レベル": geocode_level,
-        "土地面積(m2)": f"{s.land_area_m2:.2f}",
-        "地価単価(円/m2)": unit_price,
-        "地価単価補正係数": f"{total_factor:.6f}",
-        "住所解像度補正係数": f"{geocode_factor:.6f}",
-        "地価単価算出方法": method,
-        "基準用途区分": target_landuse_kind,
-        "最近傍用途区分": nearest_landuse_kind,
-        "公示点ID": pr.nearest_id,
-        "公示点距離(m)": f"{pr.nearest_dist_m:.3f}",
-        "k近傍ID": "|".join(pr.knn_ids),
-        "k近傍用途区分": "|".join(knn_landuse_kinds),
-        "k近傍距離(m)": "|".join([f"{d:.3f}" for d in pr.knn_dist_m]),
-        "k近傍単価(円/m2)": "|".join([str(int(x)) for x in pr.knn_prices]),
-        "k近傍距離分散(m2)": f"{dist_var:.3f}",
-        "k近傍最遠距離(m)": f"{max_knn_dist_m:.3f}",
-        "地価推定信頼度スコア": f"{confidence_score:.6f}",
-        "地価推定信頼度": confidence_label,
-        "異常値警告": anomaly_text,
-        "推定土地時価(円)": est,
-        "土地簿価(円)": book,
-        "含み益(円)": profit,
-        "評価倍率(実値)": ("" if mult_raw is None else f"{mult_raw:.12f}"),
-        "評価倍率": ("" if mult_raw is None else f"{mult_raw:.3f}"),
-        "時価総額(円)": int(mcap),
-        "時価総額比(実値)": ("" if mcap_ratio_raw is None else f"{mcap_ratio_raw:.12f}"),
-        "時価総額比": ("" if mcap_ratio_raw is None else f"{mcap_ratio_raw:.3f}"),
+        COL_CODE: code,
+        COL_COMPANY_NAME: company_name,
+        COL_SITE_NAME: s.site_name,
+        COL_ADDRESS: full_addr,
+        COL_ADDRESS_SOURCE: addr_source,
+        COL_ADDRESS_SOURCE_URL: addr_source_url,
+        COL_GEOCODE_LEVEL: geocode_level,
+        COL_LAND_AREA: f"{s.land_area_m2:.2f}",
+        COL_UNIT_PRICE: unit_price,
+        COL_PRICE_FACTOR: f"{total_factor:.6f}",
+        COL_GEOCODE_FACTOR: f"{geocode_factor:.6f}",
+        COL_PRICE_METHOD: method,
+        COL_TARGET_LANDUSE: target_landuse_kind,
+        COL_NEAREST_LANDUSE: nearest_landuse_kind,
+        COL_NEAREST_ID: pr.nearest_id,
+        COL_NEAREST_DIST: f"{pr.nearest_dist_m:.3f}",
+        COL_KNN_IDS: "|".join(pr.knn_ids),
+        COL_KNN_LANDUSE: "|".join(knn_landuse_kinds),
+        COL_KNN_DIST: "|".join([f"{d:.3f}" for d in pr.knn_dist_m]),
+        COL_KNN_PRICES: "|".join([str(int(x)) for x in pr.knn_prices]),
+        COL_KNN_DIST_VAR: f"{dist_var:.3f}",
+        COL_KNN_MAX_DIST: f"{max_knn_dist_m:.3f}",
+        COL_CONFIDENCE_SCORE: f"{confidence_score:.6f}",
+        COL_CONFIDENCE: confidence_label,
+        COL_ANOMALY_WARNING: anomaly_text,
+        COL_ESTIMATED_VALUE: est,
+        COL_BOOK_VALUE: book,
+        COL_UNREALIZED_GAIN: profit,
+        COL_MULT_RAW: ("" if mult_raw is None else f"{mult_raw:.12f}"),
+        COL_MULT: ("" if mult_raw is None else f"{mult_raw:.3f}"),
+        COL_MARKET_CAP: int(mcap),
+        COL_RATIO_RAW: ("" if mcap_ratio_raw is None else f"{mcap_ratio_raw:.12f}"),
+        COL_RATIO: ("" if mcap_ratio_raw is None else f"{mcap_ratio_raw:.3f}"),
     }
     return _SiteResult(
         out_row=out_row,
@@ -808,8 +844,8 @@ def _postprocess_duplicate_anomalies(
         _tprint(f"Warn(anomaly): {code} duplicate_address {hit.detail}")
         for row in hit.rows:
             warning_label = "同一住所かつ大面積の複数拠点"
-            old = str(row.get("異常値警告", "") or "").strip()
-            row["異常値警告"] = f"{old} | {warning_label}" if old else warning_label
+            old = str(row.get(COL_ANOMALY_WARNING, "") or "").strip()
+            row[COL_ANOMALY_WARNING] = f"{old} | {warning_label}" if old else warning_label
 
 
 def process_company(
@@ -850,21 +886,21 @@ def process_company(
     total_row = dict.fromkeys(OUTPUT_FIELDNAMES, "")
     total_row.update(
         {
-            "証券コード": code,
-            "企業名": company_name,
-            "事業所名": "東京都合計",
-            "地価単価算出方法": (
+            COL_CODE: code,
+            COL_COMPANY_NAME: company_name,
+            COL_SITE_NAME: "東京都合計",
+            COL_PRICE_METHOD: (
                 (f"idw(k={ctx.args.k},p={ctx.args.p})" if ctx.args.price_method == "idw" else "nearest")
                 + ("+landuse_match" if ctx.args.landuse_match else "")
             ),
-            "推定土地時価(円)": sum_est,
-            "土地簿価(円)": sum_book,
-            "含み益(円)": profit,
-            "評価倍率(実値)": ("" if mult_raw is None else f"{mult_raw:.12f}"),
-            "評価倍率": ("" if mult_raw is None else f"{mult_raw:.3f}"),
-            "時価総額(円)": int(mcap),
-            "時価総額比(実値)": ("" if mcap_ratio_raw is None else f"{mcap_ratio_raw:.12f}"),
-            "時価総額比": ("" if mcap_ratio_raw is None else f"{mcap_ratio_raw:.3f}"),
+            COL_ESTIMATED_VALUE: sum_est,
+            COL_BOOK_VALUE: sum_book,
+            COL_UNREALIZED_GAIN: profit,
+            COL_MULT_RAW: ("" if mult_raw is None else f"{mult_raw:.12f}"),
+            COL_MULT: ("" if mult_raw is None else f"{mult_raw:.3f}"),
+            COL_MARKET_CAP: int(mcap),
+            COL_RATIO_RAW: ("" if mcap_ratio_raw is None else f"{mcap_ratio_raw:.12f}"),
+            COL_RATIO: ("" if mcap_ratio_raw is None else f"{mcap_ratio_raw:.3f}"),
         }
     )
     out_rows.append(total_row)

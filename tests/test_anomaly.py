@@ -6,6 +6,7 @@ from src.anomaly import (
     detect_duplicate_address_large_area,
     is_aggregate_site_name,
 )
+from src.schema import COL_ADDRESS, COL_LAND_AREA, COL_SITE_NAME
 from src.landprice_tokyo import PriceResult
 
 
@@ -142,7 +143,7 @@ class TestIsAggregateSiteName(unittest.TestCase):
 
 class TestDetectDuplicateAddressLargeArea(unittest.TestCase):
     def _make_row(self, addr: str, area: float) -> dict:
-        return {"住所": addr, "土地面積(m2)": f"{area:.2f}", "事業所名": "テスト"}
+        return {COL_ADDRESS: addr, COL_LAND_AREA: f"{area:.2f}", COL_SITE_NAME: "テスト"}
 
     def test_no_duplicates(self) -> None:
         rows = [

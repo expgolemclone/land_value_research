@@ -46,7 +46,7 @@ def parse_ranking() -> list[dict[str, str]]:
     """
     from html.parser import HTMLParser
 
-    from src.schema import RANKING_COLUMNS
+    from src.schema import COL_CODE, COL_COMPANY_NAME, RANK_COL_GEOCODE_TAG, RANK_COL_RANK, RANKING_COLUMNS
 
     if not RANKING_FILE.exists():
         print(f"エラー: ランキングファイルが見つかりません: {RANKING_FILE}", file=sys.stderr)
@@ -132,10 +132,10 @@ def parse_ranking() -> list[dict[str, str]]:
         row = dict(zip(RANKING_COLUMNS, cols[:n]))
         targets.append(
             {
-                "rank": row["順位"],
-                "code": row["証券コード"],
-                "name": row["企業名"],
-                "tag": row["住所解決タグ"],
+                "rank": row[RANK_COL_RANK],
+                "code": row[COL_CODE],
+                "name": row[COL_COMPANY_NAME],
+                "tag": row[RANK_COL_GEOCODE_TAG],
             }
         )
     return targets

@@ -49,21 +49,34 @@ class TestRankModuleUsesSchema(unittest.TestCase):
         from rank_market_cap_ratio import write_rank_html
         from src.schema import COL_CODE, COL_COMPANY_NAME, COL_RATIO
 
+        from src.schema import (
+            COL_ANOMALY_WARNING,
+            COL_BOOK_VALUE,
+            COL_CONFIDENCE,
+            COL_ESTIMATED_VALUE,
+            COL_MARKET_CAP,
+            COL_UNREALIZED_GAIN,
+            RANK_COL_GEOCODE_TAG,
+            RANK_COL_MEMO,
+            RANK_COL_SOURCE_FILE,
+            RANK_COL_TAG_COUNT,
+        )
+
         row = {
             COL_CODE: "9999",
             COL_COMPANY_NAME: "テスト",
             "有報PDF_URL": "",
             COL_RATIO: 0.1,
-            "推定土地時価(円)": "100",
-            "時価総額(円)": "1000",
-            "土地簿価(円)": "50",
-            "含み益(円)": "50",
-            "住所解決タグ": "",
-            "調査メモ": "",
-            "タグ件数": 0,
-            "地価推定信頼度": "",
-            "異常値警告": "",
-            "元ファイル": "test.csv",
+            COL_ESTIMATED_VALUE: "100",
+            COL_MARKET_CAP: "1000",
+            COL_BOOK_VALUE: "50",
+            COL_UNREALIZED_GAIN: "50",
+            RANK_COL_GEOCODE_TAG: "",
+            RANK_COL_MEMO: "",
+            RANK_COL_TAG_COUNT: 0,
+            COL_CONFIDENCE: "",
+            COL_ANOMALY_WARNING: "",
+            RANK_COL_SOURCE_FILE: "test.csv",
         }
         with tempfile.TemporaryDirectory() as td:
             out = Path(td) / "test.html"

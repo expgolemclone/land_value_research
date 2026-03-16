@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass, field
 
 from src.landprice_tokyo import PriceResult
-from src.schema import OutputRow
+from src.schema import COL_ADDRESS, COL_LAND_AREA, OutputRow
 
 WEB_ADDRESS_SCORE_MIN = 40
 CRITICAL_EVAL_MULTIPLE = 500.0
@@ -96,10 +96,10 @@ def detect_duplicate_address_large_area(
 ) -> list[DuplicateHit]:
     buckets: dict[str, _DuplicateBucket] = {}
     for row in site_rows:
-        addr = str(row.get("住所", "") or "").strip()
+        addr = str(row.get(COL_ADDRESS, "") or "").strip()
         if not addr:
             continue
-        area_raw = str(row.get("土地面積(m2)", "") or "").strip()
+        area_raw = str(row.get(COL_LAND_AREA, "") or "").strip()
         if not area_raw:
             continue
         try:

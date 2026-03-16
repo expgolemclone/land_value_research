@@ -20,6 +20,16 @@ from src.schema import (
     COL_RATIO_RAW,
     COL_SITE_NAME,
     COL_UNREALIZED_GAIN,
+    RANK_COL_BOOK_VALUE_OKU,
+    RANK_COL_ESTIMATED_VALUE_OKU,
+    RANK_COL_GEOCODE_TAG,
+    RANK_COL_MARKET_CAP_OKU,
+    RANK_COL_MEMO,
+    RANK_COL_PDF,
+    RANK_COL_RANK,
+    RANK_COL_SOURCE_FILE,
+    RANK_COL_TAG_COUNT,
+    RANK_COL_UNREALIZED_GAIN_OKU,
     RANKING_COLUMNS,
 )
 
@@ -272,12 +282,12 @@ def collect_rank_rows(input_dir: Path, company_master: dict[str, dict[str, Any]]
                 COL_MARKET_CAP: (company_row.get(COL_MARKET_CAP) or "").strip(),
                 COL_BOOK_VALUE: (company_row.get(COL_BOOK_VALUE) or "").strip(),
                 COL_UNREALIZED_GAIN: (company_row.get(COL_UNREALIZED_GAIN) or "").strip(),
-                "住所解決タグ": collect_unique_values(rows, COL_GEOCODE_LEVEL),
-                "調査メモ": docs_content,
-                "タグ件数": count_unique_values(rows, COL_GEOCODE_LEVEL),
+                RANK_COL_GEOCODE_TAG: collect_unique_values(rows, COL_GEOCODE_LEVEL),
+                RANK_COL_MEMO: docs_content,
+                RANK_COL_TAG_COUNT: count_unique_values(rows, COL_GEOCODE_LEVEL),
                 COL_CONFIDENCE: collect_unique_values(rows, COL_CONFIDENCE),
                 COL_ANOMALY_WARNING: collect_unique_values(rows, COL_ANOMALY_WARNING),
-                "元ファイル": csv_path.name,
+                RANK_COL_SOURCE_FILE: csv_path.name,
             }
         )
 
@@ -401,8 +411,8 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     headers = list(RANKING_COLUMNS)
     right_cols = {
-        "順位", "時価総額比", "推定土地時価(億円)", "時価総額(億円)",
-        "土地簿価(億円)", "含み益(億円)", "タグ件数",
+        RANK_COL_RANK, COL_RATIO, RANK_COL_ESTIMATED_VALUE_OKU, RANK_COL_MARKET_CAP_OKU,
+        RANK_COL_BOOK_VALUE_OKU, RANK_COL_UNREALIZED_GAIN_OKU, RANK_COL_TAG_COUNT,
     }
 
     with output_path.open("w", encoding="utf-8", newline="\n") as f:
@@ -422,37 +432,37 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
             report_pdf_url = (row.get("有報PDF_URL") or "").strip()
             pdf_link = _html_pdf_link(code, report_pdf_url, output_path)
 
-            docs_content = row.get("調査メモ", "")
+            docs_content = row.get(RANK_COL_MEMO, "")
 
             values = [
-                (str(i), "順位"),
-                (row[COL_CODE], "証券コード"),
-                (row[COL_COMPANY_NAME], "企業名"),
-                (None, "調査メモ"),  # handled separately
-                (f"{row[COL_RATIO]:.6f}", "時価総額比"),
-                (row.get("住所解決タグ", ""), "住所解決タグ"),
-                (row.get(COL_CONFIDENCE, ""), "地価推定信頼度"),
-                (row.get(COL_ANOMALY_WARNING, ""), "異常値警告"),
-                (None, "有報PDF"),  # handled separately
-                (yen_to_oku_display(row[COL_ESTIMATED_VALUE]), "推定土地時価(億円)"),
-                (yen_to_oku_display(row[COL_MARKET_CAP]), "時価総額(億円)"),
-                (yen_to_oku_display(row[COL_BOOK_VALUE]), "土地簿価(億円)"),
-                (yen_to_oku_display(row[COL_UNREALIZED_GAIN]), "含み益(億円)"),
-                (str(row.get("タグ件数", 0)), "タグ件数"),
-                (row["元ファイル"], "元ファイル"),
+                (str(i), RANK_COL_RANK),
+                (row[COL_CODE], COL_CODE),
+                (row[COL_COMPANY_NAME], COL_COMPANY_NAME),
+                (None, RANK_COL_MEMO),  # handled separately
+                (f"{row[COL_RATIO]:.6f}", COL_RATIO),
+                (row.get(RANK_COL_GEOCODE_TAG, ""), RANK_COL_GEOCODE_TAG),
+                (row.get(COL_CONFIDENCE, ""), COL_CONFIDENCE),
+                (row.get(COL_ANOMALY_WARNING, ""), COL_ANOMALY_WARNING),
+                (None, RANK_COL_PDF),  # handled separately
+                (yen_to_oku_display(row[COL_ESTIMATED_VALUE]), RANK_COL_ESTIMATED_VALUE_OKU),
+                (yen_to_oku_display(row[COL_MARKET_CAP]), RANK_COL_MARKET_CAP_OKU),
+                (yen_to_oku_display(row[COL_BOOK_VALUE]), RANK_COL_BOOK_VALUE_OKU),
+                (yen_to_oku_display(row[COL_UNREALIZED_GAIN]), RANK_COL_UNREALIZED_GAIN_OKU),
+                (str(row.get(RANK_COL_TAG_COUNT, 0)), RANK_COL_TAG_COUNT),
+                (row[RANK_COL_SOURCE_FILE], RANK_COL_SOURCE_FILE),
             ]
 
             f.write("<tr>\n")
             for val, header in values:
                 cls = ' class="right"' if header in right_cols else ""
-                if header == "調査メモ":
+                if header == RANK_COL_MEMO:
                     if docs_content:
                         rendered = _md_to_html(docs_content)
                         f.write(f'  <td><button class="docs-btn" data-idx="{i}">\U0001f4cb 調査メモ</button>')
                         f.write(f'<template id="docs-{i}">{rendered}</template></td>\n')
                     else:
                         f.write("  <td></td>\n")
-                elif header == "有報PDF":
+                elif header == RANK_COL_PDF:
                     f.write(f"  <td{cls}>{pdf_link}</td>\n")
                 else:
                     f.write(f"  <td{cls}>{escape_html_cell(val)}</td>\n")
@@ -468,11 +478,11 @@ def _resolve_missing_names(rank_rows: list[dict[str, Any]], company_master: dict
     """企業名がtickerコードのままの行をIRBankから名前解決し、company_masterに保存する."""
     from concurrent.futures import ThreadPoolExecutor
 
-    unresolved = [(i, row) for i, row in enumerate(rank_rows) if row["企業名"].replace(" ", "") == row["証券コード"]]
+    unresolved = [(i, row) for i, row in enumerate(rank_rows) if row[COL_COMPANY_NAME].replace(" ", "") == row[COL_CODE]]
     if not unresolved:
         return
 
-    codes = [row["証券コード"] for _, row in unresolved]
+    codes = [row[COL_CODE] for _, row in unresolved]
     print(f"IRBankから企業名を取得中... ({len(codes)} 社)")
 
     with ThreadPoolExecutor(max_workers=8) as executor:
@@ -481,8 +491,8 @@ def _resolve_missing_names(rank_rows: list[dict[str, Any]], company_master: dict
     updated = 0
     for (idx, row), meta in zip(unresolved, results):
         if meta.company_name:
-            rank_rows[idx]["企業名"] = meta.company_name
-            code = row["証券コード"]
+            rank_rows[idx][COL_COMPANY_NAME] = meta.company_name
+            code = row[COL_CODE]
             if code not in company_master:
                 company_master[code] = {}
             company_master[code]["company_name"] = meta.company_name
