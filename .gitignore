@@ -3,9 +3,9 @@
 data/cache/web_address/*
 data/cache/facilities_land/
 data/cache/*.json
-data/output/
+data/output/*
 data/output_*/
-data/ranking/
+data/ranking/*
 input_enriched.csv
 __pycache__/
 *.pyc
@@ -38,6 +38,8 @@ docs/
 
 # HTML files
 *.html
+!data/output/ranking_market_cap_ratio.html
+!data/ranking/ranking_market_cap_ratio.html
 
 # Agent/Claude config
 .agents/
