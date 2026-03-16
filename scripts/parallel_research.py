@@ -253,7 +253,7 @@ def run_split_address(args: argparse.Namespace) -> None:
     }
     codes = [t["code"] for t in selected]
     with codex_lockdown(target_codes=codes, mode="split-address"):
-        _launch_processes(selected, prompts, args.cli, check_docs=True)
+        _launch_processes(selected, prompts, args.cli, check_docs=True, check_patch=True)
 
 
 # ---------------------------------------------------------------------------
@@ -384,6 +384,7 @@ def _launch_processes(
     cli_cmd: str,
     *,
     check_docs: bool = False,
+    check_patch: bool = False,
 ) -> None:
     """Launch parallel CLI processes in new kitty windows."""
     import shlex
@@ -407,18 +408,33 @@ def _launch_processes(
         prompt_q = shlex.quote(str(prompt_file))
         docs_md = f"docs/{code}.md"
 
-        if check_docs:
-            shell_cmd = (
-                f"{cli_cmd} exec --full-auto \"$(<{prompt_q})\" 2>&1 | tee {log_q}; "
-                f"if [ ! -s {shlex.quote(str(PROJECT_ROOT / docs_md))} ]; then "
-                f"  SID=$(grep -m1 'session id: ' {log_q} | awk '{{print $3}}'); "
-                f'  echo "\\n--- {docs_md} が空. resume リトライ (SID=$SID) ---"; '
-                f"  {cli_cmd} exec resume \"$SID\" --full-auto "
-                f'"{docs_md} が空のままです。調査結果を書き込んでください。" '
-                f"2>&1 | tee -a {log_q}; "
-                f"fi; "
-                f'echo "\\n--- 完了 (Enter で閉じる) ---"; read'
-            )
+        patch_yaml = f"config/address_patches/{code}.yaml"
+
+        if check_docs or check_patch:
+            shell_cmd = f"{cli_cmd} exec --full-auto \"$(<{prompt_q})\" 2>&1 | tee {log_q}; "
+            if check_docs:
+                shell_cmd += (
+                    f"if [ ! -s {shlex.quote(str(PROJECT_ROOT / docs_md))} ]; then "
+                    f"  SID=$(grep -m1 'session id: ' {log_q} | awk '{{print $3}}'); "
+                    f'  echo "\\n--- {docs_md} が空. resume リトライ (SID=$SID) ---"; '
+                    f"  {cli_cmd} exec resume \"$SID\" --full-auto "
+                    f'"{docs_md} が空のままです。調査結果を書き込んでください。" '
+                    f"2>&1 | tee -a {log_q}; "
+                    f"fi; "
+                )
+            if check_patch:
+                shell_cmd += (
+                    f"if [ ! -s {shlex.quote(str(PROJECT_ROOT / patch_yaml))} ]; then "
+                    f"  SID=$(grep -m1 'session id: ' {log_q} | awk '{{print $3}}'); "
+                    f'  echo "\\n--- パッチ未作成. コンテキスト注入 (SID=$SID) ---"; '
+                    f"  {cli_cmd} exec resume \"$SID\" --full-auto "
+                    f'"{patch_yaml} が作成されていません。'
+                    f"住所の分割・修正が必要な場合はパッチファイルを作成してください。"
+                    f"現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_md} に記載してください。\" "
+                    f"2>&1 | tee -a {log_q}; "
+                    f"fi; "
+                )
+            shell_cmd += 'echo "\\n--- 完了 (Enter で閉じる) ---"; read'
         else:
             shell_cmd = (
                 f"{cli_cmd} exec --full-auto \"$(<{prompt_q})\" "
@@ -451,6 +467,10 @@ def _launch_processes(
                 print(f"  {p['code']} {p['name']}: エラー - docs/{p['code']}.md が存在しません")
             elif docs_md.stat().st_size == 0:
                 print(f"  {p['code']} {p['name']}: エラー - docs/{p['code']}.md が空です (推論メモ未保存)")
+        if check_patch:
+            patch_yaml = PATCH_DIR / f"{p['code']}.yaml"
+            if not patch_yaml.exists():
+                print(f"  {p['code']} {p['name']}: 注意 - パッチ未作成 (address_patches/{p['code']}.yaml)")
 
     print("\n=== 全プロセス完了 ===\n")
     print("次の手順:")
