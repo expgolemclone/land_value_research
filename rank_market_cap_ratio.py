@@ -313,16 +313,16 @@ _HTML_STYLE = """\
   a { color: #5dade2; text-decoration: none; }
   a:hover { text-decoration: underline; }
   .right { text-align: right; }
-  .docs-btn { background: none; border: 1px solid #5dade2; color: #5dade2; padding: 2px 10px;
+  .docs-btn { background: #1a2744; border: 1px solid #5dade2; color: #5dade2; padding: 3px 12px;
     border-radius: 4px; cursor: pointer; font-size: 0.85em; font-weight: bold; white-space: nowrap; }
   .docs-btn:hover { background: #5dade2; color: #0d1117; }
   #docs-modal { position: fixed; inset: 0; z-index: 100; display: flex;
     align-items: center; justify-content: center; }
   #docs-modal.hidden { display: none; }
   .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.7); }
-  .modal-content { position: relative; width: 80vw; max-width: 900px; max-height: 85vh;
+  .modal-content { position: relative; width: 90vw; max-width: 1100px; max-height: 90vh;
     overflow-y: auto; background: #0d1117; color: #c9d1d9; border: 1px solid #444c6a;
-    border-radius: 12px; padding: 28px 36px; box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+    border-radius: 12px; padding: 32px 44px; box-shadow: 0 12px 40px rgba(0,0,0,0.8);
     font-size: 0.95em; line-height: 1.7; }
   .modal-close { position: absolute; top: 10px; right: 16px; background: none; border: none;
     color: #888; font-size: 1.6em; cursor: pointer; line-height: 1; }
@@ -448,7 +448,7 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
                 if header == "調査メモ":
                     if docs_content:
                         rendered = _md_to_html(docs_content)
-                        f.write(f'  <td><button class="docs-btn" data-idx="{i}">\u25b6 済</button>')
+                        f.write(f'  <td><button class="docs-btn" data-idx="{i}">\U0001f4cb 調査メモ</button>')
                         f.write(f'<template id="docs-{i}">{rendered}</template></td>\n')
                     else:
                         f.write("  <td></td>\n")
