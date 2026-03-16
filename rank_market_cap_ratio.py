@@ -162,7 +162,13 @@ def collect_rank_rows(input_dir: Path, company_master: dict[str, dict[str, Any]]
         code = (company_row.get(COL_CODE) or "").strip()
         company_name = normalize_company_name(code, company_row.get(COL_COMPANY_NAME, ""), company_master)
 
-        docs_exists = (DOCS_DIR / f"{code}.md").exists()
+        docs_path = DOCS_DIR / f"{code}.md"
+        docs_content = ""
+        if docs_path.exists():
+            try:
+                docs_content = docs_path.read_text(encoding="utf-8")
+            except OSError:
+                pass
 
         rank_rows.append(
             {
@@ -175,7 +181,7 @@ def collect_rank_rows(input_dir: Path, company_master: dict[str, dict[str, Any]]
                 COL_BOOK_VALUE: (company_row.get(COL_BOOK_VALUE) or "").strip(),
                 COL_UNREALIZED_GAIN: (company_row.get(COL_UNREALIZED_GAIN) or "").strip(),
                 "住所解決タグ": collect_unique_values(rows, COL_GEOCODE_LEVEL),
-                "調査済": "済" if docs_exists else "",
+                "調査メモ": docs_content,
                 "タグ件数": count_unique_values(rows, COL_GEOCODE_LEVEL),
                 COL_CONFIDENCE: collect_unique_values(rows, COL_CONFIDENCE),
                 COL_ANOMALY_WARNING: collect_unique_values(rows, COL_ANOMALY_WARNING),
@@ -202,19 +208,24 @@ def _html_pdf_link(code: str, report_pdf_url: str, output_path: Path) -> str:
 
 _HTML_STYLE = """\
 <style>
-  body { font-family: sans-serif; margin: 20px; background: #fafafa; }
-  h1 { font-size: 1.3em; }
+  body { font-family: sans-serif; margin: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { font-size: 1.3em; color: #e0e0e0; }
   table { border-collapse: collapse; width: 100%; font-size: 0.85em; }
   thead { position: sticky; top: 0; z-index: 1; }
-  th { background: #2c3e50; color: #fff; padding: 8px 6px; text-align: left;
+  th { background: #16213e; color: #e0e0e0; padding: 8px 6px; text-align: left;
        cursor: pointer; user-select: none; white-space: nowrap; }
-  th:hover { background: #34495e; }
-  td { padding: 6px; border-bottom: 1px solid #ddd; white-space: nowrap; }
-  tr:nth-child(even) { background: #f2f2f2; }
-  tr:hover { background: #e8f4fd; }
-  a { color: #2980b9; text-decoration: none; }
+  th:hover { background: #0f3460; }
+  td { padding: 6px; border-bottom: 1px solid #2a2a4a; white-space: nowrap; }
+  tr:nth-child(even) { background: #1e1e3a; }
+  tr:hover { background: #2a2a5a; }
+  a { color: #5dade2; text-decoration: none; }
   a:hover { text-decoration: underline; }
   .right { text-align: right; }
+  td.docs-cell { white-space: normal; max-width: 500px; }
+  td.docs-cell details summary { cursor: pointer; color: #5dade2; font-weight: bold; }
+  td.docs-cell details pre { white-space: pre-wrap; word-break: break-word;
+    font-size: 0.8em; margin: 4px 0; padding: 6px; background: #0d1117;
+    color: #c9d1d9; border-radius: 4px; max-height: 400px; overflow-y: auto; }
 </style>
 """
 
@@ -267,10 +278,13 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
             report_pdf_url = (row.get("有報PDF_URL") or "").strip()
             pdf_link = _html_pdf_link(code, report_pdf_url, output_path)
 
+            docs_content = row.get("調査メモ", "")
+
             values = [
                 (str(i), "順位"),
                 (row[COL_CODE], "証券コード"),
                 (row[COL_COMPANY_NAME], "企業名"),
+                (None, "調査メモ"),  # handled separately
                 (None, "有報PDF"),  # handled separately
                 (f"{row[COL_RATIO]:.6f}", "時価総額比"),
                 (yen_to_oku_display(row[COL_ESTIMATED_VALUE]), "推定土地時価(億円)"),
@@ -278,7 +292,6 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
                 (yen_to_oku_display(row[COL_BOOK_VALUE]), "土地簿価(億円)"),
                 (yen_to_oku_display(row[COL_UNREALIZED_GAIN]), "含み益(億円)"),
                 (row.get("住所解決タグ", ""), "住所解決タグ"),
-                (row.get("調査済", ""), "調査済"),
                 (str(row.get("タグ件数", 0)), "タグ件数"),
                 (row.get(COL_CONFIDENCE, ""), "地価推定信頼度"),
                 (row.get(COL_ANOMALY_WARNING, ""), "異常値警告"),
@@ -288,7 +301,13 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
             f.write("<tr>\n")
             for val, header in values:
                 cls = ' class="right"' if header in right_cols else ""
-                if header == "有報PDF":
+                if header == "調査メモ":
+                    if docs_content:
+                        escaped = escape_html_cell(docs_content)
+                        f.write(f'  <td class="docs-cell"><details><summary>済</summary><pre>{escaped}</pre></details></td>\n')
+                    else:
+                        f.write("  <td></td>\n")
+                elif header == "有報PDF":
                     f.write(f"  <td{cls}>{pdf_link}</td>\n")
                 else:
                     f.write(f"  <td{cls}>{escape_html_cell(val)}</td>\n")
