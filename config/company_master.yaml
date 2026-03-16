@@ -8263,6 +8263,9 @@
   company_name: 萬世電機
 '7567':
   company_name: 栄電子
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W7R8.pdf
+  address_source_urls:
+  - https://irbank.net/7567/ir
 '7570':
   company_name: 橋本総業ホールディングス
 '7571':
