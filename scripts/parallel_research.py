@@ -63,8 +63,14 @@ def parse_ranking() -> list[dict[str, str]]:
             self._current_cell = ""
             self._in_thead = False
             self._in_tbody = False
+            self._table_depth = 0
 
         def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            if tag == "table":
+                self._table_depth += 1
+                return
+            if self._table_depth != 1:
+                return
             if tag == "thead":
                 self._in_thead = True
             elif tag == "tbody":
@@ -79,6 +85,11 @@ def parse_ranking() -> list[dict[str, str]]:
                 self._current_cell = ""
 
         def handle_endtag(self, tag: str) -> None:
+            if tag == "table":
+                self._table_depth -= 1
+                return
+            if self._table_depth != 1:
+                return
             if tag == "thead":
                 self._in_thead = False
             elif tag == "tbody":
@@ -93,6 +104,8 @@ def parse_ranking() -> list[dict[str, str]]:
                 self.rows.append(self._current_row)
 
         def handle_data(self, data: str) -> None:
+            if self._table_depth != 1:
+                return
             if self._in_th:
                 self._current_cell += data
             elif self._in_td:
