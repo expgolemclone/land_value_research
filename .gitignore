@@ -34,3 +34,14 @@ docs/research_logs/
 # Temporary planning files
 plan.md
 fix_plan_*.md
+
+# Docs (keep logs)
+docs/
+!docs/log/
+
+# HTML files
+*.html
+
+# Agent/Claude config
+.agents/
+.claude/
