@@ -4,6 +4,9 @@ import subprocess
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 CMD_RUN = [
     "nix", "develop", "--command",
@@ -24,7 +27,7 @@ def log(msg: str) -> None:
 
 def run(cmd: list[str], label: str) -> None:
     log(f"START: {label}")
-    result = subprocess.run(cmd)
+    result = subprocess.run(cmd, cwd=PROJECT_ROOT)
     log(f"END:   {label} (exit={result.returncode})")
 
 
