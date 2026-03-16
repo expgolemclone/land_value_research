@@ -313,28 +313,31 @@ _HTML_STYLE = """\
   a { color: #5dade2; text-decoration: none; }
   a:hover { text-decoration: underline; }
   .right { text-align: right; }
-  td.docs-cell { position: relative; white-space: normal; }
-  td.docs-cell details summary { cursor: pointer; color: #5dade2; font-weight: bold; }
-  td.docs-cell details summary::marker { color: #5dade2; }
-  td.docs-cell .docs-body {
-    position: absolute; z-index: 20; left: 0; top: 100%;
-    width: 600px; max-height: 500px; overflow-y: auto;
-    background: #0d1117; color: #c9d1d9; border: 1px solid #444c6a;
-    border-radius: 8px; padding: 16px 20px; margin-top: 4px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-    font-size: 0.85em; line-height: 1.6;
-  }
-  .docs-body h3 { font-size: 1.1em; color: #e0e0e0; margin: 12px 0 6px; border-bottom: 1px solid #2a2a4a; padding-bottom: 4px; }
-  .docs-body h4 { font-size: 1em; color: #d0d0d0; margin: 10px 0 4px; }
-  .docs-body h5 { font-size: 0.95em; color: #c0c0c0; margin: 8px 0 4px; }
-  .docs-body ul { margin: 4px 0 4px 18px; padding: 0; }
-  .docs-body li { margin: 2px 0; }
-  .docs-body p { margin: 4px 0; }
-  .docs-body code { background: #1a1a2e; padding: 1px 5px; border-radius: 3px; font-size: 0.9em; color: #f0c674; }
+  .docs-btn { background: none; border: 1px solid #5dade2; color: #5dade2; padding: 2px 10px;
+    border-radius: 4px; cursor: pointer; font-size: 0.85em; font-weight: bold; white-space: nowrap; }
+  .docs-btn:hover { background: #5dade2; color: #0d1117; }
+  #docs-modal { position: fixed; inset: 0; z-index: 100; display: flex;
+    align-items: center; justify-content: center; }
+  #docs-modal.hidden { display: none; }
+  .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.7); }
+  .modal-content { position: relative; width: 80vw; max-width: 900px; max-height: 85vh;
+    overflow-y: auto; background: #0d1117; color: #c9d1d9; border: 1px solid #444c6a;
+    border-radius: 12px; padding: 28px 36px; box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+    font-size: 0.95em; line-height: 1.7; }
+  .modal-close { position: absolute; top: 10px; right: 16px; background: none; border: none;
+    color: #888; font-size: 1.6em; cursor: pointer; line-height: 1; }
+  .modal-close:hover { color: #e0e0e0; }
+  .docs-body h3 { font-size: 1.2em; color: #e0e0e0; margin: 16px 0 8px; border-bottom: 1px solid #2a2a4a; padding-bottom: 4px; }
+  .docs-body h4 { font-size: 1.05em; color: #d0d0d0; margin: 12px 0 6px; }
+  .docs-body h5 { font-size: 1em; color: #c0c0c0; margin: 10px 0 4px; }
+  .docs-body ul { margin: 6px 0 6px 20px; padding: 0; }
+  .docs-body li { margin: 3px 0; }
+  .docs-body p { margin: 6px 0; }
+  .docs-body code { background: #1a1a2e; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; color: #f0c674; }
   .docs-body a { color: #5dade2; }
-  .docs-body .md-table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 0.9em; }
-  .docs-body .md-table th { background: #16213e; padding: 5px 8px; text-align: left; border-bottom: 2px solid #444c6a; white-space: normal; }
-  .docs-body .md-table td { padding: 4px 8px; border-bottom: 1px solid #2a2a4a; white-space: normal; }
+  .docs-body .md-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.9em; }
+  .docs-body .md-table th { background: #16213e; padding: 6px 10px; text-align: left; border-bottom: 2px solid #444c6a; white-space: normal; }
+  .docs-body .md-table td { padding: 5px 10px; border-bottom: 1px solid #2a2a4a; white-space: normal; }
 </style>
 """
 
@@ -358,6 +361,38 @@ document.querySelectorAll('th').forEach((th, idx) => {
     rows.forEach(r => tbody.appendChild(r));
   });
 });
+</script>
+"""
+
+_HTML_MODAL_SCRIPT = """\
+<div id="docs-modal" class="hidden">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <button class="modal-close">&times;</button>
+    <div class="docs-body" id="docs-modal-body"></div>
+  </div>
+</div>
+<script>
+(function(){
+  const modal = document.getElementById('docs-modal');
+  const body = document.getElementById('docs-modal-body');
+  const backdrop = modal.querySelector('.modal-backdrop');
+  const closeBtn = modal.querySelector('.modal-close');
+  function open(idx) {
+    const tpl = document.getElementById('docs-' + idx);
+    if (!tpl) return;
+    body.innerHTML = tpl.innerHTML;
+    modal.classList.remove('hidden');
+  }
+  function close() { modal.classList.add('hidden'); body.innerHTML = ''; }
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.docs-btn');
+    if (btn) { open(btn.dataset.idx); return; }
+  });
+  backdrop.addEventListener('click', close);
+  closeBtn.addEventListener('click', close);
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
+})();
 </script>
 """
 
@@ -413,7 +448,8 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
                 if header == "調査メモ":
                     if docs_content:
                         rendered = _md_to_html(docs_content)
-                        f.write(f'  <td class="docs-cell"><details><summary>\u25b6 済</summary><div class="docs-body">{rendered}</div></details></td>\n')
+                        f.write(f'  <td><button class="docs-btn" data-idx="{i}">\u25b6 済</button>')
+                        f.write(f'<template id="docs-{i}">{rendered}</template></td>\n')
                     else:
                         f.write("  <td></td>\n")
                 elif header == "有報PDF":
@@ -424,6 +460,7 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
 
         f.write("</tbody>\n</table>\n")
         f.write(_HTML_SORT_SCRIPT)
+        f.write(_HTML_MODAL_SCRIPT)
         f.write("</body>\n</html>\n")
 
 
