@@ -101,21 +101,22 @@ def parse_ranking() -> list[dict[str, str]]:
     parser = _TableParser()
     parser.feed(RANKING_FILE.read_text(encoding="utf-8"))
 
-    # Validate headers against schema
-    if tuple(parser.headers) != RANKING_COLUMNS:
+    # Validate headers against schema (先頭列のみ — HTML末尾に調査メモ等の追加列がある)
+    n = len(RANKING_COLUMNS)
+    if tuple(parser.headers[:n]) != RANKING_COLUMNS:
         print(
             f"エラー: ランキングHTMLのヘッダーがスキーマと不一致\n"
             f"  期待: {list(RANKING_COLUMNS)}\n"
-            f"  実際: {parser.headers}",
+            f"  実際(先頭{n}列): {parser.headers[:n]}",
             file=sys.stderr,
         )
         sys.exit(1)
 
     targets: list[dict[str, str]] = []
     for cols in parser.rows:
-        if len(cols) != len(parser.headers):
+        if len(cols) < n:
             continue
-        row = dict(zip(parser.headers, cols))
+        row = dict(zip(RANKING_COLUMNS, cols[:n]))
         targets.append(
             {
                 "rank": row["順位"],
