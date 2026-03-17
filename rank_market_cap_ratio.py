@@ -37,7 +37,7 @@ BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_INPUT_DIR = BASE_DIR / "data" / "output"
 DEFAULT_OUTPUT_PATH = BASE_DIR / "data" / "ranking" / "ranking_market_cap_ratio.html"
 DEFAULT_COMPANY_MASTER_PATH = BASE_DIR / "config" / "company_master.yaml"
-DOCS_DIR = BASE_DIR / "docs"
+DOCS_DIR = BASE_DIR / "split-address"
 
 logger = logging.getLogger(__name__)
 
@@ -411,12 +411,17 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     headers = list(RANKING_COLUMNS)
     right_cols = {
-        RANK_COL_RANK, COL_RATIO, RANK_COL_ESTIMATED_VALUE_OKU, RANK_COL_MARKET_CAP_OKU,
-        RANK_COL_BOOK_VALUE_OKU, RANK_COL_UNREALIZED_GAIN_OKU, RANK_COL_TAG_COUNT,
+        RANK_COL_RANK,
+        COL_RATIO,
+        RANK_COL_ESTIMATED_VALUE_OKU,
+        RANK_COL_MARKET_CAP_OKU,
+        RANK_COL_BOOK_VALUE_OKU,
+        RANK_COL_UNREALIZED_GAIN_OKU,
+        RANK_COL_TAG_COUNT,
     }
 
     with output_path.open("w", encoding="utf-8", newline="\n") as f:
-        f.write("<!DOCTYPE html>\n<html lang=\"ja\">\n<head>\n")
+        f.write('<!DOCTYPE html>\n<html lang="ja">\n<head>\n')
         f.write('<meta charset="utf-8">\n')
         f.write("<title>時価総額比ランキング</title>\n")
         f.write(_HTML_STYLE)
@@ -478,7 +483,9 @@ def _resolve_missing_names(rank_rows: list[dict[str, Any]], company_master: dict
     """企業名がtickerコードのままの行をIRBankから名前解決し、company_masterに保存する."""
     from concurrent.futures import ThreadPoolExecutor
 
-    unresolved = [(i, row) for i, row in enumerate(rank_rows) if row[COL_COMPANY_NAME].replace(" ", "") == row[COL_CODE]]
+    unresolved = [
+        (i, row) for i, row in enumerate(rank_rows) if row[COL_COMPANY_NAME].replace(" ", "") == row[COL_CODE]
+    ]
     if not unresolved:
         return
 

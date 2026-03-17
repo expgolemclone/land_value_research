@@ -164,7 +164,7 @@ class TestPostPipelineCleanup(unittest.TestCase):
         from run import _post_pipeline_cleanup
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            docs_dir = Path(tmpdir) / "docs"
+            docs_dir = Path(tmpdir) / "split-address"
             docs_dir.mkdir()
             config_dir = Path(tmpdir) / "config"
             config_dir.mkdir()
@@ -181,7 +181,7 @@ class TestPostPipelineCleanup(unittest.TestCase):
         from run import _post_pipeline_cleanup
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            docs_dir = Path(tmpdir) / "docs"
+            docs_dir = Path(tmpdir) / "split-address"
             docs_dir.mkdir()
             config_dir = Path(tmpdir) / "config"
             config_dir.mkdir()
@@ -194,7 +194,7 @@ class TestPostPipelineCleanup(unittest.TestCase):
         from run import _post_pipeline_cleanup
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            # docs/ missing — log pruning will fail, but .bak deletion should still run
+            # split-address/ missing — log pruning will fail, but .bak deletion should still run
             config_dir = Path(tmpdir) / "config"
             config_dir.mkdir()
 

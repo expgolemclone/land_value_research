@@ -33,7 +33,7 @@ from src.schema import (
 )
 
 OVERRIDES_FILE = PROJECT_ROOT / "config" / "address_overrides.yaml"
-DOCS_DIR = PROJECT_ROOT / "docs"
+DOCS_DIR = PROJECT_ROOT / "split-address"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "output"
 
 # High-price wards where large area is suspicious (BAD_PATTERN_1)

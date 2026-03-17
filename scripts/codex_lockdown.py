@@ -67,17 +67,17 @@ def _find_targets(
                 if p.is_file() and p.name != "SKILL.md":
                     targets.append(p)
 
-    # --- 追加: docs/ ファイル個別ロック ---
-    docs_dir = PROJECT_ROOT / "docs"
+    # --- 追加: split-address/ ファイル個別ロック ---
+    docs_dir = PROJECT_ROOT / "split-address"
     if docs_dir.exists():
         for p in docs_dir.glob("*.md"):
-            # 対象企業の docs は書き込み/参照用にロックしない
+            # 対象企業の split-address は書き込み/参照用にロックしない
             if codes and p.stem in codes:
                 continue
             targets.append(p)
 
-    # --- 追加: docs/research_logs/ 既存ログファイルのロック ---
-    research_logs_dir = PROJECT_ROOT / "docs" / "research_logs"
+    # --- 追加: split-address/research_logs/ 既存ログファイルのロック ---
+    research_logs_dir = PROJECT_ROOT / "split-address" / "research_logs"
     if research_logs_dir.exists():
         for p in research_logs_dir.iterdir():
             if p.is_file():

@@ -37,7 +37,7 @@ argument-hint: "<証券コード>"
 | `sites[].bad_pattern_1_risk` | 合算名 or 都心高面積 → 重点調査が必要 |
 | `sites[].has_override` | 既に `address_overrides.yaml` に登録済み |
 | `sites[].has_hoka` | 事業所名に「他」「及び」等の複数所在地シグナル |
-| `docs_exists` | `docs/{code}.md` が既に存在する（調査済み） |
+| `docs_exists` | `split-address/{code}.md` が既に存在する（調査済み） |
 
 **調査の優先度:**
 
@@ -254,9 +254,9 @@ cat config/address_patches/****.yaml
 
 ### 5.5 推論根拠の保存（必須）
 
-分割時に `area_m2` を推定した場合は、推論根拠を必ず `docs/{証券コード}.md` に保存する。
+分割時に `area_m2` を推定した場合は、推論根拠を必ず `split-address/{証券コード}.md` に保存する。
 
-- ファイル名は証券コード固定（例: `docs/****.md`）
+- ファイル名は証券コード固定（例: `split-address/****.md`）
 - 既存ファイルがある場合は追記ではなく更新し、最新の判断を残す
 - URLを含む根拠は最低2系統（有報 + 登記/IR/公的データのいずれか）を記載
 - 根拠の取得日・推論式・最終配分面積を明記する
