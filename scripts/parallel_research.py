@@ -414,6 +414,7 @@ def _build_ps1_script(
     patch_label: str = "",
 ) -> str:
     """PowerShell (.ps1) スクリプトを生成."""
+    is_claude = cli_cmd == "claude"
     pf = str(prompt_file).replace("'", "''")
     lf = str(log_file).replace("'", "''")
     lines: list[str] = [
@@ -426,8 +427,11 @@ def _build_ps1_script(
     lines += [
         "$ErrorActionPreference = 'Continue'",
         f"$prompt = Get-Content -Path '{pf}' -Raw -Encoding UTF8",
-        f"& {cli_cmd} exec --full-auto $prompt 2>&1 | Tee-Object -FilePath '{lf}'",
     ]
+    if is_claude:
+        lines.append(f"& {cli_cmd} -p --dangerously-skip-permissions $prompt 2>&1 | Tee-Object -FilePath '{lf}'")
+    else:
+        lines.append(f"& {cli_cmd} exec --full-auto $prompt 2>&1 | Tee-Object -FilePath '{lf}'")
     if docs_path is not None:
         dp = str(docs_path).replace("'", "''")
         lines += [
@@ -435,9 +439,12 @@ def _build_ps1_script(
             f"  $m = Select-String -Path '{lf}' -Pattern 'session id: ' | Select-Object -First 1",
             "  $sid = ($m.Line -split 'session id: ')[1].Split()[0]",
             f'  Write-Host "`n--- {docs_label} が空. resume リトライ (SID=$sid) ---"',
-            f"  & {cli_cmd} exec resume $sid --full-auto '{docs_label} が空のままです。調査結果を書き込んでください。' 2>&1 | Tee-Object -FilePath '{lf}' -Append",
-            "}",
         ]
+        if is_claude:
+            lines.append(f"  & {cli_cmd} -r $sid -p --dangerously-skip-permissions '{docs_label} が空のままです。調査結果を書き込んでください。' 2>&1 | Tee-Object -FilePath '{lf}' -Append")
+        else:
+            lines.append(f"  & {cli_cmd} exec resume $sid --full-auto '{docs_label} が空のままです。調査結果を書き込んでください。' 2>&1 | Tee-Object -FilePath '{lf}' -Append")
+        lines.append("}")
     if patch_path is not None:
         pp = str(patch_path).replace("'", "''")
         lines += [
@@ -445,9 +452,12 @@ def _build_ps1_script(
             f"  $m = Select-String -Path '{lf}' -Pattern 'session id: ' | Select-Object -First 1",
             "  $sid = ($m.Line -split 'session id: ')[1].Split()[0]",
             '  Write-Host "`n--- パッチ未作成. コンテキスト注入 (SID=$sid) ---"',
-            f"  & {cli_cmd} exec resume $sid --full-auto '{patch_label} が作成されていません。住所の分割・修正が必要な場合はパッチファイルを作成してください。現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_label} に記載してください。' 2>&1 | Tee-Object -FilePath '{lf}' -Append",
-            "}",
         ]
+        if is_claude:
+            lines.append(f"  & {cli_cmd} -r $sid -p --dangerously-skip-permissions '{patch_label} が作成されていません。住所の分割・修正が必要な場合はパッチファイルを作成してください。現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_label} に記載してください。' 2>&1 | Tee-Object -FilePath '{lf}' -Append")
+        else:
+            lines.append(f"  & {cli_cmd} exec resume $sid --full-auto '{patch_label} が作成されていません。住所の分割・修正が必要な場合はパッチファイルを作成してください。現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_label} に記載してください。' 2>&1 | Tee-Object -FilePath '{lf}' -Append")
+        lines.append("}")
     if docs_path is not None or patch_path is not None:
         lines.append('Write-Host "`n--- 完了 ---"')
     return "\n".join(lines) + "\n"
@@ -475,32 +485,60 @@ def _build_bash_script(
 
     log_q = _q(log_file)
     prompt_q = _q(prompt_file)
+    is_claude = cli_cmd == "claude"
     shell_cmd = ""
     if cwd is not None:
         shell_cmd += f"cd {_q(cwd)} || exit 1; "
-    shell_cmd += f'{cli_cmd} exec --full-auto "$(<{prompt_q})" 2>&1 | tee {log_q}; '
+    if is_claude:
+        shell_cmd += f'{cli_cmd} -p --dangerously-skip-permissions "$(<{prompt_q})" 2>&1 | tee {log_q}; '
+    else:
+        shell_cmd += f'{cli_cmd} exec --full-auto "$(<{prompt_q})" 2>&1 | tee {log_q}; '
     if docs_path is not None:
-        shell_cmd += (
-            f"if [ ! -s {_q(docs_path)} ]; then "
-            f"  SID=$(grep -m1 'session id: ' {log_q} | awk '{{print $3}}'); "
-            f'  echo "\\n--- {docs_label} が空. resume リトライ (SID=$SID) ---"; '
-            f'  {cli_cmd} exec resume "$SID" --full-auto '
-            f'"{docs_label} が空のままです。調査結果を書き込んでください。" '
-            f"2>&1 | tee -a {log_q}; "
-            f"fi; "
-        )
+        if is_claude:
+            shell_cmd += (
+                f"if [ ! -s {_q(docs_path)} ]; then "
+                f"  SID=$(grep -m1 'session id: ' {log_q} | sed 's/.*session id: //' | awk '{{print $1}}'); "
+                f'  echo "\\n--- {docs_label} が空. resume リトライ (SID=$SID) ---"; '
+                f'  {cli_cmd} -r "$SID" -p --dangerously-skip-permissions '
+                f'"{docs_label} が空のままです。調査結果を書き込んでください。" '
+                f"2>&1 | tee -a {log_q}; "
+                f"fi; "
+            )
+        else:
+            shell_cmd += (
+                f"if [ ! -s {_q(docs_path)} ]; then "
+                f"  SID=$(grep -m1 'session id: ' {log_q} | awk '{{print $3}}'); "
+                f'  echo "\\n--- {docs_label} が空. resume リトライ (SID=$SID) ---"; '
+                f'  {cli_cmd} exec resume "$SID" --full-auto '
+                f'"{docs_label} が空のままです。調査結果を書き込んでください。" '
+                f"2>&1 | tee -a {log_q}; "
+                f"fi; "
+            )
     if patch_path is not None:
-        shell_cmd += (
-            f"if [ ! -s {_q(patch_path)} ]; then "
-            f"  SID=$(grep -m1 'session id: ' {log_q} | awk '{{print $3}}'); "
-            f'  echo "\\n--- パッチ未作成. コンテキスト注入 (SID=$SID) ---"; '
-            f'  {cli_cmd} exec resume "$SID" --full-auto '
-            f'"{patch_label} が作成されていません。'
-            f"住所の分割・修正が必要な場合はパッチファイルを作成してください。"
-            f'現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_label} に記載してください。" '
-            f"2>&1 | tee -a {log_q}; "
-            f"fi; "
-        )
+        if is_claude:
+            shell_cmd += (
+                f"if [ ! -s {_q(patch_path)} ]; then "
+                f"  SID=$(grep -m1 'session id: ' {log_q} | sed 's/.*session id: //' | awk '{{print $1}}'); "
+                f'  echo "\\n--- パッチ未作成. コンテキスト注入 (SID=$SID) ---"; '
+                f'  {cli_cmd} -r "$SID" -p --dangerously-skip-permissions '
+                f'"{patch_label} が作成されていません。'
+                f"住所の分割・修正が必要な場合はパッチファイルを作成してください。"
+                f'現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_label} に記載してください。" '
+                f"2>&1 | tee -a {log_q}; "
+                f"fi; "
+            )
+        else:
+            shell_cmd += (
+                f"if [ ! -s {_q(patch_path)} ]; then "
+                f"  SID=$(grep -m1 'session id: ' {log_q} | awk '{{print $3}}'); "
+                f'  echo "\\n--- パッチ未作成. コンテキスト注入 (SID=$SID) ---"; '
+                f'  {cli_cmd} exec resume "$SID" --full-auto '
+                f'"{patch_label} が作成されていません。'
+                f"住所の分割・修正が必要な場合はパッチファイルを作成してください。"
+                f'現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_label} に記載してください。" '
+                f"2>&1 | tee -a {log_q}; "
+                f"fi; "
+            )
     if docs_path is not None or patch_path is not None:
         shell_cmd += 'echo "\\n--- 完了 ---"'
     return shell_cmd
