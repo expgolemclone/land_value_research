@@ -546,6 +546,117 @@ def _build_bash_script(
     return shell_cmd
 
 
+def _launch_claude_direct(
+    selected: list[dict[str, str]],
+    prompts: dict[str, str],
+    *,
+    check_docs: bool = False,
+    check_patch: bool = False,
+) -> None:
+    """claude -p を直接子プロセスとして順次実行する.
+
+    claude -p は独立プロセス（kitty等）では並行セッション制限でハングするため、
+    呼び出し元の直接子プロセスとして実行する必要がある。
+    """
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    allowed = "Read,Edit,Write,Bash,WebSearch,WebFetch,Glob,Grep"
+
+    print(f"{len(selected)} 件を claude -p で順次実行します...\n")
+
+    for i, t in enumerate(selected):
+        code = t["code"]
+        prompt = prompts[code]
+        log_file = LOG_DIR / f"{timestamp}_{code}.log"
+        prompt_file = LOG_DIR / f"{timestamp}_{code}.prompt.txt"
+        prompt_file.write_text(prompt, encoding="utf-8")
+
+        docs_md = PROJECT_ROOT / "split-address" / f"{code}.md"
+        patch_yaml = PATCH_DIR / f"{code}.yaml"
+
+        print(f"  [{i + 1}/{len(selected)}] {code} {t['name']}")
+        print(f"      log: {log_file}", flush=True)
+
+        with open(prompt_file, encoding="utf-8") as stdin_f, open(log_file, "w", encoding="utf-8") as log_f:
+            result = subprocess.run(
+                ["claude", "-p", "--allowedTools", allowed],
+                stdin=stdin_f,
+                stdout=log_f,
+                stderr=subprocess.STDOUT,
+                cwd=PROJECT_ROOT,
+                env={**os.environ, "NO_COLOR": "1"},
+            )
+
+        rc = result.returncode
+        status = "完了" if rc == 0 else f"エラー (code={rc})"
+        print(f"      {status}")
+
+        # docs / patch 検証
+        if check_docs:
+            if not docs_md.exists() or docs_md.stat().st_size == 0:
+                # resume リトライ
+                sid = _extract_session_id(log_file)
+                if sid:
+                    print(f"      split-address/{code}.md が空. resume リトライ (SID={sid})")
+                    _claude_resume(sid, f"split-address/{code}.md が空のままです。調査結果を書き込んでください。", log_file)
+                else:
+                    print(f"      エラー - split-address/{code}.md が空です (推論メモ未保存)")
+
+        if check_patch:
+            if not patch_yaml.exists() or patch_yaml.stat().st_size == 0:
+                sid = _extract_session_id(log_file)
+                if sid:
+                    print(f"      パッチ未作成. resume リトライ (SID={sid})")
+                    _claude_resume(
+                        sid,
+                        f"config/address_patches/{code}.yaml が作成されていません。"
+                        "住所の分割・修正が必要な場合はパッチファイルを作成してください。"
+                        f"現在の住所が正しい等の正当な理由がある場合は、その旨を split-address/{code}.md に記載してください。",
+                        log_file,
+                    )
+                else:
+                    print(f"      注意 - パッチ未作成 (address_patches/{code}.yaml)")
+
+    print(f"\n=== 全 {len(selected)} 件完了 ===\n")
+
+
+def _extract_session_id(log_file: Path) -> str | None:
+    """ログファイルから session id を抽出."""
+    if not log_file.exists():
+        return None
+    try:
+        # --output-format json の場合は JSON から取得
+        import json as _json
+
+        for line in log_file.read_text(encoding="utf-8").splitlines():
+            if "session_id" in line:
+                try:
+                    data = _json.loads(line)
+                    sid = data.get("session_id")
+                    if sid:
+                        return sid
+                except _json.JSONDecodeError:
+                    pass
+            if "session id: " in line:
+                return line.split("session id: ")[1].split()[0]
+    except OSError:
+        pass
+    return None
+
+
+def _claude_resume(session_id: str, message: str, log_file: Path) -> None:
+    """claude --resume で追加指示を送信."""
+    with open(log_file, "a", encoding="utf-8") as log_f:
+        subprocess.run(
+            ["claude", "-p", "--resume", session_id, "--allowedTools", "Read,Edit,Write,Bash,WebSearch,WebFetch"],
+            input=message,
+            text=True,
+            stdout=log_f,
+            stderr=subprocess.STDOUT,
+            cwd=PROJECT_ROOT,
+            env={**os.environ, "NO_COLOR": "1"},
+        )
+
+
 def _terminal_cmd(title: str, script_file: Path) -> list[str]:
     """Build command to launch a script in a new terminal window."""
     if sys.platform == "win32":
@@ -567,7 +678,10 @@ def _launch_processes(
     check_docs: bool = False,
     check_patch: bool = False,
 ) -> None:
-    """Launch parallel CLI processes in new terminal windows."""
+    """Launch CLI processes. claude uses direct subprocess, codex uses terminal windows."""
+    if cli_cmd == "claude":
+        _launch_claude_direct(selected, prompts, check_docs=check_docs, check_patch=check_patch)
+        return
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     is_win = sys.platform == "win32"
