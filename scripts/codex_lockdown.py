@@ -16,6 +16,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 # import に必要なため除外
 _SRC_ALLOW = {"geocode_tokyo.py", "__init__.py", "pdf_extract.py"}
 
+# claude CLI の動作に必要なため除外
+_CLAUDE_ALLOW = {"SKILL.md", "settings.json", "settings.local.json"}
+
 _BUILD_FILES = [
     "Cargo.toml",
     "Cargo.lock",
@@ -66,12 +69,12 @@ def _find_targets(
         p = PROJECT_ROOT / name
         if p.is_file():
             targets.append(p)
-    # .claude/ and .agents/ (SKILL.md はスキル定義なので除外)
+    # .claude/ and .agents/ (claude CLI 動作に必要なファイルとフックは除外)
     for d in [".claude", ".agents"]:
         dp = PROJECT_ROOT / d
         if dp.exists():
             for p in dp.rglob("*"):
-                if p.is_file() and p.name != "SKILL.md":
+                if p.is_file() and p.name not in _CLAUDE_ALLOW and "hooks" not in p.parts:
                     targets.append(p)
 
     # --- 追加: split-address/ ファイル個別ロック ---
