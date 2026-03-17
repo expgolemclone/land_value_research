@@ -69,7 +69,62 @@
   <td class="right">1</td>
   <td>5019</td>
   <td>出光興産</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="1">📋 調査メモ</button><template id="docs-1"><h3>5019 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 5019</li>
+<li>企業名: 出光興産株式会社</li>
+<li>対象事業所: 本社 / 関東第一支店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>本社</li>
+<li>元の土地面積: 5,692,000.0 m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目4番1号</li>
+<li>問題点: 有報では所在地が大手町であり、注記2で油槽所3ヶ所を含む。東京1地点に 569.2ha を載せるのは不自然</li>
+<li>関東第一支店</li>
+<li>元の土地面積: 1,302,000.0 m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目4番1号</li>
+<li>問題点: 有報では「関東第一支店 他全国7支店」と明記され、注記3で給油所の賃借地 1,900千㎡ を含む。東京1地点に 130.2ha を載せるのは不自然</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>公式IR PDF</td><td>2026-03-17</td><td>2025年3月期有価証券報告書。表中の従業員数は本社2,497人、関東第一支店他7支店233人。表注記2で本社に油槽所3ヶ所を含む。表注記3で関東第一支店に他全国7支店を含む。提出会社住所は東京都千代田区大手町一丁目2番1号。</td><td>https://www.idemitsu.com/jp/ir/library/securities/pdf/250619.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>国内ネットワークで関東第一支店の住所は東京都千代田区大手町1-2-1と確認。</td><td>https://www.idemitsu.com/jp/company/network/domestic/index.html</td></tr>
+<tr><td>公式ビル情報</td><td>2026-03-17</td><td>大手町ワンタワーの敷地面積は20,864.48m2。</td><td>https://otemachi-one.com/office/building_outline/</td></tr>
+</tbody></table>
+<h4>4. 推論式</h4>
+<p>東京側の代表地点は、本社と関東第一支店がともに大手町ワンタワー所在であることを踏まえ、同ビル敷地面積 20,864.48m2 を東京側面積の上限 proxy とした。</p>
+<p>有報で開示された従業員数比で同敷地面積を按分:</p>
+<ul>
+<li>本社東京側 = 20,864.48 x 2,497 / (2,497 + 233) = 19,083.7387 m2</li>
+<li>関東第一支店東京側 = 20,864.48 x 233 / (2,497 + 233) = 1,780.7413 m2</li>
+</ul>
+<p>残余は全国側へ配分:</p>
+<ul>
+<li>本社全国側 = 5,692,000.0 - 19,083.7387 = 5,672,916.2613 m2</li>
+<li>関東第一支店全国側 = 1,302,000.0 - 1,780.7413 = 1,300,219.2587 m2</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<h5>本社</h5>
+<ul>
+<li>本社(大手町): 東京都千代田区大手町1丁目2番1号, 19,083.7 m2</li>
+<li>本社(油槽所3ヶ所等・合算): 全国各所, 5,672,916.3 m2</li>
+</ul>
+<h5>関東第一支店</h5>
+<ul>
+<li>関東第一支店(大手町・集約代表): 東京都千代田区大手町1丁目2番1号, 1,780.7 m2</li>
+<li>関東第一支店(他全国7支店・給油所等): 全国各所, 1,300,219.3 m2</li>
+</ul>
+<h4>6. 補足</h4>
+<ul>
+<li><code>本社</code> の丸の内住所は現行 override だが、2025年3月期有報の提出会社住所は大手町であり、少なくとも番地は <code>東京都千代田区大手町1丁目2番1号</code> に更新すべき。</li>
+<li><code>関東第一支店</code> は支店個別の所有地面積が未開示のため、東京側は大手町代表地点のみを置き、全国側は合算バケットとして残した。</li>
+<li><code>全国各所</code> はスキル例にならい合算残余の受け皿として使用した。東京住所のみ <code>gaiku</code> 解決を確認済み。</li>
+</ul></template></td>
   <td class="right">114.883924</td>
   <td>gaiku</td>
   <td>high</td>
@@ -86,7 +141,83 @@
   <td class="right">2</td>
   <td>6181</td>
   <td>タメニー</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="2">📋 調査メモ</button><template id="docs-2"><h3>6181 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 6181</li>
+<li>企業名: タメニー株式会社</li>
+<li>対象事業所: 銀座店 / お台場店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 銀座店 2,983.82㎡ / お台場店 2,924.93㎡</li>
+<li>元住所: 銀座店 東京都千代田区 / お台場店 東京都江東区</li>
+<li>問題点: 有報本文では「主要な賃借設備」の賃借床面積と年間賃借料であり、かつ <code>他16店舗</code> <code>他9店舗</code> の合算。1つの東京都心住所へ全量を乗せると過大評価になる。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報（EDINET）</td><td>2026-03-17</td><td>2025年3月31日現在の主要な賃借設備として、銀座店 <code>2,983.82㎡・他16店舗</code>、お台場店 <code>2,924.93㎡・他9店舗</code> を確認。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W75E.pdf</td></tr>
+<tr><td>会社公式プレスリリース</td><td>2026-03-17</td><td>2025年3月4日公表で、パートナーエージェントは「直営店舗を17店舗運営」と明記。銀座店行の等分母数17の根拠。</td><td>https://www.tr.mufg.jp/ippan/company/report/html/202503/202503040001.html</td></tr>
+<tr><td>会社公式 会社概要</td><td>2026-03-17</td><td>本社所在地は東京都品川区大崎1-20-3 イマス大崎ビル。</td><td>https://tameny.jp/company/</td></tr>
+<tr><td>会社公式サポート</td><td>2026-03-17</td><td>ウェディングサロン所在地として「東京都江東区青海2-5-10 テレコムセンタービル西棟3F」を確認。お台場店の番地根拠。</td><td>https://support.tameny.jp/hc/ja/articles/360000745241-%E7%B5%90%E5%A9%9A%E7%9B%B8%E8%AB%87%E6%89%80-%E3%82%A6%E3%82%A7%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0%E3%82%B5%E3%83%AD%E3%83%B3-%E3%82%B9%E3%82%BF%E3%82%B8%E3%82%AA%E3%81%AE%E4%BD%8F%E6%89%80%E3%82%92%E6%95%99%E3%81%88%E3%81%A6%E3%81%8F%E3%81%A0%E3%81%95%E3%81%84</td></tr>
+</tbody></table>
+<h4>4. 東京側の住所確認</h4>
+<ul>
+<li>本社: 東京都品川区大崎1丁目20番3号</li>
+<li>銀座店: 東京都千代田区有楽町2丁目5番1号</li>
+<li>新宿店: 東京都新宿区西新宿1丁目13番12号</li>
+<li>池袋店: 東京都豊島区西池袋1丁目17番10号</li>
+<li>上野店: 東京都台東区上野2丁目13番10号</li>
+<li>町田店: 東京都町田市森野1丁目36番14号</li>
+<li>立川店: 東京都立川市曙町2丁目42番1号</li>
+<li>お台場店: 東京都江東区青海2丁目5番10号</li>
+</ul>
+<p>上記8件はローカル geocoder で全て <code>gaiku</code> 解決を確認。</p>
+<h4>5. 推論式</h4>
+<h5>5.1 銀座店</h5>
+<ul>
+<li>有報記載: <code>銀座店 他16店舗 = 2,983.82㎡</code></li>
+<li>母数: 17店舗</li>
+<li>根拠: 2025-03-04 時点の公式リリースで直営17店舗</li>
+<li>等分推定:</li>
+<li>2,983.82 / 17 = 175.5188...</li>
+<li>パッチでは東京で番地確認できた6店舗に各 <code>175.52㎡</code> を配賦</li>
+<li>東京6店舗合計 = <code>1,053.12㎡</code></li>
+<li>全国残差 = <code>2,983.82 - 1,053.12 = 1,930.70㎡</code></li>
+</ul>
+<h5>5.2 お台場店</h5>
+<ul>
+<li>有報記載: <code>お台場店 他9店舗 = 2,924.93㎡</code></li>
+<li>母数: 10拠点</li>
+<li>根拠: 有報注記の <code>他9店舗</code></li>
+<li>等分推定:</li>
+<li>2,924.93 / 10 = 292.493</li>
+<li>パッチではお台場店に <code>292.49㎡</code></li>
+<li>全国残差 = <code>2,924.93 - 292.49 = 2,632.44㎡</code></li>
+</ul>
+<h4>6. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>事業所キー</th><th>配分先</th><th>address</th><th>area_m2</th>
+</tr></thead><tbody>
+<tr><td>銀座店</td><td>銀座店</td><td>東京都千代田区有楽町2丁目5番1号</td><td>175.52</td></tr>
+<tr><td>銀座店</td><td>新宿店</td><td>東京都新宿区西新宿1丁目13番12号</td><td>175.52</td></tr>
+<tr><td>銀座店</td><td>池袋店</td><td>東京都豊島区西池袋1丁目17番10号</td><td>175.52</td></tr>
+<tr><td>銀座店</td><td>上野店</td><td>東京都台東区上野2丁目13番10号</td><td>175.52</td></tr>
+<tr><td>銀座店</td><td>町田店</td><td>東京都町田市森野1丁目36番14号</td><td>175.52</td></tr>
+<tr><td>銀座店</td><td>立川店</td><td>東京都立川市曙町2丁目42番1号</td><td>175.52</td></tr>
+<tr><td>銀座店</td><td>他11店舗(全国)</td><td>全国各所</td><td>1,930.70</td></tr>
+<tr><td>お台場店</td><td>お台場店</td><td>東京都江東区青海2丁目5番10号</td><td>292.49</td></tr>
+<tr><td>お台場店</td><td>他9店舗(全国)</td><td>全国各所</td><td>2,632.44</td></tr>
+</tbody></table>
+<h4>7. 留意点</h4>
+<ul>
+<li>今回の主因は、土地ではなく賃借床面積・年間賃借料の合算行が東京都の土地として評価されている点。</li>
+<li><code>銀座店</code> の17店舗については個店別床面積の公開値が見当たらないため、直営店舗数での等分推定を採用。</li>
+<li><code>お台場店</code> については他9店舗の個別住所が公開資料で追い切れず、代表拠点1件のみ東京側に残して全国残差とした。これは過大評価の補正としては有効だが、東京側の残存評価はなお保守的である。</li>
+</ul></template></td>
   <td class="right">29.243800</td>
   <td>gaiku</td>
   <td>high / low</td>
@@ -103,7 +234,47 @@
   <td class="right">3</td>
   <td>4004</td>
   <td>レゾナックHD</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="3">📋 調査メモ</button><template id="docs-3"><h3>4004 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 4004</li>
+<li>企業名: レゾナック・ホールディングス</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 5,230,000 m2</li>
+<li>元住所: 東京都港区東新橋1丁目9番1号</li>
+<li>問題点: 港区東新橋の本社1地点に 523万m2 を紐づけており、都心大面積で明らかに不自然</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>第116期有価証券報告書の「主要な設備の状況」で提出会社「本社(東京都港区)」の土地面積は 5,230(千m2)、注記1で「国内子会社に賃貸中の設備を含んでおります」と明記</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHA9.pdf</td></tr>
+<tr><td>有報</td><td>2026-03-17</td><td>同一有報の国内子会社欄に「㈱レゾナック 本社(東京都港区)」土地 68百万円、面積 5(千m2) の記載あり。東京側面積の proxy として利用</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHA9.pdf</td></tr>
+<tr><td>IR</td><td>2026-03-17</td><td>レゾナック・ホールディングス会社概要 PDF に本店所在地「東京都港区東新橋一丁目9番1号」と記載</td><td>https://www.resonac.com/jp/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<p>1. 提出会社の「本社 5,230,000 m2」は、注記1により単独の港区本社敷地ではなく、国内子会社へ賃貸している全国の設備を含む合算値と判断できる。</p>
+<p>2. 東京側の番地レベル住所は、公式会社概要と出力CSVが一致しており、東京都港区東新橋1丁目9番1号で確定。</p>
+<p>3. 東京側の <code>area_m2</code> は、同一有報内で同じ東京都港区所在地として示される「㈱レゾナック 本社 5,000 m2」を proxy に採用した。</p>
+<p>4. 残余 5,225,000 m2 は、国内子会社貸与資産の全国合算として別エントリに切り出す。</p>
+<h4>5. 最終配分</h4>
+<ul>
+<li>本社(東新橋): 5,000.0 m2</li>
+<li>本社(国内子会社貸与資産・全国合算): 5,225,000.0 m2</li>
+</ul>
+<p>計算式:</p>
+<p>```text</p>
+<p>5,230,000.0 - 5,000.0 = 5,225,000.0</p>
+<p>```</p>
+<h4>6. 備考</h4>
+<ul>
+<li><code>全国各所</code> は意図的な合算残余であり、東京都の gaiku ジオコード対象外。</li>
+<li>東京都港区東新橋1丁目9番1号 はローカル geocoder で <code>gaiku</code> 解決を確認済み。</li>
+</ul></template></td>
   <td class="right">27.332657</td>
   <td>gaiku</td>
   <td>high</td>
@@ -120,7 +291,45 @@
   <td class="right">4</td>
   <td>1815</td>
   <td>鉄建建設</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="4">📋 調査メモ</button><template id="docs-4"><h3>1815 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 1815</li>
+<li>企業名: 鉄建建設</li>
+<li>対象事業所: 本店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 24,316.03 m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目3番3号</li>
+<li>問題点: 都心大面積で過大評価に見えるため分割可否を調査</li>
+</ul>
+<h4>3. 調査結果</h4>
+<ul>
+<li>分割根拠は確認できなかった</li>
+<li>過大評価の主因は、出力CSVの本店住所が現行有報・法人番号公表サイトと一致していない点</li>
+<li>2025年3月31日時点の有報表紙の本店所在地は「東京都千代田区神田三崎町二丁目5番3号」</li>
+<li>国税庁法人番号公表サイトでも本店所在地は「東京都千代田区神田三崎町2丁目5番3号」</li>
+<li>有報の設備の状況では本店の土地面積 24,316.03 m2 を確認できる一方、注記でこのうち 21,081.02 m2 は賃貸中の主要資産とされている</li>
+<li>したがって、本件は「丸の内の超高額地点へ誤ジオコーディングされた」影響が大きく、まず住所修正を行うのが妥当</li>
+</ul>
+<h4>4. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>表紙に本店所在地「東京都千代田区神田三崎町二丁目5番3号」</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4NN.pdf</td></tr>
+<tr><td>有報</td><td>2026-03-17</td><td>設備の状況で本店土地 24,316.03 m2、注記で賃貸中主要資産 21,081.02 m2</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4NN.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>事業所一覧に東京本店「東京都千代田区神田三崎町2-5-3」</td><td>https://www.tekken.co.jp/corporate/network/office/index.html</td></tr>
+<tr><td>国税庁法人番号公表サイト</td><td>2026-03-17</td><td>本店所在地「東京都千代田区神田三崎町2丁目5番3号」</td><td>https://www.houjin-bangou.nta.go.jp/</td></tr>
+</tbody></table>
+<h4>5. 判断</h4>
+<ul>
+<li><code>config/address_patches/1815.yaml</code> では本店を <code>東京都千代田区神田三崎町2丁目5番3号</code> に修正する</li>
+<li>今回は土地面積の分割は採用しない</li>
+<li>ローカルの東京ジオコーダでは上記住所は <code>gaiku</code> 解像度で解決できた</li>
+<li>参考: 同じ 24,316.03 m2 を2025年地価データで近傍評価すると、丸の内1-3-3近傍では約7,410億円だが、神田三崎町2-5-3近傍では約528億円まで低下する</li>
+</ul></template></td>
   <td class="right">10.881361</td>
   <td>gaiku</td>
   <td>high</td>
@@ -137,7 +346,55 @@
   <td class="right">5</td>
   <td>5201</td>
   <td>AGC</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="5">📋 調査メモ</button><template id="docs-5"><h3>5201 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 5201</li>
+<li>企業名: AGC株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 409,000.0 m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目4番53</li>
+<li>問題点: 出力CSVの住所が有報上の本店所在地と一致しないうえ、有報注記に「本社には、関係会社に賃貸している土地等を含んでおります。」とあり、丸の内本社以外の土地が合算されている。</li>
+</ul>
+<h4>3. 判定</h4>
+<ul>
+<li>判定: 過大評価の疑いあり</li>
+<li>理由: 丸の内の単独地点に 409,000m2 をぶら下げるのは立地・面積の両面で不自然。有報注記により、本社行には関係会社向け賃貸土地等が混在していることが明示されている。</li>
+<li>対応: <code>本社</code> を <code>本社(丸の内)</code> と <code>本社(関係会社賃貸土地等・合算)</code> に分割する。</li>
+</ul>
+<h4>4. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有価証券報告書</td><td>2026-03-17</td><td>本店所在地を「東京都千代田区丸の内一丁目5番1号」と記載。設備の状況では <code>本社 409,000m2</code> に対し「関係会社に賃貸している土地等を含む」と注記。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VI0L.pdf</td></tr>
+<tr><td>AGC公式アクセス</td><td>2026-03-17</td><td>総合受付を「1階・30階」と記載し、丸の内住所の本社機能が新丸の内ビル内のオフィス入居であることを確認。</td><td>https://www.agc.com/company/access/</td></tr>
+<tr><td>新丸の内ビル公式情報</td><td>2026-03-17</td><td>敷地面積 9,997.44m2、基準階面積 3,727.01m2、延床面積 195,685.43m2 を掲載。</td><td>https://www.marunouchi.com/building/870/</td></tr>
+</tbody></table>
+<h4>5. 推論式</h4>
+<ul>
+<li>丸の内本社の住所は有報ベースで <code>東京都千代田区丸の内1丁目5番1号</code> を採用。</li>
+<li>AGC公式アクセスページが本社受付を新丸の内ビル30階に置いているため、丸の内本社の土地持分は少なくとも「1フロア相当のオフィス持分」を上限寄りの保守値として代理採用する。</li>
+<li>推定式: <code>9,997.44 x 3,727.01 / 195,685.43 = 190.410491...</code></li>
+<li>採用値:</li>
+<li>本社(丸の内): 190.4m2</li>
+<li>本社(関係会社賃貸土地等・合算): <code>409,000.0 - 190.4 = 408,809.6m2</code></li>
+</ul>
+<h4>6. ジオコード確認</h4>
+<ul>
+<li><code>東京都千代田区丸の内1丁目5番1号</code> は <code>gaiku</code></li>
+<li><code>東京都千代田区丸の内1丁目4番53</code> も <code>gaiku</code> だが、有報・公式所在地と不一致のため不採用</li>
+</ul>
+<h4>7. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>エントリ名</th><th>住所</th><th>area_m2</th><th>備考</th>
+</tr></thead><tbody>
+<tr><td>本社(丸の内)</td><td>東京都千代田区丸の内1丁目5番1号</td><td>190.4</td><td>新丸の内ビル1フロア相当の保守的代理値</td></tr>
+<tr><td>本社(関係会社賃貸土地等・合算)</td><td>全国各所</td><td>408,809.6</td><td>有報注記に基づく全国合算残余</td></tr>
+</tbody></table></template></td>
   <td class="right">9.701010</td>
   <td>gaiku</td>
   <td>high</td>
@@ -154,7 +411,44 @@
   <td class="right">6</td>
   <td>7602</td>
   <td>レダックス</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="6">📋 調査メモ</button><template id="docs-6"><h3>7602 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 7602</li>
+<li>企業名: 株式会社レダックス</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>2025年3月31日時点の有報設備データ: 本社 / 東京都千代田区 / 土地 16,465.57㎡ / 土地簿価 460,496千円</li>
+<li>出力CSVの住所: 東京都千代田区紀尾井町4番1号</li>
+<li>問題意識: 千代田区の高地価地点に 16,465.57㎡ は大きく見えるため、過去の「本社 他」集約の残りではないかを確認</li>
+</ul>
+<h4>3. 結論</h4>
+<ul>
+<li>2025年3月31日時点の提出会社設備は「本社（東京都千代田区）」1件で、「他」「及び」等の合算注記はない</li>
+<li>2017年3月31日時点の公式有報では、提出会社設備は「本社（東京都千代田区 他）」18,435.23㎡だった</li>
+<li>2020年3月31日時点の公式有報では、提出会社設備が「本社（東京都千代田区）」16,465.57㎡に切り替わり、土地簿価も 515,582千円 から 460,496千円へ減少している</li>
+<li>したがって、過去に存在した「他」部分は 2020年3月期までに既に切り離されており、2025年3月31日時点の 16,465.57㎡ は現行の千代田区本社資産として扱うのが妥当</li>
+<li>現時点で追加分割できる根拠は確認できなかったため、パッチは <code>本社 -&gt; 東京都千代田区紀尾井町4番1号</code> の単独登録とした</li>
+</ul>
+<h4>4. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>公式会社概要</td><td>2026-03-17</td><td>本店所在地は「東京都千代田区紀尾井町4番1号 新紀尾井町ビル2F」</td><td>https://www.ledax.co.jp/about-us/</td></tr>
+<tr><td>公式有報(2017/3期)</td><td>2026-03-17</td><td>提出会社設備は「本社（東京都千代田区 他）」、土地 18,435.23㎡、土地簿価 515,582千円</td><td>https://www.carchs-hd.com/wp-content/uploads/2017/06/d706bfe4485dd6ac5b72ac4a587cda20.pdf</td></tr>
+<tr><td>公式有報(2020/3期)</td><td>2026-03-17</td><td>提出会社設備は「本社（東京都千代田区）」、土地 16,465.57㎡、土地簿価 460,496千円</td><td>https://www.carchs-hd.com/wp-content/uploads/2020/06/f7f7d5ec1dfa3377d690070520bca4dc.pdf</td></tr>
+<tr><td>公式有報(2023/3期)</td><td>2026-03-17</td><td>2023年時点でも提出会社設備は「本社（東京都千代田区）」、土地 16,465.57㎡で継続</td><td>https://www.carchs-hd.com/wp-content/uploads/2023/06/eaaaba56db40fd4af61d1cad31c50553.pdf</td></tr>
+<tr><td>同住所の大型複合施設情報</td><td>2026-03-17</td><td>紀尾井町4-1のニューオータニ ガーデンコートの敷地面積は 69,226㎡で、同番地に大規模敷地が実在</td><td>https://www.newotani.co.jp/tokyo/gardencourt/</td></tr>
+</tbody></table>
+<h4>5. 判断メモ</h4>
+<ul>
+<li>2025年有報の設備データでは、提出会社の対象地は千代田区本社だけで、子会社本社の建物も提出会社からの賃借とされている</li>
+<li>住所正規化はビル名を落として <code>東京都千代田区紀尾井町4番1号</code> とした</li>
+<li>面積按分や <code>area_m2</code> 推定は未実施。理由は、現行データ自体がすでに分割後の単独資産と判断したため</li>
+</ul></template></td>
   <td class="right">9.308955</td>
   <td>gaiku</td>
   <td>high</td>
@@ -171,7 +465,65 @@
   <td class="right">7</td>
   <td>9603</td>
   <td>エイチ・アイ・エス</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="7">📋 調査メモ</button><template id="docs-7"><h3>9603 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9603</li>
+<li>企業名: 株式会社エイチ・アイ・エス</li>
+<li>対象事業所: Ｈ.Ｉ.Ｓ.ホテルホールディン</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データと問題点</h4>
+<ul>
+<li>出力CSV上の住所: <code>東京都港区港南2丁目15-1</code></li>
+<li>出力CSV上の土地面積: <code>72,000㎡</code></li>
+<li>有報「主要な設備の状況」: <code>Ｈ.Ｉ.Ｓ.ホテルホールディングス株式会社 (東京都港区他) 土地 20,006百万円 (72千㎡)</code></li>
+<li>問題点: ホテル事業子会社の土地 72,000㎡ を港南 1 点に寄せると、港区商業地単価で <code>8,191億円</code> まで膨らみ、都心ホテル会社として不自然。しかも有報原文が明示的に <code>東京都港区他</code> としており、単独所在地ではない。</li>
+</ul>
+<h4>3. 判定</h4>
+<ul>
+<li>BAD_PATTERN_1 該当</li>
+<li>判定理由:</li>
+<li>2026-01-27提出の有報では、H.I.S.ホテルホールディングス株式会社の主要設備所在地が <code>東京都港区他</code> と明記されている。</li>
+<li>2024-10-04 と 2025-07-01 の公式リリースでも、同社は <code>本社：東京都港区</code> とされつつ、東京以外を含む多数ホテルを運営している。</li>
+<li>よって <code>東京都港区港南2丁目15-1</code> に 72,000㎡ 全量を置くのは誤りで、港区代表地点と全国ホテル資産の合算残へ分割するのが妥当。</li>
+</ul>
+<h4>4. 分割方針</h4>
+<ul>
+<li>港区代表地点: <code>東京都港区港南2丁目15-1</code></li>
+<li>港区代表地点の推定面積: <code>3,811㎡</code></li>
+<li>全国ホテル資産の合算残: <code>68,189㎡</code></li>
+</ul>
+<p>推定式:</p>
+<p>```text</p>
+<p>72,000㎡ - 3,811㎡ = 68,189㎡</p>
+<p>```</p>
+<p>港区代表地点の <code>3,811㎡</code> は、出力CSVで当該住所の最近傍公示点として使われている <code>13103-005-026</code> に対応する公示地価標準地 <code>港5-26</code>（東京都港区港南2丁目16番2外、地積3,811㎡）を近傍代理値として採用した。</p>
+<h4>5. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有価証券報告書</td><td>2026-03-17</td><td>2025-10-31時点の主要設備で <code>Ｈ.Ｉ.Ｓ.ホテルホールディングス株式会社 (東京都港区他)</code>、土地 <code>72千㎡</code> と記載。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XHDP.pdf</td></tr>
+<tr><td>公式ニュースリリース</td><td>2026-03-17</td><td>2024-10-04時点で <code>H.I.S.ホテルホールディングス株式会社（本社：東京都港区）</code> が東京複数ホテルを運営。</td><td>https://www.his.co.jp/news/17149.html</td></tr>
+<tr><td>公式ニュースリリース</td><td>2026-03-17</td><td>2025-07-01時点で <code>H.I.S.ホテルホールディングス株式会社（本社：東京都港区）</code> が世界7つの国と地域で48軒のホテルを展開と記載。</td><td>https://www.his.co.jp/news/20477.html</td></tr>
+<tr><td>公式ホテル一覧</td><td>2026-03-17</td><td>現行の公式ホテル一覧でも関東・中部北陸・近畿中国・九州沖縄・東北に跨る国内ホテル住所を掲載。全国資産合算の補強根拠。</td><td>https://www.hishotelgroup.com/</td></tr>
+<tr><td>公示地価標準地</td><td>2026-03-17</td><td><code>港5-26</code> は <code>東京都港区港南2丁目16番2外</code>、地積 <code>3,811㎡</code>。港南代表地点の近傍代理値に採用。</td><td>https://www.reinfolib.mlit.go.jp/</td></tr>
+</tbody></table>
+<h4>6. 推論上の留保</h4>
+<ul>
+<li>期末時点の H.I.S.ホテルホールディングス株式会社の<strong>番地レベル本店所在地</strong>は、公式リリースでは <code>東京都港区</code> までしか確認できなかった。</li>
+<li>そのためパッチ上の港区代表地点 <code>東京都港区港南2丁目15-1</code> は、出力CSVで既に <code>gaiku</code> 解決されている住所を採用した。これは有報の <code>東京都港区他</code> を 1 点へ代表させるための実務上の代表地点であり、72,000㎡ 全量の所在を意味しない。</li>
+</ul>
+<h4>7. ジオコード確認</h4>
+<ul>
+<li><code>東京都港区港南2丁目15-1</code> は <code>gaiku</code></li>
+<li><code>全国各所</code> は合算残のプレースホルダであり、個別ジオコード対象外</li>
+</ul>
+<h4>8. 最終結論</h4>
+<ul>
+<li>9603 の異常値は、H.I.S.ホテルホールディングス株式会社の <code>東京都港区他 72,000㎡</code> を港区 1 点へ誤配賦していることが主因。</li>
+<li>パッチでは <code>Ｈ.Ｉ.Ｓ.ホテルホールディン</code> を <code>港区代表地点 3,811㎡</code> と <code>全国ホテル資産・合算残 68,189㎡</code> に分割する。</li>
+</ul></template></td>
   <td class="right">9.248875</td>
   <td>gaiku</td>
   <td>high</td>
@@ -188,7 +540,40 @@
   <td class="right">8</td>
   <td>7815</td>
   <td>東京ボード工業</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="8">📋 調査メモ</button><template id="docs-8"><h3>7815 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 7815</li>
+<li>企業名: 東京ボード工業株式会社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 結論</h4>
+<ul>
+<li><code>BAD_PATTERN_1</code> のような複数拠点合算は確認できなかった。</li>
+<li>既存の東京側 override は <code>本社</code> と <code>新木場リサイクリング</code> を同じ <code>東京都江東区新木場2丁目11番1号</code> に寄せていたが、公式サイト上は別番地。</li>
+<li>パッチでは <code>本社</code> を <code>東京都江東区新木場2丁目11番1号</code>、<code>新木場リサイクリング</code> を <code>東京都江東区新木場2丁目12番5号</code> に修正した。</li>
+<li>有報では <code>本社 1,528.18m2</code>、<code>新木場リサイクリング 16,526.35m2</code> が独立して計上されており、東京側の大面積はリサイクリング工場の土地として読むのが自然。</li>
+</ul>
+<h4>3. 根拠</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>EDINET有報（ローカル抽出）</td><td>2026-03-17</td><td>2025-03-31時点の主要設備で <code>本社(東京都江東区)</code> と <code>新木場リサイクリング工場(東京都江東区)</code> が別行。土地面積はそれぞれ <code>1,528.18m2</code> と <code>16,526.35m2</code>。本社欄に「他」「及び」は無い。</td><td>N/A</td></tr>
+<tr><td>会社概要</td><td>2026-03-17</td><td>公式サイトで本社所在地を <code>〒136-0082 東京都江東区新木場2丁目11番1号</code> と明記。</td><td>https://www.t-b-i.co.jp/company/</td></tr>
+<tr><td>事業内容 / 木材環境ソリューション事業</td><td>2026-03-17</td><td>公式サイトで新木場リサイクリング工場を <code>〒136-0082 東京都江東区新木場2丁目12番5号</code> と明記。</td><td>https://www.t-b-i.co.jp/business/solution.html</td></tr>
+<tr><td>法人番号公表サイト</td><td>2026-03-17</td><td>本店所在地を <code>東京都江東区新木場二丁目11番1号</code> と確認。</td><td>https://www.houjin-bangou.nta.go.jp/</td></tr>
+</tbody></table>
+<h4>4. ジオコード確認</h4>
+<ul>
+<li><code>東京都江東区新木場2丁目11番1号</code> -&gt; <code>gaiku</code></li>
+<li><code>東京都江東区新木場2丁目12番5号</code> -&gt; <code>gaiku</code></li>
+</ul>
+<h4>5. 地価ポイント確認</h4>
+<ul>
+<li>2025年公示地価データ上、両住所の最寄りポイントはいずれも <code>東京都江東区辰巳3丁目8番5</code>（用途: 倉庫、価格: 752,000円/m2）。</li>
+<li>本社住所からの距離は約 <code>1,300m</code>、新木場リサイクリング工場住所からの距離は約 <code>1,415m</code>。</li>
+<li>したがって、今回の修正は「同一番地の誤登録」を是正するものだが、東京側評価額を大きく圧縮するタイプの分割ではない。</li>
+</ul></template></td>
   <td class="right">9.149868</td>
   <td>gaiku</td>
   <td>medium</td>
@@ -205,7 +590,69 @@
   <td class="right">9</td>
   <td>9301</td>
   <td>三菱倉庫</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="9">📋 調査メモ</button><template id="docs-9"><h3>9301 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9301</li>
+<li>企業名: 三菱倉庫</li>
+<li>対象事業所: 本店 / 東京支店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>有報の設備表では、2025年3月31日時点で <code>本店(東京都中央区ほか所在)</code> の土地面積が <code>104,000㎡</code>、<code>東京支店(東京都中央区ほか所在)</code> の土地面積が <code>153,000㎡</code></li>
+<li>既存出力は両方とも <code>東京都中央区京橋1丁目7-15</code> に寄せられており、中央区の高地価地点に 257,000㎡ が乗っていた</li>
+<li><code>9301_sites.json</code> でも両行に <code>location_has_hoka=true</code> が立っている</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>本店104,000㎡・東京支店153,000㎡、いずれも所在地は「東京都中央区ほか所在」</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W207.pdf</td></tr>
+<tr><td>公式会社概要</td><td>2026-03-17</td><td>東京本社(本店所在地)は東京都中央区日本橋1丁目19番1号</td><td>https://www.mitsubishi-logistics.co.jp/company/profile/</td></tr>
+<tr><td>公式リリース</td><td>2026-03-17</td><td>日本橋ダイヤビルディング建替計画の敷地面積は5,265.97㎡</td><td>https://www.mitsubishi-logistics.co.jp/news/2024/news20241220.pdf</td></tr>
+<tr><td>公式拠点ページ</td><td>2026-03-17</td><td>東京支店は東京都中央区新川1丁目28番24号、配下に青海営業所・有明営業所・大井営業所・羽田営業所などを掲載</td><td>https://www.mitsubishi-logistics.co.jp/company/network/japan/group01-3/</td></tr>
+<tr><td>国交省公示地価</td><td>2026-03-17</td><td>東京支店(新川)近傍の標準地 <code>13102-005-021</code> は中央区新川2丁目101番10外、地積458㎡、用途は事務所・その他</td><td>https://www.reinfolib.mlit.go.jp/</td></tr>
+</tbody></table>
+<h4>4. 判断</h4>
+<h5>本店</h5>
+<ul>
+<li>中央区日本橋の本店所在地は公式会社概要で確認できる</li>
+<li>同所在地の日本橋ダイヤビルディングは会社公式リリースで敷地面積 <code>5,265.97㎡</code></li>
+<li>よって、有報 <code>104,000㎡</code> のうち中央区日本橋に残すのは <code>5,265.97㎡</code> とし、残余 <code>98,734.03㎡</code> は「ほか所在」の合算資産として切り離す</li>
+</ul>
+<p>計算:</p>
+<p>```text</p>
+<p>104,000.00 - 5,265.97 = 98,734.03</p>
+<p>```</p>
+<h5>東京支店</h5>
+<ul>
+<li>公式拠点ページで東京支店所在地は <code>東京都中央区新川1丁目28番24号</code></li>
+<li>同ページで、東京支店配下に <code>青海営業所(江東区青海4丁目7番6号)</code>、<code>有明営業所(江東区有明1丁目3番33号)</code>、<code>大井営業所(品川区八潮2丁目3番10号)</code>、<code>羽田営業所(大田区東海4丁目3番1号)</code> などの物流拠点を確認</li>
+<li>したがって、<code>153,000㎡</code> を中央区新川1丁目28番24号に全付けするのは不適切</li>
+<li>新川側の中央区アドレスは、国交省2025年地価公示の近傍標準地 <code>13102-005-021</code> の地積 <code>458㎡</code> を proxy として採用</li>
+<li>残余 <code>152,542㎡</code> は公式拠点ページで確認できる湾岸物流拠点群の代表住所として <code>青海営業所</code> に寄せる</li>
+</ul>
+<p>計算:</p>
+<p>```text</p>
+<p>153,000.00 - 458.00 = 152,542.00</p>
+<p>```</p>
+<h4>5. 最終配分</h4>
+<table class="md-table"><thead><tr>
+<th>事業所名</th><th>分割名</th><th>住所</th><th>area_m2</th><th>推定</th>
+</tr></thead><tbody>
+<tr><td>本店</td><td>本店(日本橋ダイヤビルディング)</td><td>東京都中央区日本橋1丁目19番1号</td><td>5,265.97</td><td>false</td></tr>
+<tr><td>本店</td><td>本店(ほか所在・合算)</td><td>全国各所</td><td>98,734.03</td><td>true</td></tr>
+<tr><td>東京支店</td><td>東京支店(新川)</td><td>東京都中央区新川1丁目28番24号</td><td>458.00</td><td>true</td></tr>
+<tr><td>東京支店</td><td>東京支店(青海営業所ほか)</td><td>東京都江東区青海4丁目7番6号</td><td>152,542.00</td><td>true</td></tr>
+</tbody></table>
+<h4>6. ジオコード確認</h4>
+<ul>
+<li>東京都中央区日本橋1丁目19番1号 → <code>gaiku</code></li>
+<li>東京都中央区新川1丁目28番24号 → <code>gaiku</code></li>
+<li>東京都江東区青海4丁目7番6号 → <code>gaiku</code></li>
+</ul>
+<p><code>全国各所</code> は合算残余のため geocode 対象外。</p></template></td>
   <td class="right">8.933520</td>
   <td>gaiku</td>
   <td>high</td>
@@ -222,7 +669,44 @@
   <td class="right">10</td>
   <td>2264</td>
   <td>森永乳業</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="10">📋 調査メモ</button><template id="docs-10"><h3>2264 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 2264</li>
+<li>企業名: 森永乳業</li>
+<li>対象事業所: 本社・その他</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 982,442.00 m2</li>
+<li>元住所: 東京都港区</li>
+<li>問題点: 有報の所在地注記が「東京都港区、目黒区、神奈川県座間市・他」で、港区1点に 982,442m2 を載せると都心地価で大幅に過大評価される</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報（設備の状況）</td><td>2026-03-17</td><td>「本社・その他」は所在地が「東京都港区、目黒区、神奈川県座間市・他」、土地面積は 982,442m2</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4TH.pdf</td></tr>
+<tr><td>会社リリース</td><td>2026-03-17</td><td>田町駅西口駅前地区開発計画の計画地面積は 6,135.55m2、所在地は東京都港区芝5-33-1。旧東京本社所在地に一致</td><td>https://www.morinagamilk.co.jp/release/newsentry-4405.html</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<ul>
+<li>有報注記から、982,442m2 は港区単独ではなく、目黒区・座間市・その他所在地を含む合算と判断</li>
+<li>港区で外部根拠が取れる保有地は、旧東京本社跡地の再開発対象地（東京都港区芝5-33-1、6,135.55m2）</li>
+<li>よって東京側は旧東京本社跡地 6,135.55m2 を切り出し、残余は目黒区・座間市・その他所在地の合算として扱う</li>
+</ul>
+<h4>5. 推論式</h4>
+<p>```text</p>
+<p>旧東京本社跡地 = 6,135.55 m2</p>
+<p>合算残余 = 982,442.00 - 6,135.55</p>
+<p>= 976,306.45 m2</p>
+<p>```</p>
+<h4>6. 最終配分</h4>
+<ul>
+<li>本社・その他(旧東京本社跡地): 東京都港区芝5丁目33番1号, 6,135.55m2</li>
+<li>本社・その他(目黒区・座間市・その他資産の合算残余): 全国各所, 976,306.45m2</li>
+</ul></template></td>
   <td class="right">8.789306</td>
   <td>muni_centroid / gaiku</td>
   <td>high / medium</td>
@@ -239,7 +723,63 @@
   <td class="right">11</td>
   <td>1822</td>
   <td>大豊建設</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="11">📋 調査メモ</button><template id="docs-11"><h3>1822 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 1822</li>
+<li>企業名: 大豊建設株式会社</li>
+<li>対象事業所: 本 社 / 東京土木支店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<table class="md-table"><thead><tr>
+<th>事業所名</th><th>元住所</th><th>元土地面積</th><th>問題点</th>
+</tr></thead><tbody>
+<tr><td>本 社</td><td>東京都中央区新川1-24</td><td>287,715㎡</td><td>都心本社としては面積が過大。有報注記で本社賃貸中土地1,167㎡があり、公式IRで阿見町の中央機材センター敷地6.3haも確認できるため、東京本社以外の資産が混在している</td></tr>
+<tr><td>東京土木支店</td><td>東京都中央区新川1-24</td><td>22,996㎡</td><td>実住所は中央区新富2-14-4。都心支店としては面積が過大で、近傍標準地の地積規模と乖離する</td></tr>
+</tbody></table>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>第76期有報の「主要な設備の状況」で本社287,715㎡、東京土木支店22,996㎡。同注記で本社の賃貸中土地1,167㎡・建物6,896㎡を確認</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3CM.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>本社は東京都中央区新川1-24-4、東京土木支店は東京都中央区新富2-14-4</td><td>https://www.daiho.co.jp/company/office.html</td></tr>
+<tr><td>公式IR</td><td>2026-03-17</td><td>技術研究所は中央機材センター敷地内に移転し、同敷地は6.3ha、所在地は茨城県稲敷郡阿見町中央8-5-1</td><td>https://www.daiho.co.jp/newsrelease/2022/2022-0301-1.pdf</td></tr>
+<tr><td>公示地価系データ</td><td>2026-03-17</td><td>東京土木支店近傍の標準地「中央5-7（東京都中央区新富1-16-8）」の地積は415㎡</td><td>https://www.tochidai.info/tokyo/chuo/p-5.html</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<h5>本 社</h5>
+<ul>
+<li>実住所は公式サイトと有報表紙の一致により <code>東京都中央区新川1丁目24番4号</code></li>
+<li>有報注記の <code>本社 土地1,167㎡ / 建物6,896㎡</code> は、新川本社ビルの敷地規模として自然</li>
+<li>一方で本社総面積 <code>287,715㎡</code> は都心本社では説明できない</li>
+<li>公式IRで、阿見町 <code>中央機材センター</code> 敷地が <code>6.3ha = 63,000㎡</code> と確認でき、残余に非都心資産が相当量含まれることが裏付けられる</li>
+<li>よって、東京評価に使う本社住所は新川本社へ絞り、面積は <code>1,167㎡</code> を代理値、残余 <code>286,548㎡</code> は全国合算資産として切り離す</li>
+</ul>
+<p>計算:</p>
+<p>```text</p>
+<p>287,715 - 1,167 = 286,548</p>
+<p>```</p>
+<h5>東京土木支店</h5>
+<ul>
+<li>実住所は公式サイトにより <code>東京都中央区新富2丁目14番4号</code></li>
+<li>有報の <code>22,996㎡</code> は中央区新富の支店用地として不自然</li>
+<li>近傍標準地 <code>中央5-7（新富1-16-8）</code> の地積 <code>415㎡</code> を、新富支店の都心オフィス持分の代理値として採用</li>
+<li>残余 <code>22,581㎡</code> は東京以外の保有土地が同支店行に合算されていると判断し、全国合算資産として切り離す</li>
+</ul>
+<p>計算:</p>
+<p>```text</p>
+<p>22,996 - 415 = 22,581</p>
+<p>```</p>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>事業所名</th><th>分割先</th><th>住所</th><th>面積</th>
+</tr></thead><tbody>
+<tr><td>本 社</td><td>本社(新川)</td><td>東京都中央区新川1丁目24番4号</td><td>1,167㎡</td></tr>
+<tr><td>本 社</td><td>本社(その他保有土地・合算残余)</td><td>全国各所</td><td>286,548㎡</td></tr>
+<tr><td>東京土木支店</td><td>東京土木支店(新富)</td><td>東京都中央区新富2丁目14番4号</td><td>415㎡</td></tr>
+<tr><td>東京土木支店</td><td>東京土木支店(その他保有土地・合算残余)</td><td>全国各所</td><td>22,581㎡</td></tr>
+</tbody></table></template></td>
   <td class="right">8.452075</td>
   <td>gaiku</td>
   <td>high</td>
@@ -256,7 +796,77 @@
   <td class="right">12</td>
   <td>3562</td>
   <td>Ｎｏ．１</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="12">📋 調査メモ</button><template id="docs-12"><h3>3562 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 3562</li>
+<li>企業名: 株式会社Ｎｏ．１</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データと問題点</h4>
+<ul>
+<li>有報抽出では、東京側の主な設備は <code>本社、営業所他 123,404㎡</code>、<code>新橋オフィス 5,246㎡</code>、<code>城北サービスセンター 13,317㎡</code>、<code>城南サービスセンター城西サービスセンター 4,682㎡</code>、<code>東京物流サービスセンター 20,159㎡</code>。</li>
+<li>公式拠点ページでは、本社は <code>内幸町平和ビル 19階</code>、東京第一・第二支店は <code>内幸町東急ビル 11階</code>、新橋オフィスは <code>新橋東和ビル 4階</code>、城北サービスセンターは <code>プリ・テックビル 4階</code>、城南・城西サービスセンターは <code>宝ビル 6階</code> とされている。</li>
+<li>都心オフィスの 1 フロア入居に対し、有報の土地面積が数千〜1万㎡超なのは不自然で、東京の高地価地点へそのまま紐づけると時価総額比が過大になる。</li>
+</ul>
+<h4>3. 判定</h4>
+<ul>
+<li><code>本社、営業所他(本社推定)</code>:</li>
+<li>分割維持</li>
+<li>公式本社所在地は <code>東京都千代田区内幸町1丁目5番2号</code>。出力CSVの 523.30㎡ は内幸町平和ビルの基準階 158.01 坪(約523.30㎡)と整合。</li>
+<li><code>本社、営業所他(東京第一・第二支店推定)</code>:</li>
+<li>分割維持</li>
+<li>公式所在地は <code>東京都千代田区内幸町1丁目3番2号</code>。出力CSVの 823.99㎡ は内幸町東急ビルの基準階 249.26 坪(823.99㎡)と整合。</li>
+<li><code>新橋オフィス</code>:</li>
+<li>分割実施</li>
+<li>公式ページで <code>新橋東和ビル 4階</code> を確認。ビル募集面積は 4階 76.50 坪(252.89㎡)であり、有報 5,246㎡の全量を新橋へ置くのは不合理。東京側は 252.89㎡、残差 4,993.11㎡は <code>全国各所</code> へ退避。</li>
+<li><code>城北サービスセンター</code>:</li>
+<li>分割実施</li>
+<li>公式ページで <code>プリ・テックビル 4階</code> を確認。ビル募集面積は 4階 46.24 坪(152.88㎡)であり、有報 13,317㎡は都心オフィス 1 フロアと整合しない。東京側は 152.88㎡、残差 13,164.12㎡は <code>全国各所</code> へ退避。</li>
+<li><code>城南サービスセンター城西サービスセンター</code>:</li>
+<li>分割実施</li>
+<li>公式ページで <code>宝ビル 6階</code> を確認。募集面積 65.72 坪(217.25㎡)を東京側代理値とし、残差 4,464.75㎡は <code>全国各所</code> へ退避。</li>
+<li><code>東京物流サービスセンター</code>:</li>
+<li>住所確認のみ</li>
+<li>公式拠点ページで <code>東京都江戸川区南篠崎町1丁目7番14号</code> を確認。<code>東京物流センター</code> と <code>城東サービスセンター</code> が同一住所で掲載されており、物流拠点としての実体は確認できる一方、公開Webだけでは 20,159㎡ をさらに安全に割り戻す根拠不足のため今回は据え置き。</li>
+</ul>
+<h4>4. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>公式会社概要</td><td>2026-03-17</td><td>本社を <code>東京都千代田区内幸町一丁目5番2号 内幸町平和ビル19階</code> と記載。</td><td>https://www.number-1.co.jp/company/overview/</td></tr>
+<tr><td>公式拠点ページ</td><td>2026-03-17</td><td>本社、東京第一・第二支店、城北、城南・城西、東京物流、新橋オフィスの階数付き所在地を掲載。</td><td>https://www.number-1.co.jp/company/location/</td></tr>
+<tr><td>有報周辺データ</td><td>2026-03-17</td><td>3562_sites.json と 3562_facilities_text.txt で <code>本社、営業所他 123,404㎡</code>、<code>新橋 5,246㎡</code>、<code>城北 13,317㎡</code>、<code>城南城西 4,682㎡</code>、<code>東京物流 20,159㎡</code> を確認。</td><td>data/cache/facilities_land/3562_sites.json</td></tr>
+<tr><td>オフィスビル情報</td><td>2026-03-17</td><td>内幸町平和ビルの基準階面積を <code>158坪(523.30㎡)</code> と掲載。</td><td>https://www.officetar.jp/building/27291/99559/</td></tr>
+<tr><td>オフィスビル情報</td><td>2026-03-17</td><td>内幸町東急ビルの基準階面積を <code>249.26坪(823.99㎡)</code> と掲載。</td><td>https://office.tokyu-land.co.jp/bldg/uchisaiwaicho_tokyu_bldg/</td></tr>
+<tr><td>オフィスビル情報</td><td>2026-03-17</td><td>新橋東和ビルの 4階を <code>76.50坪(252.89㎡)</code> と掲載。</td><td>https://www.chintai-jimusho.com/building/7668/</td></tr>
+<tr><td>オフィスビル情報</td><td>2026-03-17</td><td>プリ・テックビルの 4階を <code>46.24坪(152.88㎡)</code> と掲載。</td><td>https://www.chintai-jimusho.com/building/22253/</td></tr>
+<tr><td>オフィスビル情報</td><td>2026-03-17</td><td>宝ビルの 6階を <code>65.72坪(217.25㎡)</code> と掲載。</td><td>https://www.officetar.jp/building/4730/133410/</td></tr>
+<tr><td>公式ISMS開示</td><td>2026-03-17</td><td>登録組織として <code>SS事業推進部/TS部/城東サービスセンター/城北サービスセンター</code>、<code>城南/城西サービスセンター</code>、<code>東京物流センター</code>、<code>新橋オフィス</code> を列挙。東京サービス拠点群が複数部門で運営されている補強材料。</td><td>https://www.number-1.co.jp/article_source/data/info/detail/2024/179.html</td></tr>
+</tbody></table>
+<h4>5. 推論式</h4>
+<ul>
+<li>新橋オフィス合算残余 = 5,246.00 - 252.89 = 4,993.11㎡</li>
+<li>城北サービスセンター合算残余 = 13,317.00 - 152.88 = 13,164.12㎡</li>
+<li>城南・城西サービスセンター合算残余 = 4,682.00 - 217.25 = 4,464.75㎡</li>
+</ul>
+<h4>6. ジオコード確認</h4>
+<ul>
+<li><code>東京都千代田区内幸町1丁目5番2号</code> → <code>gaiku</code></li>
+<li><code>東京都千代田区内幸町1丁目3番2号</code> → <code>gaiku</code></li>
+<li><code>東京都港区新橋2丁目13番8号</code> → <code>gaiku</code></li>
+<li><code>東京都文京区湯島2丁目7番16号</code> → <code>gaiku</code></li>
+<li><code>東京都渋谷区幡ケ谷1丁目34番14号</code> → <code>gaiku</code></li>
+<li><code>東京都江戸川区南篠崎町1丁目7番14号</code> → <code>gaiku</code></li>
+<li><code>全国各所</code> は残余退避用のためジオコード対象外</li>
+</ul>
+<h4>7. 最終結論</h4>
+<ul>
+<li>3562 の東京過大評価は、都心オフィスの番地に数千〜1万㎡超をそのまま乗せている点が主因。</li>
+<li>本社系 2 件は既存の推定分割を維持。</li>
+<li>新橋、城北、城南・城西は <code>都心オフィス実占有フロア</code> と <code>合算残余</code> に分割する。</li>
+<li>東京物流は住所だけ補正維持し、面積分割は追加根拠が出るまで保留。</li>
+</ul></template></td>
   <td class="right">8.432732</td>
   <td>gaiku</td>
   <td>high</td>
@@ -273,7 +883,41 @@
   <td class="right">13</td>
   <td>9213</td>
   <td>セイファート</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="13">📋 調査メモ</button><template id="docs-13"><h3>9213 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9213</li>
+<li>企業名: セイファート</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 結論</h4>
+<ul>
+<li><code>本社</code> は合算拠点ではなく、住所分割の対象ではない。</li>
+<li><code>data/output/9213_output.csv</code> の <code>土地面積(m2)=908.82</code> は、土地面積ではなく有報注記にある本社の賃借床面積を誤って拾っている可能性が高い。</li>
+<li>したがって、時価総額比の異常値は住所の集約や分割不足ではなく、土地データ抽出の誤りに起因すると判断した。</li>
+</ul>
+<h4>3. 元データ</h4>
+<ul>
+<li>出力上の住所: 東京都渋谷区渋谷3丁目27番11号</li>
+<li>出力上の土地面積: 908.82 m2</li>
+<li>出力上の土地簿価: 86,008,000,000 円</li>
+<li>問題点: 都心小規模オフィス住所に対して簿価が極端に大きく、土地評価として不自然</li>
+</ul>
+<h4>4. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>EDINET有報</td><td>2026-03-17</td><td>第35期有価証券報告書（2025-03-31提出）の「主要な設備の状況」には提出会社の設備として土地の記載がなく、建物・工具器具備品・ソフトウエアのみが記載されている。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VIWL.pdf</td></tr>
+<tr><td>EDINET有報</td><td>2026-03-17</td><td>同有報の注記に「主要な賃借設備の内容」に本社の賃借床面積 908.82㎡、年間賃借料 100百万円とあり、908.82 は土地ではなく賃借床面積と読める。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VIWL.pdf</td></tr>
+<tr><td>会社公式</td><td>2026-03-17</td><td>コーポレートサイトの会社概要で本社所在地は東京都渋谷区渋谷3-27-11 祐真ビル2Fと案内されており、出力CSVの番地と整合する。</td><td>https://www.seyfert.co.jp/company/about/</td></tr>
+</tbody></table>
+<h4>5. 判定</h4>
+<ul>
+<li>判定: 確認済み</li>
+<li>パッチ方針: 本社住所のみを <code>config/address_patches/9213.yaml</code> に登録</li>
+<li>補足: 本件は split-address では解消しないため、後続で土地面積/簿価抽出ロジックの見直し対象</li>
+</ul></template></td>
   <td class="right">8.316848</td>
   <td>gaiku</td>
   <td>high</td>
@@ -290,7 +934,46 @@
   <td class="right">14</td>
   <td>4381</td>
   <td>ビープラッツ</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="14">📋 調査メモ</button><template id="docs-14"><h3>4381 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 4381</li>
+<li>企業名: ビープラッツ株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データと問題点</h4>
+<ul>
+<li>出力CSV上の住所: 東京都千代田区丸の内1丁目4番1号</li>
+<li>有報抽出の設備: 本社 372.65m2、サブスクリプションセンター 117.85m2</li>
+<li>問題点: <code>本社</code> は単独拠点として記載されており、<code>本社他</code> や <code>及び</code> 等の合算シグナルはない。一方で、住所だけが公式所在地と一致しない。</li>
+</ul>
+<h4>3. 判定</h4>
+<ul>
+<li>分割不可</li>
+<li>理由: 有報抽出では <code>本社</code> と <code>サブスクリプションセンター</code> が別行で、<code>location_has_hoka=false</code>。土地面積 372.65m2 も都心本社として不自然な規模ではない。</li>
+<li>対応: <code>本社</code> の住所を <code>東京都千代田区神田練塀町3番</code> に補正する。</li>
+</ul>
+<h4>4. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>公式会社概要</td><td>2026-03-17</td><td>本社所在地を「東京都千代田区神田練塀町3 ヒューリック秋葉原タワービルディング15階」と記載。サブスクリプションセンターは北九州市の別拠点として併記。</td><td>https://www.bplats.co.jp/corporate/bplatsprofile/</td></tr>
+<tr><td>公式告知</td><td>2026-03-17</td><td>2026-01-01付のビル名変更告知で、変更前は富士ソフト秋葉原ビル、変更後はヒューリック秋葉原タワービルディング。「ビル名以外の住所…に変更はございません」と明記。</td><td>https://www.bplats.co.jp/news/2025/12/address_change/</td></tr>
+<tr><td>公式系外部掲載</td><td>2026-03-17</td><td>SaaSplats会社情報で所在地を「東京都千代田区神田練塀町3番地」と掲載。番地表記の確認に使用。</td><td>https://www.saasplats.com/pages/aboutus</td></tr>
+<tr><td>有報周辺データ</td><td>2026-03-17</td><td>4381_sites.json では <code>本社</code> 372.65m2 と <code>サブスクリプションセンター</code> 117.85m2 が別行。合算注記なし。</td><td>data/cache/facilities_land/4381_sites.json</td></tr>
+</tbody></table>
+<h4>5. ジオコード確認</h4>
+<ul>
+<li><code>東京都千代田区神田練塀町3</code> は <code>muni_centroid</code></li>
+<li><code>東京都千代田区神田練塀町3番</code> は <code>gaiku</code></li>
+<li>よってパッチ登録住所は <code>東京都千代田区神田練塀町3番</code> を採用</li>
+</ul>
+<h4>6. 最終結論</h4>
+<ul>
+<li>4381 の異常値は「本社土地の合算」より「本社住所の誤認」が主因と判断</li>
+<li>パッチでは <code>本社</code> を <code>東京都千代田区神田練塀町3番</code> に補正</li>
+</ul></template></td>
   <td class="right">8.237789</td>
   <td>gaiku</td>
   <td>high</td>
@@ -307,7 +990,51 @@
   <td class="right">15</td>
   <td>1887</td>
   <td>日本国土開発</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="15">📋 調査メモ</button><template id="docs-15"><h3>1887 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 1887</li>
+<li>企業名: 日本国土開発株式会社</li>
+<li>対象事業所: 東京支店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 56,181.00 m2</li>
+<li>元住所: 東京都港区虎ノ門4丁目3番13号</li>
+<li>問題点: 虎ノ門の都心オフィス住所に 56,181m2 を紐づけるのは不自然</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報キャッシュ</td><td>2026-03-17</td><td>2025-05-31 時点の設備状況で東京支店は土地56,181m2・建物3百万円、注記6では「賃貸中の主なもの」として東京支店56,181m2・建物なし</td><td>/home/exp/projects/land_value_research/data/cache/facilities_land/1887_facilities_text.txt</td></tr>
+<tr><td>企業公式</td><td>2026-03-17</td><td>本社と東京支店はいずれも東京都港区虎ノ門4-3-13 ヒューリック神谷町ビル5階</td><td>https://www.n-kokudo.co.jp/corporate/office/</td></tr>
+<tr><td>国税庁法人番号公表サイト</td><td>2026-03-17</td><td>本店所在地は東京都港区虎ノ門4丁目3番13号で、現行本店住所は虎ノ門で確定</td><td>https://www.houjin-bangou.nta.go.jp/</td></tr>
+<tr><td>出力CSV</td><td>2026-03-17</td><td>既存 override で虎ノ門オフィス相当として 656.46m2 が採用済み</td><td>/home/exp/projects/land_value_research/data/output/1887_output.csv</td></tr>
+</tbody></table>
+<h4>4. 判断</h4>
+<ul>
+<li>公式サイト上の東京支店住所は本社と同一の虎ノ門オフィスであり、56,181m2 の土地全量がこの住所に存在するとは考えにくい。</li>
+<li>有報注記6では東京支店 56,181m2 は「賃貸中の主なもの」で、建物は <code>-</code>。したがって、支店オフィスではなく別所在地の賃貸土地を含む集約値と判断する。</li>
+<li>具体的な賃貸土地所在地は今回の調査では特定できなかったため、虎ノ門オフィス相当分と所在未詳の残余に分割する。</li>
+</ul>
+<h4>5. 推論式</h4>
+<ul>
+<li>既存の虎ノ門オフィス proxy 面積: 656.46m2</li>
+<li>有報従業員数: 本社 213人、東京支店 211人</li>
+<li>東京支店虎ノ門オフィス配分:</li>
+<li><code>656.46 x 211 / (213 + 211) = 326.68</code></li>
+<li>東京支店の所在未詳賃貸土地残余:</li>
+<li><code>56,181.00 - 326.68 = 55,854.32</code></li>
+</ul>
+<h4>6. 最終配分</h4>
+<table class="md-table"><thead><tr>
+<th>エントリ名</th><th>住所</th><th>面積(m2)</th><th>備考</th>
+</tr></thead><tbody>
+<tr><td>東京支店(虎ノ門オフィス)</td><td>東京都港区虎ノ門4丁目3番13号</td><td>326.68</td><td>本社と同一住所のオフィス相当分を従業員数比で按分</td></tr>
+<tr><td>東京支店(賃貸土地・所在地未詳)</td><td>全国各所</td><td>55,854.32</td><td>有報注記6の賃貸土地残余。具体所在地は未詳</td></tr>
+</tbody></table></template></td>
   <td class="right">8.000097</td>
   <td>gaiku</td>
   <td>high</td>
@@ -324,7 +1051,46 @@
   <td class="right">16</td>
   <td>7042</td>
   <td>アクセスグループ・ホールディングス</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="16">📋 調査メモ</button><template id="docs-16"><h3>7042 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 7042</li>
+<li>企業名: 株式会社アクセスグループ・ホールディングス</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 結論</h4>
+<ul>
+<li><code>本社</code> <code>渋谷オフィス</code> <code>世田谷オフィス</code> はいずれも合算住所ではなく、公式サイト記載の番地と <code>data/output/7042_output.csv</code> が一致した。</li>
+<li>この銘柄の時価総額比が異常に高い主因は、住所の合算ではなく、有報「設備の状況」注記2の <strong>賃借設備</strong> を土地として取り込んでいる点にある。</li>
+<li>さらに <code>年間賃借料(千円)</code> を <code>土地簿価(円)</code> に誤変換している疑いが強い。例えば本社の <code>21,805</code> が <code>21,805,000,000円</code> として入っており、千円を円へ直すなら <code>21,805,000円</code> が自然で、現値は 1000 倍過大。</li>
+</ul>
+<h4>3. 元データ照合</h4>
+<h5>有報注記2</h5>
+<p>2025年3月31日現在の有報「主要な設備の状況」注記2には、以下が「連結会社以外から賃借している設備」として並ぶ。</p>
+<table class="md-table"><thead><tr>
+<th>事業所名</th><th>有報の設備内容</th><th>床面積(㎡)</th><th>年間賃借料(千円)</th>
+</tr></thead><tbody>
+<tr><td>本社</td><td>事務所</td><td>202.25</td><td>21,805</td></tr>
+<tr><td>渋谷オフィス</td><td>事務所 / フォーラム施設 / 情報通信機器等</td><td>1,659.95</td><td>99,448</td></tr>
+<tr><td>世田谷オフィス</td><td>事務所 / 情報通信機器等</td><td>583.35</td><td>15,600</td></tr>
+</tbody></table>
+<h5>出力CSVとの一致</h5>
+<p><code>data/output/7042_output.csv</code> では、上記 3 件の <code>土地面積(m2)</code> がそれぞれ <code>202.25 / 1659.95 / 583.35</code> となっており、有報の <strong>床面積</strong> と完全一致する。</p>
+<p>また <code>土地簿価(円)</code> は <code>21,805,000,000 / 99,448,000,000 / 15,600,000,000</code> で、有報の <strong>年間賃借料(千円)</strong> を不自然に土地簿価へ転記した形になっている。</p>
+<h4>4. 住所確認</h4>
+<table class="md-table"><thead><tr>
+<th>事業所名</th><th>確認した住所</th><th>確認結果</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>本社</td><td>東京都港区南青山1丁目1番1号</td><td>公式サイトと一致</td><td>https://www.access-t.co.jp/company/access</td></tr>
+<tr><td>渋谷オフィス</td><td>東京都渋谷区渋谷2丁目15番1号</td><td>公式サイトと一致</td><td>https://www.access-t.co.jp/nx/company/office.html</td></tr>
+<tr><td>世田谷オフィス</td><td>東京都世田谷区瀬田3丁目15番10号</td><td>公式サイトと一致</td><td>https://www.access-t.co.jp/pg/company/office.html</td></tr>
+</tbody></table>
+<h4>5. 判定</h4>
+<ul>
+<li>BAD_PATTERN_1 のような「本社他」「及び」型の合算ではない。</li>
+<li>住所分割で時価総額比異常は解消しない。</li>
+<li>修正優先度は住所パッチではなく、賃借設備注記を土地データへ流し込まないこと、および <code>年間賃借料(千円)</code> を <code>土地簿価(円)</code> として扱わないことにある。</li>
+</ul></template></td>
   <td class="right">7.577389</td>
   <td>gaiku</td>
   <td>high</td>
@@ -341,7 +1107,56 @@
   <td class="right">17</td>
   <td>9057</td>
   <td>遠州トラック</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="17">📋 調査メモ</button><template id="docs-17"><h3>9057 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9057</li>
+<li>企業名: 遠州トラック株式会社</li>
+<li>対象事業所: 関東事業部</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 48,731.33 m2</li>
+<li>元住所: 東京都港区芝1丁目12番7号</li>
+<li>問題点: 2025年3月期有報では設備所在地が東京都港区になっている一方、同一面積48,731.33㎡は2024年3月期まで神奈川県厚木市で計上されており、東京の営業所住所へ資産全量が寄っている疑いが強い</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報キャッシュ</td><td>2026-03-17</td><td>2025年3月31日現在の設備の状況で、関東事業部は「東京都港区」、土地面積48,731.33㎡、うち賃借23,843.88㎡</td><td>ローカルキャッシュ <code>data/cache/facilities_land/9057_facilities_text.txt</code></td></tr>
+<tr><td>IR冊子</td><td>2026-03-17</td><td>第60期業績のご報告の「主要な事業所」で、関東事業部は「東京都港区芝一丁目12番7号」</td><td>https://www.enshu-truck.co.jp/files/pdf/253/c032f4f9cea8d96fba088a72e812f3f1.pdf</td></tr>
+<tr><td>公式アニュアルレポート</td><td>2026-03-17</td><td>2024年3月31日現在の主要設備で、関東事業部は「神奈川県厚木市」、土地面積48,731.33㎡、うち賃借23,843.88㎡。面積は2025年3月期と完全一致</td><td>https://www.enshu-truck.co.jp/wp-content/themes/enshu_truck/pdf/ir/library/annualreport2024.pdf</td></tr>
+<tr><td>公示地価標準地</td><td>2026-03-17</td><td>東京営業所の近傍3点の地積は499㎡、400㎡、247㎡で、いずれも事務所系の標準地</td><td>https://www.reinfolib.mlit.go.jp/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<p>1. 2025年3月期の有報キャッシュでは、関東事業部の土地面積48,731.33㎡は据え置きのまま、所在地だけが東京都港区へ変更されている。</p>
+<p>2. 2024年3月期の公式アニュアルレポートでは、まったく同じ48,731.33㎡が神奈川県厚木市として計上されている。</p>
+<p>3. 同社の主要事業所一覧では、東京都港区芝1丁目12番7号は関東事業部の管理拠点住所として確認できるが、都心の営業所住所に48,731.33㎡全量を載せるのは不自然である。</p>
+<p>4. よって、2025年3月期は管理拠点住所の更新により、従前からの関東圏物流資産が東京住所へ代表付けされたと判断した。</p>
+<h4>5. 東京側面積の推定</h4>
+<ul>
+<li>対象住所: 東京都港区芝1丁目12番7号</li>
+<li>推定方法: 近傍公示地価標準地3点の地積を逆距離加重平均</li>
+<li>使用点:</li>
+<li>13103-005-003: 港区芝2-40-1, 499㎡, 距離190.941m</li>
+<li>13103-005-012: 港区芝大門2-11-1, 400㎡, 距離456.097m</li>
+<li>13103-005-034: 港区芝3-6-9, 247㎡, 距離515.701m</li>
+<li>推論式: <code>(499/190.941 + 400/456.097 + 247/515.701) / (1/190.941 + 1/456.097 + 1/515.701)</code></li>
+<li>推定結果: 423.67㎡</li>
+</ul>
+<h4>6. 最終配分面積</h4>
+<ul>
+<li>関東事業部(東京営業所): 423.67㎡</li>
+<li>関東事業部(全国各所・合算残余): 48,307.66㎡</li>
+<li>検算: 423.67 + 48,307.66 = 48,731.33㎡</li>
+</ul>
+<h4>7. 判断</h4>
+<ul>
+<li>patch では <code>関東事業部</code> を list 形式で分割し、東京営業所のみ東京都港区芝1丁目12番7号へ割当</li>
+<li>残余は <code>全国各所</code> として退避し、東京都地価の過大評価から切り離す</li>
+</ul></template></td>
   <td class="right">7.309618</td>
   <td>gaiku</td>
   <td>high</td>
@@ -358,7 +1173,47 @@
   <td class="right">18</td>
   <td>6140</td>
   <td>旭ダイヤモンド工業</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="18">📋 調査メモ</button><template id="docs-18"><h3>6140 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 6140</li>
+<li>企業名: 旭ダイヤモンド工業株式会社</li>
+<li>対象事業所: 本社他</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 15,000 m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目4番1号</li>
+<li>問題点: 有報の事業所名が「本社他」で、2025-03-31時点の設備注記に「山梨旭ダイヤモンド工業株式会社への貸与中の土地874百万円(22千㎡)を含む」とあり、CSV の丸の内 15,000m2 一括計上と整合しない</li>
+<li>補足: 同じ注記で「本社・支店及び営業所の事務所の賃借」を明記しており、本社住所に所有地を大きく載せる前提自体が弱い</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025-03-31時点の設備注記で「本社他」は東京都千代田区他、注記6で「山梨旭ダイヤモンド工業株式会社への貸与中の土地874百万円(22千㎡)を含む」「本社・支店及び営業所の事務所の賃借」を確認</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100WDPB.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>会社情報で本社所在地を「東京都千代田区紀尾井町4-1 ニューオータニ ガーデンコート」と確認</td><td>https://www.asahidia.co.jp/company/company_data/</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>グループ会社一覧で山梨旭ダイヤモンド工業株式会社の所在地を「山梨県韮崎市富士見ヶ丘2-1-11」と確認</td><td>https://www.asahidia.co.jp/company/network/group/</td></tr>
+<tr><td>国税庁法人番号公表サイト</td><td>2026-03-17</td><td>山梨旭ダイヤモンド工業株式会社の本店所在地を「山梨県韮崎市富士見ヶ丘二丁目1番11号」と確認</td><td>https://www.houjin-bangou.nta.go.jp/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<ul>
+<li>有報注記の <code>22千㎡</code> は山梨旭ダイヤモンド工業向け貸与土地として明示されており、東京本社へ丸ごと乗せる根拠はない</li>
+<li>公式会社情報の本社住所は紀尾井町4-1だが、有報注記では本社・支店・営業所を賃借事務所として扱っているため、東京本社の所有地は実質ゼロと判断した</li>
+<li>新運用上 <code>0.0</code> 固定は避けるため、東京側は <code>1.0㎡</code> を便宜的に仮置きした</li>
+<li>元CSVの <code>15,000㎡</code> は同一有報注記の <code>22千㎡</code> と論理矛盾するため、OCR/抽出崩れとみなし、配分は注記の明示値を優先した</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<ul>
+<li>本社(紀尾井町・賃借事務所): 1.0 m2</li>
+<li>山梨旭ダイヤモンド工業(貸与土地): 22,000.0 m2</li>
+</ul>
+<h4>6. ジオコード確認</h4>
+<ul>
+<li>東京都千代田区紀尾井町4番1号 → <code>gaiku</code></li>
+<li>山梨県韮崎市富士見ヶ丘2丁目1番11号 → 東京専用ジオコーダでは対象外</li>
+</ul></template></td>
   <td class="right">7.208468</td>
   <td>gaiku</td>
   <td>high</td>
@@ -375,7 +1230,72 @@
   <td class="right">19</td>
   <td>9305</td>
   <td>ヤマタネ</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="19">📋 調査メモ</button><template id="docs-19"><h3>9305 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9305</li>
+<li>企業名: ヤマタネ</li>
+<li>対象事業所: 不動産本部</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 37,000 m2</li>
+<li>元住所: 東京都中央区京橋2丁目16番1号</li>
+<li>問題点: 中央区京橋単独で 37,000 m2 は不自然。有報注記で山種不動産の吸収合併影響が明記されており、代表住所に賃貸不動産群が合算されている可能性が高い。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報「設備の状況」</td><td>2026-03-17</td><td>不動産本部(東京都中央区)の土地面積は 37千㎡、注記5で「山種不動産より承継」と記載</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W18E.pdf</td></tr>
+<tr><td>会社公式 PROPERTY LIST</td><td>2026-03-17</td><td>不動産カンパニーの主要賃貸不動産として 12 物件の所在地と土地面積を掲載</td><td>https://www.yamatane.co.jp/business/realestate/property/</td></tr>
+</tbody></table>
+<h4>4. 推論式</h4>
+<p>公式 PROPERTY LIST 掲載 12 物件の土地面積合計:</p>
+<ul>
+<li>3,345.71</li>
+<li>3,062.50</li>
+<li>2,718.00</li>
+<li>3,853.75</li>
+<li>1,307.48</li>
+<li>732.71</li>
+<li>2,386.34</li>
+<li>8,216.80</li>
+<li>788.84</li>
+<li>6,625.93</li>
+<li>1,732.00</li>
+<li>566.21</li>
+</ul>
+<p>合計: 35,336.27 m2</p>
+<p>有報の不動産本部土地面積との差分:</p>
+<ul>
+<li>37,000.00 - 35,336.27 = 1,663.73 m2</li>
+</ul>
+<h4>5. 判定</h4>
+<ul>
+<li><code>不動産本部</code> は単一の京橋土地ではなく、公式 PROPERTY LIST に掲載された賃貸不動産群へ分割するのが妥当</li>
+<li>ただし公式一覧 12 物件だけでは 1,663.73 m2 足りないため、残差は <code>その他賃貸不動産・合算残差</code> として別建てにした</li>
+<li>残差の性格は、一覧外の小口資産、信託受益権対象の一部資産、または開示時点差のいずれかとみられる</li>
+</ul>
+<h4>6. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>配分先</th><th>住所</th><th>面積(m2)</th><th>根拠</th>
+</tr></thead><tbody>
+<tr><td>ヤマタネ箱崎ビル</td><td>東京都中央区日本橋箱崎町8番1号</td><td>3,345.71</td><td>公式 PROPERTY LIST</td></tr>
+<tr><td>ヤマタネ深川2号館</td><td>東京都江東区越中島1丁目1番1号</td><td>3,062.50</td><td>公式 PROPERTY LIST</td></tr>
+<tr><td>ヤマタネ深川1号館</td><td>東京都江東区越中島1丁目2番21号</td><td>2,718.00</td><td>公式 PROPERTY LIST</td></tr>
+<tr><td>ヤマタネビル</td><td>東京都江東区越中島1丁目3番1号</td><td>3,853.75</td><td>公式 PROPERTY LIST</td></tr>
+<tr><td>門前仲町賃貸不動産</td><td>東京都江東区門前仲町1丁目16番3号</td><td>1,307.48</td><td>公式 PROPERTY LIST</td></tr>
+<tr><td>東陽町賃貸不動産</td><td>東京都江東区東陽5丁目29番17号</td><td>732.71</td><td>公式 PROPERTY LIST</td></tr>
+<tr><td>京橋賃貸不動産</td><td>東京都中央区京橋1丁目10番7号</td><td>2,386.34</td><td>公式 PROPERTY LIST</td></tr>
+<tr><td>高崎タワー21</td><td>群馬県高崎市栄町3番11号</td><td>8,216.80</td><td>公式 PROPERTY LIST</td></tr>
+<tr><td>代々木賃貸不動産</td><td>東京都渋谷区代々木2丁目10番8号</td><td>788.84</td><td>公式 PROPERTY LIST</td></tr>
+<tr><td>KABUTO ONE</td><td>東京都中央区日本橋兜町7番1号</td><td>6,625.93</td><td>公式 PROPERTY LIST</td></tr>
+<tr><td>錦糸町賃貸不動産</td><td>東京都墨田区江東橋3丁目13番1号</td><td>1,732.00</td><td>公式 PROPERTY LIST</td></tr>
+<tr><td>赤坂賃貸不動産</td><td>東京都港区赤坂5丁目3番1号</td><td>566.21</td><td>公式 PROPERTY LIST</td></tr>
+<tr><td>その他賃貸不動産・合算残差</td><td>全国各所</td><td>1,663.73</td><td>有報37,000㎡と公式一覧合計35,336.27㎡との差分推定</td></tr>
+</tbody></table></template></td>
   <td class="right">7.194148</td>
   <td>gaiku</td>
   <td>high / medium</td>
@@ -392,7 +1312,48 @@
   <td class="right">20</td>
   <td>7955</td>
   <td>クリナップ</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="20">📋 調査メモ</button><template id="docs-20"><h3>7955 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 7955</li>
+<li>企業名: クリナップ株式会社</li>
+<li>対象事業所: 東京支社 他2支社、</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 8,599.00 m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目4番5号</li>
+<li>問題点: 有報上の設備名は <code>東京支社 他2支社、4支店</code> であり、千代田区1地点に 8,599 m2 を載せるのは合算誤り</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025-06-27提出の有報で販売設備に <code>東京支社 他2支社、4支店</code>、土地 8,599m2、所在地は東京都千代田区と記載</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3K6.pdf</td></tr>
+<tr><td>公式資料</td><td>2026-03-17</td><td>会社概要 PDF は <code>2025年3月末現在</code>。東京支社 <code>東京都千代田区内神田3-6-2</code>、中部支社 <code>愛知県名古屋市中区錦1-16-20</code>、関西支社 <code>大阪府大阪市西区靱本町1-11-7</code>、北海道支店 <code>北海道札幌市白石区流通センター1-8-1</code>、東北支店 <code>宮城県仙台市泉区泉中央1-19-5</code>、信越支店 <code>長野県長野市若宮2-11-6</code>、九州支店 <code>福岡県福岡市博多区博多駅南4-1-17</code> を確認</td><td>https://www.cleanup.co.jp/company/profile/</td></tr>
+<tr><td>不動産DB</td><td>2026-03-17</td><td>東京支社所在地に対応するアーバンネット神田ビルの敷地面積は 484.29m2</td><td>https://www.officeiten.jp/detail_00985/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<ul>
+<li>有報の 8,599.00 m2 は <code>東京支社</code> 単独ではなく、<code>他2支社、4支店</code> を含む合算値</li>
+<li><code>2025-03-31</code> 時点の公式資料では東京支社の住所は <code>東京都千代田区内神田3-6-2</code> で、出力CSVの <code>東京都千代田区丸の内1-4-5</code> とは一致しない</li>
+<li>東京側の近傍代理地積は、東京支社が入居するアーバンネット神田ビルの敷地面積 484.29 m2 を採用</li>
+<li>残余は <code>8,599.00 - 484.29 = 8,114.71 m2</code></li>
+<li>残余 8,114.71 m2 は、中部支社・関西支社・北海道支店・東北支店・信越支店・九州支店に配分される全国分として <code>全国各所</code> にまとめる</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>エントリ</th><th>住所</th><th>面積(m2)</th><th>区分</th>
+</tr></thead><tbody>
+<tr><td>東京支社</td><td>東京都千代田区内神田3丁目6番2号</td><td>484.29</td><td>推定</td></tr>
+<tr><td>他2支社・4支店</td><td>全国各所</td><td>8,114.71</td><td>推定</td></tr>
+</tbody></table>
+<h4>6. 判断</h4>
+<ul>
+<li><code>東京支社 他2支社、</code> は BAD_PATTERN_1 の合算と判断</li>
+<li>パッチでは、東京の高地価地点に寄る過大評価を避けるため <code>東京支社</code> を切り出し、残余を <code>全国各所</code> に逃がす</li>
+</ul></template></td>
   <td class="right">7.103150</td>
   <td>gaiku</td>
   <td>high</td>
@@ -409,7 +1370,41 @@
   <td class="right">21</td>
   <td>5458</td>
   <td>高砂鐵工</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="21">📋 調査メモ</button><template id="docs-21"><h3>5458 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 5458</li>
+<li>企業名: 高砂鐵工株式会社</li>
+<li>対象事業所: 本社工場</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 36,009 m2</li>
+<li>元住所: 東京都板橋区新河岸1丁目1番1号</li>
+<li>問題点: 板橋区アドレスに対して推定土地時価 225.0 億円、時価総額比 6.818 と過大に見えるため、合算地の分割可否を再確認</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>EDINET 有報</td><td>2026-03-17</td><td>2025-03-31 時点の設備の状況で「本社工場」は土地 36,009m2、「全社(共通) 賃貸不動産」は別行で 9,506m2 と記載。36,009m2 自体は合算行ではない。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W2RY.pdf</td></tr>
+<tr><td>公式サイト 企業情報</td><td>2026-03-17</td><td>本社所在地は東京都板橋区新河岸1-1-1、営業所は名古屋営業第二部のみ。東京側の複数拠点一覧は確認できない。</td><td>https://www.takasago-tekkou.co.jp/company/index.html</td></tr>
+<tr><td>公式サイト 沿革</td><td>2026-03-17</td><td>2009-04 に江東工場の製造販売機能を板橋工場へ集約。東京側の主要製造機能は板橋へ統合済み。</td><td>https://www.takasago-tekkou.co.jp/company/history.html</td></tr>
+</tbody></table>
+<h4>4. 判定</h4>
+<ul>
+<li>2025-03-31 時点の有報では、東京側で特定できる自社拠点は「本社工場」単独で、合算キーワード「他」「及び」もない。</li>
+<li>有報上は賃貸不動産 9,506m2 が別建て計上されており、<code>本社工場 36,009m2</code> にその面積は混在していない。</li>
+<li>公式サイトでも東京の拠点分割を示す情報はなく、沿革上も江東工場機能は 2009-04 に板橋へ集約済み。</li>
+<li>したがって、<code>本社工場</code> は BAD_PATTERN_1 の「複数拠点合算」には該当しないと判断する。</li>
+</ul>
+<h4>5. 対応</h4>
+<ul>
+<li>パッチは <code>本社工場: 東京都板橋区新河岸1丁目1番1号</code> をそのまま登録。</li>
+<li>ローカルの TokyoGeocoder で <code>gaiku</code> 解像度を確認済み。</li>
+<li>この案件の過大評価要因は住所合算ではなく、低信頼の地価推定ロジックまたは用途地域マッチの問題である可能性が高い。</li>
+</ul></template></td>
   <td class="right">6.818337</td>
   <td>gaiku</td>
   <td>low</td>
@@ -426,7 +1421,54 @@
   <td class="right">22</td>
   <td>8066</td>
   <td>三谷商事</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="22">📋 調査メモ</button><template id="docs-22"><h3>8066 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 8066</li>
+<li>企業名: 三谷商事株式会社</li>
+<li>対象事業所: その他賃貸資産等</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 53,000 m2</li>
+<li>元住所: 東京都千代田区丸の内1-6-5</li>
+<li>問題点: 有報では所在地が「東京都千代田区他」、設備内容が「介護施設、給油施設、工場、充填所、事務所等」であり、53,000 m2 全量を丸の内の単一点に載せるのは不自然</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025年3月31日現在の提出会社主要設備として「その他賃貸資産等(東京都千代田区他)」、土地53千㎡、設備内容は「介護施設、給油施設、工場、充填所、事務所等」</td><td>https://www.mitani-corp.co.jp/ir/library/20250630ir.pdf</td></tr>
+<tr><td>企業公式</td><td>2026-03-17</td><td>東京本社所在地は「東京都千代田区丸の内1-6-5 丸の内北口ビルディング2F」</td><td>https://www.mitani-corp.co.jp/company/network.html</td></tr>
+<tr><td>ビル公式</td><td>2026-03-17</td><td>丸の内北口ビルディングの所在地は丸の内1-6-5、敷地面積15,861.71㎡、有効面積39,266.900㎡、基準階面積1,378.60-1,581.30㎡</td><td>https://office.mec.co.jp/search/detail/011416/</td></tr>
+</tbody></table>
+<h4>4. 推論式</h4>
+<ul>
+<li>東京側は、会社公式サイトで確認できる東京本社を代表点に採用</li>
+<li>ただし同ビルは三菱地所のオフィス物件で、53,000 m2 全量を丸の内に載せるのは不適切</li>
+<li>そこで東京側の <code>area_m2</code> は、丸の内北口ビルディングの敷地面積に対して1フロア相当の面積比を掛ける近似を採用</li>
+<li>計算式:</li>
+</ul>
+<p><code>15,861.71 × ((1,378.60 + 1,581.30) / 2) ÷ 39,266.900 = 597.82</code></p>
+<ul>
+<li>四捨五入して東京側を <code>598 m2</code> とした</li>
+<li>残余は <code>53,000 - 598 = 52,402 m2</code></li>
+</ul>
+<h4>5. 最終配分</h4>
+<table class="md-table"><thead><tr>
+<th>区分</th><th>住所</th><th>面積(m2)</th><th>備考</th>
+</tr></thead><tbody>
+<tr><td>その他賃貸資産等(東京本社)</td><td>東京都千代田区丸の内1丁目6番5号</td><td>598</td><td>推定。丸の内北口ビルディング2Fの1フロア相当持分</td></tr>
+<tr><td>その他賃貸資産等(全国賃貸資産等・合算残余)</td><td>全国各所</td><td>52,402</td><td>推定。介護施設、給油施設、工場、充填所、事務所等の全国合算残余</td></tr>
+</tbody></table>
+<h4>6. 判断</h4>
+<ul>
+<li><code>東京都千代田区丸の内1-6-5</code> は公式に確認できる東京本社住所で、ローカル geocoder でも <code>gaiku</code> を確認</li>
+<li>ただし有報は明確に「東京都千代田区他」としており、設備内容も全国分散型である</li>
+<li>そのため、現行 override のように 53,000 m2 を丸の内単一点に紐付けるのは過大評価を招く</li>
+<li>東京側は小さく切り出し、残余は全国資産の合算として扱うのが最も妥当</li>
+</ul></template></td>
   <td class="right">6.715911</td>
   <td>gaiku</td>
   <td>high</td>
@@ -443,7 +1485,44 @@
   <td class="right">23</td>
   <td>3901</td>
   <td>マークラインズ</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="23">📋 調査メモ</button><template id="docs-23"><h3>3901 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 3901</li>
+<li>企業名: マークラインズ</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 4416.00 m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目4番1号</li>
+<li>問題点: 有報の設備表は「本社(東京都千代田区)ほか3支」で location に複数所在地シグナルがあり、丸の内保有地 4,416 m2 かつ土地簿価 369,801 千円は整合しない</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025-03-25提出の有報「設備の状況」で「本社(東京都千代田区)ほか3支」の土地 4,416m2・建物 736,235 千円を計上。注記3で「本社事務所、赤坂事務所、名古屋支社事務所並びに福岡コールセンター事務所を賃借」と明記</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VG5E.pdf</td></tr>
+<tr><td>公式リリース</td><td>2026-03-17</td><td>2022-11-15開示の「ベンチマークセンター建設のお知らせ」で、神奈川県厚木市森の里青山14番地10、敷地面積 4,416.52m2 のベンチマークセンターを公表</td><td>https://www.marklines.com/ja/news/2785739</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>ベンチマークセンターの所在地を「神奈川県厚木市森の里青山14番地10」と掲載</td><td>https://www.marklines.com/ja/company/benchmark_center</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>会社概要で本社所在地を「東京都千代田区永田町2-11-1 山王パークタワー14F」と掲載</td><td>https://www.marklines.com/ja/company/aboutus</td></tr>
+</tbody></table>
+<h4>4. 判定</h4>
+<ul>
+<li>判定: 過大評価の疑い</li>
+<li>理由: 有報上の「本社」は千代田区本社ほか複数拠点を束ねた表示で、東京本社事務所は賃借。所有地 4,416m2 は厚木ベンチマークセンター取得地の 4,416.52m2 と一致する</li>
+</ul>
+<h4>5. 最終配分</h4>
+<ul>
+<li>本社事務所(賃借): 東京都千代田区永田町2丁目11番1号, 0.0 m2</li>
+<li>ベンチマークセンター(所有地): 神奈川県厚木市森の里青山14番10号, 4416.52 m2</li>
+</ul>
+<h4>6. メモ</h4>
+<ul>
+<li>有報の 4,416.00 m2 は整数表示、公式リリースの 4,416.52 m2 は小数点付きの原数値と判断</li>
+<li>東京専用 <code>TokyoGeocoder</code> では東京都千代田区永田町2丁目11番1号は <code>gaiku</code> 解決できたが、神奈川県厚木市森の里青山14番10号は東京都外のため解釈不可</li>
+</ul></template></td>
   <td class="right">6.416335</td>
   <td>gaiku</td>
   <td>high</td>
@@ -460,7 +1539,60 @@
   <td class="right">24</td>
   <td>1827</td>
   <td>ナカノフドー建設</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="24">📋 調査メモ</button><template id="docs-24"><h3>1827 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 1827</li>
+<li>企業名: 株式会社ナカノフドー建設</li>
+<li>対象事業所: 本店・東京本店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 10,272.0 m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目4番5号</li>
+<li>問題点: 出力CSVの丸の内1-4-5は三菱UFJ銀行本店の住所で、ナカノフドー建設の公式本店所在地ではない。有報の設備表も所在地を「東京都千代田区他」としており、単一地番評価は不適切。</li>
+</ul>
+<h4>3. 判定</h4>
+<ul>
+<li>判定: 過大評価の疑いあり</li>
+<li>理由: 有報の提出会社設備は <code>本店・東京本店 / 東京都千代田区他 / 土地 10,272m2</code> で、公式サイトでは本社と東京本店が別住所として掲示されている。丸の内一点に10,272m2をぶら下げるのは住所・面積の両面で不自然。</li>
+<li>対応: <code>本店・東京本店</code> を <code>本社(NF九段)</code>、<code>東京本店(五番町)</code>、<code>本店・東京本店(合算残余資産)</code> に分割する。</li>
+</ul>
+<h4>4. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有価証券報告書</td><td>2026-03-17</td><td>設備の状況で提出会社の <code>本店・東京本店</code> を「東京都千代田区他」、土地10,272m2と記載。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W82M.pdf</td></tr>
+<tr><td>ナカノフドー建設 会社概要</td><td>2026-03-17</td><td>本社所在地を「東京都千代田区九段北4-2-28」、東京本店所在地を「東京都千代田区五番町4-7」と掲載。</td><td>https://www.nakano.co.jp/company/profile.html</td></tr>
+<tr><td>国税庁法人番号公表サイト</td><td>2026-03-17</td><td>法人の本店所在地を「東京都千代田区九段北4丁目2番28号」と掲載。</td><td>https://www.houjin-bangou.nta.go.jp/</td></tr>
+<tr><td>有価証券報告書</td><td>2026-03-17</td><td>国内子会社設備に <code>㈱NFエージェンシー本社 / 東京都千代田区 / 土地793m2</code> を記載。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W82M.pdf</td></tr>
+<tr><td>ナカノフドー建設 グループ会社</td><td>2026-03-17</td><td>㈱NFエージェンシー所在地を「東京都千代田区五番町4-7」と掲載。</td><td>https://www.nakano.co.jp/company/group.html</td></tr>
+<tr><td>国土交通省不動産情報ライブラリ</td><td>2026-03-17</td><td>九段北4丁目近傍標準地の地積を本社 proxy の補助根拠として参照。</td><td>https://www.reinfolib.mlit.go.jp/</td></tr>
+</tbody></table>
+<h4>5. 推論式</h4>
+<ul>
+<li>有報の <code>本店・東京本店</code> 10,272m2 は所在地欄が「東京都千代田区他」で、公式サイト上も本社と東京本店が別住所になっているため、少なくとも2地点以上の合算と判断。</li>
+<li>本社は公式会社概要と法人番号サイトがともに <code>東京都千代田区九段北4丁目2番28号</code> を示すため、この住所を採用。</li>
+<li>本社地積の直接開示は見当たらないため、九段北4丁目近傍標準地の地積231m2を保守的 proxy として採用。</li>
+<li>東京本店は公式会社概要が <code>東京都千代田区五番町4-7</code> を示し、同住所のグループ会社 <code>㈱NFエージェンシー</code> について有報国内子会社設備に土地793m2の開示があるため、五番町側の proxy として793m2を採用。</li>
+<li>残余面積は以下の通り。</li>
+<li>推定式: <code>10,272 - 231 - 793 = 9,248</code></li>
+</ul>
+<h4>6. ジオコード確認</h4>
+<ul>
+<li><code>東京都千代田区九段北4丁目2番28号</code> は <code>gaiku</code></li>
+<li><code>東京都千代田区五番町4番7号</code> は公式住所だが、TokyoGeocoderでは <code>muni_centroid</code> 止まり</li>
+<li><code>東京都千代田区丸の内1丁目4番5号</code> は <code>gaiku</code> だが、会社公式所在地と不一致のため不採用</li>
+</ul>
+<h4>7. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>エントリ名</th><th>住所</th><th>area_m2</th><th>備考</th>
+</tr></thead><tbody>
+<tr><td>本社(NF九段)</td><td>東京都千代田区九段北4丁目2番28号</td><td>231.0</td><td>九段北4丁目近傍標準地による保守的 proxy</td></tr>
+<tr><td>東京本店(五番町)</td><td>東京都千代田区五番町4番7号</td><td>793.0</td><td>同一住所グループ会社設備の土地793m2を proxy 採用</td></tr>
+<tr><td>本店・東京本店(合算残余資産)</td><td>全国各所</td><td>9,248.0</td><td>有報の「東京都千代田区他」に含まれる残余資産</td></tr>
+</tbody></table></template></td>
   <td class="right">5.998142</td>
   <td>gaiku</td>
   <td>high</td>
@@ -477,7 +1609,43 @@
   <td class="right">25</td>
   <td>8912</td>
   <td>エリアクエスト</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="25">📋 調査メモ</button><template id="docs-25"><h3>8912 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 8912</li>
+<li>企業名: エリアクエスト</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li><code>data/output/8912_output.csv</code> では対象事業所は <code>本社</code> 1件のみ</li>
+<li>出力住所は <code>東京都新宿区西新宿6丁目5番1号</code></li>
+<li>土地面積は <code>1,358㎡</code></li>
+<li><code>data/cache/facilities_land/8912_sites.json</code> でも <code>site_name: 本社</code>、<code>location_short: 東京都新宿区</code>、<code>location_has_hoka: false</code></li>
+<li><code>config/address_patches/8912.precheck.json</code> は <code>all_gaiku: true</code>、<code>has_risk: false</code></li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>会社概要</td><td>2026-03-17</td><td>本社所在地は <code>東京都新宿区西新宿6-5-1 新宿アイランドタワー7F</code></td><td>https://www.area-quest.com/company/outline.html</td></tr>
+<tr><td>アクセス</td><td>2026-03-17</td><td>本社アクセスも同一住所 <code>東京都新宿区西新宿6-5-1 新宿アイランドタワー7F</code></td><td>https://www.area-quest.com/company/access.html</td></tr>
+<tr><td>法人番号公表サイト</td><td>2026-03-17</td><td>本店所在地は <code>東京都新宿区西新宿6丁目5番1号</code></td><td>https://www.houjin-bangou.nta.go.jp/</td></tr>
+</tbody></table>
+<h4>4. 判定</h4>
+<ul>
+<li>分割対象なし</li>
+<li>有報の設備データ上、土地行は <code>本社</code> のみで、事業所名に <code>他</code> <code>及び</code> などの合算シグナルはない</li>
+<li>公式サイトと法人番号公表サイトも本社所在地を同一地点としており、別拠点合算の根拠は見つからない</li>
+<li>パッチには建物名・階数を除いた正規化住所 <code>東京都新宿区西新宿6丁目5番1号</code> を採用</li>
+</ul>
+<h4>5. 補足</h4>
+<ul>
+<li>ローカルの東京ジオコーダで <code>東京都新宿区西新宿6丁目5番1号</code> は <code>gaiku</code> 解決を確認</li>
+<li>含み益が高く見える要因は、少なくとも <code>本社</code> の住所合算では説明しにくい</li>
+<li>有報本文には <code>事業用ビル及び住宅 (1,245㎡)</code> という別行が見えるが、公開テキストからは個別所在地を特定できず、今回の <code>本社</code> 分割根拠には使えない</li>
+</ul></template></td>
   <td class="right">5.568214</td>
   <td>gaiku</td>
   <td>high</td>
@@ -494,7 +1662,45 @@
   <td class="right">26</td>
   <td>6396</td>
   <td>宇野澤組鐵工所</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="26">📋 調査メモ</button><template id="docs-26"><h3>6396 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 6396</li>
+<li>企業名: 宇野澤組鐵工所</li>
+<li>対象事業所: 本社・玉川工場 / 賃貸ビル</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li><code>data/output/6396_output.csv</code> では対象事業所は <code>本社・玉川工場</code> と <code>賃貸ビル</code> の 2 件</li>
+<li><code>本社・玉川工場</code> の出力住所は <code>東京都大田区下丸子2丁目36-40</code>、土地面積は <code>18,272㎡</code></li>
+<li><code>賃貸ビル</code> の出力住所は <code>東京都渋谷区恵比寿1-19-16</code>、土地面積は <code>2,484㎡</code></li>
+<li><code>data/cache/facilities_land/6396_sites.json</code> でも <code>location_short</code> はそれぞれ <code>東京都大田区</code> と <code>東京都渋谷区</code></li>
+<li><code>config/address_patches/6396.precheck.json</code> では <code>本社・玉川工場</code> のみ <code>bad_pattern_1_risk: true</code></li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>会社概要</td><td>2026-03-17</td><td>公式サイトの会社概要で、本店所在地は <code>東京都渋谷区恵比寿1丁目19番15号</code>、本社事務所と玉川工場はともに <code>東京都大田区下丸子2丁目36番40号</code></td><td>https://www.unozawa.co.jp/company/</td></tr>
+<tr><td>沿革</td><td>2026-03-17</td><td>公式沿革で、1953年12月に玉川工場を大田区下丸子へ移転、1964年4月に本社事務所を玉川工場敷地内へ移転</td><td>https://www.unozawa.co.jp/company/history/</td></tr>
+<tr><td>採用情報</td><td>2026-03-17</td><td>doda 掲載の企業情報で、勤務地は <code>東京都大田区下丸子2-36-40</code>、敷地面積は <code>約6千坪</code> とあり、18,272㎡の大規模単独敷地と整合</td><td>https://doda.jp/DodaFront/View/CompanyJobs/j_id__10009118711/</td></tr>
+</tbody></table>
+<h4>4. 判定</h4>
+<ul>
+<li><code>本社・玉川工場</code> は分割対象なし</li>
+<li>有報では事業所名に <code>他</code> <code>及び</code> はなく、所在地も <code>東京都大田区</code> の単独表記</li>
+<li>公式サイトでは <code>本社事務所</code> と <code>玉川工場</code> が同一住所 <code>東京都大田区下丸子2丁目36番40号</code> に並記され、沿革でも本社事務所は 1964 年 4 月に玉川工場敷地内へ移転したとある</li>
+<li>doda の <code>約6千坪</code> という記載は約 <code>19,835㎡</code> で、有報の土地面積 <code>18,272㎡</code> と近く、都心の別拠点合算ではなく大田区の単独工場敷地とみるのが自然</li>
+<li>よって <code>本社・玉川工場</code> は 1 つの敷地として <code>東京都大田区下丸子2丁目36番40号</code> を採用する</li>
+<li><code>賃貸ビル</code> は出力 CSV では <code>東京都渋谷区恵比寿1-19-16</code> だが、公式サイトの本店所在地は <code>東京都渋谷区恵比寿1丁目19番15号</code> であるため、公式情報を優先してこちらへ補正する</li>
+</ul>
+<h4>5. 補足</h4>
+<ul>
+<li>ローカルの東京ジオコーダで <code>東京都大田区下丸子2丁目36番40号</code> と <code>東京都渋谷区恵比寿1丁目19番15号</code> はいずれも <code>gaiku</code> 解決を確認</li>
+<li><code>東京都渋谷区恵比寿1丁目19番16号</code> も同一点に解決されるが、パッチには公式サイト準拠の <code>19番15号</code> を採用した</li>
+<li>今回の含み益の大きさは、少なくとも <code>本社・玉川工場</code> の複数所在地合算では説明できない</li>
+</ul></template></td>
   <td class="right">4.956584</td>
   <td>gaiku</td>
   <td>high</td>
@@ -511,7 +1717,41 @@
   <td class="right">27</td>
   <td>5010</td>
   <td>日本精蝋</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="27">📋 調査メモ</button><template id="docs-27"><h3>5010 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 5010</li>
+<li>企業名: 日本精蝋株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 2,000 m2</li>
+<li>元住所: 東京都中央区京橋2丁目5番18号</li>
+<li>問題意識: 中央区京橋の都心オフィス住所に対して 2,000 m2 は大きく、推定土地時価が時価総額を大幅に上回っている</li>
+</ul>
+<h4>3. 確認結果</h4>
+<ul>
+<li>有報抽出では東京側の対象は <code>本社</code> のみで、事業所名に「他」「及び」などの合算シグナルはない</li>
+<li>公式サイトの会社概要でも本社所在地は <code>東京都中央区京橋2丁目5番18号 京橋創生館10階</code> とされており、CSV の番地と一致する</li>
+<li>一方、京橋創生館の物件情報では敷地面積が <code>893.55㎡</code> とされており、有報の土地面積 2,000 m2 と単純には整合しない</li>
+<li>有報の主要設備注記では <code>本社建物</code> を他者から賃借している記載があり、本社はオフィスビル区画の利用とみられる</li>
+</ul>
+<h4>4. 判断</h4>
+<ul>
+<li>現時点では、京橋 2-5-18 に紐づく <code>本社</code> を別住所へ分割する根拠は確認できなかった</li>
+<li>過大評価の疑いはあるが、原因は住所の合算ではなく、都心ビルの敷地持分や付随土地を単純に <code>2,000 m2</code> と評価計算へ載せている点にある可能性が高い</li>
+<li>そのため address patch では分割せず、本社住所の確認登録に留める</li>
+</ul>
+<h4>5. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>本社所在地は東京都中央区京橋2丁目5番18号 京橋創生館10階</td><td>https://www.seiro.co.jp/company/</td></tr>
+<tr><td>不動産物件情報</td><td>2026-03-17</td><td>京橋創生館の敷地面積は 893.55㎡</td><td>https://www.mitsuifudosan.co.jp/office/bldg/1012/</td></tr>
+<tr><td>有報</td><td>2026-03-17</td><td>本社の土地面積 2,000 m2、主要設備注記で本社建物を賃借</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VIKL.pdf</td></tr>
+</tbody></table></template></td>
   <td class="right">4.875116</td>
   <td>gaiku</td>
   <td>high</td>
@@ -528,7 +1768,69 @@
   <td class="right">28</td>
   <td>9602</td>
   <td>東宝</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="28">📋 調査メモ</button><template id="docs-28"><h3>9602 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9602</li>
+<li>企業名: 東宝</li>
+<li>対象事業所: 東京宝塚ビル他</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 432,093 m2</li>
+<li>元住所: 東京都千代田区有楽町1-1-3</li>
+<li>問題点: 有報上の事業所名が <code>東京宝塚ビル他</code>、所在地も <code>東京都千代田区他</code> で単一地点ではない。これを有楽町 1-1-3 の gaiku に丸ごと載せると、都心一点で 43.2 万 m2 を評価することになり、土地時価が過大化する。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報「主要な設備の状況」</td><td>2026-03-17</td><td>提出会社の不動産事業 <code>東京宝塚ビル他 (東京都千代田区他)</code> の土地面積は 432,093 m2</td><td>https://www.toho.co.jp/ir/library/securities_report/assets/pdf/2025.pdf</td></tr>
+<tr><td>東宝公式 物件詳細</td><td>2026-03-17</td><td>東京宝塚ビルは東京都千代田区有楽町1-1-3、敷地面積 3,874.04 m2</td><td>https://www.toho.co.jp/company/business/realestate/detail/009.html</td></tr>
+<tr><td>東宝公式 物件詳細</td><td>2026-03-17</td><td>東宝日比谷ビルは東京都千代田区有楽町1-2-2、敷地面積 6,845.95 m2</td><td>https://www.toho.co.jp/company/business/realestate/detail/010.html</td></tr>
+<tr><td>竹中工務店 設計施工実績</td><td>2026-03-17</td><td>東宝日比谷プロムナードビルは東京都千代田区有楽町1-5-2、敷地面積 1,491.83 m2</td><td>https://www.takenaka.co.jp/majorworks/49664642018.html</td></tr>
+<tr><td>竹中工務店 設計施工実績</td><td>2026-03-17</td><td>新宿東宝ビルは東京都新宿区歌舞伎町1-19-1、敷地面積 5,590.65 m2</td><td>https://www.takenaka.co.jp/majorworks/21301972015.html</td></tr>
+<tr><td>東宝公式 物件詳細</td><td>2026-03-17</td><td>渋東シネタワーは東京都渋谷区道玄坂2-6-17、敷地面積 1,513.71 m2</td><td>https://www.toho.co.jp/company/business/realestate/detail/053.html</td></tr>
+<tr><td>東宝公式 事業内容・TOPICS</td><td>2026-03-17</td><td>2024年2月末時点の不動産保有ポートフォリオは129物件、うち東京61物件</td><td>https://www.toho.co.jp/company/business/realestate/</td></tr>
+</tbody></table>
+<h4>4. 推論式</h4>
+<p>公式・準公式資料で番地と敷地面積を確認できた主要物件:</p>
+<ul>
+<li>東京宝塚ビル: 3,874.04 m2</li>
+<li>東宝日比谷ビル: 6,845.95 m2</li>
+<li>東宝日比谷プロムナードビル: 1,491.83 m2</li>
+<li>新宿東宝ビル: 5,590.65 m2</li>
+<li>渋東シネタワー: 1,513.71 m2</li>
+</ul>
+<p>合計: 19,316.18 m2</p>
+<p>有報 total との差分:</p>
+<ul>
+<li>432,093.00 - 19,316.18 = 412,776.82 m2</li>
+</ul>
+<h4>5. 判定</h4>
+<ul>
+<li><code>東京宝塚ビル他</code> は単一の有楽町地番ではなく、東宝の不動産ポートフォリオ合算行とみるのが妥当</li>
+<li>少なくとも上記 5 物件は公式または設計施工資料で番地レベルまで確認できるため、東京側の明示物件として切り出せる</li>
+<li>残余 412,776.82 m2 は、東宝が開示する 129 物件ポートフォリオのうち未個別特定分であり、都内外の物件が混在している可能性が高い</li>
+<li>よって、千代田区有楽町 1-1-3 に 432,093 m2 を一括紐付けする現行 override は不適切。主要 5 物件へ分解し、残余は <code>全国各所</code> に退避するのが妥当</li>
+</ul>
+<h4>6. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>配分先</th><th>住所</th><th>面積(m2)</th><th>根拠</th>
+</tr></thead><tbody>
+<tr><td>東京宝塚ビル</td><td>東京都千代田区有楽町1丁目1番3号</td><td>3,874.04</td><td>東宝公式 物件詳細</td></tr>
+<tr><td>東宝日比谷ビル</td><td>東京都千代田区有楽町1丁目2番2号</td><td>6,845.95</td><td>東宝公式 物件詳細</td></tr>
+<tr><td>東宝日比谷プロムナードビル</td><td>東京都千代田区有楽町1丁目5番2号</td><td>1,491.83</td><td>竹中工務店 設計施工実績</td></tr>
+<tr><td>新宿東宝ビル</td><td>東京都新宿区歌舞伎町1丁目19番1号</td><td>5,590.65</td><td>竹中工務店 設計施工実績</td></tr>
+<tr><td>渋東シネタワー</td><td>東京都渋谷区道玄坂2丁目6番17号</td><td>1,513.71</td><td>東宝公式 物件詳細</td></tr>
+<tr><td>その他不動産ポートフォリオ残余</td><td>全国各所</td><td>412,776.82</td><td>有報 total と上記主要 5 物件差分</td></tr>
+</tbody></table>
+<h4>7. 補足</h4>
+<ul>
+<li>東京住所 5 件についてはローカル geocoder で全件 <code>gaiku</code> を確認済み</li>
+<li>5 物件合計 19,316.18 m2 に現行出力の千代田区近傍単価 14,981,865 円/m2 を機械適用しても約 2,894 億円であり、現行推定 6.47 兆円は <code>有楽町1-1-3</code> への一括紐付けが主因と判断できる</li>
+</ul></template></td>
   <td class="right">4.526964</td>
   <td>gaiku</td>
   <td>high</td>
@@ -545,7 +1847,62 @@
   <td class="right">29</td>
   <td>9324</td>
   <td>安田倉庫</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="29">📋 調査メモ</button><template id="docs-29"><h3>9324 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9324</li>
+<li>企業名: 安田倉庫</li>
+<li>対象事業所: 東京地区芝浦営業所</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 52,000 m2</li>
+<li>元住所: 東京都港区芝浦3丁目1番1号</li>
+<li>問題点: 2025年3月期有報では <code>東京地区芝浦営業所(東京都港区 他)</code> とされており、港区一点で52,000㎡を評価するのは不自然。公式拠点一覧でも東京地区の物流拠点が複数確認できる。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>2025年3月期有報</td><td>2026-03-17</td><td>東京地区芝浦営業所は <code>東京都港区 他</code>、土地面積52千㎡、東京地区不動産事業部は港区9千㎡</td><td>https://www.yasuda-soko.co.jp/ir/tabid/127/Default.aspx</td></tr>
+<tr><td>公式グループ拠点一覧</td><td>2026-03-17</td><td>芝浦営業所、平和島営業所、大井営業所、大井埠頭営業所、平和島第二倉庫、東雲営業所、東雲営業所辰巳倉庫、板橋営業所、不動産事業部の現行住所を確認</td><td>https://www.yasuda-soko.co.jp/locations/tabid/329/cator/21/cmid/2968/Default.aspx</td></tr>
+<tr><td>公式事例ページ</td><td>2026-03-17</td><td>平和島営業所の敷地面積14,878㎡</td><td>https://www.yasuda-soko.co.jp/service/case/tabid/322/pdid/81/Default.aspx</td></tr>
+<tr><td>公式掲載FISCOレポート</td><td>2026-03-17</td><td>東雲営業所の敷地面積3,286坪、延床面積6,682坪</td><td>https://www.yasuda-soko.co.jp/Portals/0/images/ir/FISCO/FISCO%20report_20211220.pdf</td></tr>
+<tr><td>公式プレスリリース</td><td>2026-03-17</td><td>東雲営業所辰巳倉庫の敷地面積5,202.90㎡</td><td>https://www.yasuda-soko.co.jp/Portals/0/images/info/pdf/info210114.pdf</td></tr>
+<tr><td>公式問い合わせページ</td><td>2026-03-17</td><td>不動産事業部の連絡先が本社同一住所 <code>東京都港区芝浦三丁目1番1号</code></td><td>https://www.yasuda-soko.co.jp/inquiry/tabid/162/Default.aspx</td></tr>
+</tbody></table>
+<h4>4. 推論式</h4>
+<p>公開地積を確認できた東京物流拠点:</p>
+<ul>
+<li>平和島営業所: 14,878.00 m2</li>
+<li>東雲営業所: 3,286坪 x 3.305785 = 10,863.95 m2</li>
+<li>東雲営業所辰巳倉庫: 5,202.90 m2</li>
+</ul>
+<p>合計:</p>
+<ul>
+<li>14,878.00 + 10,863.95 + 5,202.90 = 30,944.85 m2</li>
+</ul>
+<p>有報の東京地区芝浦営業所との差分:</p>
+<ul>
+<li>52,000.00 - 30,944.85 = 21,055.15 m2</li>
+</ul>
+<h4>5. 判定</h4>
+<ul>
+<li><code>東京地区芝浦営業所</code> は単一の <code>東京都港区芝浦3丁目1番1号</code> ではなく、少なくとも平和島・東雲・辰巳を含む東京地区複数拠点の合算と判断</li>
+<li>残余 21,055.15 m2 は、公式拠点一覧に載る芝浦営業所、大井営業所、大井埠頭営業所、平和島第二倉庫、板橋営業所などに対応するとみられる</li>
+<li>ただし公開資料だけでは各残余拠点の地積を番地単位で配分できないため、今回は港区一点評価を避ける目的で <code>全国各所</code> に退避した</li>
+<li><code>東京地区不動産事業部</code> は公開問い合わせページで本社同一住所が確認できるため、現時点では <code>東京都港区芝浦3丁目1番1号</code> を維持</li>
+</ul>
+<h4>6. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>配分先</th><th>住所</th><th>面積(m2)</th><th>根拠</th>
+</tr></thead><tbody>
+<tr><td>平和島営業所</td><td>東京都大田区平和島3丁目6番1号</td><td>14,878.00</td><td>公式事例ページ</td></tr>
+<tr><td>東雲営業所</td><td>東京都江東区東雲2丁目13番35号</td><td>10,863.95</td><td>公式掲載FISCOレポート</td></tr>
+<tr><td>東雲営業所辰巳倉庫</td><td>東京都江東区辰巳3丁目6番3号</td><td>5,202.90</td><td>公式プレスリリース</td></tr>
+<tr><td>その他東京物流拠点・合算残余</td><td>全国各所</td><td>21,055.15</td><td>有報52,000㎡から上記3拠点を控除した残差</td></tr>
+</tbody></table></template></td>
   <td class="right">4.441900</td>
   <td>gaiku</td>
   <td>high</td>
@@ -562,7 +1919,59 @@
   <td class="right">30</td>
   <td>1882</td>
   <td>東亜道路工業</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="30">📋 調査メモ</button><template id="docs-30"><h3>1882 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 1882</li>
+<li>企業名: 東亜道路工業株式会社</li>
+<li>対象事業所: 関東支社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 84,264 m2</li>
+<li>元住所: 東京都港区六本木7-3-74</li>
+<li>問題点: 六本木1地点に 84,264m2 は不自然。有報では関東支社を「建設事業所・施工設備 / 製造販売設備」として一括記載しており、代表所在地に広域資産が集約されている</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025年3月31日現在の主要な設備の状況で、本社は土地536m2、関東支社は土地84,264m2、従業員273名。関東支社の設備内容は「建設事業所・施工設備 / 製造販売設備」で、六本木単独ではなく関東地区の事業設備集合と読める</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W59L.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>拠点一覧で本社と関東支社はいずれも東京都港区六本木7-3-7。同じページで多摩営業所(東京都八王子市谷野町597)や埼玉・千葉・茨城・群馬・長野・神奈川の拠点が関東支社配下に並ぶ</td><td>https://www.toa-road.co.jp/outline/network/</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>会社概要でも本店所在地は東京都港区六本木7-3-7</td><td>https://www.toa-road.co.jp/outline/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<ul>
+<li>本社土地 536m2 は有報で別掲されており、関東支社 84,264m2 とは別枠</li>
+<li>一方で公式サイトでは本社と関東支社が同じ六本木7-3-7を共有している</li>
+<li>よって <code>関東支社 84,264m2</code> は、六本木オフィスを代表所在地にした関東地区の施工設備・製造販売設備の合算と判断する</li>
+<li>東京側を <code>0m2</code> にせず、六本木 shared office の保守的 proxy を置く</li>
+</ul>
+<h4>5. 推論式</h4>
+<ul>
+<li>六本木オフィス代理値: <code>536 x 273 / (148 + 273) = 347.6</code></li>
+<li>採用値: <code>348 m2</code></li>
+<li>関東地区残余: <code>84,264 - 348 = 83,916 m2</code></li>
+</ul>
+<p>人数比に使った値:</p>
+<ul>
+<li>本社従業員: 148名</li>
+<li>関東支社従業員: 273名</li>
+</ul>
+<p>いずれも 2025年3月31日現在の有報設備表より取得。</p>
+<h4>6. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>エントリ名</th><th>住所</th><th>area_m2</th><th>備考</th>
+</tr></thead><tbody>
+<tr><td>関東支社(六本木オフィス)</td><td>東京都港区六本木7丁目3番7号</td><td>348.0</td><td>共有オフィス敷地の proxy</td></tr>
+<tr><td>関東支社(関東地区施工設備・製造販売設備等合算)</td><td>関東地区各所</td><td>83,916.0</td><td>有報 total 84,264m2 の残余</td></tr>
+</tbody></table>
+<h4>7. 補足</h4>
+<ul>
+<li><code>本社</code> は公式サイト記載の東京都港区六本木7丁目3番7号へ正規化</li>
+<li><code>関東支社</code> の元住所 <code>東京都港区六本木7-3-74</code> は公式サイト・会社概要・有報沿革の整合から <code>7-3-7</code> の誤読と判断した</li>
+</ul></template></td>
   <td class="right">4.334212</td>
   <td>gaiku</td>
   <td>high</td>
@@ -579,7 +1988,68 @@
   <td class="right">31</td>
   <td>8253</td>
   <td>クレディセゾン</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="31">📋 調査メモ</button><template id="docs-31"><h3>8253 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 8253</li>
+<li>企業名: 株式会社クレディセゾン</li>
+<li>対象事業所: 本社他</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 1,241,792 m2</li>
+<li>元住所: 東京都豊島区東池袋3-1-1</li>
+<li>問題点: 有報上の所在地が「東京都豊島区他」で、豊島区本社へ全量を張り付けると 124ha 超の都心商業地になり不自然</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報「設備の状況」</td><td>2026-03-17</td><td>提出会社の「本社他」は <code>東京都豊島区他</code>、土地面積は 1,241,792 m2</td><td>ローカル注入テキスト <code>data/cache/facilities_land/8253_facilities_text.txt</code></td></tr>
+<tr><td>クレディセゾン公式会社概要</td><td>2026-03-17</td><td>本社所在地は <code>東京都豊島区東池袋3-1-1 サンシャイン60・52F</code></td><td>https://corporate.saisoncard.co.jp/company/about_cs/</td></tr>
+<tr><td>赤城自然園公式サイト</td><td>2026-03-17</td><td>赤城自然園は <code>群馬県渋川市赤城町南赤城山892</code>、面積は <code>約120ha</code></td><td>https://akagishizenen.jp/english/</td></tr>
+<tr><td>赤城自然園採用情報</td><td>2026-03-17</td><td>運営主体が <code>株式会社クレディセゾン 赤城自然園</code> であることを確認</td><td>https://akagishizenen.jp/recruit/</td></tr>
+<tr><td>JLL サンシャイン60物件ページ</td><td>2026-03-17</td><td>サンシャイン60 は賃貸オフィスで、基準階面積は <code>587.94坪 / 1,943.60m2</code></td><td>https://www.jllproperty.jp/listings/sunshine-60-sunshine-city-60-office</td></tr>
+<tr><td>サンシャインシティ会社概要PDF</td><td>2026-03-17</td><td>サンシャインシティ全体の敷地面積 <code>54,687m2</code>、延床面積 <code>585,895m2</code></td><td>https://co.sunshinecity.co.jp/archives/007/202502/313a3ed4d5f9484717ed179f27e93e5cb4bf1a4a285d6acb85f17d5a7f7252cd.pdf</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<p>1. 有報の <code>本社他 (東京都豊島区他)</code> 1,241,792 m2 は、池袋本社単独では説明できない。</p>
+<p>2. クレディセゾン本社はサンシャイン60・52Fにある。サンシャイン60は賃貸オフィスであり、本社側の土地持分は大きくても高層オフィス1フロア相当の按分にとどまる。</p>
+<p>3. 赤城自然園はクレディセゾン運営の群馬県資産で、面積が約120ha = 1,200,000 m2。これは有報面積の大半を説明できる。</p>
+<h4>5. 面積配分</h4>
+<h5>本社(池袋) 推定</h5>
+<ul>
+<li>式: <code>54,687 x 1,943.6 / 585,895 = 181.414...</code></li>
+<li>採用値: <code>181 m2</code></li>
+<li>解釈: サンシャインシティ全体の敷地面積を、52Fの1フロア相当で延床按分した保守的な proxy</li>
+</ul>
+<h5>赤城自然園</h5>
+<ul>
+<li>式: <code>120 ha x 10,000 = 1,200,000 m2</code></li>
+<li>採用値: <code>1,200,000 m2</code></li>
+<li>解釈: 公式サイトの「約120ha」をそのまま換算</li>
+</ul>
+<h5>残余</h5>
+<ul>
+<li>式: <code>1,241,792 - 1,200,000 - 181 = 41,611</code></li>
+<li>採用値: <code>41,611 m2</code></li>
+<li>解釈: 有報の <code>本社他</code> に含まれるその他の地方拠点・付随土地の残差</li>
+</ul>
+<h4>6. 最終配分</h4>
+<table class="md-table"><thead><tr>
+<th>区分</th><th>住所</th><th>面積(m2)</th><th>備考</th>
+</tr></thead><tbody>
+<tr><td>本社(池袋)</td><td>東京都豊島区東池袋3-1-1</td><td>181</td><td>推定</td></tr>
+<tr><td>赤城自然園</td><td>群馬県渋川市赤城町南赤城山892</td><td>1,200,000</td><td>推定</td></tr>
+<tr><td>本社他(残余・全国各所)</td><td>全国各所</td><td>41,611</td><td>推定</td></tr>
+</tbody></table>
+<h4>7. ジオコード確認</h4>
+<ul>
+<li><code>東京都豊島区東池袋3-1-1</code> → <code>gaiku</code></li>
+<li><code>群馬県渋川市赤城町南赤城山892</code> → 東京用ジオコーダー対象外</li>
+<li><code>全国各所</code> → ジオコード対象外</li>
+</ul></template></td>
   <td class="right">4.100286</td>
   <td>gaiku</td>
   <td>high</td>
@@ -613,7 +2083,35 @@
   <td class="right">33</td>
   <td>1899</td>
   <td>福田組</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="33">📋 調査メモ</button><template id="docs-33"><h3>1899 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 1899</li>
+<li>企業名: 福田組</li>
+<li>対象事業所: 東京本社・東京本店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 8,880m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目4番5号</li>
+<li>問題点: 分割合算ではなく、有報表の列誤読と住所誤認が重なっていた。8,880は所有地面積ではなく賃借土地面積であり、丸の内1丁目4番5号は福田組の東京本社住所ではなく株主名簿管理人の事務取扱場所。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2024年12月31日現在の「主要な設備の状況」で、東京本社・東京本店の土地は面積2,234.00㎡、金額221百万円。注記5により(8,880)は連結会社以外から賃借している土地面積。</td><td>https://www.fkd.co.jp/wp-content/uploads/2025/03/20250327_98_yukashoukenhoukoku.pdf</td></tr>
+<tr><td>有報表紙</td><td>2026-03-17</td><td>第98期有価証券報告書の「最寄りの連絡場所」「縦覧に供する場所」は東京都千代田区九段北3丁目2番4号。</td><td>https://www.fkd.co.jp/wp-content/uploads/2025/03/20250327_98_yukashoukenhoukoku.pdf</td></tr>
+<tr><td>公式事業所一覧</td><td>2026-03-17</td><td>東京本社 / 本店の所在地は東京都千代田区九段北3-2-4 メヂカルフレンドビル。</td><td>https://www.fkd.co.jp/company/office/</td></tr>
+<tr><td>公式株式情報</td><td>2026-03-17</td><td>東京都千代田区丸の内1丁目4番5号は株主名簿管理人（三菱UFJ信託銀行）の事務取扱場所として記載。</td><td>https://www.fkd.co.jp/ir/stock/</td></tr>
+</tbody></table>
+<h4>4. 判断</h4>
+<ul>
+<li>BAD_PATTERN_1の合算ではない。分割不要。</li>
+<li>補正すべきなのは住所と土地面積。</li>
+<li>パッチでは東京本社・東京本店を東京都千代田区九段北3丁目2番4号、土地面積2,234.0㎡として登録する。</li>
+</ul></template></td>
   <td class="right">3.988700</td>
   <td>gaiku</td>
   <td>high</td>
@@ -630,7 +2128,44 @@
   <td class="right">34</td>
   <td>1972</td>
   <td>三晃金属工業</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="34">📋 調査メモ</button><template id="docs-34"><h3>1972 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 1972</li>
+<li>企業名: 三晃金属工業</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 9,662 m2</li>
+<li>元住所: 東京都港区港南2-15-1</li>
+<li>問題点: 2025年3月期有報の主要設備は「本社(東京都港区他)」であり、CSVの港南住所と一致しない。さらに港区に9,662㎡を全量寄せすると推定時価が過大になる</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>2025年3月期 有報</td><td>2026-03-17</td><td>主要設備の状況で本社は「東京都港区他」、土地9,662㎡、設備内容は「本社機能 生産設備 太陽光発電設備」</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W7TM.pdf</td></tr>
+<tr><td>2024年3月期 有報</td><td>2026-03-17</td><td>前期の同じ「本社(東京都港区他)」行の土地は822㎡。同時に滋賀製作所8,972㎡が別掲されていた</td><td>https://www.sankometal.co.jp/ir/library/pdf/securities_report75.pdf</td></tr>
+<tr><td>2025年3月期 有報 沿革</td><td>2026-03-17</td><td>2024年7月に滋賀製作所を閉鎖。2025年3月期一覧では滋賀製作所行が消えている</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W7TM.pdf</td></tr>
+<tr><td>RBM公式ビル情報</td><td>2026-03-17</td><td>本店所在地のMS芝浦ビルはレジデンス・ビルディングマネジメント運営の賃貸オフィスビル、敷地面積9,026.42㎡</td><td>https://www.r-b-m.co.jp/rent/office/shutoken/minato/detail/tm01/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<p>1. 2025年3月期の本社行 9,662㎡をすべて港区芝浦へ置くのは不自然</p>
+<p>2. 同 row は前期まで 822㎡で、2025年3月期に +8,840㎡ 増えている</p>
+<p>3. 2024年3月期まで別掲だった滋賀製作所 8,972㎡ が 2025年3月期一覧から消え、沿革に 2024年7月閉鎖が記載されている</p>
+<p>4. したがって、2025年3月期の本社行には港区以外の旧製作所/太陽光関連土地が合算された可能性が高い</p>
+<h4>5. 最終配分</h4>
+<ul>
+<li>本社(芝浦): 822.0 m2</li>
+<li>住所: 東京都港区芝浦4丁目13番23号</li>
+<li>根拠: 2024年3月期有報の同一 aggregate row 土地面積を東京側 proxy として継続採用</li>
+<li>本社(その他合算): 8,840.0 m2</li>
+<li>住所: 全国各所</li>
+<li>推論式: 9,662.0 - 822.0 = 8,840.0</li>
+<li>根拠: 2025年3月期有報 total から東京側 proxy を控除した残差。滋賀製作所閉鎖・別掲消滅と整合</li>
+</ul></template></td>
   <td class="right">3.954254</td>
   <td>gaiku</td>
   <td>high</td>
@@ -647,7 +2182,72 @@
   <td class="right">35</td>
   <td>1885</td>
   <td>東亜建設工業</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="35">📋 調査メモ</button><template id="docs-35"><h3>1885 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 1885</li>
+<li>企業名: 東亜建設工業株式会社</li>
+<li>対象事業所: 本社 / 東日本建築支店 / 東京支店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>本社: 東京都新宿区西新宿3丁目7番1号, 土地面積 708,028.00m2, 土地簿価 9,478,000,000円</li>
+<li>東日本建築支店: 東京都新宿区西新宿3丁目7番1号, 土地面積 13,604.00m2, 土地簿価 0円</li>
+<li>東京支店: 元CSVは東京都中央区晴海1丁目8番12号, 土地面積 2,277.00m2</li>
+<li>問題点: 新宿都心立地で本社 708,028m2 / 東日本建築支店 13,604m2 は不自然。有報注記の読み違いで、本社直轄の合算資産と賃借地面積が新宿住所に載っている可能性が高い</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>第135期有価証券報告書の主要な設備の状況で、本社(東京都新宿区)は土地708,028m2。注記4で「本社には直接管理している設備を含み、賃貸中の土地面積503,331m2、建物面積3,460m2を含む」とある。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4T6.pdf</td></tr>
+<tr><td>有報</td><td>2026-03-17</td><td>同表の東日本建築支店は土地面積・土地簿価が空欄で、括弧内13,604m2は注記4により賃借地面積。自社保有地13,604m2ではない。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4T6.pdf</td></tr>
+<tr><td>会社概要</td><td>2026-03-17</td><td>東亜建設工業公式の本社所在地は東京都新宿区西新宿3-7-1 新宿パークタワー31階。</td><td>https://www.toa-const.co.jp/company/outline/</td></tr>
+<tr><td>事業所案内</td><td>2026-03-17</td><td>東日本建築支店案内図も東京都新宿区西新宿3-7-1 新宿パークタワー31階。</td><td>https://www.toa-const.co.jp/company/network/map/eastnippon.html</td></tr>
+<tr><td>事業所案内</td><td>2026-03-17</td><td>東京支店案内図は東京都中央区日本橋室町4-1-6 クアトロ室町ビル8階。</td><td>https://www.toa-const.co.jp/company/network/map/tokyo.html</td></tr>
+<tr><td>建物公式</td><td>2026-03-17</td><td>新宿パークタワーの敷地面積は26,535.71m2、主要部分は賃貸オフィス、建築主は東京ガス不動産。</td><td>https://www.shinjukuparktower.com/about/outline.html</td></tr>
+<tr><td>建物公式</td><td>2026-03-17</td><td>新宿パークタワーは「主要部分を賃貸オフィス」と明記。</td><td>https://www.shinjukuparktower.com/about/spt.html</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<h5>本社</h5>
+<ul>
+<li>有報の708,028m2は新宿本社単独ではなく、本社直轄設備の合算。</li>
+<li>少なくとも503,331m2は有報注記で「賃貸中の土地」と明示されており、新宿本社オフィス用地ではない。</li>
+<li>新宿パークタワー自体は東京ガス不動産が建築主の賃貸オフィスビルで、東亜建設工業の本社所在地に対応づけられる東京側面積は、同ビル敷地26,535.71m2を上限代理値として採用する。</li>
+<li>残差 681,492.29m2 は、賃貸中土地503,331m2と本社直轄のその他全国設備を含む合算残差として <code>全国各所</code> に逃がす。</li>
+</ul>
+<h5>東日本建築支店</h5>
+<ul>
+<li>有報の13,604m2は土地保有面積ではなく賃借地面積。</li>
+<li>土地簿価も 0 円であり、自社保有地評価の対象ではないため、東京住所は番地補正のみ行い、面積は 0.0m2 とする。</li>
+</ul>
+<h5>東京支店</h5>
+<ul>
+<li>元CSVの晴海住所は公式事業所案内と不一致。</li>
+<li>公式案内図に従い、東京支店は東京都中央区日本橋室町4丁目1番6号へ補正する。</li>
+</ul>
+<h4>5. 推論式</h4>
+<ul>
+<li>本社(新宿パークタワー31階): 26,535.71m2</li>
+<li>本社(賃貸中土地・その他合算): 708,028.00 - 26,535.71 = 681,492.29m2</li>
+<li>東日本建築支店(新宿パークタワー31階・土地保有なし): 0.0m2</li>
+</ul>
+<h4>6. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>分割後名称</th><th>住所</th><th>面積(m2)</th><th>面積区分</th>
+</tr></thead><tbody>
+<tr><td>本社(新宿パークタワー31階)</td><td>東京都新宿区西新宿3丁目7番1号</td><td>26,535.71</td><td>公式建物敷地による上限代理値</td></tr>
+<tr><td>本社(賃貸中土地・その他合算)</td><td>全国各所</td><td>681,492.29</td><td>残差推定</td></tr>
+<tr><td>東日本建築支店(新宿パークタワー31階・土地保有なし)</td><td>東京都新宿区西新宿3丁目7番1号</td><td>0.0</td><td>有報明示の非保有</td></tr>
+<tr><td>東京支店</td><td>東京都中央区日本橋室町4丁目1番6号</td><td>2,277.00</td><td>住所補正のみ</td></tr>
+</tbody></table>
+<h4>7. 判断</h4>
+<ul>
+<li>1885 の <code>本社</code> 708,028m2 は新宿本社単独ではなく、本社直轄の賃貸中土地・その他設備を含む合算として扱うべき。</li>
+<li><code>東日本建築支店</code> 13,604m2 は土地保有ではなく賃借地面積なので、新宿地価を掛ける対象から外すべき。</li>
+<li><code>東京支店</code> は中央区晴海ではなく、公式拠点住所の日本橋室町4丁目1番6号で補正する。</li>
+</ul></template></td>
   <td class="right">3.930412</td>
   <td>gaiku</td>
   <td>high / medium</td>
@@ -681,7 +2281,73 @@
   <td class="right">37</td>
   <td>9351</td>
   <td>東洋埠頭</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="37">📋 調査メモ</button><template id="docs-37"><h3>9351 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9351</li>
+<li>企業名: 東洋埠頭株式会社</li>
+<li>対象事業所: 本社、東京支店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>有報「主要な設備の状況」（2025年3月31日現在）では、本社は <code>本社 (東京都中央区他)</code> で土地面積 18,146㎡、東京支店は <code>東京支店 (東京都江東区他)</code> で土地面積 26,847㎡。</li>
+<li>現行出力は、本社を <code>東京都中央区晴海1丁目8番8号</code>、東京支店を <code>東京都江東区有明4丁目3番22号</code> に代表置きしている。</li>
+<li>問題点は両方とも有報上の所在地に <code>他</code> が付いており、単一地点に全土地面積を寄せると過大評価になり得ること。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>第114期有価証券報告書の「主要な設備の状況」で、本社は <code>東京都中央区他 18,146㎡</code>、東京支店は <code>東京都江東区他 26,847㎡</code>、大井事業所は別行で <code>東京都大田区</code>・借地 <code>(13,841㎡)</code> と読める。</td><td>https://irbank.net/E04321/S100W18K</td></tr>
+<tr><td>公式会社概要</td><td>2026-03-17</td><td>本社所在地は <code>東京都中央区晴海一丁目8番8号 晴海トリトンスクエアW棟19階</code>。</td><td>https://www.toyofuto.co.jp/company/outline/</td></tr>
+<tr><td>公式拠点紹介</td><td>2026-03-17</td><td>東京支店ページに <code>東京支店 東京都江東区有明四丁目3番22号</code>、<code>有明営業所(第一倉庫) 東京都江東区有明四丁目4番21号</code>、<code>有明営業所(第二倉庫) 東京都江東区有明四丁目3番22号</code>、設備面積 <code>14,128㎡</code> と <code>9,119㎡</code> が掲載。</td><td>https://www.toyofuto.co.jp/company/base/tokyo.html</td></tr>
+<tr><td>公式拠点紹介</td><td>2026-03-17</td><td>大井事業所は <code>東京都大田区東海六丁目1番5号</code> で独立拠点。</td><td>https://www.toyofuto.co.jp/company/base/ooi.html</td></tr>
+<tr><td>公式沿革</td><td>2026-03-17</td><td><code>2015年1月 東京支店晴海営業所閉鎖</code>、<code>2018年10月 東京支店青海倉庫開設</code> とあり、東京支店配下に複数都内拠点があることを確認。</td><td>https://www.toyofuto.co.jp/company/history/</td></tr>
+</tbody></table>
+<h4>4. 判断</h4>
+<h5>本社</h5>
+<ul>
+<li>公式に番地まで確認できる本社所在地は <code>東京都中央区晴海1丁目8番8号</code> のみ。</li>
+<li>有報では大井事業所が独立行で、しかも借地扱いなので、本社の <code>中央区他</code> を大井へ読み替えることはできない。</li>
+<li>同じ有報の固定資産明細には <code>土地 本社賃貸用地 324百万円</code> の減少注記があり、本社関連土地に本社所在地以外の資産が含まれていた可能性は高い。</li>
+<li>ただし、その賃貸用地の所在地・地積は公開ソースだけでは特定できず、2025年3月31日時点の本社 18,146㎡ を番地レベルへ再配分する根拠が不足する。</li>
+<li>よって本社は代表住所 <code>東京都中央区晴海1丁目8番8号</code> を維持し、<code>他</code> の内訳は未解明として扱う。</li>
+</ul>
+<h5>東京支店</h5>
+<ul>
+<li>公式拠点紹介で、東京支店のうち番地まで確定できる自社拠点は少なくとも以下の2件。</li>
+<li><code>有明営業所(第一倉庫)</code> : 東京都江東区有明4丁目4番21号</li>
+<li><code>有明営業所(第二倉庫)</code> : 東京都江東区有明4丁目3番22号</li>
+<li>大井事業所は別行・別拠点なので、東京支店 26,847㎡ の配分対象から除外してよい。</li>
+<li>東京支店ページには有明第1・第2倉庫の設備面積が <code>14,128㎡</code> と <code>9,119㎡</code> で出ているため、公開データだけで番地レベル配分を作るならこの2拠点へ按分するのが最も defensible。</li>
+<li>推定式:</li>
+<li>第1倉庫 = 26,847 × 14,128 / (14,128 + 9,119) = 16,315.84...</li>
+<li>第2倉庫 = 26,847 × 9,119 / (14,128 + 9,119) = 10,531.15...</li>
+<li>四捨五入後の最終配分:</li>
+<li>有明営業所(第一倉庫): 16,316㎡</li>
+<li>有明営業所(第二倉庫): 10,531㎡</li>
+<li>これは登記簿ベースではなく、公式サイト掲載の倉庫面積比による推定値。</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>事業所名</th><th>住所</th><th>area_m2</th><th>判定</th>
+</tr></thead><tbody>
+<tr><td>本社</td><td>東京都中央区晴海1丁目8番8号</td><td>18,146</td><td>代表住所維持。<code>他</code> の内訳は公開情報では未特定。</td></tr>
+<tr><td>東京支店(有明営業所第一倉庫)</td><td>東京都江東区有明4丁目4番21号</td><td>16,316</td><td>推定</td></tr>
+<tr><td>東京支店(有明営業所第二倉庫)</td><td>東京都江東区有明4丁目3番22号</td><td>10,531</td><td>推定</td></tr>
+</tbody></table>
+<h4>6. ジオコード確認</h4>
+<ul>
+<li><code>東京都中央区晴海1丁目8番8号</code> → <code>gaiku</code></li>
+<li><code>東京都江東区有明4丁目4番21号</code> → <code>gaiku</code></li>
+<li><code>東京都江東区有明4丁目3番22号</code> → <code>gaiku</code></li>
+</ul>
+<h4>7. 結論</h4>
+<ul>
+<li><code>本社</code> は代表住所据え置きが妥当。</li>
+<li><code>東京支店</code> は <code>有明営業所(第一倉庫)</code> と <code>有明営業所(第二倉庫)</code> に分割し、面積は公式サイト掲載の倉庫面積比で按分する。</li>
+</ul></template></td>
   <td class="right">3.807244</td>
   <td>gaiku</td>
   <td>medium / low</td>
@@ -698,7 +2364,41 @@
   <td class="right">38</td>
   <td>3998</td>
   <td>すららネット</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="38">📋 調査メモ</button><template id="docs-38"><h3>3998 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 3998</li>
+<li>企業名: すららネット</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 618.42 m2</li>
+<li>元住所: 東京都千代田区一ツ橋1丁目1-1</li>
+<li>問題点: BAD_PATTERN_1 の複数拠点合算ではなく、出力住所が公式所在地と一致していない</li>
+</ul>
+<h4>3. 判定</h4>
+<ul>
+<li>有報抽出キャッシュでは土地保有拠点は <code>本社</code> 1件のみ</li>
+<li><code>location_has_hoka: false</code> で、「他」「及び」等の合算シグナルもない</li>
+<li>土地面積は 618.42 m2 で、都心立地として不自然な大面積でもない</li>
+<li>よって分割不可。補正対象は住所のみ</li>
+</ul>
+<h4>4. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>特定商取引法に基づく表示で所在地が「東京都千代田区内神田1-14-10 PMO内神田7階」</td><td>https://surala.jp/law.html</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>会社情報ページ群でも所在地が「東京都千代田区内神田1-14-10 PMO内神田7階」</td><td>https://surala.jp/daysurala/seminar/tax/hutoukou/</td></tr>
+<tr><td>公式リリース</td><td>2026-03-17</td><td>2022-08-31公開のニュースリリースでも「東京本社: 東京都千代田区内神田1-14-10 PMO内神田7階」</td><td>https://surala.jp/image/press/220831.pdf</td></tr>
+</tbody></table>
+<h4>5. 結論</h4>
+<ul>
+<li><code>本社</code> の補正先住所は <code>東京都千代田区内神田1丁目14番10号</code></li>
+<li>ローカルの TokyoGeocoder で上記住所は <code>gaiku</code> 解決を確認済み</li>
+<li><code>config/address_patches/3998.yaml</code> には分割ではなく単独住所補正として登録</li>
+</ul></template></td>
   <td class="right">3.764083</td>
   <td>gaiku</td>
   <td>high</td>
@@ -715,7 +2415,46 @@
   <td class="right">39</td>
   <td>8585</td>
   <td>オリエントコーポレーション</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="39">📋 調査メモ</button><template id="docs-39"><h3>8585 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 8585</li>
+<li>企業名: 株式会社オリエントコーポレーション</li>
+<li>対象事業所: 本社部門</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 22,000.00 m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目3番3号</li>
+<li>問題点: 2025年3月期有価証券報告書の設備の状況は <code>本社部門</code> を <code>東京都千代田区他</code> としており、CSV の丸の内1丁目3番3号への22,000㎡全量帰属は過大。都心オフィス単独の敷地としても不自然。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025年3月期有価証券報告書の設備の状況で <code>本社部門</code> は <code>東京都千代田区他</code>、土地面積は 22,000㎡。<code>他</code> を含む合算表示で、単一点評価に向かない。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W0EA.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>オリコ公式アクセスマップでは、2024年7月1日現在の本社所在地を <code>東京都千代田区麹町5丁目2番地1</code> と明記。</td><td>https://www.orico.co.jp/company/corporate/about/map/</td></tr>
+<tr><td>外部不動産DB</td><td>2026-03-17</td><td>JLL の K-WINGビル掲載では所在地が <code>東京都千代田区麹町5-2-1</code>、地上11階建て、募集面積 <code>29.43坪 / 97㎡</code> の小規模オフィス。麹町本社の東京側 proxy 面積に採用。</td><td>https://www.jllproperty.jp/listings/k-wing-building-office</td></tr>
+<tr><td>グループ会社公式</td><td>2026-03-17</td><td>Staff Orico のアクセス情報では <code>別館センター</code> を <code>埼玉県ふじみ野市西鶴ヶ岡1丁目4番1号 オリコ本社別館3階</code> と記載。<code>東京都千代田区他</code> の <code>他</code> 側に本社別館等の非都心資産が存在することを補強。</td><td>https://www.staff-orico.co.jp/company/access/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<p>有報の <code>東京都千代田区他 22,000㎡</code> は、所在地自体が合算表示である。したがって、CSV の <code>東京都千代田区丸の内1丁目3番3号</code> に 22,000㎡ を丸ごと載せた現状は BAD_PATTERN_1 に該当する。</p>
+<p>東京側の拠点は、公式サイトで確認できる現行本社所在地 <code>東京都千代田区麹町5丁目2番地1</code> を採用する。麹町5-2-1 の K-WINGビルは JLL 掲載で地上11階建て・基準階97㎡の小規模オフィスであり、都心本社単独で 22,000㎡ を持つ形とは整合しない。したがって、東京側は保守的に 97㎡ を proxy とする。</p>
+<p>一方で、グループ会社公式ページおよびオリコの公表資料から、<code>オリコ本社別館</code> が埼玉県ふじみ野市西鶴ヶ岡1丁目4番1号に存在することを確認できる。<code>東京都千代田区他</code> の <code>他</code> は、こうした非都心の本社別館等を含む合算資産とみるのが自然である。</p>
+<h4>5. 推論式</h4>
+<p><code>22,000.00 - 97.00 = 21,903.00 (m2)</code></p>
+<h4>6. 最終配分</h4>
+<ul>
+<li>本社部門(麹町本社): 東京都千代田区麹町5丁目2番地1, 97.0 m2</li>
+<li>本社部門(本社別館等・合算): 全国各所, 21,903.0 m2</li>
+</ul>
+<h4>7. 判断</h4>
+<ul>
+<li><code>config/address_patches/8585.yaml</code> では、出力CSVの <code>本社部門</code> を list 形式に分割する。</li>
+<li>東京評価に使う住所は <code>東京都千代田区麹町5丁目2番地1</code> に補正する。</li>
+<li>残余 21,903㎡ は、<code>東京都千代田区他</code> の <code>他</code> に対応する非都心資産として <code>全国各所</code> に切り出す。</li>
+</ul></template></td>
   <td class="right">3.722602</td>
   <td>gaiku</td>
   <td>high</td>
@@ -732,7 +2471,44 @@
   <td class="right">40</td>
   <td>5563</td>
   <td>新日本電工</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="40">📋 調査メモ</button><template id="docs-40"><h3>5563 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 5563</li>
+<li>企業名: 新日本電工株式会社</li>
+<li>対象事業所: リケン工業㈱本社・工場</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 7,000 m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目3番3号</li>
+<li>問題点: 出力CSVは EDINET PDF 由来の誤住所を単独東京資産として採用しているが、2024年12月31日現在の有報設備表では所在地が「東京都千代田区、秋田県北秋田市」の合算行になっている</li>
+<li>補足: 同じ PDF の株主名簿管理人欄に「東京都千代田区丸の内一丁目3番3号 みずほ信託銀行株式会社」があり、これを誤って事業所住所として拾った可能性が高い</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2024年12月31日現在の主要な設備の状況で、リケン工業㈱本社・工場の所在地は「東京都千代田区、秋田県北秋田市」、土地は61百万円・7千㎡</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHVE.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>リケン工業の本社は東京都千代田区岩本町3丁目11番9号 秋葉原トーセイビルIV 6階、秋田工場は秋田県北秋田市綴子字作坂314番地5</td><td>https://rikenkogyo.co.jp/</td></tr>
+<tr><td>親会社公式</td><td>2026-03-17</td><td>新日本電工のグループ会社一覧でも、本社は岩本町3-11-9、秋田工場は綴子字作坂314-5と記載</td><td>https://www.nippondenko.co.jp/company/group/</td></tr>
+<tr><td>公開不動産情報</td><td>2026-03-17</td><td>KDX岩本町ビルは東京都千代田区岩本町3-11-9の賃貸オフィスビルで、6階区画約190.55㎡の募集実績あり</td><td>https://www.chintai-jimusho.com/building/23388/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<p>1. 有報の「リケン工業㈱本社・工場」は、所在地欄自体が東京と秋田の2地点合算であり、CSVの単独東京評価は誤り。</p>
+<p>2. 東京本社の実在住所は <code>東京都千代田区岩本町3丁目11番9号</code> で、公式サイト上も「6階」入居と明記されている。</p>
+<p>3. <code>岩本町3-11-9</code> は公開賃貸オフィス情報でも KDX岩本町ビルとして流通しており、自社単独の敷地保有を示す情報は確認できない。</p>
+<p>4. したがって、有報の土地7,000㎡は東京本社ではなく、実質的に秋田工場側へ帰属させるのが妥当。</p>
+<h4>5. 最終配分面積</h4>
+<ul>
+<li>リケン工業㈱本社(岩本町): 0.0 m2</li>
+<li>リケン工業㈱秋田工場(合算残余): 7,000.0 m2</li>
+</ul>
+<p>計算式:</p>
+<p>```text</p>
+<p>有報合計 7,000.0 - 東京本社 0.0 = 秋田工場残余 7,000.0</p>
+<p>```</p></template></td>
   <td class="right">3.603412</td>
   <td>gaiku</td>
   <td>high</td>
@@ -749,7 +2525,48 @@
   <td class="right">41</td>
   <td>4272</td>
   <td>日本化薬</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="41">📋 調査メモ</button><template id="docs-41"><h3>4272 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 4272</li>
+<li>企業名: 日本化薬株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 32,000 m2</li>
+<li>元住所: 東京都千代田区丸の内1-4-55</li>
+<li>問題点: 丸の内単独地として32,000㎡は過大。2025年3月期有価証券報告書の注記6で「本社の設備には、米沢工場用地24千㎡、151百万円を含む」と明記されており、本社行は丸の内の単独敷地ではない。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025年3月期の設備の状況で「本社（東京都千代田区） 土地32千㎡」。注記6で「米沢工場用地24千㎡、151百万円を含む」と明記。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W41Y.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>会社概要で本社所在地を「東京都千代田区丸の内2-1-1 明治安田生命ビル 19F・20F」と記載。現在の本社は丸の内1-4-55ではなく丸の内2-1-1。</td><td>https://www.nipponkayaku.co.jp/company/outline/</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>沿革で2014年2月10日に本社を「東京都千代田区丸の内2-1-1 明治安田生命ビル」へ移転したと記載。</td><td>https://www.nipponkayaku.co.jp/company/history/</td></tr>
+<tr><td>物件情報</td><td>2026-03-17</td><td>明治安田生命ビルは地上30階、敷地面積11,346.78㎡。本社が19階・20階を使うため、敷地按分の代理値に利用。</td><td>https://office.mec.co.jp/search/detail/010025/</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>米沢浜理薬品工業の米沢工場所在地は「山形県米沢市八幡原2丁目4300番地の18」。日本化薬有報の「米沢工場用地」の現行所在推定の補助資料。</td><td>https://www.hamari.co.jp/company/domesticgroup/yon-pharma/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<p>本社住所は公式サイトと沿革で <code>東京都千代田区丸の内2-1-1</code> に確定できる。一方で、本社行32,000㎡のうち24,000㎡は有報注記で米沢工場用地と明示されており、丸の内単独地として扱うのは誤りである。</p>
+<p>丸の内側は、明治安田生命ビルの敷地面積11,346.78㎡を、日本化薬が利用する2フロア(19F・20F)と地上30フロアで単純按分し、代理値として以下を採用した。</p>
+<p><code>11,346.78 × (2 / 30) = 756.452 ≒ 756.5 (m2)</code></p>
+<p>残余は以下のとおり。</p>
+<p><code>32,000 - 756.5 = 31,243.5 (m2)</code></p>
+<p>この31,243.5㎡のうち、少なくとも24,000㎡は米沢工場用地であることが有報で確定する。残る7,243.5㎡は、開示資料上で個別所在地まで分解できないため、パッチでは <code>東京外合算</code> として扱う。</p>
+<h4>5. 最終配分</h4>
+<ul>
+<li>本社(丸の内): 東京都千代田区丸の内2-1-1, 756.5 m2</li>
+<li>本社(米沢工場用地等・東京外合算): 全国各所, 31,243.5 m2</li>
+</ul>
+<h4>6. 判断</h4>
+<ul>
+<li><code>config/address_patches/4272.yaml</code> では、出力CSVの <code>本社</code> を list 形式に分割した。</li>
+<li>東京評価に使う住所は <code>東京都千代田区丸の内2-1-1</code> のみとし、残余面積は東京外合算へ逃がす。</li>
+<li>米沢工場用地の存在は有報注記で確定。八幡原2丁目4300番地の18は補助ソースから得た現行所在の推定であり、YAML本体では過剰特定を避けて <code>全国各所</code> とした。</li>
+</ul></template></td>
   <td class="right">3.516090</td>
   <td>gaiku</td>
   <td>medium / high</td>
@@ -766,7 +2583,37 @@
   <td class="right">42</td>
   <td>3690</td>
   <td>イルグルム</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="42">📋 調査メモ</button><template id="docs-42"><h3>3690 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 3690</li>
+<li>企業名: イルグルム</li>
+<li>対象事業所: 東京本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 結論</h4>
+<ul>
+<li>分割不可。<code>東京本社</code> 1拠点のみ確認でき、合算名・「他」注記・複数所在地シグナルは見当たらない。</li>
+<li>含み益異常の主因は住所合算ではなく、設備データの解釈誤り。</li>
+<li><code>406.64</code> は土地面積ではなく床面積、<code>44,283</code> は土地簿価ではなく年間賃借料(千円)。</li>
+<li>住所は会社公式の <code>東京都千代田区有楽町2丁目2番1号</code> を採用し、パッチへ登録した。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>会社公式</td><td>2026-03-17</td><td>会社概要で東京本社を「東京都千代田区有楽町2-2-1 X-PRESS有楽町12F」と記載</td><td>https://www.yrglm.co.jp/company/info/</td></tr>
+<tr><td>会社公式リリース</td><td>2026-03-17</td><td>2017-08-04公開リリースでも所在地を「東京都千代田区有楽町2丁目2番1号 X-PRESS有楽町12F」と記載</td><td>https://www.yrglm.co.jp/release/2017/0804-7330/</td></tr>
+<tr><td>有報設備注記</td><td>2026-03-17</td><td>設備の状況で東京本社は「建物(賃借) 406.64㎡」「年間賃借料 44,283千円」で、土地保有ではない</td><td>https://zaimdoc.com/docs/s100uzeg</td></tr>
+<tr><td>有報PDF</td><td>2026-03-17</td><td>出力CSVの参照元PDF。設備の状況由来データを再確認対象とした</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XAFO.pdf</td></tr>
+</tbody></table>
+<h4>4. 判断メモ</h4>
+<ul>
+<li><code>data/cache/facilities_land/3690_sites.json</code> では東京本社のみが抽出されており、複数拠点を示す <code>location_has_hoka</code> も <code>false</code>。</li>
+<li>事前検証でも <code>all_gaiku=true</code>、<code>has_risk=false</code>、<code>bad_pattern_1_risk=false</code>。</li>
+<li>公式サイトと旧リリースで東京本社住所は有楽町2丁目2番1号に一致する一方、出力CSVの <code>丸の内1丁目4番1号</code> は一致しない。</li>
+<li>したがって、本件は土地の分割合算ではなく、設備テーブルの賃借情報が土地データへ誤投影された可能性が高い。</li>
+</ul></template></td>
   <td class="right">3.495789</td>
   <td>gaiku</td>
   <td>high</td>
@@ -783,7 +2630,46 @@
   <td class="right">43</td>
   <td>4631</td>
   <td>ＤＩＣ</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="43">📋 調査メモ</button><template id="docs-43"><h3>4631 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 4631</li>
+<li>企業名: DIC株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 89,000 m2</li>
+<li>元住所: 東京都中央区日本橋1丁目13番1号</li>
+<li>問題点: 日本橋都心部で89,000m2は不自然。2025年3月27日提出の有報では、本社欄に「本社には、本社管轄の工場建設用地、厚生施設、物流施設等が含まれています。」との注記があり、中央区単独地積ではなく合算と判断</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>表紙で本店は東京都板橋区坂下3丁目35番58号、最寄りの連絡場所として本社は東京都中央区日本橋3丁目7番20号。主要な設備の状況では本社土地89千㎡に対し「本社管轄の工場建設用地、厚生施設、物流施設等が含まれています」と注記</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VH8S.pdf</td></tr>
+<tr><td>会社概要</td><td>2026-03-17</td><td>DIC公式の会社概要でも本店は板橋区坂下3丁目35番58号、本社は東京都中央区日本橋3丁目7番20号ディーアイシービル</td><td>https://www.dic-global.com/ja/about/outline.html</td></tr>
+<tr><td>公式サステナビリティ</td><td>2026-03-17</td><td>DIC本社ビルは2015年5月完工、延床面積19,590㎡、地上12階地下4階。都心オフィス本社として89,000㎡全量を日本橋に置く解釈は不自然</td><td>https://www.dic-global.com/ja/csr/environment/co2/2015.html</td></tr>
+<tr><td>公的データ</td><td>2026-03-17</td><td>近傍標準地「中央5-8」(中央区日本橋3丁目11番1) の地積は1,376㎡、日本橋駅南西方330m、高層事務所ビルが建ち並ぶ商業地域</td><td>https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131020508.html</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<p>1. 有報注記により、89,000㎡は中央区日本橋の単独本社地ではなく、本社管轄の複数資産を合算した数値と判断する。</p>
+<p>2. DIC公式サイトと有報表紙から、実務上の本社所在地は東京都中央区日本橋3丁目7番20号ディーアイシービルと確認できる。</p>
+<p>3. 3丁目内の近傍公示地「中央5-8」は、同じ日本橋駅圏の高層事務所ビル敷地で、地積1,376㎡。直接の登記地積は確認できなかったため、この1,376㎡を日本橋本社の代理値として採用する。</p>
+<p>4. 残余は 89,000.0 - 1,376.0 = 87,624.0㎡。有報注記の「工場建設用地、厚生施設、物流施設等」に対応する全国合算残差として扱う。</p>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>区分</th><th>住所</th><th>面積(m2)</th><th>備考</th>
+</tr></thead><tbody>
+<tr><td>本社(日本橋・ディーアイシービル)</td><td>東京都中央区日本橋3丁目7番20号</td><td>1,376.0</td><td>近傍標準地の地積による推定</td></tr>
+<tr><td>本社(本社管轄資産・全国合算)</td><td>全国各所</td><td>87,624.0</td><td>有報総面積から日本橋本社推定地積を控除した残差</td></tr>
+</tbody></table>
+<h4>6. 補足</h4>
+<ul>
+<li>日本橋本社の1,376㎡は推定値であり、登記簿の直接確認ではない。</li>
+<li>したがって、最終的には法務局登記または不動産IDベースの地番照合が取れれば、置き換え余地がある。</li>
+</ul></template></td>
   <td class="right">3.469890</td>
   <td>gaiku</td>
   <td>high</td>
@@ -800,7 +2686,48 @@
   <td class="right">44</td>
   <td>5411</td>
   <td>ＪＦＥホールディングス</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="44">📋 調査メモ</button><template id="docs-44"><h3>5411 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 5411</li>
+<li>企業名: JFEホールディングス株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 142,000.00 m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目3番3号</li>
+<li>問題点: 出力CSVの住所は有報上の土地行と一致せず、2025年有報の 142,000m2 は提出会社本社ではなく主要子会社 JFE商事の「本社」行を拾っている。JFE商事の公式本社所在地は大手町フィナンシャルシティ ノースタワーであり、都心オフィスタワー所在地に 142,000m2 を単独計上するのは不自然。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>JFEホールディングス 2025年3月期有報の「主要な設備の状況」で、主要子会社 JFE商事(株) の <code>本社</code> が <code>東京都千代田区</code>、土地 <code>142</code> 千m2、帳簿価額 <code>2852</code> 百万円と記載。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VZW5.pdf</td></tr>
+<tr><td>会社概要</td><td>2026-03-17</td><td>JFE商事公式会社概要で本社所在地は <code>東京都千代田区大手町1丁目9番5号（大手町フィナンシャルシティ ノースタワー）</code>、国内事業所は <code>20ヵ所</code>。</td><td>https://www.jfe-shoji.co.jp/corporate/profile/</td></tr>
+<tr><td>国内拠点</td><td>2026-03-17</td><td>JFE商事公式ネットワークで本社の番地が <code>大手町1-9-5</code> と明示され、国内各地に支社・支店・営業所・その他拠点が並ぶ。</td><td>https://www.jfe-shoji.co.jp/network/domestic-company/</td></tr>
+<tr><td>建物公式資料</td><td>2026-03-17</td><td>NTTファシリティーズ公式の建築作品ページで、大手町フィナンシャルシティ ノースタワーの建築面積は <code>4,014.70m2</code>、敷地面積は <code>14,108.16m2</code>。</td><td>https://www.ntt-f.co.jp/architect/building/otemachi-financial.html</td></tr>
+</tbody></table>
+<h4>4. 推論式</h4>
+<ul>
+<li>本社(大手町・ノースタワー): 4,014.70 m2</li>
+<li>本社(その他全国合算): 142,000.00 - 4,014.70 = 137,985.30 m2</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>分割後名称</th><th>住所</th><th>面積(m2)</th><th>面積区分</th>
+</tr></thead><tbody>
+<tr><td>本社(大手町・ノースタワー)</td><td>東京都千代田区大手町1丁目9番5号</td><td>4,014.70</td><td>推定。ノースタワー建築面積を上限寄り代理値として採用</td></tr>
+<tr><td>本社(その他全国合算)</td><td>全国各所</td><td>137,985.30</td><td>残差推定</td></tr>
+</tbody></table>
+<h4>6. 判断</h4>
+<ul>
+<li>出力CSVの <code>東京都千代田区丸の内1丁目3番3号</code> は、JFE商事公式本社所在地と一致しないため修正が必要。</li>
+<li>有報の 142,000m2 は JFE商事本社単独の大手町地番ではなく、全国の保有土地を含む合算値とみるのが妥当。これは公式本社所在地が都心オフィスタワーであり、公式建物面積 4,014.70m2 と 35 倍以上乖離するため。</li>
+<li>東京側は <code>東京都千代田区大手町1丁目9番5号</code> に固定し、面積はノースタワー建築面積を保守的な代理値として採用した。</li>
+<li>残差 137,985.30m2 は、JFE商事の国内 20 拠点および不動産等事業を踏まえ、<code>全国各所</code> の合算として分離する。</li>
+</ul></template></td>
   <td class="right">3.409541</td>
   <td>gaiku</td>
   <td>high</td>
@@ -817,7 +2744,48 @@
   <td class="right">45</td>
   <td>6093</td>
   <td>エスクロー・エージェント・ジャパン</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="45">📋 調査メモ</button><template id="docs-45"><h3>6093 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 6093</li>
+<li>企業名: 株式会社エスクロー・エージェント・ジャパン</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>出力CSVの事業所名: 本社</li>
+<li>出力CSVの住所: 東京都千代田区丸の内1丁目4番1号</li>
+<li>出力CSVの土地面積: 952.43 m2</li>
+<li>出力CSVの土地簿価: 77,295,000,000円</li>
+<li>問題点: 合算ではなく、賃借物件の面積と年間賃借料を土地データとして誤読している可能性が高い</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>1頁・84頁で本店所在地を「東京都千代田区大手町二丁目2番1号」と記載</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VUN4.pdf</td></tr>
+<tr><td>有報</td><td>2026-03-17</td><td>24頁で本社・横浜・さいたまの各拠点を別行で記載し、「本社事務所及び事務センターは賃借物件」と明記。952.43は賃借面積、77,295は年間賃借料(千円)</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VUN4.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>会社概要で本社を「東京都千代田区大手町二丁目2番1号 新大手町ビル4階」と掲載</td><td>https://www.ea-j.jp/company/overview.html</td></tr>
+</tbody></table>
+<h4>4. 判定</h4>
+<ul>
+<li>BAD_PATTERN_1 の合算ではない。</li>
+<li>有報の設備表では、本社 952.43 m2、横浜オペレーションセンター 501.88 m2、さいたまオペレーションセンター 244.08 m2 がそれぞれ独立行で記載されている。</li>
+<li>本社住所は丸の内ではなく大手町。丸の内1丁目4番1号は有報99頁の株式事務取扱場所(三井住友信託銀行)であり、本社所在地ではない。</li>
+<li>出力CSVの過大な時価総額比は、分割不足ではなく、賃借面積/年間賃借料を土地面積/土地簿価として採用していることが主因。</li>
+</ul>
+<h4>5. パッチ方針</h4>
+<ul>
+<li>address patch は本社住所のみ補正する。</li>
+<li>ビル名は除外し、gaiku 解決可能な住所として以下を採用する。</li>
+<li>東京都千代田区大手町2丁目2番1号</li>
+</ul>
+<h4>6. 補足</h4>
+<ul>
+<li>ローカル geocoder で <code>東京都千代田区大手町2丁目2番1号</code> は <code>gaiku</code> 解決を確認済み。</li>
+<li>この案件は address split では是正しきれず、賃借物件の誤抽出と単位解釈の修正が別途必要。</li>
+</ul></template></td>
   <td class="right">3.388062</td>
   <td>gaiku</td>
   <td>high</td>
@@ -834,7 +2802,67 @@
   <td class="right">46</td>
   <td>3494</td>
   <td>マリオン</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="46">📋 調査メモ</button><template id="docs-46"><h3>3494 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 3494</li>
+<li>企業名: 株式会社マリオン</li>
+<li>更新日: 2026-03-17</li>
+<li>主対象事業所:</li>
+<li>門前仲町弐番館他20棟</li>
+<li>マリオン浅草雷門他2棟</li>
+</ul>
+<h4>2. 元データ</h4>
+<table class="md-table"><thead><tr>
+<th>事業所名</th><th>元住所</th><th>元の土地面積</th><th>問題点</th>
+</tr></thead><tbody>
+<tr><td>門前仲町弐番館他20棟</td><td>東京都江東区永代2-32-3</td><td>5,384.21 m2</td><td>有報が「東京都江東区 他」としており、1地点集中評価は不適切</td></tr>
+<tr><td>マリオン浅草雷門他2棟</td><td>東京都台東区雷門2-15-2</td><td>489.52 m2</td><td>有報が「東京都台東区 他」としており、雷門1地点集中評価は不適切</td></tr>
+</tbody></table>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025-09-30 時点の主要設備として「門前仲町弐番館他20棟 5,384.21m2」「マリオン浅草雷門他2棟 489.52m2」を掲載。所在地はそれぞれ「東京都江東区 他」「東京都台東区 他」</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XAPZ.pdf</td></tr>
+<tr><td>会社公式</td><td>2026-03-17</td><td>本店所在地は東京都新宿区富久町9番11号</td><td>https://www.mullion.co.jp/mb/company/access.html</td></tr>
+<tr><td>i-Bond公式</td><td>2026-03-17</td><td>「門前仲町レジデンス弐番館」の所在地を東京都江東区永代二丁目32番3号、地積を331.07m2と明記</td><td>https://www.i-bond.jp/products/13/</td></tr>
+<tr><td>物件DB</td><td>2026-03-17</td><td>「マリオン田端」の所在地を東京都荒川区西尾久4-6-10と掲載</td><td>https://www.chintai.net/detail/bk-C010098810000000001094240001/</td></tr>
+<tr><td>物件DB</td><td>2026-03-17</td><td>「マリオン浅草雷門」の所在地を東京都台東区雷門2-15-2と掲載</td><td>https://www.canary-app.jp/chintai/buildings/ef3f1bd2-b8bc-4a56-b76f-f4af15403a3f/</td></tr>
+<tr><td>公示地価標準地</td><td>2026-03-17</td><td>近傍公示地価標準地 13106-005-043 は東京都台東区雷門1丁目27番1、地積329m2。雷門2-15-2の近傍代理値に採用</td><td>https://www.reinfolib.mlit.go.jp/</td></tr>
+</tbody></table>
+<h4>4. 配分ロジック</h4>
+<h5>4.1 門前仲町弐番館他20棟</h5>
+<ul>
+<li>代表物件: 門前仲町レジデンス弐番館</li>
+<li>代表物件住所: 東京都江東区永代2丁目32番3号</li>
+<li>代表物件地積: 331.07 m2</li>
+<li>残余面積: 5,384.21 - 331.07 = 5,053.14 m2</li>
+<li>判断:</li>
+<li>有報自体が「江東区 他」としており、永代2丁目1点へ 5,384.21m2 全量を載せるのは過大評価</li>
+<li>公式に地積が確認できた門前仲町レジデンス弐番館のみ個別切り出し</li>
+<li>残り20棟は <code>東京都他</code> として残余面積へ退避</li>
+</ul>
+<h5>4.2 マリオン浅草雷門他2棟</h5>
+<ul>
+<li>代表物件: マリオン浅草雷門</li>
+<li>代表物件住所: 東京都台東区雷門2丁目15番2号</li>
+<li>代表物件地積: 329.00 m2</li>
+<li>地積根拠:</li>
+<li>代表物件の正確な地積は公開確認できず</li>
+<li>近傍公示地価標準地 13106-005-043</li>
+<li>所在地: 東京都台東区雷門1丁目27番1</li>
+<li>地積: 329 m2</li>
+<li>物件住所から約75mの近傍で、同じ雷門商業地の代理値として採用</li>
+<li>残余面積: 489.52 - 329.00 = 160.52 m2</li>
+<li>判断:</li>
+<li>有報が「台東区 他」としているため雷門2丁目1点集中は不可</li>
+<li>代表物件のみ雷門2丁目へ寄せ、残り2棟は <code>東京都他</code> に逃がす</li>
+</ul>
+<h4>5. 補足</h4>
+<ul>
+<li><code>寿3丁目倉庫</code> は外部公開ソースで号レベルの確認ができず、公開駐車場情報が集中する <code>東京都台東区寿3丁目14番</code> を gaiku 候補として採用した</li>
+<li>これは <code>建物及び構築物 0</code> の有報記載とは整合するが、番地精度は他4件より弱い</li>
+</ul></template></td>
   <td class="right">3.382600</td>
   <td>gaiku / oaza_chome</td>
   <td>high</td>
@@ -851,7 +2879,57 @@
   <td class="right">47</td>
   <td>9025</td>
   <td>鴻池運輸</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="47">📋 調査メモ</button><template id="docs-47"><h3>9025 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9025</li>
+<li>企業名: 鴻池運輸</li>
+<li>対象事業所: 関東・北日本支店、東日本支店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>関東・北日本支店: 土地面積 133,483㎡、元住所 東京都中央区晴海1丁目8番12号</li>
+<li>東日本支店: 土地面積 174,431㎡、元住所 東京都中央区晴海1丁目8番12号</li>
+<li>問題点:</li>
+<li><code>data/cache/facilities_land/9025_sites.json</code> では両支店とも <code>location_has_hoka: true</code></li>
+<li><code>location_short</code> はどちらも <code>東京都中央区</code></li>
+<li>両支店とも 10万㎡超の土地を中央区一点へ載せており、BAD_PATTERN_1 の典型</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>公式拠点ページ</td><td>2026-03-17</td><td>関東・北日本支店の所在地は <code>東京都中央区銀座6-10-1 GINZA SIX 7F</code>。同ページに北海道・新潟・茨城など多数の非都心拠点が並び、中央区一点保有ではない</td><td>https://www.konoike.net/company/network/kanto-kitanihon/</td></tr>
+<tr><td>公式拠点ページ</td><td>2026-03-17</td><td>東日本支店の所在地も <code>東京都中央区銀座6-10-1 GINZA SIX 7F</code>。同ページに東京都府中市・稲城市に加え山梨・長野など多数拠点が並び、中央区一点保有ではない</td><td>https://www.konoike.net/company/network/higashi-nihon/</td></tr>
+<tr><td>参考記事</td><td>2026-03-17</td><td>鴻池運輸は 2017-02-13 に銀座6丁目 <code>GINZA SIX</code> 7階へ移転。再開発前は同地区に <code>銀座鴻池ビル</code> を所有していた</td><td>https://www.lnews.jp/2016/11/i110115.html</td></tr>
+<tr><td>公示地価データ再掲</td><td>2026-03-17</td><td><code>中央5-2</code>（東京都中央区銀座6丁目4番13外）の地積は 260㎡。銀座6-10-1 近傍の商業地の代理地積として利用可能</td><td>https://www.livable.co.jp/baikyaku/tochi/chika/line-tokyo/s2341110/</td></tr>
+<tr><td>有報</td><td>2026-03-17</td><td>2025年3月期有価証券報告書で両支店の所在地は <code>東京都中央区</code>、土地面積はそれぞれ 133,483㎡ / 174,431㎡</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W21M.pdf</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<p>1. 有報上の <code>東京都中央区</code> は両支店の統括住所であり、公式拠点ページでは両支店とも同一の銀座住所を共有しながら、実際の管轄拠点は広域に分散している。</p>
+<p>2. したがって、元CSVの <code>東京都中央区晴海1丁目8番12号</code> に全量を乗せるのは不適切で、銀座の統括拠点分と全国分を切り分ける必要がある。</p>
+<p>3. 銀座側の <code>area_m2</code> は直接の登記地積を確認できなかったため、近傍公示地価標準地 <code>中央5-2</code> の地積 260㎡を代理値として採用した。</p>
+<p>4. 両支店は同一の <code>銀座6-10-1 GINZA SIX 7F</code> を共有しているため、260㎡を均等按分し、各支店の東京側を 130㎡とした。</p>
+<h4>5. 最終配分面積</h4>
+<h5>関東・北日本支店</h5>
+<ul>
+<li>銀座統括拠点: 130.0㎡</li>
+<li>全国各所: 133,353.0㎡</li>
+<li>合計: 133,483.0㎡</li>
+</ul>
+<h5>東日本支店</h5>
+<ul>
+<li>銀座統括拠点: 130.0㎡</li>
+<li>全国各所: 174,301.0㎡</li>
+<li>合計: 174,431.0㎡</li>
+</ul>
+<h4>6. 判断</h4>
+<ul>
+<li><code>config/address_patches/9025.yaml</code> では、両支店とも <code>東京都中央区銀座6丁目10番1号</code> を東京側の gaiku 住所として登録する。</li>
+<li>残余面積は <code>全国各所</code> に切り出し、中央区一点評価による過大推定を止める。</li>
+<li><code>_facilities_text.txt</code> はワークスペース上で確認できなかったため、今回は <code>_sites.json</code>、有報PDF、公式拠点ページを主根拠とした。</li>
+</ul></template></td>
   <td class="right">3.330549</td>
   <td>gaiku</td>
   <td>medium</td>
@@ -868,7 +2946,44 @@
   <td class="right">48</td>
   <td>8158</td>
   <td>ソーダニッカ</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="48">📋 調査メモ</button><template id="docs-48"><h3>8158 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 8158</li>
+<li>企業名: ソーダニッカ株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 8,542 m2</li>
+<li>元住所: 東京都中央区日本橋3丁目6番2号</li>
+<li>問題点: 日本橋都心立地として面積が大きく、分割余地があるか要確認</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有価証券報告書</td><td>2026-03-17</td><td>EDINET上の主要設備は <code>本社 東京都中央区</code> 1件で、土地面積は 8,542m2。注記では「本社には国内連結子会社に貸与中の建物を含む」とあるが、「他」「及び」等の合算表記はない。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VYTW.pdf</td></tr>
+<tr><td>公式拠点一覧</td><td>2026-03-17</td><td>公式サイトの国内事業所一覧で、本社は <code>東京都中央区日本橋3-6-2 日本橋フロント5階</code>。東京側の提出会社拠点は本社のみ。</td><td>https://www.sodanikka.co.jp/company/office.html</td></tr>
+<tr><td>公式本社ページ</td><td>2026-03-17</td><td>本社所在地は <code>東京都中央区日本橋3-6-2 日本橋フロント5階</code>。</td><td>https://www.sodanikka.co.jp/company/head_office.html</td></tr>
+<tr><td>公式子会社ページ</td><td>2026-03-17</td><td>国内子会社 <code>ソーダニッカビジネスサポート株式会社</code> と <code>モリス株式会社</code> も同じ <code>日本橋フロント5階</code>。別地番への分割根拠にはならず、同一ビル内利用を示す。</td><td>https://www.sodanikka.co.jp/company/business_support.html</td></tr>
+<tr><td>建物一次資料</td><td>2026-03-17</td><td>同一建物 <code>日本橋フロント</code> の敷地面積は 2,652.87m2、延床面積は 29,265.34m2。建物全体の敷地面積が 8,542m2 を下回るため、EDINETの 8,542m2 は単純な本社所在地の敷地地積では説明できない。</td><td>https://www.kose.co.jp/jp/ja/ir/common_ir/pdf/news/20080807.pdf</td></tr>
+<tr><td>建築資料</td><td>2026-03-17</td><td><code>日本橋フロント</code> は東急不動産・TAKプロパティを建築主とする「都心型中層貸事務所ビル」で、敷地面積は 2,652.87m2。</td><td>https://www.takenaka.co.jp/design/takenaka_design_works/007/book/pageindices/index20.html</td></tr>
+</tbody></table>
+<h4>4. 判定</h4>
+<ul>
+<li>判定: 分割不可</li>
+<li>理由: 有報・公式拠点一覧ともに提出会社の東京拠点は <code>本社</code> のみで、合算名や複数所在地シグナルがない。</li>
+<li>理由: <code>日本橋フロント</code> 自体の敷地面積が 2,652.87m2 であり、EDINET の 8,542m2 は住所分割で説明できる数字ではない。</li>
+<li>理由: よって本件の異常値は「本社他」のような住所集約ではなく、面積解釈または有報抽出単位の問題である可能性が高い。</li>
+</ul>
+<h4>5. 結論</h4>
+<ul>
+<li><code>config/address_patches/8158.yaml</code> には本社住所をそのまま登録する。</li>
+<li>address patch で評価額を下げる根拠は確認できなかった。</li>
+<li>この銘柄の過大評価修正が必要なら、住所分割ではなく <code>area_m2=8,542</code> の由来を別系統で再検証する必要がある。</li>
+</ul></template></td>
   <td class="right">3.325670</td>
   <td>gaiku</td>
   <td>high</td>
@@ -885,7 +3000,57 @@
   <td class="right">49</td>
   <td>9672</td>
   <td>東京都競馬</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="49">📋 調査メモ</button><template id="docs-49"><h3>9672 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9672</li>
+<li>企業名: 東京都競馬株式会社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データと論点</h4>
+<ul>
+<li>有報の土地一覧では <code>大井競馬場</code> <code>勝島第1地区倉庫</code> <code>勝島第2地区倉庫</code> <code>勝島流通・配送センター</code> <code>ウィラ大井2号館・劇場</code> がいずれも品川区内にあり、出力CSVでは複数拠点が <code>東京都品川区勝島2丁目1番2</code> に寄っていた。</li>
+<li><code>平和島倉庫</code> も出力CSVでは <code>東京都大田区大森北1丁目6番8号</code> となっていたが、これは本社ビル所在地で、倉庫所在地としては不整合。</li>
+<li>主な補正目的は、競馬場住所に吸着していた倉庫群を実番地へ戻し、都心高地価での過大評価を外すこと。</li>
+</ul>
+<h4>3. 調査結果</h4>
+<table class="md-table"><thead><tr>
+<th>事業所名</th><th>パッチ住所</th><th>判断</th><th>根拠</th>
+</tr></thead><tbody>
+<tr><td>大井競馬場</td><td>東京都品川区勝島2丁目1番2号</td><td>確認済み</td><td>TCK公式 <code>TCKについて</code> に <code>〒140-0012 東京都品川区勝島2-1-2</code></td></tr>
+<tr><td>東京サマーランド</td><td>東京都あきる野市上代継600番地</td><td>確認済み</td><td>東京サマーランド公式 <code>会社概要・沿革</code> の <code>東京都あきる野市上代継白岩600番地</code> を、gaiku 解像度を通すため <code>東京都あきる野市上代継600番地</code> に正規化</td></tr>
+<tr><td>勝島第1地区倉庫</td><td>東京都品川区勝島1丁目4番3号</td><td>分割修正</td><td>東京倉庫公式 <code>取扱い物件情報</code> に <code>勝島第1地区倉庫 所在地 東京都品川区勝島1-4-3</code></td></tr>
+<tr><td>勝島第2地区倉庫</td><td>東京都品川区勝島1丁目4番11号</td><td>分割修正</td><td>東京倉庫公式 <code>取扱い物件情報</code> に <code>勝島第2地区倉庫 所在地 東京都品川区勝島1-4-11</code></td></tr>
+<tr><td>勝島流通・配送センター</td><td>東京都品川区勝島1丁目1番1号</td><td>分割修正</td><td>株主総会招集通知の主要事業所に <code>勝島第3地区勝島流通・配送センター</code>、東京倉庫公式 <code>取扱い物件情報</code> に <code>勝島第3地区倉庫 所在地 東京都品川区勝島1-1-1</code></td></tr>
+<tr><td>平和島倉庫</td><td>東京都大田区平和島1丁目2番20号</td><td>代表地採用</td><td>東京倉庫公式 <code>取扱い物件情報</code> に <code>平和島地区倉庫 ①大田区平和島1-2-20 ②大田区平和島1-2-30</code>。有報は単一行・面積内訳なしのため按分せず先頭番地を採用</td></tr>
+<tr><td>ウィラ大井2号館・劇場</td><td>東京都品川区勝島1丁目6番22号</td><td>代表地採用</td><td>WIRA大井公式 <code>ようこそウィラ大井へ</code> に <code>ウィラ大井2 所在地 東京都品川区勝島一丁目6番22号</code>。隣接する <code>シアターH</code> は公式サイトで <code>勝島1丁目6番29号</code> だが、有報の 5,000㎡ はウィラ大井2の敷地約5,628㎡に近く、無理な按分は行わず代表地採用</td></tr>
+</tbody></table>
+<h4>4. 採用したソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>公式</td><td>2026-03-17</td><td>大井競馬場の所在地</td><td>https://www.tokyocitykeiba.com/guide/about_tck/</td></tr>
+<tr><td>公式</td><td>2026-03-17</td><td>東京サマーランド本社・施設所在地</td><td>https://www.summerland.co.jp/corporate/outline/</td></tr>
+<tr><td>公式</td><td>2026-03-17</td><td>勝島第1地区・第2地区・第3地区・平和島地区倉庫の所在地</td><td>https://www.tokyosouko.co.jp/estate</td></tr>
+<tr><td>公式相当IR</td><td>2026-03-17</td><td><code>勝島第3地区勝島流通・配送センター</code>、<code>ウィラ大井・ウィラ大井2号館</code> の名称対応</td><td>https://fs2.magicalir.net/tdnet/2025/9672/20250228584670.pdf</td></tr>
+<tr><td>公式</td><td>2026-03-17</td><td>ウィラ大井2号館の所在地・敷地面積</td><td>https://wira-ooi.jp/welcome_wiraooi/</td></tr>
+<tr><td>公式</td><td>2026-03-17</td><td>シアターHの所在地</td><td>https://theater-h.jp/2023/11/new-theater-theaterh-opened/</td></tr>
+</tbody></table>
+<h4>5. ジオコード確認</h4>
+<ul>
+<li><code>東京都品川区勝島2丁目1番2号</code> → <code>gaiku</code></li>
+<li><code>東京都あきる野市上代継600番地</code> → <code>gaiku</code></li>
+<li><code>東京都品川区勝島1丁目4番3号</code> → <code>gaiku</code></li>
+<li><code>東京都品川区勝島1丁目4番11号</code> → <code>gaiku</code></li>
+<li><code>東京都品川区勝島1丁目1番1号</code> → <code>gaiku</code></li>
+<li><code>東京都大田区平和島1丁目2番20号</code> → <code>gaiku</code></li>
+<li><code>東京都品川区勝島1丁目6番22号</code> → <code>gaiku</code></li>
+</ul>
+<h4>6. 面積按分</h4>
+<ul>
+<li>今回は <code>area_m2</code> の按分推定は未実施。</li>
+<li>理由: 有報の対象行はいずれも単独行で、公開ソースから安全に按分できる地積内訳が得られなかったため。</li>
+</ul></template></td>
   <td class="right">3.317691</td>
   <td>gaiku / muni_centroid</td>
   <td>medium / high</td>
@@ -902,7 +3067,43 @@
   <td class="right">50</td>
   <td>3105</td>
   <td>日清紡 HD</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="50">📋 調査メモ</button><template id="docs-50"><h3>3105 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 3105</li>
+<li>企業名: 日清紡ホールディングス株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 376,000 m2</li>
+<li>元住所: 東京都中央区日本橋人形町2丁目31番11号</li>
+<li>問題点: 中央区人形町の本社単独地としては面積が過大。2024年有価証券報告書では本社行が「賃貸用不動産・本社ビル他」と記載され、注記で「連結子会社等に対する賃貸用不動産及び本社ビル等」と説明されている。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2024年12月期の設備の状況で「本社（東京都中央区） 賃貸用不動産・本社ビル他 土地 376千㎡」。同注記で「連結子会社等に対する賃貸用不動産及び本社ビル等」と明記。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VGXL.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>本店所在地は東京都中央区日本橋人形町2丁目31番11号。主要拠点として土気出張所・藤枝出張所・徳島出張所も掲載され、持株会社が東京以外の拠点を保有している。</td><td>https://www.nisshinbo.co.jp/profile/outline/group.html</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>不動産事業の説明で、グループ保有の「日本各地の遊休地・施設」を賃貸・再開発に活用していると記載。</td><td>https://www.nisshinbo.co.jp/field/estate.html</td></tr>
+<tr><td>公示地価</td><td>2026-03-17</td><td>本社最寄りの標準地「東京都中央区日本橋人形町2丁目21番10」の地積は147㎡。本社敷地の近傍代理値として採用。</td><td>https://www.land.mlit.go.jp/landPrice/AriaServlet?MOD=0&amp;TYP=0</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<p>本社住所そのものは公式サイト・法人登記系情報と整合し、番地レベルで確定できる。一方で 376,000 m2 は都心本社単独では説明不能であり、有報注記どおり全国の賃貸用不動産を含む合算値と判断する。</p>
+<p>東京側の評価対象は本社所在地のみとし、地積は近傍標準地の147㎡を代理値として採用した。残余は以下で算出した。</p>
+<p><code>376,000 - 147 = 375,853 (m2)</code></p>
+<h4>5. 最終配分</h4>
+<ul>
+<li>本社: 東京都中央区日本橋人形町2丁目31番11号, 147.0 m2</li>
+<li>賃貸用不動産・本社ビル他(東京外合算): 全国各所, 375,853.0 m2</li>
+</ul>
+<h4>6. 判断</h4>
+<ul>
+<li><code>config/address_patches/3105.yaml</code> では、出力CSVの <code>本社</code> キーを list 形式に分割する。</li>
+<li>東京評価に使う住所は本社所在地のみとし、残余面積は全国賃貸用不動産の合算として切り離す。</li>
+</ul></template></td>
   <td class="right">3.256688</td>
   <td>gaiku</td>
   <td>high</td>
@@ -919,7 +3120,46 @@
   <td class="right">51</td>
   <td>9433</td>
   <td>ＫＤＤＩ</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="51">📋 調査メモ</button><template id="docs-51"><h3>9433 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9433</li>
+<li>企業名: KDDI株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 4,333,213.00 m2</li>
+<li>元住所: 東京都新宿区西新宿2丁目3番2号</li>
+<li>問題点: 有報の設備表が <code>Headquarters (Shinjuku, Tokyo) others</code> となっており、本社単独ではなく「本社+その他」の合算。新宿都心立地で 433万m2 は不自然。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>KDDI の設備表に <code>Headquarters (Shinjuku, Tokyo) others</code>、土地面積 4,333,213m2 と記載。新宿本社単独ではなく others を含む合算行。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VXGZ.pdf</td></tr>
+<tr><td>会社概要</td><td>2026-03-17</td><td>KDDI 公式会社概要で本店所在地は <code>東京都新宿区西新宿2丁目3番2号</code>。</td><td>https://www.kddi.com/corporate/summary/</td></tr>
+<tr><td>IR/公表資料</td><td>2026-03-17</td><td>KDDI 公式リリース「Securitization of office buildings」に KDDI Building の土地面積 <code>10,675.51 square meters</code> と記載。西新宿本社の実面積根拠として採用。</td><td>https://newsroom.kddi.com/english/newsrelease/kddi/2001/06/21/166.html</td></tr>
+</tbody></table>
+<h4>4. 推論式</h4>
+<ul>
+<li>本社(西新宿・KDDIビル): 10,675.51 m2</li>
+<li>本社(その他全国合算): 4,333,213.00 - 10,675.51 = 4,322,537.49 m2</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>分割後名称</th><th>住所</th><th>面積(m2)</th><th>面積区分</th>
+</tr></thead><tbody>
+<tr><td>本社(西新宿・KDDIビル)</td><td>東京都新宿区西新宿2丁目3番2号</td><td>10,675.51</td><td>実測根拠あり</td></tr>
+<tr><td>本社(その他全国合算)</td><td>全国各所</td><td>4,322,537.49</td><td>残差推定</td></tr>
+</tbody></table>
+<h4>6. 判断</h4>
+<ul>
+<li>9433 の <code>本社</code> 4,333,213m2 は、本社単独資産ではなく有報上の <code>others</code> を含む合算。</li>
+<li>東京側は西新宿本店所在地へ番地レベルで固定し、面積は KDDI ビルの公式公表値 10,675.51m2 を採用。</li>
+<li>残差 4,322,537.49m2 は全国各所の通信設備・その他土地の合算として <code>全国各所</code> に逃がす。</li>
+</ul></template></td>
   <td class="right">3.127701</td>
   <td>gaiku</td>
   <td>high</td>
@@ -936,7 +3176,48 @@
   <td class="right">52</td>
   <td>5199</td>
   <td>不二ラテックス</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="52">📋 調査メモ</button><template id="docs-52"><h3>5199 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 5199</li>
+<li>企業名: 不二ラテックス</li>
+<li>対象事業所: 本社ビル</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>出力CSV記載住所: 東京都千代田区丸の内1丁目4番1号</li>
+<li>出力CSV記載土地面積: 261.0 m2</li>
+<li>出力CSV記載推定土地時価: 8,077,520,916円</li>
+<li>問題点: 面積261m2で「本社ビル」単独行のため BAD_PATTERN_1 の合算条件には当たらないが、会社公式情報と住所が一致しない</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>会社公式サイト</td><td>2026-03-17</td><td>会社概要ページで本社所在地を「東京都千代田区神田錦町3-19-1」と明記。工場紹介でも新栃木工場・栃木千塚工場・真岡工場を別拠点として掲載</td><td>https://www.fujilatex.co.jp/company/</td></tr>
+<tr><td>株主通信（公式PDF）</td><td>2026-03-17</td><td>第77期株主通信（対象期間 2024-04-01〜2025-03-31）の表紙に「東京都千代田区神田錦町3-19-1」と記載。本文でも栃木工場・真岡工場を栃木千塚工場へ集約したと説明</td><td>https://www.fujilatex.co.jp/wp/wp-content/uploads/2025/06/%E7%AC%AC77%E6%9C%9F%E6%A0%AA%E4%B8%BB%E9%80%9A%E4%BF%A1.pdf</td></tr>
+</tbody></table>
+<h4>4. 判定</h4>
+<ul>
+<li>BAD_PATTERN_1 該当なし</li>
+<li>理由1: <code>data/cache/facilities_land/5199_sites.json</code> では東京資産は「本社ビル 261m2」のみで、栃木工場・真岡工場・新栃木工場・栃木千塚工場は別行</li>
+<li>理由2: 事業所名に「他」「及び」等がなく、事前検証でも <code>all_gaiku=true</code>, <code>has_risk=false</code></li>
+<li>理由3: 会社公式情報では本社は神田錦町で一貫しており、丸の内は本社所在地として確認できない</li>
+</ul>
+<h4>5. 価格影響の確認</h4>
+<ul>
+<li>ローカルの2025年地価データを用いて、出力CSVと同じ <code>idw(k=3,p=3)+landuse_match</code> に近い簡易再計算を実施</li>
+<li>丸の内1丁目4番1号ベース: 約30,930,526円/m2, 261m2で約80.7億円</li>
+<li>神田錦町3丁目19番1号ベース: 約13,287,085円/m2, 261m2で約34.7億円</li>
+<li>差額は約46.0億円。含み益過大の主因は「都心高値地点への合算」ではなく「本社住所が丸の内に誤着地していること」と判断</li>
+</ul>
+<h4>6. 結論</h4>
+<ul>
+<li>分割は不要</li>
+<li>修正すべき内容は本社ビルの住所のみ</li>
+<li>パッチでは <code>本社ビル: 東京都千代田区神田錦町3丁目19番1号</code> を登録する</li>
+</ul></template></td>
   <td class="right">3.106739</td>
   <td>gaiku</td>
   <td>high</td>
@@ -953,7 +3234,42 @@
   <td class="right">53</td>
   <td>1793</td>
   <td>大本組</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="53">📋 調査メモ</button><template id="docs-53"><h3>1793 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 1793</li>
+<li>企業名: 大本組</li>
+<li>対象事業所: 東京本社 / 東京支店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積</li>
+<li>東京本社: 936.0 m2</li>
+<li>東京支店: 9,956.0 m2</li>
+<li>元住所: 東京都港区南青山5-9-15</li>
+<li>問題点: 東京支店 9,956m2 を港区南青山5丁目9番15号にそのまま載せると、都心の単一敷地としては不自然</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>会社公式</td><td>2026-03-17</td><td>「事業所」ページで東京本社・東京支店ともに東京都港区南青山5丁目9番15号 青山OHMOTOビル</td><td>https://www.ohmoto.co.jp/gaiyou_page/jigyosho.html</td></tr>
+<tr><td>有報</td><td>2026-03-17</td><td>第88期有価証券報告書の設備の状況で東京本社の土地面積936m2、東京支店の土地面積9,956m2を確認</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4G9.pdf</td></tr>
+<tr><td>建物環境認証</td><td>2026-03-17</td><td>青山OHMOTOビルのCASBEE認証PDFで敷地面積669.08m2を確認</td><td>https://www.ibecs.or.jp/CASBEE/certified_buld/details/BVJ-KAM15-0016-CAS-NC.pdf</td></tr>
+</tbody></table>
+<h4>4. 判断</h4>
+<ul>
+<li>東京本社と東京支店の事務所住所は、会社公式サイト上どちらも東京都港区南青山5丁目9番15号で一致する。</li>
+<li>一方で、青山OHMOTOビルの敷地面積は669.08m2であり、東京支店の有報土地面積9,956m2とは大きく乖離する。</li>
+<li>したがって、東京支店 9,956m2 は南青山5丁目9番15号の単一敷地ではなく、東京支店管轄の別資産を含む集計値である可能性が高い。</li>
+<li>ただし、公開情報からは別資産の個別所在地・地積内訳を特定できず、根拠ある住所分割までは到達できない。</li>
+</ul>
+<h4>5. 結論</h4>
+<ul>
+<li>パッチには、番地レベルで確認できた事務所住所のみ登録する。</li>
+<li>東京支店 9,956m2 の内訳住所は、登記・固定資産注記・IR補足資料など追加一次資料がない限り安全に分割できない。</li>
+</ul></template></td>
   <td class="right">3.077121</td>
   <td>gaiku</td>
   <td>medium</td>
@@ -970,7 +3286,48 @@
   <td class="right">54</td>
   <td>8059</td>
   <td>第一実業</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="54">📋 調査メモ</button><template id="docs-54"><h3>8059 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 8059</li>
+<li>企業名: 第一実業株式会社</li>
+<li>対象事業所: 本社管轄</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 11,100 m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目1番2号</li>
+<li>有報上の所在地表記: 東京都千代田区他</li>
+<li>問題点: 都心1地点に11,100m2を載せるのは不自然。<code>_sites.json</code> でも <code>location_has_hoka=true</code> で、設備注記には賃貸用資産・太陽光発電事業資産・ESCO事業資産を含む旨があるため、本社直轄の複数資産集約と判断</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>設備表に「本社管轄」「東京都千代田区他」「土地 11,100m2」「帳簿価額 527百万円」。注記に「その他には、賃貸用資産、太陽光発電事業資産及びESCO事業資産を含む」とある</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W0GD.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>本社所在地は東京都千代田区神田駿河台4丁目6番地（御茶ノ水ソラシティ17階）</td><td>https://www.djk.co.jp/company/outline/</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>第一実業ベリーズファームは埼玉県入間郡毛呂山町旭台15番地。施設紹介に太陽光ハウス栽培面積15aの記載あり</td><td>https://djkberrys.djk.co.jp/company/</td></tr>
+<tr><td>公的データ</td><td>2026-03-17</td><td>本社近傍の標準地「千代田5-26」は千代田区神田駿河台2丁目1番47、地積438m2</td><td>https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131010526.html</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<ul>
+<li><code>本社管轄</code> は単一の丸の内資産ではなく、本社直轄の複数資産集約とみなす。</li>
+<li>東京側の代表住所は、有報期末時点の公式本社所在地である <code>東京都千代田区神田駿河台4丁目6番地</code> を採用する。</li>
+<li>有報注記が非オフィス資産の混在を示しており、公式サイト上も親会社運営の非東京拠点 <code>第一実業ベリーズファーム</code> が確認できるため、残余は <code>全国各所</code> の非東京資産として切り出す。</li>
+</ul>
+<h4>5. 面積配分</h4>
+<ul>
+<li>東京代表地: 438.0 m2</li>
+<li>非東京残余: 10,662.0 m2</li>
+<li>推論式: 11,100.0 - 438.0 = 10,662.0</li>
+</ul>
+<h4>6. 最終判断</h4>
+<ul>
+<li>YAMLでは <code>本社管轄</code> を list 形式に分割する。</li>
+<li>東京側は <code>東京都千代田区神田駿河台4丁目6番地</code>、面積は近傍標準地代理値 438m2 を採用する。</li>
+<li>非東京側は <code>全国各所</code>、面積は残余 10,662m2 を配分する。</li>
+</ul></template></td>
   <td class="right">3.074390</td>
   <td>gaiku</td>
   <td>high</td>
@@ -987,7 +3344,56 @@
   <td class="right">55</td>
   <td>6497</td>
   <td>ハマイ</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="55">📋 調査メモ</button><template id="docs-55"><h3>6497 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 6497</li>
+<li>企業名: ハマイ</li>
+<li>対象事業所: 府中工場 / 賃貸不動産</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積:</li>
+<li>府中工場 2,726.96 m2</li>
+<li>賃貸不動産 1,828.06 m2</li>
+<li>賃貸不動産 17,856.60 m2</li>
+<li>元住所:</li>
+<li>府中工場: 東京都府中市宮町1丁目40番10</li>
+<li>賃貸不動産: 東京都品川区西五反田7丁目7番7号</li>
+<li>賃貸不動産: 東京都府中市宮町1丁目40番10</li>
+<li>問題点:</li>
+<li>公式サイト上の府中工場所在地は <code>東京都府中市西原町1-3</code> で、CSV の <code>宮町1-40-10</code> と不一致。</li>
+<li>有報の賃貸不動産は <code>東京都品川区 1,828.06m2</code> と <code>東京都府中市その他の地域 17,856.60m2</code> に分かれており、府中側を駅前商業地の <code>宮町1-40-10</code> に当てるのは不自然。</li>
+<li>有報には別途 <code>八王子市東中野 441.94m2</code> もあるが、今回の出力CSVには載っていないためパッチ対象からは外した。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>会社概要で本社所在地が <code>東京都品川区西五反田7-7-7 SGスクエア2F</code> と確認できる。</td><td>https://www.hamai-net.com/company/outline/</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>事業拠点で府中工場所在地が <code>東京都府中市西原町1-3</code> と確認できる。</td><td>https://www.hamai-net.com/company/network/</td></tr>
+<tr><td>有報</td><td>2026-03-17</td><td>第93期有価証券報告書の設備の状況で、賃貸不動産は <code>東京都品川区 1,828.06m2</code> と <code>東京都府中市その他の地域 17,856.60m2</code> に分かれている。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VD81.pdf</td></tr>
+<tr><td>補助資料</td><td>2026-03-17</td><td>賃貸物件 <code>ハイム・ハマキ</code> の所在地が <code>東京都府中市分梅町1-16-15</code> と確認でき、府中側賃貸不動産の代表点候補として整合する。</td><td>https://suumo.jp/chintai/jnc_000098491792/</td></tr>
+</tbody></table>
+<h4>4. 判断</h4>
+<ul>
+<li><code>府中工場</code> は公式拠点住所に修正し、<code>東京都府中市西原町1丁目3番</code> を採用した。</li>
+<li><code>賃貸不動産 1,828.06m2</code> は本社所在地と一致するため、<code>東京都品川区西五反田7丁目7番7号</code> を採用した。</li>
+<li><code>賃貸不動産 17,856.60m2</code> は有報上 <code>東京都府中市その他の地域</code> であり、現CSVの <code>宮町1-40-10</code> は誤割当と判断した。</li>
+<li>府中側は Web 上で確認できた賃貸住宅 <code>ハイム・ハマキ</code> の所在地 <code>東京都府中市分梅町1丁目16番15号</code> を代表点として採用した。</li>
+</ul>
+<h4>5. ジオコード確認</h4>
+<ul>
+<li>東京都品川区西五反田7丁目7番7号 -&gt; gaiku</li>
+<li>東京都府中市西原町1丁目3番 -&gt; gaiku</li>
+<li>東京都府中市分梅町1丁目16番15号 -&gt; gaiku</li>
+</ul>
+<h4>6. 残課題</h4>
+<ul>
+<li><code>東京都府中市その他の地域 17,856.60m2</code> の厳密な地番群までは今回特定できていない。</li>
+<li>八王子市東中野 441.94m2 は有報に存在するが、出力CSV側に行がないため今回のパッチには入れていない。</li>
+</ul></template></td>
   <td class="right">2.993072</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1004,7 +3410,45 @@
   <td class="right">56</td>
   <td>7614</td>
   <td>オーエムツーネットワーク</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="56">📋 調査メモ</button><template id="docs-56"><h3>7614 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 7614</li>
+<li>企業名: オーエムツーネットワーク</li>
+<li>対象事業所: ㈱オーエムツーネットワーク</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 3,000 m2</li>
+<li>元住所: 東京都港区港南2-15-1</li>
+<li>問題点: 出力CSVは港南2-15-1を採用しているが、有報の設備表は所在地を「東京都港区」としか書いておらず、港南番地の根拠がない。親会社の本店所在地は有報表紙と公式通販サイトの運営者表記で一貫して「東京都港区芝大門2-4-7 6F」。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報表紙</td><td>2026-03-17</td><td>第66期有価証券報告書の表紙で本店所在地は「東京都港区芝大門2丁目4番7号」</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VOUD.pdf</td></tr>
+<tr><td>有報 設備の状況</td><td>2026-03-17</td><td>親会社設備は「㈱オーエムツーネットワーク（東京都港区）」で、土地47,772千円・面積(3)千㎡。番地は未記載</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VOUD.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>公式通販の運営会社表記で「株式会社オーエムツーネットワーク」「東京都港区芝大門2-4-7 6F」「03-5405-9541」</td><td>https://www.29ichiba.com/help/about</td></tr>
+<tr><td>ビル情報</td><td>2026-03-17</td><td>芝大門2-4-7は「浜松町ウエストプレイス」。延床面積2,564.8㎡の賃貸オフィスビル</td><td>https://best-tokyo.com/office/items/15376</td></tr>
+</tbody></table>
+<h4>4. 判断</h4>
+<ul>
+<li><code>東京都港区港南2-15-1</code> を支持する公開根拠は見つからなかったため不採用。</li>
+<li>公式に番地まで確認できる親会社住所は <code>東京都港区芝大門2-4-7</code>。</li>
+<li>ただし有報の土地3,000㎡は所在地が「東京都港区」までしか開示されず、追加の地番・別拠点・内訳面積を示す資料は確認できなかった。</li>
+<li>よって今回は <code>BAD_PATTERN_1</code> の分割までは実施せず、少なくとも誤番地の <code>港南2-15-1</code> を公式本店住所 <code>芝大門2-4-7</code> に補正する。</li>
+</ul>
+<h4>5. ジオコード確認</h4>
+<ul>
+<li>東京都港区芝大門2-4-7 -&gt; gaiku</li>
+<li>東京都港区港南2-15-1 -&gt; gaiku</li>
+</ul>
+<h4>6. 最終登録</h4>
+<ul>
+<li>㈱オーエムツーネットワーク: 東京都港区芝大門2-4-7</li>
+</ul></template></td>
   <td class="right">2.892555</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1021,7 +3465,50 @@
   <td class="right">57</td>
   <td>2108</td>
   <td>日本甜菜製糖</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="57">📋 調査メモ</button><template id="docs-57"><h3>2108 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 2108</li>
+<li>企業名: 日本甜菜製糖株式会社</li>
+<li>対象事業所: 本社 外</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 31,933.22 m2</li>
+<li>元住所: 東京都港区三田3-12</li>
+<li>問題点: 港区で31,933.22m2は過大。事業所名も「本社 外」で合算注記あり。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報（第127期 2025-03-31）</td><td>2026-03-17</td><td>「本社 外」土地31,933.22m2。注記で主な土地として山口県下関市21,100m2、千葉県千葉市7,806m2を含む。さらに土地(東京都中央区)215m2、建物(東京都千代田区)2,956m2を賃貸用として含む。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4MW.pdf</td></tr>
+<tr><td>会社開示（固定資産の譲渡に関するお知らせ）</td><td>2026-03-17</td><td>譲渡資産「本社ビル」の所在地は東京都港区三田三丁目12番14号、土地面積は891.09m2。</td><td>https://static.202217131020.cidr.jtidc.jp/pdf/2024/20240222_jp.pdf</td></tr>
+<tr><td>旧公式会社概要</td><td>2026-03-17</td><td>2023年時点の本社所在地は東京都港区三田三丁目12番14号。2025-03-31時点の有報住所整合確認に使用。</td><td>https://mailsv.nitten.co.jp/company_overview.html</td></tr>
+<tr><td>現公式会社概要</td><td>2026-03-17</td><td>現本社は東京都中央区京橋二丁目6番4号。2025-10-01以降の移転後住所であり、今回の2025-03-31評価には使わない。</td><td>https://www.nitten.co.jp/company/outline/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<ul>
+<li>2025-03-31時点の評価対象は、移転前の港区三田本社ビルを採用する。</li>
+<li>三田本社ビルの土地面積は会社開示で 891.09m2 と明示されているため、東京側で番地確定できる面積としてこの数値を採用する。</li>
+<li>残余面積は <code>31,933.22 - 891.09 = 31,042.13m2</code>。</li>
+<li>有報注記上、残余には少なくとも山口県下関市21,100m2、千葉県千葉市7,806m2、東京都中央区215m2が含まれ、さらに借地権等も含まれる。</li>
+<li>下関市・千葉市・中央区215m2の個別番地は今回確認し切れていないため、誤って港区地価を当てないことを優先し、残余は <code>全国各所</code> 合算でパッチ化する。</li>
+</ul>
+<h4>5. 最終配分</h4>
+<table class="md-table"><thead><tr>
+<th>エントリ名</th><th>住所</th><th>面積m2</th><th>推定</th>
+</tr></thead><tbody>
+<tr><td>本社(三田本社ビル)</td><td>東京都港区三田3丁目12番14号</td><td>891.09</td><td>false</td></tr>
+<tr><td>本社(全国各所・下関市21,100㎡、千葉市7,806㎡等合算)</td><td>全国各所</td><td>31,042.13</td><td>true</td></tr>
+</tbody></table>
+<h4>6. メモ</h4>
+<ul>
+<li>港区31,933.22m2全量に商業地単価を当てるのは不適切。</li>
+<li>今回の分割だけで、港区評価対象面積は 31,933.22m2 から 891.09m2 へ縮小できる。</li>
+<li>東京都中央区215m2の番地まで確定できれば、将来的に東京側をさらに 2 分割できる余地がある。</li>
+</ul></template></td>
   <td class="right">2.838956</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1038,7 +3525,56 @@
   <td class="right">58</td>
   <td>9302</td>
   <td>三井倉庫ホールディングス</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="58">📋 調査メモ</button><template id="docs-58"><h3>9302 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9302</li>
+<li>企業名: 三井倉庫ホールディングス株式会社</li>
+<li>対象事業所: 箱崎ビルほか</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 56,000.00 m2</li>
+<li>元住所: 東京都中央区日本橋1丁目13-1271</li>
+<li>問題点: 有報の設備表が <code>箱崎ビルほか</code> となっており、中央区都心立地の1地点に 56,000m2 を全付けするのは不自然。公式不動産一覧では箱崎以外に御成門・深川・海岸・大阪の賃貸資産が並んでいる。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>設備表に <code>箱崎ビルほか</code>、所在地 <code>東京都中央区</code>、土地面積 <code>56,000m2</code>、土地簿価 <code>10,811百万円</code> と記載。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W15N.pdf</td></tr>
+<tr><td>公式不動産一覧</td><td>2026-03-17</td><td>不動産事業ページに <code>MSH日本橋箱崎ビル / MSCセンタービル / MSC御成門ビル / MSC深川ビル / MSC深川ビル2号館 / リバー＆タワー / パークアクシス御成門 / ポートヴィラ靱公園</code> が掲載されている。</td><td>https://www.mitsui-soko.com/company/overview/realestate/</td></tr>
+<tr><td>公式環境計画書</td><td>2026-03-17</td><td><code>MSH日本橋箱崎ビル</code> の所在地は <code>東京都中央区日本橋箱崎町19番21号</code>、敷地面積は <code>24,230.35㎡</code>。</td><td>https://msi.mitsui-soko.com/-/media/pdf/msh/sustainability/environment/action/gwc_plan/2024/hakozaki.pdf</td></tr>
+<tr><td>公的建築データ</td><td>2026-03-17</td><td><code>御成門M-SQUARE</code> は所在地 <code>港区西新橋三丁目6番1他</code>、敷地面積 <code>1,341.86㎡</code>。公式不動産一覧の <code>MSC御成門ビル / パークアクシス御成門</code> に対応する複合敷地として採用。</td><td>https://www7.kankyo.metro.tokyo.lg.jp/building/detail/080071_41_c.html</td></tr>
+<tr><td>公的建築データ</td><td>2026-03-17</td><td><code>MSC深川ビル</code> の所在地は <code>東京都江東区佐賀2丁目8番20号</code>、敷地面積は <code>4,083.91㎡</code>。</td><td>https://www7.kankyo.metro.tokyo.lg.jp/building/detail/100187_81_c.html</td></tr>
+<tr><td>公的建築データ</td><td>2026-03-17</td><td><code>MSC深川ビル2号館</code> の所在地は <code>江東区佐賀2丁目-9</code>、敷地面積は <code>7,383.24㎡</code>。</td><td>https://www7.kankyo.metro.tokyo.lg.jp/building/detail/070051_41_c.html</td></tr>
+</tbody></table>
+<h4>4. 推論式</h4>
+<ul>
+<li>箱崎街区(MSH日本橋箱崎ビル・リバー＆タワー): 24,230.35 m2</li>
+<li>御成門街区(MSC御成門ビル・パークアクシス御成門): 1,341.86 m2</li>
+<li>MSC深川ビル: 4,083.91 m2</li>
+<li>MSC深川ビル2号館: 7,383.24 m2</li>
+<li>既知敷地合計: 24,230.35 + 1,341.86 + 4,083.91 + 7,383.24 = 37,039.36 m2</li>
+<li>残余: 56,000.00 - 37,039.36 = 18,960.64 m2</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>分割後名称</th><th>住所</th><th>面積(m2)</th><th>面積区分</th>
+</tr></thead><tbody>
+<tr><td>箱崎ビルほか(MSH日本橋箱崎ビル・リバー＆タワー)</td><td>東京都中央区日本橋箱崎町19番21号</td><td>24,230.35</td><td>実測根拠あり</td></tr>
+<tr><td>箱崎ビルほか(MSC御成門ビル・パークアクシス御成門)</td><td>東京都港区西新橋3丁目20番1号</td><td>1,341.86</td><td>実測根拠あり</td></tr>
+<tr><td>箱崎ビルほか(MSC深川ビル)</td><td>東京都江東区佐賀2丁目8番20号</td><td>4,083.91</td><td>実測根拠あり</td></tr>
+<tr><td>箱崎ビルほか(MSC深川ビル2号館)</td><td>東京都江東区佐賀2丁目9番8号</td><td>7,383.24</td><td>実測根拠あり</td></tr>
+<tr><td>箱崎ビルほか(MSCセンタービル・ポートヴィラ靱公園等の残余)</td><td>全国各所</td><td>18,960.64</td><td>残差推定</td></tr>
+</tbody></table>
+<h4>6. 判断</h4>
+<ul>
+<li><code>箱崎ビルほか</code> は箱崎単独ではなく、三井倉庫HDの賃貸不動産群の合算とみるのが妥当。</li>
+<li>現行CSVは <code>東京都中央区日本橋1丁目</code> 近傍地価を 56,000m2 全量に適用しており、少なくとも 31,769.65m2 は箱崎街区外、さらに 18,960.64m2 は MSCセンタービルや大阪住宅を含む残余である。</li>
+<li>まずは番地確定できた 4 街区を個別化し、未確定の <code>MSCセンタービル / ポートヴィラ靱公園</code> は残余バケットに逃がすのが現時点の最小誤差。</li>
+</ul></template></td>
   <td class="right">2.807938</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1055,7 +3591,46 @@
   <td class="right">59</td>
   <td>4247</td>
   <td>ポバール興業</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="59">📋 調査メモ</button><template id="docs-59"><h3>4247 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 4247</li>
+<li>企業名: ポバール興業株式会社</li>
+<li>対象事業所: 東京営業所</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 328.05 m2</li>
+<li>元住所: 東京都千代田区丸の内1丁目4番1号</li>
+<li>問題点: 有報では「東京営業所 他2営業所（東京都千代田区 他）」として3営業所が合算されているのに、出力CSVは丸の内1丁目4番1号へ単独紐付けされていた</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>設備の状況に「東京営業所 他2営業所（東京都千代田区 他）」、土地328.05㎡、簿価169,613千円と記載</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W79V.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>東京営業所は東京都千代田区九段南3丁目7番14号、面積196.52㎡</td><td>https://www.poval.co.jp/corporate/office/map2.html</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>大阪営業所は大阪市港区市岡元町2丁目16番15号、面積162.62㎡</td><td>https://www.poval.co.jp/corporate/office/map4.html</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>福岡営業所は福岡県古賀市今の庄3丁目14番5号、面積102.27㎡</td><td>https://www.poval.co.jp/corporate/office/map5.html</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>沿革に「2010年 福岡営業所を現在地（福岡県古賀市今の庄）に移転」「2021年 東京営業所を現在地（東京都千代田区九段南）に移転」とあり、期末時点でも現行所在地を裏付ける</td><td>https://www.poval.co.jp/corporate/history.html</td></tr>
+</tbody></table>
+<h4>4. 推論式</h4>
+<ul>
+<li>3営業所の掲載面積合計: 196.52 + 162.62 + 102.27 = 461.41㎡</li>
+<li>有報合算土地 328.05㎡ を各営業所掲載面積比で按分</li>
+<li>東京営業所: 328.05 x 196.52 / 461.41 = 139.72㎡</li>
+<li>大阪営業所: 328.05 x 162.62 / 461.41 = 115.62㎡</li>
+<li>福岡営業所: 328.05 x 102.27 / 461.41 = 72.71㎡</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>拠点</th><th>採用住所</th><th>面積(m2)</th><th>備考</th>
+</tr></thead><tbody>
+<tr><td>東京営業所(九段南)</td><td>東京都千代田区九段南3丁目7番14号</td><td>139.72</td><td>東京住所は <code>TokyoGeocoder</code> で <code>gaiku</code> 確認済み</td></tr>
+<tr><td>大阪営業所</td><td>大阪府大阪市港区市岡元町2丁目16番15号</td><td>115.62</td><td>公式サイト掲載住所を採用</td></tr>
+<tr><td>福岡営業所</td><td>福岡県古賀市今の庄3丁目14番5号</td><td>72.71</td><td>公式サイト掲載住所を採用</td></tr>
+</tbody></table></template></td>
   <td class="right">2.743948</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1072,7 +3647,24 @@
   <td class="right">60</td>
   <td>8103</td>
   <td>明和産業</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="60">📋 調査メモ</button><template id="docs-60"><h3>8103 split-address 調査メモ</h3>
+<h4>結論</h4>
+<ul>
+<li>分割合算の根拠は確認できなかった</li>
+<li><code>data/output/8103_output.csv</code> の本店住所 <code>東京都千代田区丸の内1丁目4番5号</code> は誤り</li>
+<li>公式サイト掲載の本店所在地 <code>東京都千代田区丸の内3丁目3番1号</code> をパッチ登録する</li>
+</ul>
+<h4>根拠</h4>
+<ul>
+<li>有報の設備情報キャッシュでは土地保有拠点は <code>本店</code> 1件のみ、所在地は <code>東京都千代田区</code></li>
+<li>事前検証でも <code>all_gaiku=true</code>、<code>has_risk=false</code>、<code>bad_pattern_1_risk=false</code></li>
+<li>明和産業の会社概要は本店所在地を <code>東京都千代田区丸の内三丁目3番1号</code> と記載</li>
+<li>新東京ビルの所在地は <code>東京都千代田区丸の内3-3-1</code>、敷地面積は <code>9,827.26m2</code> で、保有土地面積 <code>2,879m2</code> は都心単独地として不自然な規模ではない</li>
+</ul>
+<h4>取得日</h4>
+<ul>
+<li>2026-03-17</li>
+</ul></template></td>
   <td class="right">2.708216</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1089,7 +3681,40 @@
   <td class="right">61</td>
   <td>9722</td>
   <td>藤田観光</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="61">📋 調査メモ</button><template id="docs-61"><h3>9722 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9722</li>
+<li>企業名: 藤田観光株式会社</li>
+<li>対象事業所: ホテル椿山荘東京</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 293,000 m2</li>
+<li>元住所: 東京都文京区関口2丁目10番8号</li>
+<li>問題点: 都心立地で 293,000㎡ は不自然だったため、合算または抽出誤りを疑って確認</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>「設備の状況」のホテル椿山荘東京行は <code>12,100 868 49 (49) 293 13,312 402[455]</code>。列見出しは <code>土地 (面積千㎡) その他</code> なので、土地面積は <code>(49)</code> = 49千㎡、<code>293</code> は「その他」</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VG23.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>公式アクセスページで所在地は <code>東京都文京区関口2-10-8</code> と確認</td><td>https://hotel-chinzanso-tokyo.jp/</td></tr>
+</tbody></table>
+<h4>4. 結論</h4>
+<ul>
+<li>分割対象ではない。事業所名・所在地ともに単独拠点で、合算注記も確認できない</li>
+<li>異常値の主因は住所ではなく土地面積の抽出誤り</li>
+<li>パッチでは所在地を維持したまま、土地面積を 49,000㎡ として 1 件登録した</li>
+</ul>
+<h4>5. 最終登録値</h4>
+<ul>
+<li>事業所名: ホテル椿山荘東京</li>
+<li>住所: 東京都文京区関口2丁目10番8号</li>
+<li>面積: 49,000.0 m2</li>
+<li>推定の有無: なし</li>
+</ul></template></td>
   <td class="right">2.636734</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1106,7 +3731,61 @@
   <td class="right">62</td>
   <td>9731</td>
   <td>白洋舎</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="62">📋 調査メモ</button><template id="docs-62"><h3>9731 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9731</li>
+<li>企業名: 株式会社白洋舍</li>
+<li>対象事業所: 東京支店他 / 神山ビル他 / 本社他</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>東京支店他: 48,486.93 m2, 東京都大田区他</li>
+<li>神山ビル他: 4,178.00 m2, 東京都渋谷区他</li>
+<li>本社他: 2,554.69 m2, 東京都大田区他</li>
+<li>問題点: 3件とも有報上の事業所名に「他」が付いており、1住所への単純紐付けだと面積合算の過大評価が起こりうる</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2024年12月31日現在の主要設備で「東京支店他 (東京都大田区他) 48,486.93㎡」「神山ビル他 (東京都渋谷区他) 4,178.00㎡」「本社他 (東京都大田区他) 2,554.69㎡」を確認</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHPE.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>グループ拠点一覧で、都内クリーニング拠点は東京事務所(東京都大田区下丸子2-11-1)と武蔵野事務所(東京都西東京市芝久保町3-2-1)を確認</td><td>https://www.hakuyosha.co.jp/company/group/</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>会社概要で本社所在地が東京都大田区下丸子2丁目11番8号であることを確認</td><td>https://www.hakuyosha.co.jp/company/overview/</td></tr>
+<tr><td>公的データ</td><td>2026-03-17</td><td>近傍標準地「大田-42」(東京都大田区下丸子2-11-11) の地積2055㎡を確認。東京事務所の近傍代理値として採用</td><td>https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131110042.html</td></tr>
+</tbody></table>
+<h4>4. 判断</h4>
+<h5>東京支店他</h5>
+<ul>
+<li>有報の所在地は「東京都大田区他」。</li>
+<li>公式拠点一覧では、親会社クリーニング事業の都内拠点は東京事務所(大田区)と武蔵野事務所(西東京市)の2件だけ。</li>
+<li>したがって、<code>東京支店他</code> は少なくともこの2拠点を含むとみるのが自然。</li>
+<li>東京事務所の敷地面積は未開示のため、近傍標準地「大田-42」の地積2055㎡を代理値とした。</li>
+<li>残余 <code>48,486.93 - 2,055.00 = 46,431.93㎡</code> を武蔵野事務所へ配分。</li>
+</ul>
+<h5>神山ビル他</h5>
+<ul>
+<li>公式に確認できた自社不動産の番地レベル住所は、既存 override の <code>東京都渋谷区神山町4丁目14番</code> に対応する神山ビルのみ。</li>
+<li>追加の番地レベル所在地は今回の調査では裏付け不足で、別住所への分割は見送り。</li>
+</ul>
+<h5>本社他</h5>
+<ul>
+<li>公式会社概要で本社所在地 <code>東京都大田区下丸子2丁目11番8号</code> を確認。</li>
+<li>「他」に含まれる全社資産の追加所在地は今回の調査では特定できず、代表住所のみ確定。</li>
+</ul>
+<h4>5. 最終配分</h4>
+<ul>
+<li>東京支店他(東京事務所): 2,055.00 m2</li>
+<li>東京支店他(武蔵野事務所): 46,431.93 m2</li>
+<li>神山ビル他: 代表住所のみ更新なし</li>
+<li>本社他: 代表住所のみ更新なし</li>
+</ul>
+<h4>6. 推論上の留意点</h4>
+<ul>
+<li>東京支店他の配分は、公式拠点一覧から「都内クリーニング拠点が2件のみ」という事実に基づく推論であり、東京事務所2055㎡は近傍標準地による代理値。</li>
+<li>このため、武蔵野事務所46,431.93㎡は残差配分であり、登記や固定資産注記が見つかれば将来差し替え余地がある。</li>
+</ul></template></td>
   <td class="right">2.630188</td>
   <td>gaiku</td>
   <td>low / high</td>
@@ -1123,7 +3802,55 @@
   <td class="right">63</td>
   <td>5393</td>
   <td>ニチアス</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="63">📋 調査メモ</button><template id="docs-63"><h3>5393 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 5393</li>
+<li>企業名: ニチアス株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 307,000 m2</li>
+<li>元住所: 東京都中央区八丁堀1丁目6番1号</li>
+<li>問題点: 都心商業地の本社住所に 307,000 m2 を載せており、地価推定が過大</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報（第209期 有価証券報告書）</td><td>2026-03-17</td><td>設備の状況の注記4で、本社の建物・土地には子会社等への貸与資産を含むと明記。主な賃貸先としてメタコート工業(岡山 118,000m2)、福島ニチアス(福島 126,000m2)、東京マテリアルス(さいたま 0m2)、堺ニチアス(堺 37,000m2)、熊本ニチアス(熊本 14,000m2) を列挙。合計 295,000m2。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3DV.pdf</td></tr>
+<tr><td>公式サイト（本社・東京支社）</td><td>2026-03-17</td><td>本社・東京支社の住所は「東京都中央区八丁堀1-6-1」。東京側の実在拠点は同一住所。</td><td>https://www.nichias.co.jp/company/office/headoffice</td></tr>
+<tr><td>近傍公示地</td><td>2026-03-17</td><td>最寄り公示地 13102-005-026 は中央区八丁堀1-9-7、地積296m2、容積率700%。</td><td>https://www.reinfolib.mlit.go.jp/landPrices/?point=13102-005-026&amp;targetYear=2025&amp;cityCode=13102&amp;locationNumber=%E5%85%AB%E4%B8%81%E5%A0%801-%209-7</td></tr>
+<tr><td>ビル物件情報</td><td>2026-03-17</td><td>PMO八重洲通は地上9階・地下1階、基準階面積625.32m2、延床面積2,165.04坪。八丁堀1-6-1の建物規模は 307,000m2 や 12,000m2 の敷地を前提としない。</td><td>https://www.estie.jp/portal/property/99c874234c827671a83b2db60a0c9b0063f00b93b2a75e3159e5defd9be22756</td></tr>
+<tr><td>グループ会社公式ページ</td><td>2026-03-17</td><td>注記4で列挙された子会社所在地は、岡山・福島・さいたま・堺・熊本の各社ページと整合。</td><td>https://www.nichias.co.jp/company/group/metacoat</td></tr>
+<tr><td>グループ会社公式ページ</td><td>2026-03-17</td><td>福島ニチアス所在地: 福島県相馬郡新地町大字福田字北原275-7。</td><td>https://www.nichias.co.jp/company/group/fukushima-nichias</td></tr>
+<tr><td>グループ会社公式ページ</td><td>2026-03-17</td><td>東京マテリアルス所在地: 埼玉県さいたま市南区南浦和2-20-19。</td><td>https://www.nichias.co.jp/company/group/tokyo-materials</td></tr>
+<tr><td>グループ会社公式ページ</td><td>2026-03-17</td><td>堺ニチアス所在地: 大阪府堺市堺区築港八幡町102-1。</td><td>https://www.nichias.co.jp/company/group/sakai-nichias</td></tr>
+<tr><td>グループ会社公式ページ</td><td>2026-03-17</td><td>熊本ニチアス所在地: 熊本県菊池郡菊陽町大字原水4000-5。</td><td>https://www.nichias.co.jp/company/group/kumamoto-nichias</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<p>1. 有報注記4により、本社 307,000m2 のうち少なくとも 295,000m2 は東京外の子会社貸与資産と確認できる。</p>
+<p>2. 残差は 307,000 - 295,000 = 12,000m2 だが、注記は「主な賃貸先」としており、残差 12,000m2 をすべて八丁堀本社と断定する根拠にはならない。</p>
+<p>3. 八丁堀1-6-1 の実建物は PMO八重洲通で、基準階面積 625.32m2、地上9階。近傍公示地の容積率700%を使うと、地上階床面積ベースの必要敷地は 625.32 x 9 / 7 = 803.98m2。</p>
+<p>4. 延床面積 2,165.04坪 = 7,157.98m2 をそのまま容積率700%で割ると 1,022.57m2 だが、地下階等も含み得るため上限寄りに出る。</p>
+<p>5. よって八丁堀本社の敷地は 800-1,000m2 程度とみるのが妥当で、保守的な中点として 900m2 を採用した。</p>
+<p>6. パッチでは、東京実地 900m2、注記で特定できる子会社貸与資産 295,000m2、残余 11,100m2 を「残余資産・合算」として分離する。</p>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>区分</th><th>面積</th>
+</tr></thead><tbody>
+<tr><td>本社(八丁堀)</td><td>900.0 m2</td></tr>
+<tr><td>本社(子会社貸与資産・岡山/福島/埼玉/堺/熊本)</td><td>295,000.0 m2</td></tr>
+<tr><td>本社(残余資産・合算)</td><td>11,100.0 m2</td></tr>
+<tr><td>合計</td><td>307,000.0 m2</td></tr>
+</tbody></table>
+<h4>6. 判断</h4>
+<ul>
+<li><code>本社</code> は分割対象。</li>
+<li><code>東京支社</code> は公式サイト上で本社と同一住所だが、6,000m2 をさらに分解する一次根拠は今回確認できなかったため、住所のみ補正登録する。</li>
+</ul></template></td>
   <td class="right">2.617864</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1140,7 +3867,50 @@
   <td class="right">64</td>
   <td>1866</td>
   <td>北野建設</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="64">📋 調査メモ</button><template id="docs-64"><h3>1866 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 1866</li>
+<li>企業名: 北野建設株式会社</li>
+<li>対象事業所: 東京本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 3,000 m2</li>
+<li>元住所: 東京都中央区銀座1丁目9番2号</li>
+<li>問題点: 銀座1丁目のオフィスビルとしては 3,000 m2 が大きく、含み益が過大に見える</li>
+</ul>
+<h4>3. 確認した事実</h4>
+<ul>
+<li>2025年3月31日時点の有価証券報告書「主要な設備の状況」では、提出会社の <code>東京本社（東京都中央区）</code> に <code>土地 5,454百万円 (3)</code> と記載されている。</li>
+<li>同じ有価証券報告書の「設備投資等の概要」には、建設事業の主要投資として <code>本社社屋及び武蔵野社員寮の改修費用124百万円</code> とある。</li>
+<li>公式サイトの会社概要・拠点情報では、東京本社は <code>中央区銀座1-9-2</code>、丸の内分室は <code>千代田区丸の内2-2-3</code> と確認できる。</li>
+<li>外部オフィス情報では <code>北野建設ビル</code>（中央区銀座1-9-2）の基準階面積が <code>79.43坪</code> とされており、ビル規模からみて単独敷地が 3,000 m2 である可能性は低い。</li>
+<li>外部地図・不動産アーカイブでは <code>北野建設武蔵野寮</code> が <code>埼玉県さいたま市大宮区三橋2丁目568-1</code> に存在することを確認した。</li>
+</ul>
+<h4>4. 判定</h4>
+<ul>
+<li><code>東京本社 = 銀座1-9-2</code> 自体は公式サイトと有報で整合する。</li>
+<li>一方で、<code>3,000 m2</code> の全量が銀座1-9-2単独地番とは考えにくく、東京本社所管の別資産が混在している可能性はある。</li>
+<li>ただし、2025年3月31日時点で <code>銀座1-9-2</code> と <code>武蔵野社員寮</code> の面積内訳を直接示す一次資料は確認できなかった。</li>
+<li>そのため、現時点では面積の合理的な按分ができず、分割パッチは作らない。</li>
+</ul>
+<h4>5. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>主要な設備の状況で東京本社は土地 5,454百万円、面積(3)千㎡</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W59A.pdf</td></tr>
+<tr><td>公式</td><td>2026-03-17</td><td>東京本社は中央区銀座1-9-2</td><td>https://www.kitano.co.jp/corporate/outline/</td></tr>
+<tr><td>公式</td><td>2026-03-17</td><td>拠点情報に東京本社、丸の内分室を掲載</td><td>https://www.kitano.co.jp/corporate/network.php</td></tr>
+<tr><td>外部物件情報</td><td>2026-03-17</td><td>北野建設ビルの基準階面積は79.43坪</td><td>https://officee.jp/catalog/%E5%8C%97%E9%87%8E%E5%BB%BA%E8%A8%AD%E3%83%93%E3%83%AB/30032/</td></tr>
+<tr><td>外部地図情報</td><td>2026-03-17</td><td>北野建設武蔵野寮はさいたま市大宮区三橋2-568-1</td><td>https://www.its-mo.com/poi/LOC_AED-101731/</td></tr>
+</tbody></table>
+<h4>6. 結論</h4>
+<ul>
+<li>現時点で確定できるパッチは <code>東京本社: 東京都中央区銀座1丁目9番2号</code> のみ。</li>
+<li>含み益の過大感は残るが、面積按分の一次根拠が不足しているため、無理に分割しない。</li>
+</ul></template></td>
   <td class="right">2.595829</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1157,7 +3927,34 @@
   <td class="right">65</td>
   <td>6360</td>
   <td>東京自働機械製作所</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="65">📋 調査メモ</button><template id="docs-65"><h3>6360 split-address 調査メモ</h3>
+<h4>1. 結論</h4>
+<ul>
+<li>証券コード: 6360</li>
+<li>企業名: 株式会社東京自働機械製作所</li>
+<li>判定: 分割不要</li>
+<li>対応: <code>本社</code> の住所を <code>東京都千代田区岩本町3丁目10番7号</code> に補正する</li>
+</ul>
+<h4>2. 根拠</h4>
+<ul>
+<li>2025年6月25日提出の有価証券報告書表紙で、本店所在地は <code>東京都千代田区岩本町3丁目10番7号東自機ビル</code></li>
+<li>同有報の「主要な設備の状況」では、東京の自社土地は <code>本社 (東京都千代田区)</code> の <code>484㎡</code> のみ</li>
+<li>同設備表の他拠点は <code>柏工場 50,999㎡</code>、<code>設計開発部 1,960㎡</code>、<code>富里 31,962㎡</code> で、いずれも千葉県所在</li>
+<li>したがって、出力CSVの <code>本社 484㎡</code> は合算行ではなく、千葉県拠点が東京都本社に混入している形跡はない</li>
+<li>公式サイトの会社概要・国内事業所一覧でも本社所在地は <code>東京都千代田区岩本町3-10-7</code></li>
+</ul>
+<h4>3. 修正方針</h4>
+<ul>
+<li><code>東京都千代田区丸の内1丁目3番3号</code> は有報表紙・公式サイトと不一致</li>
+<li><code>本社</code> を <code>東京都千代田区岩本町3丁目10番7号</code> に補正する</li>
+<li><code>東京都千代田区岩本町3丁目10番7号</code> は東京ジオコーダで <code>gaiku</code> 解決を確認済み</li>
+</ul>
+<h4>4. 参照URL</h4>
+<ul>
+<li>EDINET有報: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W33R.pdf</li>
+<li>会社概要: https://www.tam-tokyo.co.jp/corporate/history.html</li>
+<li>国内事業所一覧: https://www.tam-tokyo.co.jp/corporate/about.html</li>
+</ul></template></td>
   <td class="right">2.587666</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1174,7 +3971,49 @@
   <td class="right">66</td>
   <td>3238</td>
   <td>セントラル総合開発</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="66">📋 調査メモ</button><template id="docs-66"><h3>3238 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 3238</li>
+<li>企業名: セントラル総合開発株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 2,269.32 m2</li>
+<li>元住所: 東京都千代田区飯田橋3丁目3番7号</li>
+<li>問題点: 出力CSVでは本社土地全量が飯田橋1地点に紐づいているが、有報の主要賃貸設備には東京都板橋区の <code>セントラルコート中丸</code> 200.75㎡が含まれており、単一地点評価は過大。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025年3月31日現在の提出会社設備で、本社の土地面積は2,269.32㎡。主要賃貸設備として <code>秋穂セントラルビル</code> 273.33㎡、<code>セントラルコート中丸</code> 200.75㎡が明示されている。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W8T3.pdf</td></tr>
+<tr><td>公式会社概要</td><td>2026-03-17</td><td>本社所在地は <code>東京都千代田区飯田橋3-3-7</code>。関西支店・中国支店・九州支店の番地も公式ページで確認。</td><td>https://www.central-gd.co.jp/company/profile.html</td></tr>
+<tr><td>建物情報</td><td>2026-03-17</td><td><code>秋穂セントラルビル</code> は <code>東京都千代田区飯田橋3-3-7</code>。本社所在地と一致。</td><td>https://www.officeiten.jp/building/秋穂セントラルビル/</td></tr>
+<tr><td>建物情報</td><td>2026-03-17</td><td><code>セントラルコート中丸</code> は <code>東京都板橋区中丸町34-12</code>。</td><td>https://www.homes.co.jp/archive/b-16100018/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<ul>
+<li>有報の <code>本社 2,269.32㎡</code> は、飯田橋本社単独ではなく、本社勘定に含まれる東京都内賃貸資産を抱えた集約値と判断。</li>
+<li><code>秋穂セントラルビル</code> は本社所在地と同一住所のため、少なくとも <code>273.33㎡</code> は飯田橋3-3-7にあることが確認できる。</li>
+<li><code>セントラルコート中丸</code> <code>200.75㎡</code> は板橋区中丸町34-12にあるため、CSVの飯田橋一点評価から切り離す必要がある。</li>
+<li>残差 <code>1,795.24㎡</code> は <code>2,269.32 - 273.33 - 200.75</code>。有報上は本社勘定に含まれるが、注入資料と公開情報だけでは個別所在地を特定できなかったため、<code>東京都各所</code> の集約残差として保持。</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>区分</th><th>住所</th><th>面積(m2)</th><th>備考</th>
+</tr></thead><tbody>
+<tr><td>本社(秋穂セントラルビル)</td><td>東京都千代田区飯田橋3丁目3番7号</td><td>273.33</td><td>有報明示値</td></tr>
+<tr><td>本社(セントラルコート中丸)</td><td>東京都板橋区中丸町34番12号</td><td>200.75</td><td>有報明示値</td></tr>
+<tr><td>本社(東京都内その他・合算)</td><td>東京都各所</td><td>1795.24</td><td>差額推定</td></tr>
+</tbody></table>
+<h4>6. ジオコード確認</h4>
+<ul>
+<li><code>東京都千代田区飯田橋3丁目3番7号</code> → <code>gaiku</code></li>
+<li><code>東京都板橋区中丸町34番12号</code> → <code>gaiku</code></li>
+</ul></template></td>
   <td class="right">2.565319</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1208,7 +4047,46 @@
   <td class="right">68</td>
   <td>1807</td>
   <td>佐藤渡辺</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="68">📋 調査メモ</button><template id="docs-68"><h3>1807 split-address 調査メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 1807</li>
+<li>企業名: 株式会社佐藤渡辺</li>
+<li>対象事業所: 本店, 関東支店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>本店: 東京都港区六本木3-4, 3,433 m2</li>
+<li>関東支店: 東京都港区六本木3-4, 13,957 m2</li>
+<li>問題点: 両拠点が六本木の代表点に寄っており、関東支店の土地時価と時価総額比が過大に見える。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2024年度有価証券報告書の表紙で本店所在地は「東京都港区南麻布1丁目18番4号」。設備の状況では「関東支店(東京都港区)」の土地欄が <code>40,660(13,957)</code>、注記で括弧内は賃借中の土地面積と明記。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W538.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>事業所一覧で「本社」「関東支店」ともに <code>東京都港区南麻布1-18-4</code> と掲載。</td><td>https://watanabesato.co.jp/company/office/</td></tr>
+<tr><td>会社資料</td><td>2026-03-17</td><td>環境景観カタログでも「本社」「関東支店」がいずれも <code>東京都港区南麻布1-18-4</code>。現住所が一時的な移転ではないことを補強。</td><td>https://watanabesato.co.jp/catalog/37/</td></tr>
+</tbody></table>
+<h4>4. 判断</h4>
+<p>本件は BAD_PATTERN_1 のような複数拠点合算の分割案件ではなく、まず住所代表点の誤りと、有報表の数値抽出ずれを疑うべきケースと判断した。</p>
+<ul>
+<li>本店と関東支店の番地レベル住所は、どちらも <code>東京都港区南麻布1丁目18番4号</code> で整合する。</li>
+<li>関東支店の <code>13,957 m2</code> は設備表の括弧内にある数値で、注記上は賃借中の土地面積を示す。</li>
+<li>同じ行の土地簿価も、出力CSVの <code>40,660,000円</code> ではなく、有報表の土地金額 <code>3,031,010千円</code> を読むのが自然。</li>
+</ul>
+<p>したがって、今回の過大評価は「六本木3-4 による高地価寄せ」だけでなく、「賃借地面積と土地簿価の取り違え」が主因であり、住所分割では解消しない。</p>
+<h4>5. 最終登録</h4>
+<ul>
+<li>本店: 東京都港区南麻布1丁目18番4号</li>
+<li>関東支店: 東京都港区南麻布1丁目18番4号</li>
+</ul>
+<h4>6. 結論</h4>
+<ul>
+<li><code>config/address_patches/1807.yaml</code> では、本店・関東支店とも同一番地で登録する。</li>
+<li>別途、設備表パーサー側で <code>40,660(13,957)</code> の列解釈と土地簿価の抽出ロジックを見直す必要がある。</li>
+</ul></template></td>
   <td class="right">2.452850</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1225,7 +4103,48 @@
   <td class="right">69</td>
   <td>4801</td>
   <td>セントラルスポーツ</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="69">📋 調査メモ</button><template id="docs-69"><h3>4801 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 4801</li>
+<li>企業名: セントラルスポーツ株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 29,685.7 m2</li>
+<li>元住所: 東京都中央区新川1丁目21番2号</li>
+<li>問題点: 中央区新川の本社単独地としては面積が過大。有報注記3では本社建物等が賃借設備とされ、同注記2では福利厚生設備等を含むため、本社行に中央区外の資産が混在している可能性が高い。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025年3月期有報の設備表で「本社（東京都中央区）」の土地面積は29,685.70㎡。注記2で設備に福利厚生設備等を含むとし、注記3で本社及びテナントクラブ建物等は賃借設備と記載。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W21S.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>会社概要で本社所在地は東京都中央区新川1-21-2 茅場町タワー。</td><td>https://company.central.co.jp/about/profile/</td></tr>
+<tr><td>ビル情報</td><td>2026-03-17</td><td>茅場町タワーの敷地面積は4,639.80㎡。本社所在地に紐づく中央区側土地の上限代理値として採用。</td><td>https://www.r-b-m.co.jp/office_building/kayabacho_tower/</td></tr>
+<tr><td>公式採用情報</td><td>2026-03-17</td><td>福利厚生として「保養施設:ハワイ、蓼科に別荘」を掲載。福利厚生設備が本社行に混在する傍証。</td><td>https://company.central.co.jp/recruit/fresh/</td></tr>
+</tbody></table>
+<h4>4. 推論式</h4>
+<ul>
+<li>本社(新川・茅場町タワー): 4,639.8 m2</li>
+<li>本社(福利厚生施設等・合算): 29,685.7 - 4,639.8 = 25,045.9 m2</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>分割後名称</th><th>住所</th><th>面積(m2)</th><th>面積区分</th>
+</tr></thead><tbody>
+<tr><td>本社(新川・茅場町タワー)</td><td>東京都中央区新川1丁目21番2号</td><td>4,639.8</td><td>推定(上限代理値)</td></tr>
+<tr><td>本社(福利厚生施設等・合算)</td><td>全国各所</td><td>25,045.9</td><td>残差推定</td></tr>
+</tbody></table>
+<h4>6. 判断</h4>
+<ul>
+<li><code>本社</code> 29,685.7m2 をそのまま中央区新川に張るのは不適切。</li>
+<li>本社所在地は番地レベルで確定できるため、東京側は <code>東京都中央区新川1丁目21番2号</code> に固定する。</li>
+<li>ただし有報注記3から本社建物は賃借設備であり、中央区に帰属する土地は不明なので、茅場町タワー敷地面積4,639.8㎡を上限代理値として採用する。</li>
+<li>残差25,045.9㎡は、有報注記2の福利厚生設備等と公式採用情報の保養施設記載を踏まえ、中央区外資産の合算として <code>全国各所</code> に逃がす。</li>
+</ul></template></td>
   <td class="right">2.416469</td>
   <td>gaiku</td>
   <td>high / medium</td>
@@ -1242,7 +4161,61 @@
   <td class="right">70</td>
   <td>4064</td>
   <td>日本カーバイド工業</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="70">📋 調査メモ</button><template id="docs-70"><h3>4064 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 4064</li>
+<li>企業名: 日本カーバイド工業株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 38,000 m2</li>
+<li>元住所: 東京都港区港南2丁目11番19号</li>
+<li>問題点: 港区港南で38,000m2は不自然。有報脚注でも「提出会社の本社には、千葉県千葉市、福島県須賀川市、福岡県福岡市、栃木県那須郡の土地が含まれております」と明示されており、東京一括評価は誤り。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報脚注</td><td>2026-03-17</td><td>本社土地に千葉市・須賀川市・福岡市・那須郡の土地が含まれると明記</td><td>https://f.irbank.net/pdf/E00777/ir/S100W3LC.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>現行本社は東京都港区港南2-16-2、太陽生命品川ビル22階</td><td>https://www.carbide.co.jp/corporate/access/</td></tr>
+<tr><td>公式会社概要</td><td>2026-03-17</td><td>現行本社は東京都港区港南2-16-2</td><td>https://www.carbide.co.jp/corporate/outline/</td></tr>
+<tr><td>公式パンフレット</td><td>2026-03-17</td><td>2007年時点の本社は港南2-11-19、九州営業所は福岡市南区大橋4-13-27</td><td>https://www.carbide.co.jp/cms/wp-content/uploads/2017/11/20071102_0001.pdf</td></tr>
+<tr><td>公的公開データ</td><td>2026-03-17</td><td>高圧ガス保安協会系データに日本カーバイド工業の千葉市稲毛区長沼原町668を確認</td><td>https://www.khk.or.jp/activities/highpressuregas/national_database/list/detail/?id=121030229</td></tr>
+<tr><td>公開企業データ</td><td>2026-03-17</td><td>旧ETA電子工業の所在地は福島県須賀川市横山町93</td><td>https://catr.jp/companies/34dd4/87810</td></tr>
+<tr><td>近傍地積</td><td>2026-03-17</td><td>長沼原町の土地取引事例に9999㎡案件あり</td><td>https://www.tochi-d.com/landprice/12/12103/121030024/</td></tr>
+<tr><td>近傍地積</td><td>2026-03-17</td><td>須賀川市横山町2番の基準地は1685㎡</td><td>https://www.tochi-d.com/tochi_p/07/07207/072070134/</td></tr>
+<tr><td>近傍地積</td><td>2026-03-17</td><td>福岡市南区大橋3丁目385番11の公示地は167㎡</td><td>https://www.tochi-d.com/tochi/40/40134/401340005/</td></tr>
+</tbody></table>
+<h4>4. 判断</h4>
+<ul>
+<li>38,000m2 を東京都港区港南へ全量配分する根拠はない。</li>
+<li>現行本社はビル22階で、少なくとも 38,000m2 の一団地評価先ではない。</li>
+<li>有報脚注が示す4地点へ分割するのが妥当。</li>
+<li>那須郡は番地まで解像できなかったため、他3地点の推定値を差し引いた残差を那須郡へ配分した。</li>
+</ul>
+<h4>5. 推定式</h4>
+<ul>
+<li>千葉: 9,999m2</li>
+<li>根拠: 長沼原町の大口土地取引事例を代理値採用</li>
+<li>須賀川: 1,685m2</li>
+<li>根拠: 横山町2番の基準地地積を代理値採用</li>
+<li>福岡: 167m2</li>
+<li>根拠: 大橋3丁目385番11の公示地地積を代理値採用</li>
+<li>那須郡: 26,149m2</li>
+<li>計算: 38,000 - 9,999 - 1,685 - 167 = 26,149</li>
+</ul>
+<h4>6. 最終配分</h4>
+<table class="md-table"><thead><tr>
+<th>分割先</th><th>住所</th><th>area_m2</th><th>備考</th>
+</tr></thead><tbody>
+<tr><td>本社(千葉・長沼原町)</td><td>千葉県千葉市稲毛区長沼原町668番</td><td>9999</td><td>千葉市土地の代理</td></tr>
+<tr><td>本社(須賀川・横山町)</td><td>福島県須賀川市横山町93番</td><td>1685</td><td>須賀川市土地の代理</td></tr>
+<tr><td>本社(福岡・大橋)</td><td>福岡県福岡市南区大橋4丁目13番27号</td><td>167</td><td>福岡市土地の代理</td></tr>
+<tr><td>本社(那須郡・残差配分)</td><td>栃木県那須郡</td><td>26149</td><td>番地未解像、残差配分</td></tr>
+</tbody></table></template></td>
   <td class="right">2.266766</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1276,7 +4249,44 @@
   <td class="right">72</td>
   <td>3156</td>
   <td>レスター</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="72">📋 調査メモ</button><template id="docs-72"><h3>3156 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 3156</li>
+<li>企業名: 株式会社レスター</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 122,231.71 m2</li>
+<li>元住所: 東京都港区港南2丁目10番9号</li>
+<li>問題点: 港区港南の本社単独地としては面積が過大。2025年3月期有価証券報告書では「本社(東京都港区) システムBU 発電設備 土地 122,231.71㎡」とされる一方、公式サイトではエコソリューション事業について「日本全国で自社太陽光発電所(メガソーラー)を展開」と説明している。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025年3月期有価証券報告書の設備の状況で「本社(東京都港区) システムBU 発電設備 土地 122,231.71㎡」。同じ設備投資説明に「メガソーラー発電所他」も登場し、本社住所への単純帰属ではないことを示唆。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W8N9.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>会社概要で本社所在地は東京都港区港南2丁目10番9号 レスタービルディング。</td><td>https://www.restargp.com/company/outline/</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>事業紹介でエコソリューション事業は「日本全国で自社太陽光発電所（メガソーラー）を展開」と明記。</td><td>https://www.restargp.com/business/restar/</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>環境エネルギー特集で、旧バイテックエネスタが「全国に47か所」の太陽光発電所を保有していたと説明。</td><td>https://www.restargp.com/initiatives/</td></tr>
+<tr><td>公示地価</td><td>2026-03-17</td><td>港5-24（港区港南2丁目8番67）は本社近傍約200mの標準地で、地積379㎡・標準的使用400㎡。本社敷地の近傍代理値として採用。</td><td>https://www.land.mlit.go.jp/landPrice/AriaServlet?MOD=0&amp;TYP=0</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<p>本社住所そのものは公式会社概要と一致し、番地レベルで確定できる。一方で 122,231.71㎡を港南2丁目10番9号の単独本社土地とみなすのは不合理である。公式サイト上でエコソリューション事業が全国メガソーラー展開を明記しており、有報の設備区分も「本社(東京都港区) システムBU 発電設備」となっているため、発電設備の保有主体/管理拠点として本社住所が付され、実地は全国発電所群に分散していると判断する。</p>
+<p>東京側の評価対象は本社所在地のみとし、地積は近傍公示地の379㎡を代理値として採用した。残余は以下で算出した。</p>
+<p><code>122,231.71 - 379.00 = 121,852.71 (m2)</code></p>
+<h4>5. 最終配分</h4>
+<ul>
+<li>本社(港南): 東京都港区港南2丁目10番9号, 379.0 m2</li>
+<li>本社(全国メガソーラー発電設備・合算): 全国各所, 121,852.71 m2</li>
+</ul>
+<h4>6. 判断</h4>
+<ul>
+<li><code>config/address_patches/3156.yaml</code> では、出力CSVの <code>本社</code> キーを list 形式に分割する。</li>
+<li>東京評価に使う住所は本社所在地のみとし、残余面積は全国のメガソーラー発電設備合算として切り離す。</li>
+</ul></template></td>
   <td class="right">2.250204</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1293,7 +4303,71 @@
   <td class="right">73</td>
   <td>4021</td>
   <td>日産化学</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="73">📋 調査メモ</button><template id="docs-73"><h3>4021 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 4021</li>
+<li>企業名: 日産化学株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 132,000.00 m2</li>
+<li>元住所: 東京都中央区日本橋1-13</li>
+<li>問題点: 2025年3月31日時点の有報では「本社（東京都中央区）」の土地が132,000㎡、簿価872百万円、設備内容が「その他設備」とされている。中央区日本橋の単独本社地としては面積・簿価の両面で不自然であり、全国のその他設備が合算されていると推認した</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報（主要な設備）</td><td>2026-03-17</td><td>本社（東京都中央区）の土地が132,000㎡、簿価872百万円、設備内容は「その他設備」</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4NI.pdf</td></tr>
+<tr><td>会社概要</td><td>2026-03-17</td><td>現在の本社所在地は東京都中央区日本橋二丁目5番1号</td><td>https://www.nissanchem.co.jp/profile/corporate.html</td></tr>
+<tr><td>公式リリース</td><td>2026-03-17</td><td>2018年6月27日公表の本社移転リリースで、新本社は日本橋高島屋三井ビルディング18・19階</td><td>https://www.nissanchem.co.jp/news_release/news/n2018_06_27_03.pdf</td></tr>
+<tr><td>ビル物件情報</td><td>2026-03-17</td><td>日本橋高島屋三井ビルディングの基準階面積は804.83坪</td><td>https://www.jllproperty.jp/listings/nihombashi-takashimaya-mitsui-building-office</td></tr>
+<tr><td>ビル概要</td><td>2026-03-17</td><td>日本橋高島屋三井ビルディングの敷地面積6,023.84㎡、延床面積148,064.05㎡</td><td>https://www.excite.co.jp/news/article/Prtimes_2022-02-09-51782-215/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<h5>4.1 本社住所の確定</h5>
+<ul>
+<li>日産化学の現行会社概要および事業所一覧はいずれも本社を <code>東京都中央区日本橋二丁目5番1号</code> としている</li>
+<li>2018年6月27日の公式リリースで、新本社は <code>日本橋高島屋三井ビルディング 18・19階</code> と確認できる</li>
+</ul>
+<h5>4.2 東京側面積の推定</h5>
+<p>本社は超高層複合ビルの18・19階入居であり、有報の132,000㎡全量を日本橋本社に帰属させるのは不合理。</p>
+<p>そこで、ビル全体の敷地面積に対して、本社占有床面積の延床比率を掛ける近似で土地持分を推定した。</p>
+<ul>
+<li>基準階面積: 804.83坪</li>
+<li>1坪 = 3.305785㎡</li>
+<li>1フロア面積: 804.83 × 3.305785 = 2,660.594942㎡</li>
+<li>本社占有フロア: 2フロア（18階・19階）</li>
+<li>占有床面積推定: 2,660.594942 × 2 = 5,321.189884㎡</li>
+<li>ビル敷地面積: 6,023.84㎡</li>
+<li>ビル延床面積: 148,064.05㎡</li>
+</ul>
+<p>推定式:</p>
+<p>```text</p>
+<p>本社土地持分 ≒ 6,023.84 × 5,321.189884 / 148,064.05</p>
+<p>≒ 216.487368㎡</p>
+<p>```</p>
+<ul>
+<li>採用値: 216.49㎡</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<ul>
+<li>本社(日本橋高島屋三井ビルディング): 216.49㎡</li>
+<li>本社(その他全国合算): 131,783.51㎡</li>
+</ul>
+<p>計算:</p>
+<p>```text</p>
+<p>132,000.00 - 216.49 = 131,783.51㎡</p>
+<p>```</p>
+<h4>6. 判定</h4>
+<ul>
+<li>判定: 過大評価の疑い（BAD_PATTERN_1）</li>
+<li>理由: 有報の本社行は住所が都心の本社所在地である一方、土地132,000㎡・簿価872百万円・設備内容「その他設備」であり、日本橋単独地として整合しない</li>
+<li>補足: 「その他全国合算」は有報に明示された名称ではなく、都心本社と合計値の不整合から行った推論上の分解である</li>
+</ul></template></td>
   <td class="right">2.223368</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1310,7 +4384,48 @@
   <td class="right">74</td>
   <td>8181</td>
   <td>東天紅</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="74">📋 調査メモ</button><template id="docs-74"><h3>8181 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 8181</li>
+<li>企業名: 株式会社東天紅</li>
+<li>対象事業所: 上野賃貸不動産(台東区)</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 3,766.4 m2</li>
+<li>元住所: 東京都台東区上野4丁目8番4号</li>
+<li>問題点: 有報の設備表が <code>上野賃貸不動産 (東京都台東区)ほか</code> となっており、台東区 1 地点に 3,766.4m2 を全量配賦すると過大評価になりやすい。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報 設備の状況</td><td>2026-03-17</td><td>2025年2月28日時点の主要設備に <code>上野賃貸不動産 (東京都台東区)ほか</code>、土地面積 3,766.4m2、土地簿価 2,206,070千円と記載。単独地点ではなく <code>ほか</code> を含む合算行。</td><td>https://irbank.net/E04784/S100VT5U</td></tr>
+<tr><td>有報 大株主の状況</td><td>2026-03-17</td><td>小泉グループ株式会社の住所は <code>東京都台東区上野4-8-4</code>。東天紅の賃貸不動産行が示す台東区代表地点候補として整合。</td><td>https://irbank.net/E04784/notes/MajorShareholdersTextBlock</td></tr>
+<tr><td>公示地価近傍地</td><td>2026-03-17</td><td><code>東京都台東区上野4-7-2</code> の 2025 年公示地価ページに地積 <code>109m2</code> とある。上野4-8-4 近傍の商業地標準地のため、東京側の代理地積として採用。</td><td>https://chika.m47.jp/13/2025/k13106005020.html</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>東天紅公式サイトで本社・上野本店は <code>東京都台東区池之端1丁目4番1号</code>。飲食業の <code>上野店</code> は別管理であり、賃貸不動産行とは切り分けるべき。</td><td>https://www.totenko.co.jp/company/</td></tr>
+</tbody></table>
+<h4>4. 推論式</h4>
+<ul>
+<li>上野賃貸不動産(上野4-8-4近傍): 109.0 m2</li>
+<li><code>上野4-8-4</code> そのものの登記地積は公開ソースで確認できなかったため、近傍公示地 <code>上野4-7-2</code> の地積 109m2 を代理値として採用。</li>
+<li>上野賃貸不動産(その他全国合算): 3,766.4 - 109.0 = 3,657.4 m2</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>分割後名称</th><th>住所</th><th>面積(m2)</th><th>面積区分</th>
+</tr></thead><tbody>
+<tr><td>上野賃貸不動産(上野4-8-4近傍)</td><td>東京都台東区上野4丁目8番4号</td><td>109.0</td><td>近傍公示地による推定</td></tr>
+<tr><td>上野賃貸不動産(その他全国合算)</td><td>全国各所</td><td>3,657.4</td><td>残差推定</td></tr>
+</tbody></table>
+<h4>6. 判断</h4>
+<ul>
+<li><code>上野賃貸不動産</code> 3,766.4m2 は有報上で <code>ほか</code> を含む合算行であり、台東区 1 地点へ全量配賦するのは不適切。</li>
+<li>公開ソースだけでは <code>上野4-8-4</code> の登記地積を特定できなかったため、近傍公示地 <code>上野4-7-2</code> の 109m2 を東京側代理値とした。</li>
+<li>残差 3,657.4m2 は <code>全国各所</code> に逃がすのが、現時点の公開情報では最も保守的で再現可能な分割。</li>
+</ul></template></td>
   <td class="right">2.215140</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1327,7 +4442,48 @@
   <td class="right">75</td>
   <td>8091</td>
   <td>ニチモウ</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="75">📋 調査メモ</button><template id="docs-75"><h3>8091 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 8091</li>
+<li>企業名: ニチモウ株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 27,000.0 m2</li>
+<li>元住所: 東京都品川区東品川2丁目2番20号</li>
+<li>問題点: 天王洲アイルの本社単独地として 27,000m2 は過大。有報では本社行の内訳が <code>事務所設備</code> と <code>賃貸設備</code> に分かれ、さらに「建物本体は賃借」「所在地は各設備の所在地と合致するのは事務所設備のみ」と注記されている。</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025年3月期有報の設備表で、本社(東京都品川区)は <code>事務所設備</code> の土地 0㎡・帳簿価額 139百万円、<code>賃貸設備</code> の土地 27,000㎡・帳簿価額 699百万円。注記で「提出会社の事務所設備の建物本体は賃借しており、賃借面積は2,779㎡」「所在地は各事業所の所在地であり、各設備の所在地と合致するのは事務所設備及び研究設備」と明記。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W743.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>ニチモウ公式の事業所所在地で、本社は <code>東京都品川区東品川2-2-20 天王洲オーシャンスクエア</code>。</td><td>https://www.nichimo.co.jp/company/location/</td></tr>
+<tr><td>建物資料</td><td>2026-03-17</td><td>天王洲オーシャンスクエアの敷地面積 <code>8,248.090㎡</code>、延床面積 <code>60,904.086㎡</code>。</td><td>https://skyscraperclub.com/?p=1256</td></tr>
+</tbody></table>
+<h4>4. 推論式</h4>
+<p>有報注記どおり本社建物本体は賃借であり、27,000m2 全量を東品川の本社に載せるのは誤り。東京側は「賃借本社が占有する土地持分相当」を conservatively 推定し、残余を全国貸与資産へ逃がす。</p>
+<ul>
+<li>本社(東品川・賃借本社相当): <code>8,248.090 x 2,779 / 60,904.086 = 376.353...</code> → <code>376.4 m2</code></li>
+<li>本社(全国貸与資産・合算): <code>27,000.0 - 376.4 = 26,623.6 m2</code></li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>分割後名称</th><th>住所</th><th>面積(m2)</th><th>面積区分</th>
+</tr></thead><tbody>
+<tr><td>本社(東品川・賃借本社相当)</td><td>東京都品川区東品川2丁目2番20号</td><td>376.4</td><td>推定</td></tr>
+<tr><td>本社(全国貸与資産・合算)</td><td>全国各所</td><td>26,623.6</td><td>残差推定</td></tr>
+</tbody></table>
+<h4>6. 判断</h4>
+<ul>
+<li><code>本社</code> 27,000m2 は東品川単独地ではなく、有報注記上は全国の賃貸設備を含む合算値と判断する。</li>
+<li>東京評価に使う住所は公式サイトで確認できる本社所在地 <code>東京都品川区東品川2丁目2番20号</code> に固定する。</li>
+<li>東京側面積はゼロ固定ではなく、賃借面積按分の proxy 376.4m2 を採用する。</li>
+<li>残余 26,623.6m2 は <code>全国各所</code> の貸与資産合算として切り離す。</li>
+</ul></template></td>
   <td class="right">2.181078</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1361,7 +4517,67 @@
   <td class="right">77</td>
   <td>9929</td>
   <td>平和紙業</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="77">📋 調査メモ</button><template id="docs-77"><h3>9929 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9929</li>
+<li>企業名: 平和紙業株式会社</li>
+<li>対象事業所: 本社・東京本店</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 4,317 m2</li>
+<li>元住所: 東京都中央区新川1丁目22番11号</li>
+<li>問題点: 有報では「主要な賃借設備」の注記であり、所有土地ではなく賃借設備の延床面積 4,317㎡が「本社・東京本店(東京都中央区)他5事業所」として合算されている。現行出力はこれを東京1地点の土地として評価しているため、都心地価が丸ごと乗って過大</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025-03-31時点の主要な賃借設備として「本社・東京本店(東京都中央区)他5事業所」「事務所・倉庫」「4,317㎡」「135,937千円」が記載されている</td><td>https://disclosure2.edinet-fsa.go.jp/</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>事業所一覧に、本社・東京本店、新川1-22-11、名古屋支店、福岡支店、仙台支店、札幌事業所、広島事業所の番地住所が掲載されている</td><td>https://www.heiwapaper.co.jp/corporate/business.html</td></tr>
+<tr><td>公示地価proxy</td><td>2026-03-17</td><td>東京proxy: 中央区新川2-12-15、地積458㎡</td><td>https://chika.m47.jp/13/2025/k13102005021.html</td></tr>
+<tr><td>基準地価proxy</td><td>2026-03-17</td><td>名古屋proxy: 名古屋市中区錦1丁目3番28号、地積756㎡</td><td>https://chika.m47.jp/23/2024/t23106000001.html</td></tr>
+<tr><td>公示地価proxy</td><td>2026-03-17</td><td>福岡proxy: 福岡市博多区東比恵3-19-26、地積1006㎡</td><td>https://chika.m47.jp/40/2023/k40132005024.html</td></tr>
+<tr><td>公示地価proxy</td><td>2026-03-17</td><td>仙台proxy: 仙台市若林区卸町2-1-23、地積862㎡</td><td>https://chika.m47.jp/04/2004/k04103005005.html</td></tr>
+<tr><td>公示地価proxy</td><td>2026-03-17</td><td>札幌proxy: 札幌市中央区北8条西18丁目2番1外、地積396㎡</td><td>https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/01/2025011010014.html</td></tr>
+<tr><td>取引事例proxy</td><td>2026-03-17</td><td>広島proxy: 商工センター地区の土地取引中央値905㎡</td><td>https://utinokati.com/details/land/place/34104-U0019/</td></tr>
+</tbody></table>
+<h4>4. 拠点分解</h4>
+<p>有報の「本社・東京本店(東京都中央区)他5事業所」は、公式サイトの事業所一覧と突合すると、次の6拠点に対応するのが自然。</p>
+<table class="md-table"><thead><tr>
+<th>拠点</th><th>住所</th>
+</tr></thead><tbody>
+<tr><td>本社・東京本店</td><td>東京都中央区新川1丁目22番11号</td></tr>
+<tr><td>名古屋支店</td><td>愛知県名古屋市中区錦1丁目3番7号</td></tr>
+<tr><td>福岡支店</td><td>福岡県福岡市博多区東比恵3丁目23番34号</td></tr>
+<tr><td>仙台支店</td><td>宮城県仙台市若林区卸町3丁目1番7号</td></tr>
+<tr><td>札幌事業所</td><td>北海道札幌市中央区北13条西17丁目1番41号</td></tr>
+<tr><td>広島事業所</td><td>広島県広島市西区商工センター6丁目5番9号</td></tr>
+</tbody></table>
+<h4>5. 推論式</h4>
+<ul>
+<li>proxy地積合計: 458 + 756 + 1006 + 862 + 396 + 905 = 4,383㎡</li>
+<li>配分式: 各拠点配分面積 = 4,317 × proxy地積 / 4,383</li>
+</ul>
+<table class="md-table"><thead><tr>
+<th>拠点</th><th>proxy地積(㎡)</th><th>最終配分面積(㎡)</th>
+</tr></thead><tbody>
+<tr><td>本社・東京本店</td><td>458</td><td>451.10</td></tr>
+<tr><td>名古屋支店</td><td>756</td><td>744.62</td></tr>
+<tr><td>福岡支店</td><td>1006</td><td>990.85</td></tr>
+<tr><td>仙台支店</td><td>862</td><td>849.02</td></tr>
+<tr><td>札幌事業所</td><td>396</td><td>390.04</td></tr>
+<tr><td>広島事業所</td><td>905</td><td>891.37</td></tr>
+</tbody></table>
+<h4>6. 判断</h4>
+<ul>
+<li><code>本社・東京本店</code> の 4,317㎡ は所有土地ではなく、賃借設備の延床面積が6拠点で合算された注記値とみるのが妥当</li>
+<li>したがって、東京1地点へ 4,317㎡ を置く現行評価は過大</li>
+<li>今回のパッチでは、公式サイトで確認できる6拠点へ分割し、面積は近傍公的地積proxyで按分した</li>
+<li>なお、根本原因は「賃借設備の延床面積」を土地面積として扱っている点であり、上流ロジック側では当該注記を土地評価対象から除外するのが本筋</li>
+</ul></template></td>
   <td class="right">2.153828</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1378,7 +4594,60 @@
   <td class="right">78</td>
   <td>9845</td>
   <td>パーカーコーポレーション</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="78">📋 調査メモ</button><template id="docs-78"><h3>9845 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9845</li>
+<li>企業名: パーカーコーポレーション</li>
+<li>対象事業所: 本社・テクニカルセンター 他</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 38,000 m2</li>
+<li>元住所: 東京都中央区日本橋人形町2-22-1</li>
+<li>問題点: 有報では「本社・テクニカルセンター 他」「東京都中央区他」とされ、中央区1地点に38,000m2を載せると都心商業地として過大評価になる</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>会社公式</td><td>2026-03-17</td><td>会社概況に本社住所「東京都中央区日本橋人形町2-22-1」</td><td>https://www.parkercorp.co.jp/corporate/outline/</td></tr>
+<tr><td>会社公式</td><td>2026-03-17</td><td>事業所ページに研究開発拠点「テクニカルセンター」「東京都江東区枝川3-1-8」</td><td>https://www.parkercorp.co.jp/corporate/facilities/index.html</td></tr>
+<tr><td>IR</td><td>2026-03-17</td><td>2025年3月期有報の設備の状況では「本社・テクニカルセンター 他」「(東京都中央区他)」「土地(38千㎡)」</td><td>https://www.parkercorp.co.jp/investors/library/annual_report/index.html</td></tr>
+<tr><td>公的データ</td><td>2026-03-17</td><td>国交省鑑定評価書「中央5-20」は中央区日本橋人形町2丁目21番10、地積147㎡</td><td>https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131020520.html</td></tr>
+<tr><td>建築実績</td><td>2026-03-17</td><td>錢高組施工実績でテクニカルセンターは建築面積395.84㎡、延床2,257.76㎡</td><td>https://www.zenitaka.co.jp/news/2007/work/070724.html</td></tr>
+<tr><td>近傍比較</td><td>2026-03-17</td><td>枝川2丁目6番84のブリシア豊洲は敷地687.85㎡、建築面積459.16㎡</td><td>https://xn--cckyb6eodw179at8vb.com/outlines/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<h5>4.1 拠点分解</h5>
+<ul>
+<li>公式サイト上で提出会社の東京都内実在拠点として確認できたのは <code>本社</code> と <code>テクニカルセンター</code> の2地点。</li>
+<li>有報は <code>他</code> を含み、所在地も <code>東京都中央区他</code> なので、38,000 m2 は2地点以外の保有地を含む合算と判断。</li>
+</ul>
+<h5>4.2 面積配分</h5>
+<ul>
+<li>本社: 147.0 m2</li>
+<li>根拠: 本社住所に隣接する国交省標準地 <code>中央5-20</code> の地積147㎡を近傍代理値として採用。</li>
+<li>テクニカルセンター: 593.0 m2</li>
+<li>根拠: 公式建築実績の建築面積395.84㎡に、近傍枝川2丁目案件の敷地/建築面積比を掛けて敷地規模を推定。</li>
+<li>計算式: 395.84 x (687.85 / 459.16) = 593.01 → 593.0 m2</li>
+<li>その他保有地(合算残): 37,260.0 m2</li>
+<li>計算式: 38,000.0 - 147.0 - 593.0 = 37,260.0 m2</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>区分</th><th>住所</th><th>面積(m2)</th><th>備考</th>
+</tr></thead><tbody>
+<tr><td>本社</td><td>東京都中央区日本橋人形町2-22-1</td><td>147.0</td><td>近傍公示地による推定</td></tr>
+<tr><td>テクニカルセンター</td><td>東京都江東区枝川3-1-8</td><td>593.0</td><td>建築面積と近傍枝川案件から推定</td></tr>
+<tr><td>その他保有地(合算残)</td><td>全国各所</td><td>37,260.0</td><td>有報総面積から差引した残余</td></tr>
+</tbody></table>
+<h4>6. メモ</h4>
+<ul>
+<li><code>東京都中央区日本橋人形町2-22-1</code> と <code>東京都江東区枝川3-1-8</code> はローカル geocoder でいずれも <code>gaiku</code> を確認。</li>
+<li><code>全国各所</code> は実在地点未特定の残余資産なので、中央区1地点へ誤集約しないための退避エントリとして扱う。</li>
+</ul></template></td>
   <td class="right">2.128505</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1395,7 +4664,43 @@
   <td class="right">79</td>
   <td>6305</td>
   <td>日立建機</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="79">📋 調査メモ</button><template id="docs-79"><h3>6305 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 6305</li>
+<li>企業名: 日立建機株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 607,000 m2</li>
+<li>元住所: 東京都台東区東上野2丁目16番1号</li>
+<li>問題点: 出力CSVは東京HQの番地に 607,000m2 全量を載せているが、有報の設備表は <code>本社 (東京都台東区他)</code> としており、都心1区画ではない</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2025-03-31時点の設備表で <code>本社 (東京都台東区他)</code>、土地面積607千㎡。注記で <code>本社の土地には、日立建機日本株式会社に賃貸している土地526千㎡、15,938百万円(本社、関西・四国支社、その他拠点)を含めて表示</code> と明記</td><td>https://www.hitachicm.com/content/dam/hitachicm/global/ja/ir/library/securities-report/docs/20250624_yuho_ja.pdf</td></tr>
+<tr><td>公式会社概要</td><td>2026-03-17</td><td>本社所在地は <code>東京都台東区東上野二丁目16番1号</code></td><td>https://www.hitachicm.com/global/ja/corporate/profile/</td></tr>
+<tr><td>不動産IR</td><td>2026-03-17</td><td>日本ビルファンド投資法人の物件一覧で上野イーストタワーの <code>地積 3,508.73㎡</code> と開示</td><td>https://f.irbank.net/pdf/20210216/140120210216465169.pdf</td></tr>
+<tr><td>不動産IR</td><td>2026-03-17</td><td>日本ビルファンド投資法人の主要テナント一覧で <code>日立リアルエステートパートナーズ</code> が <code>上野イーストタワー</code> のテナントとして掲載され、外部所有ビルの賃借オフィスであることを補強</td><td>https://www.nbf-m.com/nbf/portfolio/tenant.html</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<p>1. 有報の607,000㎡は東京HQ単独ではなく、少なくとも <code>東京都台東区他</code> の合算である。</p>
+<p>2. そのうち 526,000㎡ は有報注記で <code>日立建機日本株式会社に賃貸している土地</code> として全国拠点合算が確定している。</p>
+<p>3. 東京HQ住所は上野イーストタワーであり、同ビルの地積は 3,508.73㎡。しかも外部所有ビルのため、日立建機単独の持分地積はこの数値以下とみるのが自然。</p>
+<p>4. よって、東京HQの <code>area_m2</code> は保守的な上限代理値として <code>3,509㎡</code> を採用した。</p>
+<p>5. 残余は <code>607,000 - 526,000 - 3,509 = 77,491㎡</code>。これは <code>東京都台東区他</code> のうち、開示未特定のその他所有地として全国合算に残す。</p>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>エントリ名</th><th>住所</th><th>area_m2</th><th>根拠</th>
+</tr></thead><tbody>
+<tr><td>本社(東上野)</td><td>東京都台東区東上野2丁目16番1号</td><td>3,509</td><td>上野イーストタワー地積3,508.73㎡の上限代理値</td></tr>
+<tr><td>本社(日立建機日本向け賃貸資産・合算)</td><td>全国各所</td><td>526,000</td><td>有報注記の明示値</td></tr>
+<tr><td>本社(その他所有地・合算)</td><td>全国各所</td><td>77,491</td><td>有報総量から上記2区分を控除した残余</td></tr>
+</tbody></table></template></td>
   <td class="right">2.059496</td>
   <td>gaiku</td>
   <td>high</td>
@@ -1412,7 +4717,51 @@
   <td class="right">80</td>
   <td>9708</td>
   <td>帝国ホテル</td>
-  <td></td>
+  <td><button class="docs-btn" data-idx="80">📋 調査メモ</button><template id="docs-80"><h3>9708 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9708</li>
+<li>企業名: 株式会社帝国ホテル</li>
+<li>対象事業所: 提出会社帝国ホテル本社 / 提出会社賃貸用不動産</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>提出会社帝国ホテル本社: 11,000 m2, 東京都千代田区丸の内1-6-65</li>
+<li>提出会社賃貸用不動産: 3,000 m2, 東京都中央区京橋2-16-13</li>
+<li>問題点:</li>
+<li>本社住所が <code>丸の内1-6-65</code> になっているが、会社公式の本社所在地と不一致</li>
+<li>賃貸用不動産は有報注記上「賃貸用マンション2物件の取得」に伴う増加で、1件の中央区土地として丸ごと評価すると過大になりやすい</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>会社概要で本社所在地は東京都千代田区内幸町1丁目1番1号。</td><td>https://www.imperialhotel.co.jp/company/overview</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>帝国ホテル東京の施設概要で所在地は東京都千代田区内幸町1丁目1番1号、敷地面積は24,379㎡。</td><td>https://www.imperialhotel.co.jp/tokyo/overview</td></tr>
+<tr><td>有報派生データ</td><td>2026-03-17</td><td>2025年3月期の土地明細で、帝国ホテル東京に「賃貸用マンション2物件の取得に伴う支出」として土地3,770百万円が増加。別注記で帝国ホテル本社の土地のうち12,807㎡は国有地賃借と記載。</td><td>https://irbank.net/E04539/Land</td></tr>
+<tr><td>公示地価</td><td>2026-03-17</td><td>中央区京橋1丁目15番の2025年公示地価情報で地積1,375㎡。現行抽出住所 <code>京橋2-16-13</code> に最も近い代表地の代理値として採用。</td><td>https://totinokati.com/kakaku/place/13102-U0001/kouji/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<h5>4.1 提出会社帝国ホテル本社</h5>
+<p>本社所在地は会社公式に <code>東京都千代田区内幸町1丁目1番1号</code> で確定する。帝国ホテル東京の公式敷地面積は 24,379㎡ であり、2025年3月期有報派生データではこのうち 12,807㎡ が国有地賃借と開示されている。したがって、出力CSVの 11,000㎡ は本社単独の自社保有地としておおむね説明可能であり、<code>本社他</code> 型の合算とは判断しない。</p>
+<h5>4.2 提出会社賃貸用不動産</h5>
+<p>2024年3月期には不動産賃貸事業の土地計上がなく、2025年3月期に初めて <code>東京都中央区等 / 3,000㎡</code> が現れている。IRBank 経由で確認できる有報派生データでは、その増加理由は <code>賃貸用マンション2物件の取得</code> である。つまり、3,000㎡ は単一の中央区土地ではなく、少なくとも2物件の合算である可能性が高い。</p>
+<p>一方、公開情報だけでは2物件の個別所在地までは特定できない。そこで、現行出力が保持している gaiku レベル住所 <code>東京都中央区京橋2丁目16番13号</code> を中央区側の代表地点とみなし、最寄り公示地価標準地 <code>京橋1丁目15番</code> の地積 1,375㎡ を代理値として採用した。残余は以下で算出する。</p>
+<p><code>3,000 - 1,375 = 1,625 (m2)</code></p>
+<p>残余 1,625㎡ は公開住所未特定の合算資産として <code>全国各所</code> に退避する。</p>
+<h4>5. 最終配分</h4>
+<ul>
+<li>提出会社帝国ホテル本社: 東京都千代田区内幸町1丁目1番1号, 11,000.0 m2</li>
+<li>提出会社賃貸用不動産(中央区代表): 東京都中央区京橋2丁目16番13号, 1,375.0 m2</li>
+<li>提出会社賃貸用不動産(残余合算): 全国各所, 1,625.0 m2</li>
+</ul>
+<h4>6. 判断</h4>
+<ul>
+<li><code>提出会社帝国ホテル本社</code> は住所誤りの修正のみを実施し、分割しない。</li>
+<li><code>提出会社賃貸用不動産</code> は 2025年3月期に取得した賃貸用マンション2物件の合算とみなし、中央区代表地と残余合算に分割する。</li>
+<li>個別2物件の公開住所が見つかれば、このパッチは差し替え対象である。</li>
+</ul></template></td>
   <td class="right">2.044353</td>
   <td>gaiku</td>
   <td>high</td>
