@@ -5,9 +5,12 @@ import unittest
 
 from src.company_config import (
     SiteSplitEntry,
+    _allocate_book_values,
+    _parse_split_entries,
     load_address_overrides,
     load_company_master,
 )
+from src.pdf_extract import FacilityLand
 
 
 class TestLoadCompanyMaster(unittest.TestCase):
@@ -189,6 +192,35 @@ class TestLoadAddressOverridesSplit(unittest.TestCase):
                 load_address_overrides(path)
         finally:
             os.unlink(path)
+
+
+class TestParseSplitEntriesNullBookValue(unittest.TestCase):
+    def test_null_book_value_yen_treated_as_none(self) -> None:
+        """book_value_yen: null should be parsed as None, not crash."""
+        entries = _parse_split_entries(
+            "0000",
+            "site",
+            [{"name": "A", "address": "x", "area_m2": 1, "book_value_yen": None}],
+        )
+        self.assertEqual(len(entries), 1)
+        self.assertIsNone(entries[0].book_value_yen)
+
+
+class TestAllocateBookValuesNegative(unittest.TestCase):
+    def test_specified_exceeds_original_raises(self) -> None:
+        """Sum of specified book values exceeding original should raise ValueError."""
+        orig = FacilityLand(
+            site_name="S",
+            location_short="x",
+            land_area_m2=100,
+            land_book_value_yen=10,
+        )
+        entries = [
+            SiteSplitEntry(name="a", address="x", area_m2=50, book_value_yen=20),
+            SiteSplitEntry(name="b", address="y", area_m2=50, book_value_yen=None),
+        ]
+        with self.assertRaises(ValueError):
+            _allocate_book_values(orig, entries)
 
 
 if __name__ == "__main__":

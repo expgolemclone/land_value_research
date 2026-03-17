@@ -92,7 +92,7 @@ def _parse_split_entries(code: str, site_name: str, raw_list: list) -> list[Site
                 name=str(item["name"]),
                 address=str(item["address"]),
                 area_m2=area_m2,
-                book_value_yen=float(item["book_value_yen"]) if "book_value_yen" in item else None,
+                book_value_yen=float(item["book_value_yen"]) if item.get("book_value_yen") is not None else None,
                 area_m2_is_estimated=area_m2_is_estimated,
                 area_m2_source=area_m2_source,
                 area_m2_source_url=area_m2_source_url,
@@ -161,6 +161,10 @@ def _allocate_book_values(
 
     specified_total = sum(e.book_value_yen for e in entries if e.book_value_yen is not None)
     remaining_book = original.land_book_value_yen - specified_total
+    if remaining_book < 0:
+        raise ValueError(
+            f"指定済み book_value_yen の合計 ({specified_total}) が元の簿価 ({original.land_book_value_yen}) を超えています: {original.site_name}"
+        )
 
     unspecified_area_total = sum(e.area_m2 for e in entries if e.book_value_yen is None)
 
