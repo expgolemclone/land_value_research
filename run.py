@@ -926,18 +926,38 @@ def _write_single_result(result: CompanyResult, out_path: str) -> None:
 
 
 def _get_memory_usage_percent() -> float:
-    """Read system memory usage from /proc/meminfo. Returns percentage (0-100)."""
-    with open("/proc/meminfo") as f:
-        info: dict[str, int] = {}
-        for line in f:
-            parts = line.split()
-            if parts[0] in ("MemTotal:", "MemAvailable:"):
-                info[parts[0]] = int(parts[1])
-            if len(info) == 2:
-                break
-    total = info["MemTotal:"]
-    available = info["MemAvailable:"]
-    return (total - available) / total * 100
+    """Return system memory usage as a percentage (0-100)."""
+    if sys.platform == "win32":
+        import ctypes
+
+        class MEMORYSTATUSEX(ctypes.Structure):
+            _fields_ = [
+                ("dwLength", ctypes.c_ulong),
+                ("dwMemoryLoad", ctypes.c_ulong),
+                ("ullTotalPhys", ctypes.c_ulonglong),
+                ("ullAvailPhys", ctypes.c_ulonglong),
+                ("ullTotalPageFile", ctypes.c_ulonglong),
+                ("ullAvailPageFile", ctypes.c_ulonglong),
+                ("ullTotalVirtual", ctypes.c_ulonglong),
+                ("ullAvailVirtual", ctypes.c_ulonglong),
+                ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+            ]
+
+        stat = MEMORYSTATUSEX(dwLength=ctypes.sizeof(MEMORYSTATUSEX))
+        ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
+        return float(stat.dwMemoryLoad)
+    else:
+        with open("/proc/meminfo") as f:
+            info: dict[str, int] = {}
+            for line in f:
+                parts = line.split()
+                if parts[0] in ("MemTotal:", "MemAvailable:"):
+                    info[parts[0]] = int(parts[1])
+                if len(info) == 2:
+                    break
+        total = info["MemTotal:"]
+        available = info["MemAvailable:"]
+        return (total - available) / total * 100
 
 
 def _memory_watchdog(ctx: RunContext, limit_percent: float, check_interval: float = 5.0) -> None:
