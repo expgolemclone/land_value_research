@@ -1,0 +1,92 @@
+{
+  "code": "9672",
+  "sites": [
+    {
+      "site_name": "大井競馬場",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 377000.0,
+      "ward": "品川区",
+      "has_override": false,
+      "bad_pattern_1_risk": true,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "東京サマーランド",
+      "geocode_level": "muni_centroid",
+      "address_source": "securities_report",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 1302000.0,
+      "ward": "あきる野市",
+      "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "勝島第1地区倉庫",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 17000.0,
+      "ward": "品川区",
+      "has_override": false,
+      "bad_pattern_1_risk": true,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "勝島第2地区倉庫",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 21000.0,
+      "ward": "品川区",
+      "has_override": false,
+      "bad_pattern_1_risk": true,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "勝島流通・配送センター",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 24000.0,
+      "ward": "品川区",
+      "has_override": false,
+      "bad_pattern_1_risk": true,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "平和島倉庫",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 20000.0,
+      "ward": "大田区",
+      "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "ウィラ大井2号館・劇場",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 5000.0,
+      "ward": "品川区",
+      "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    }
+  ],
+  "all_gaiku": false,
+  "has_risk": true,
+  "docs_exists": false
+}

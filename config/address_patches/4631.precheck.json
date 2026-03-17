@@ -1,0 +1,20 @@
+{
+  "code": "4631",
+  "sites": [
+    {
+      "site_name": "本社",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 89000.0,
+      "ward": "中央区",
+      "has_override": false,
+      "bad_pattern_1_risk": true,
+      "has_multi_loc_warning": false
+    }
+  ],
+  "all_gaiku": true,
+  "has_risk": true,
+  "docs_exists": false
+}

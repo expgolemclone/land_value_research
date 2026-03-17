@@ -1,0 +1,44 @@
+{
+  "code": "1885",
+  "sites": [
+    {
+      "site_name": "本社",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 708028.0,
+      "ward": "新宿区",
+      "has_override": false,
+      "bad_pattern_1_risk": true,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "東日本建築支店",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 13604.0,
+      "ward": "新宿区",
+      "has_override": false,
+      "bad_pattern_1_risk": true,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "東京支店",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 2277.0,
+      "ward": "中央区",
+      "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    }
+  ],
+  "all_gaiku": true,
+  "has_risk": true,
+  "docs_exists": false
+}

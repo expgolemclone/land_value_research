@@ -1,0 +1,68 @@
+{
+  "code": "3494",
+  "sites": [
+    {
+      "site_name": "ハイホーム本陣",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 1358.96,
+      "ward": "新宿区",
+      "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "門前仲町弐番館他20棟",
+      "geocode_level": "gaiku",
+      "address_source": "override",
+      "has_hoka": true,
+      "is_aggregate": false,
+      "area_m2": 5384.21,
+      "ward": "江東区",
+      "has_override": true,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": true
+    },
+    {
+      "site_name": "マリオン田端",
+      "geocode_level": "gaiku",
+      "address_source": "override",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 31.59,
+      "ward": "荒川区",
+      "has_override": true,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "マリオン浅草雷門他2棟",
+      "geocode_level": "gaiku",
+      "address_source": "override",
+      "has_hoka": true,
+      "is_aggregate": false,
+      "area_m2": 489.52,
+      "ward": "台東区",
+      "has_override": true,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": true
+    },
+    {
+      "site_name": "寿3丁目倉庫",
+      "geocode_level": "oaza_chome",
+      "address_source": "override",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 61.38,
+      "ward": "台東区",
+      "has_override": true,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    }
+  ],
+  "all_gaiku": false,
+  "has_risk": true,
+  "docs_exists": false
+}

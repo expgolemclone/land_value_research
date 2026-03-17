@@ -1,0 +1,44 @@
+{
+  "code": "4272",
+  "sites": [
+    {
+      "site_name": "東京工場",
+      "geocode_level": "gaiku",
+      "address_source": "override",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 16000.0,
+      "ward": "足立区",
+      "has_override": true,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "ファインケミカルズ研究所",
+      "geocode_level": "gaiku",
+      "address_source": "override",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 33000.0,
+      "ward": "北区",
+      "has_override": true,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "本社",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 32000.0,
+      "ward": "千代田区",
+      "has_override": false,
+      "bad_pattern_1_risk": true,
+      "has_multi_loc_warning": false
+    }
+  ],
+  "all_gaiku": true,
+  "has_risk": true,
+  "docs_exists": false
+}
