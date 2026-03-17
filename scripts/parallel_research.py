@@ -30,7 +30,7 @@ from scripts.codex_lockdown import codex_lockdown
 
 RANKING_FILE = PROJECT_ROOT / "data" / "ranking" / "ranking_market_cap_ratio.html"
 PATCH_DIR = PROJECT_ROOT / "config" / "address_patches"
-LOG_DIR = PROJECT_ROOT / "docs" / "research_logs"
+LOG_DIR = PROJECT_ROOT / "split-address" / "research_logs"
 
 
 # ---------------------------------------------------------------------------
@@ -160,7 +160,9 @@ def _run_precheck(selected: list[dict[str, str]]) -> dict[str, dict | None]:
                 risk_count = sum(
                     1
                     for s in result["sites"]
-                    if s.get("bad_pattern_1_risk") or s.get("geocode_level") != "gaiku" or s.get("has_multi_loc_warning")
+                    if s.get("bad_pattern_1_risk")
+                    or s.get("geocode_level") != "gaiku"
+                    or s.get("has_multi_loc_warning")
                 )
                 print(f" リスクあり ({risk_count}拠点)")
             else:
@@ -172,13 +174,24 @@ def _run_precheck(selected: list[dict[str, str]]) -> dict[str, dict | None]:
     return results
 
 
+def _cleanup_empty_docs() -> None:
+    """Delete empty .md files in split-address/ left over from previous failed runs."""
+    docs_dir = PROJECT_ROOT / "split-address"
+    if not docs_dir.is_dir():
+        return
+    for md in docs_dir.glob("*.md"):
+        if md.stat().st_size == 0:
+            print(f"  空ファイル削除: split-address/{md.name}")
+            md.unlink()
+
+
 def _codex_check_filter(selected: list[dict[str, str]]) -> list[dict[str, str]]:
-    """Filter out companies whose docs/{code}.md already exists."""
+    """Filter out companies whose split-address/{code}.md already exists."""
     filtered: list[dict[str, str]] = []
     for t in selected:
-        docs_md = PROJECT_ROOT / "docs" / f"{t['code']}.md"
+        docs_md = PROJECT_ROOT / "split-address" / f"{t['code']}.md"
         if docs_md.exists():
-            print(f"  スキップ: {t['code']} {t['name']} (調査済み: docs/{t['code']}.md)")
+            print(f"  スキップ: {t['code']} {t['name']} (調査済み: split-address/{t['code']}.md)")
         else:
             filtered.append(t)
     return filtered
@@ -217,10 +230,13 @@ def run_split_address(args: argparse.Namespace) -> None:
         print("ランキングに企業が見つかりませんでした.")
         return
 
-    # docs/{code}.md 存在チェック (調査済み企業を除外)
+    # 前回失敗時の空ファイルを掃除してから絞り込む
+    _cleanup_empty_docs()
+
+    # split-address/{code}.md 存在チェック (調査済み企業を除外)
     targets = _codex_check_filter(targets)
     if not targets:
-        print("全企業が調査済みです (docs/*.md が存在).")
+        print("全企業が調査済みです (split-address/*.md が存在).")
         return
 
     selected = targets[: args.n]
@@ -244,15 +260,15 @@ def run_split_address(args: argparse.Namespace) -> None:
             pcheck_file = PATCH_DIR / f"{code}.precheck.json"
             pcheck_file.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    # Ensure docs/{code}.md exists before lockdown (docs/ will be 0o111)
-    docs_dir = PROJECT_ROOT / "docs"
+    # Ensure split-address/{code}.md exists before lockdown (split-address/ will be 0o111)
+    docs_dir = PROJECT_ROOT / "split-address"
     docs_dir.mkdir(parents=True, exist_ok=True)
     for t in selected:
         docs_md = docs_dir / f"{t['code']}.md"
         if not docs_md.exists():
             docs_md.touch()
 
-    # Ensure log dir exists before lockdown (docs/ will be 0o111)
+    # Ensure log dir exists before lockdown (split-address/ will be 0o111)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
     # Build prompts
@@ -293,7 +309,7 @@ def run_resolve_address(args: argparse.Namespace) -> None:
 
     _prepare_patch_dir()
 
-    # Ensure log dir exists before lockdown (docs/ will be 0o111)
+    # Ensure log dir exists before lockdown (split-address/ will be 0o111)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
     prompts = {
@@ -339,17 +355,13 @@ def _build_injected_prompt(
         pcheck = PATCH_DIR / f"{code}.precheck.json"
         if pcheck.exists():
             pcheck_content = pcheck.read_text(encoding="utf-8")
-            parts.append(
-                f'<context path="config/address_patches/{code}.precheck.json">\n{pcheck_content}\n</context>'
-            )
+            parts.append(f'<context path="config/address_patches/{code}.precheck.json">\n{pcheck_content}\n</context>')
 
     # facilities_land (有報 設備の状況) 注入 — 両モード共通
     sites_path = PROJECT_ROOT / "data" / "cache" / "facilities_land" / f"{code}_sites.json"
     if sites_path.exists():
         sites_content = sites_path.read_text(encoding="utf-8")
-        parts.append(
-            f'<context path="data/cache/facilities_land/{code}_sites.json">\n{sites_content}\n</context>'
-        )
+        parts.append(f'<context path="data/cache/facilities_land/{code}_sites.json">\n{sites_content}\n</context>')
 
     # facilities_text (有報 設備の状況 ページテキスト) 注入
     text_path = PROJECT_ROOT / "data" / "cache" / "facilities_land" / f"{code}_facilities_text.txt"
@@ -363,9 +375,7 @@ def _build_injected_prompt(
     csv_path = PROJECT_ROOT / "data" / "output" / f"{code}_output.csv"
     if csv_path.exists():
         csv_content = csv_path.read_text(encoding="utf-8")
-        parts.append(
-            f'<context path="data/output/{code}_output.csv">\n{csv_content}\n</context>'
-        )
+        parts.append(f'<context path="data/output/{code}_output.csv">\n{csv_content}\n</context>')
 
     # ユーザー指示
     parts.append(user_instruction)
@@ -392,6 +402,123 @@ def _prepare_patch_dir() -> None:
     print(f"パッチディレクトリ: {PATCH_DIR} (クリア済み)\n")
 
 
+def _build_ps1_script(
+    cli_cmd: str,
+    prompt_file: Path,
+    log_file: Path,
+    *,
+    cwd: Path | None = None,
+    docs_path: Path | None = None,
+    docs_label: str = "",
+    patch_path: Path | None = None,
+    patch_label: str = "",
+) -> str:
+    """PowerShell (.ps1) スクリプトを生成."""
+    pf = str(prompt_file).replace("'", "''")
+    lf = str(log_file).replace("'", "''")
+    lines: list[str] = [
+        "[Console]::InputEncoding = [System.Text.Encoding]::UTF8",
+        "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
+        "$OutputEncoding = [System.Text.Encoding]::UTF8",
+    ]
+    if cwd is not None:
+        lines.append(f"Set-Location -Path '{str(cwd).replace(chr(39), chr(39) * 2)}'")
+    lines += [
+        "$ErrorActionPreference = 'Continue'",
+        f"$prompt = Get-Content -Path '{pf}' -Raw -Encoding UTF8",
+        f"& {cli_cmd} exec --full-auto $prompt 2>&1 | Tee-Object -FilePath '{lf}'",
+    ]
+    if docs_path is not None:
+        dp = str(docs_path).replace("'", "''")
+        lines += [
+            f"if (-not (Test-Path '{dp}') -or (Get-Item '{dp}').Length -eq 0) {{",
+            f"  $m = Select-String -Path '{lf}' -Pattern 'session id: ' | Select-Object -First 1",
+            "  $sid = ($m.Line -split 'session id: ')[1].Split()[0]",
+            f'  Write-Host "`n--- {docs_label} が空. resume リトライ (SID=$sid) ---"',
+            f"  & {cli_cmd} exec resume $sid --full-auto '{docs_label} が空のままです。調査結果を書き込んでください。' 2>&1 | Tee-Object -FilePath '{lf}' -Append",
+            "}",
+        ]
+    if patch_path is not None:
+        pp = str(patch_path).replace("'", "''")
+        lines += [
+            f"if (-not (Test-Path '{pp}') -or (Get-Item '{pp}').Length -eq 0) {{",
+            f"  $m = Select-String -Path '{lf}' -Pattern 'session id: ' | Select-Object -First 1",
+            "  $sid = ($m.Line -split 'session id: ')[1].Split()[0]",
+            '  Write-Host "`n--- パッチ未作成. コンテキスト注入 (SID=$sid) ---"',
+            f"  & {cli_cmd} exec resume $sid --full-auto '{patch_label} が作成されていません。住所の分割・修正が必要な場合はパッチファイルを作成してください。現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_label} に記載してください。' 2>&1 | Tee-Object -FilePath '{lf}' -Append",
+            "}",
+        ]
+    if docs_path is not None or patch_path is not None:
+        lines.append('Write-Host "`n--- 完了 ---"')
+    return "\n".join(lines) + "\n"
+
+
+def _build_bash_script(
+    cli_cmd: str,
+    prompt_file: Path,
+    log_file: Path,
+    *,
+    cwd: Path | None = None,
+    docs_path: Path | None = None,
+    docs_label: str = "",
+    patch_path: Path | None = None,
+    patch_label: str = "",
+    _q: object = None,
+) -> str:
+    """bash (.sh) スクリプトを生成."""
+    import shlex
+
+    if _q is None:
+
+        def _q(p: Path | str) -> str:
+            return shlex.quote(str(p).replace("\\", "/"))
+
+    log_q = _q(log_file)
+    prompt_q = _q(prompt_file)
+    shell_cmd = ""
+    if cwd is not None:
+        shell_cmd += f"cd {_q(cwd)} || exit 1; "
+    shell_cmd += f'{cli_cmd} exec --full-auto "$(<{prompt_q})" 2>&1 | tee {log_q}; '
+    if docs_path is not None:
+        shell_cmd += (
+            f"if [ ! -s {_q(docs_path)} ]; then "
+            f"  SID=$(grep -m1 'session id: ' {log_q} | awk '{{print $3}}'); "
+            f'  echo "\\n--- {docs_label} が空. resume リトライ (SID=$SID) ---"; '
+            f'  {cli_cmd} exec resume "$SID" --full-auto '
+            f'"{docs_label} が空のままです。調査結果を書き込んでください。" '
+            f"2>&1 | tee -a {log_q}; "
+            f"fi; "
+        )
+    if patch_path is not None:
+        shell_cmd += (
+            f"if [ ! -s {_q(patch_path)} ]; then "
+            f"  SID=$(grep -m1 'session id: ' {log_q} | awk '{{print $3}}'); "
+            f'  echo "\\n--- パッチ未作成. コンテキスト注入 (SID=$SID) ---"; '
+            f'  {cli_cmd} exec resume "$SID" --full-auto '
+            f'"{patch_label} が作成されていません。'
+            f"住所の分割・修正が必要な場合はパッチファイルを作成してください。"
+            f'現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_label} に記載してください。" '
+            f"2>&1 | tee -a {log_q}; "
+            f"fi; "
+        )
+    if docs_path is not None or patch_path is not None:
+        shell_cmd += 'echo "\\n--- 完了 ---"'
+    return shell_cmd
+
+
+def _terminal_cmd(title: str, script_file: Path) -> list[str]:
+    """Build command to launch a script in a new terminal window."""
+    if sys.platform == "win32":
+        import shutil
+
+        script_path = str(script_file)
+        if shutil.which("wt"):
+            return ["wt", "-w", "new", "--title", title, "--", "pwsh", "-NoProfile", "-File", script_path]
+        # フォールバック: cmd /c start で新しいウィンドウを開く
+        return ["cmd", "/c", "start", title, "pwsh", "-NoProfile", "-File", script_path]
+    return ["kitty", "--title", title, "-e", "bash", str(script_file)]
+
+
 def _launch_processes(
     selected: list[dict[str, str]],
     prompts: dict[str, str],
@@ -400,12 +527,22 @@ def _launch_processes(
     check_docs: bool = False,
     check_patch: bool = False,
 ) -> None:
-    """Launch parallel CLI processes in new kitty windows."""
-    import shlex
-
+    """Launch parallel CLI processes in new terminal windows."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    print(f"{len(selected)} プロセスを kitty ウィンドウで起動します...\n")
+    is_win = sys.platform == "win32"
+    term_name = "Windows Terminal / pwsh" if is_win else "kitty"
+    print(f"{len(selected)} プロセスを {term_name} ウィンドウで起動します...\n")
+
+    def _pq(p: Path | str) -> str:
+        """PowerShell 用シングルクォート (内部の ' を '' にエスケープ)."""
+        return "'" + str(p).replace("'", "''") + "'"
+
+    def _bq(p: Path | str) -> str:
+        """bash 用 shlex.quote (forward slash 変換付き)."""
+        import shlex
+
+        return shlex.quote(str(p).replace("\\", "/"))
 
     running: list[dict] = []
     for i, t in enumerate(selected):
@@ -418,51 +555,51 @@ def _launch_processes(
         prompt_file.write_text(prompt, encoding="utf-8")
 
         title = f"{code} {t['name']}"
-        log_q = shlex.quote(str(log_file))
-        prompt_q = shlex.quote(str(prompt_file))
-        docs_md = f"docs/{code}.md"
+        docs_md_rel = f"split-address/{code}.md"
+        patch_yaml_rel = f"config/address_patches/{code}.yaml"
 
-        patch_yaml = f"config/address_patches/{code}.yaml"
-
-        if check_docs or check_patch:
-            shell_cmd = f"{cli_cmd} exec --full-auto \"$(<{prompt_q})\" 2>&1 | tee {log_q}; "
-            if check_docs:
-                shell_cmd += (
-                    f"if [ ! -s {shlex.quote(str(PROJECT_ROOT / docs_md))} ]; then "
-                    f"  SID=$(grep -m1 'session id: ' {log_q} | awk '{{print $3}}'); "
-                    f'  echo "\\n--- {docs_md} が空. resume リトライ (SID=$SID) ---"; '
-                    f"  {cli_cmd} exec resume \"$SID\" --full-auto "
-                    f'"{docs_md} が空のままです。調査結果を書き込んでください。" '
-                    f"2>&1 | tee -a {log_q}; "
-                    f"fi; "
-                )
-            if check_patch:
-                shell_cmd += (
-                    f"if [ ! -s {shlex.quote(str(PROJECT_ROOT / patch_yaml))} ]; then "
-                    f"  SID=$(grep -m1 'session id: ' {log_q} | awk '{{print $3}}'); "
-                    f'  echo "\\n--- パッチ未作成. コンテキスト注入 (SID=$SID) ---"; '
-                    f"  {cli_cmd} exec resume \"$SID\" --full-auto "
-                    f'"{patch_yaml} が作成されていません。'
-                    f"住所の分割・修正が必要な場合はパッチファイルを作成してください。"
-                    f"現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_md} に記載してください。\" "
-                    f"2>&1 | tee -a {log_q}; "
-                    f"fi; "
-                )
-            shell_cmd += 'echo "\\n--- 完了 (Enter で閉じる) ---"; read'
-        else:
-            shell_cmd = (
-                f"{cli_cmd} exec --full-auto \"$(<{prompt_q})\" "
-                f"2>&1 | tee {log_q}"
+        if is_win:
+            shell_cmd = _build_ps1_script(
+                cli_cmd,
+                prompt_file,
+                log_file,
+                cwd=PROJECT_ROOT,
+                docs_path=PROJECT_ROOT / docs_md_rel if check_docs else None,
+                docs_label=docs_md_rel,
+                patch_path=PROJECT_ROOT / patch_yaml_rel if check_patch else None,
+                patch_label=patch_yaml_rel,
             )
-        cmd = ["kitty", "--title", title, "-e", "bash", "-c", shell_cmd]
+            script_file = LOG_DIR / f"{timestamp}_{code}.ps1"
+        else:
+            shell_cmd = _build_bash_script(
+                cli_cmd,
+                prompt_file,
+                log_file,
+                cwd=PROJECT_ROOT,
+                docs_path=PROJECT_ROOT / docs_md_rel if check_docs else None,
+                docs_label=docs_md_rel,
+                patch_path=PROJECT_ROOT / patch_yaml_rel if check_patch else None,
+                patch_label=patch_yaml_rel,
+                _q=_bq,
+            )
+            script_file = LOG_DIR / f"{timestamp}_{code}.sh"
+
+        script_file.write_text(shell_cmd, encoding="utf-8")
+        cmd = _terminal_cmd(title, script_file)
 
         print(f"  [{i + 1}] {title}")
         print(f"      log: {log_file}")
 
+        launch_env = {**os.environ, "NO_COLOR": "1"}
+        # Ensure npm global bin is on PATH (needed for codex CLI)
+        if sys.platform == "win32":
+            npm_global = Path(os.environ.get("APPDATA", "")) / "npm"
+            if str(npm_global) not in launch_env.get("PATH", ""):
+                launch_env["PATH"] = launch_env.get("PATH", "") + ";" + str(npm_global)
         proc = subprocess.Popen(
             cmd,
             cwd=PROJECT_ROOT,
-            env={**os.environ, "NO_COLOR": "1"},
+            env=launch_env,
         )
         running.append({"proc": proc, "code": code, "name": t["name"], "log": log_file})
 
@@ -476,11 +613,11 @@ def _launch_processes(
         if p["log"].exists() and p["log"].stat().st_size == 0:
             print(f"  {p['code']} {p['name']}: 警告 - ログが空です")
         if check_docs:
-            docs_md = PROJECT_ROOT / "docs" / f"{p['code']}.md"
+            docs_md = PROJECT_ROOT / "split-address" / f"{p['code']}.md"
             if not docs_md.exists():
-                print(f"  {p['code']} {p['name']}: エラー - docs/{p['code']}.md が存在しません")
+                print(f"  {p['code']} {p['name']}: エラー - split-address/{p['code']}.md が存在しません")
             elif docs_md.stat().st_size == 0:
-                print(f"  {p['code']} {p['name']}: エラー - docs/{p['code']}.md が空です (推論メモ未保存)")
+                print(f"  {p['code']} {p['name']}: エラー - split-address/{p['code']}.md が空です (推論メモ未保存)")
         if check_patch:
             patch_yaml = PATCH_DIR / f"{p['code']}.yaml"
             if not patch_yaml.exists():
@@ -498,9 +635,13 @@ def _launch_processes(
         )
         print()
 
-    print("次の手順:")
-    print(f"  1. ログ確認:    ls {LOG_DIR}/{timestamp}_*.log")
-    print("  2. 再実行:      uv run python run.py")
+    print(f"ログ確認: ls {LOG_DIR}/{timestamp}_*.log")
+
+    print("\n=== run.py 実行 ===\n")
+    subprocess.run(
+        [sys.executable, str(PROJECT_ROOT / "run.py")],
+        cwd=PROJECT_ROOT,
+    )
 
 
 # ---------------------------------------------------------------------------
