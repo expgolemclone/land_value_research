@@ -3149,6 +3149,9 @@
   company_name: アプライド
 '3021':
   company_name: パシフィックネット
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100WLI3.pdf
+  address_source_urls:
+  - https://irbank.net/3021/ir
 '3023':
   company_name: ラサ商事
 '3024':
@@ -3270,6 +3273,9 @@
   company_name: 富士紡ホールディングス
 '3105':
   company_name: 日清紡ホールディングス
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VGXL.pdf
+  address_source_urls:
+  - https://irbank.net/3105/ir
 '3106':
   company_name: 倉敷紡績
 '3107':
@@ -3330,6 +3336,9 @@
   company_name: メディアスホールディングス
 '3156':
   company_name: レスター
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W8N9.pdf
+  address_source_urls:
+  - https://irbank.net/3156/ir
 '3157':
   company_name: ジオリーブグループ
 '3159':
@@ -3429,6 +3438,9 @@
   company_name: ユナイテッド・スーパーマーケット・ホールディングス
 '3223':
   company_name: エスエルディー
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VUG3.pdf
+  address_source_urls:
+  - https://irbank.net/3223/ir
 '3224':
   company_name: ゼネラル・オイスター
 '3226':
@@ -3937,6 +3949,9 @@
   company_name: クラウディアホールディングス
 '3608':
   company_name: ＴＳＩホールディングス
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VSWZ.pdf
+  address_source_urls:
+  - https://irbank.net/3608/ir
 360A:
   company_name: 東証ＲＥＩＴ　Ｃｏｒｅ　ＥＴＦ
 '3611':
@@ -4051,6 +4066,9 @@
   company_name: プリモグローバルホールディングス
 '3680':
   company_name: ホットリンク
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VIJ4.pdf
+  address_source_urls:
+  - https://irbank.net/3680/ir
 '3681':
   company_name: ブイキューブ
 '3682':
@@ -4068,6 +4086,9 @@
   company_name: 北里コーポレーション
 '3690':
   company_name: イルグルム
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XAFO.pdf
+  address_source_urls:
+  - https://irbank.net/3690/ir
 '3691':
   company_name: デジタルプラス
 '3692':
@@ -4306,6 +4327,9 @@
   company_name: クラウドワークス
 '3901':
   company_name: マークラインズ
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VG5E.pdf
+  address_source_urls:
+  - https://irbank.net/3901/ir
 '3902':
   company_name: メディカル・データ・ビジョン
 '3903':
@@ -4470,10 +4494,16 @@
   company_name: トレードワークス
 '3998':
   company_name: すららネット
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHUL.pdf
+  address_source_urls:
+  - https://irbank.net/3998/ir
 399A:
   company_name: 上場インデックスファンド日経平均高配当株５０
 '4004':
   company_name: レゾナック・ホールディングス
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHA9.pdf
+  address_source_urls:
+  - https://irbank.net/4004/ir
 '4005':
   company_name: 住友化学
 '4008':
@@ -4500,6 +4530,9 @@
   company_name: ビートレンド
 '4021':
   company_name: 日産化学
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4NI.pdf
+  address_source_urls:
+  - https://irbank.net/4021/ir
 '4022':
   company_name: ラサ工業
 '4023':
@@ -4578,6 +4611,9 @@
   company_name: 信越化学工業
 '4064':
   company_name: 日本カーバイド工業
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3LC.pdf
+  address_source_urls:
+  - https://irbank.net/4064/ir
 '4068':
   company_name: ベイシス
 '4069':
@@ -4804,6 +4840,9 @@
   company_name: ダイキョーニシカワ
 '4247':
   company_name: ポバール興業
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W79V.pdf
+  address_source_urls:
+  - https://irbank.net/4247/ir
 '4248':
   company_name: 竹本容器
 '4249':
@@ -4845,6 +4884,9 @@
   - https://irbank.net/4272/ir
 '4274':
   company_name: 細谷火工
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W25N.pdf
+  address_source_urls:
+  - https://irbank.net/4274/ir
 '4275':
   company_name: カーリット
 '4284':
@@ -4974,6 +5016,9 @@
   company_name: Ｍマート
 '4381':
   company_name: ビープラッツ
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W0KB.pdf
+  address_source_urls:
+  - https://irbank.net/4381/ir
 '4382':
   company_name: ＨＥＲＯＺ
 '4384':
@@ -5363,6 +5408,9 @@
   company_name: ＦＵＮＤＩＮＮＯ
 '4631':
   company_name: ＤＩＣ
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VH8S.pdf
+  address_source_urls:
+  - https://irbank.net/4631/ir
 '4633':
   company_name: サカタインクス
 '4634':
@@ -5598,6 +5646,9 @@
   company_name: テラテクノロジー
 '4840':
   company_name: トライアイズ
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VJ9V.pdf
+  address_source_urls:
+  - https://irbank.net/4840/ir
 '4845':
   company_name: スカラ
 '4847':
@@ -5777,6 +5828,9 @@
   company_name: ＴＯブックス
 '5010':
   company_name: 日本精蝋
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VIKL.pdf
+  address_source_urls:
+  - https://irbank.net/5010/ir
 '5011':
   company_name: ニチレキグループ
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W0US.pdf
@@ -5933,8 +5987,14 @@
   company_name: バンドー化学
 '5199':
   company_name: 不二ラテックス
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W2HG.pdf
+  address_source_urls:
+  - https://irbank.net/5199/ir
 '5201':
   company_name: ＡＧＣ
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VI0L.pdf
+  address_source_urls:
+  - https://irbank.net/5201/ir
 '5202':
   company_name: 日本板硝子
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4Q7.pdf
@@ -6082,6 +6142,9 @@
   company_name: エーアンドエーマテリアル
 '5393':
   company_name: ニチアス
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3DV.pdf
+  address_source_urls:
+  - https://irbank.net/5393/ir
 '5401':
   company_name: 日本製鉄
 '5406':
@@ -6092,8 +6155,14 @@
   company_name: 合同製鐵
 '5411':
   company_name: ＪＦＥホールディングス
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VZW5.pdf
+  address_source_urls:
+  - https://irbank.net/5411/ir
 '5423':
   company_name: 東京製鐵
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W38V.pdf
+  address_source_urls:
+  - https://irbank.net/5423/ir
 '5440':
   company_name: 共英製鋼
 '5444':
@@ -6108,6 +6177,9 @@
   company_name: ヨドコウ
 '5458':
   company_name: 高砂鐵工
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W2RY.pdf
+  address_source_urls:
+  - https://irbank.net/5458/ir
 '5461':
   company_name: 中部鋼鈑
 '5463':
@@ -6127,6 +6199,9 @@
   company_name: 東北特殊鋼
 '5491':
   company_name: 日本金属
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W66M.pdf
+  address_source_urls:
+  - https://irbank.net/5491/ir
 '5525':
   company_name: フロンティアホールディングス
 '5527':
@@ -6153,6 +6228,9 @@
   company_name: 新報国マテリアル
 '5563':
   company_name: 新日本電工
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHVE.pdf
+  address_source_urls:
+  - https://irbank.net/5563/ir
 '5570':
   company_name: ジェノバ
 '5571':
@@ -6254,12 +6332,18 @@
   - https://irbank.net/5706/ir
 '5707':
   company_name: 東邦亜鉛
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W86P.pdf
+  address_source_urls:
+  - https://irbank.net/5707/ir
 '5711':
   company_name: 三菱マテリアル
 '5713':
   company_name: 住友金属鉱山
 '5714':
   company_name: ＤＯＷＡホールディングス
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W2F9.pdf
+  address_source_urls:
+  - https://irbank.net/5714/ir
 '5715':
   company_name: 古河機械金属
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4TJ.pdf
@@ -6601,6 +6685,9 @@
   company_name: エンバイオ・ホールディングス
 '6093':
   company_name: エスクロー・エージェント・ジャパン
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VUN4.pdf
+  address_source_urls:
+  - https://irbank.net/6093/ir
 '6094':
   company_name: フリークアウト・ホールディングス
 '6096':
@@ -6843,6 +6930,9 @@
   company_name: 住友重機械工業
 '6305':
   company_name: 日立建機
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3QI.pdf
+  address_source_urls:
+  - https://irbank.net/6305/ir
 '6306':
   company_name: 日工
 '6307':
@@ -6918,6 +7008,9 @@
   company_name: 酒井重工業
 '6360':
   company_name: 東京自働機械製作所
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W33R.pdf
+  address_source_urls:
+  - https://irbank.net/6360/ir
 '6361':
   company_name: 荏原製作所
 '6363':
@@ -7085,6 +7178,9 @@
   company_name: 中北製作所
 '6497':
   company_name: ハマイ
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VD81.pdf
+  address_source_urls:
+  - https://irbank.net/6497/ir
 '6498':
   company_name: キッツ
 '6501':
@@ -7297,6 +7393,9 @@
   company_name: ジーエス・ユアサ　コーポレーション
 '6675':
   company_name: サクサ
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W1H6.pdf
+  address_source_urls:
+  - https://irbank.net/6675/ir
 '6676':
   company_name: ＢＵＦＦＡＬＯ
 '6677':
@@ -7369,6 +7468,9 @@
   company_name: ＯＳＧコーポレーション
 '6758':
   company_name: ソニーグループ
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W19Q.pdf
+  address_source_urls:
+  - https://irbank.net/6758/ir
 '6762':
   company_name: ＴＤＫ
 '6763':
@@ -7617,6 +7719,9 @@
   company_name: ＫＯＡ
 '7003':
   company_name: 三井Ｅ＆Ｓ
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3WO.pdf
+  address_source_urls:
+  - https://irbank.net/7003/ir
 '7004':
   company_name: カナデビア
 '7011':
@@ -8317,6 +8422,9 @@
   company_name: シークス
 '7614':
   company_name: オーエムツーネットワーク
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VOUD.pdf
+  address_source_urls:
+  - https://irbank.net/7614/ir
 '7615':
   company_name: 京都きもの友禅ホールディングス
 '7616':
@@ -8525,6 +8633,9 @@
   company_name: 日本創発グループ
 '7815':
   company_name: 東京ボード工業
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W68B.pdf
+  address_source_urls:
+  - https://irbank.net/7815/ir
 '7818':
   company_name: トランザクション
 '7819':
@@ -8695,6 +8806,9 @@
   company_name: 菊水化学工業
 '7955':
   company_name: クリナップ
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3K6.pdf
+  address_source_urls:
+  - https://irbank.net/7955/ir
 '7956':
   company_name: ピジョン
 '7957':
@@ -8845,6 +8959,9 @@
   company_name: 三菱商事
 '8059':
   company_name: 第一実業
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W0GD.pdf
+  address_source_urls:
+  - https://irbank.net/8059/ir
 '8060':
   company_name: キヤノンマーケティングジャパン
 '8061':
@@ -8884,6 +9001,9 @@
   company_name: ナイス
 '8091':
   company_name: ニチモウ
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W743.pdf
+  address_source_urls:
+  - https://irbank.net/8091/ir
 '8093':
   company_name: 極東貿易
 '8095':
@@ -8896,6 +9016,9 @@
   company_name: ＧＳＩクレオス
 '8103':
   company_name: 明和産業
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W88G.pdf
+  address_source_urls:
+  - https://irbank.net/8103/ir
 '8104':
   company_name: クワザワホールディングス
 '8105':
@@ -8929,6 +9052,9 @@
   company_name: サンゲツ
 '8131':
   company_name: ミツウロコグループホールディングス
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VXKD.pdf
+  address_source_urls:
+  - https://irbank.net/8131/ir
 '8132':
   company_name: シナネンホールディングス
 '8133':
@@ -8967,6 +9093,9 @@
   company_name: 都築電気
 '8158':
   company_name: ソーダニッカ
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VYTW.pdf
+  address_source_urls:
+  - https://irbank.net/8158/ir
 '8159':
   company_name: 立花エレテック
 '8160':
@@ -9558,6 +9687,9 @@
   company_name: 毎日コムネット
 '8912':
   company_name: エリアクエスト
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100WQF8.pdf
+  address_source_urls:
+  - https://irbank.net/8912/ir
 '8914':
   company_name: エリアリンク
 '8917':
@@ -9679,6 +9811,9 @@
   company_name: 相鉄ホールディングス
 '9005':
   company_name: 東急
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W6EI.pdf
+  address_source_urls:
+  - https://irbank.net/9005/ir
 '9006':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4LL.pdf
   address_source_urls:
@@ -9735,6 +9870,9 @@
   company_name: 西武ホールディングス
 '9025':
   company_name: 鴻池運輸
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W21M.pdf
+  address_source_urls:
+  - https://irbank.net/9025/ir
 '9028':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100WRNH.pdf
   address_source_urls:
@@ -9820,6 +9958,9 @@
   company_name: 丸全昭和運輸
 '9069':
   company_name: センコーグループホールディングス
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W47X.pdf
+  address_source_urls:
+  - https://irbank.net/9069/ir
 '9072':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W5BJ.pdf
   address_source_urls:
@@ -9973,6 +10114,9 @@
   company_name: Ｇｒｅｅｎ　Ｅａｒｔｈ　Ｉｎｓｔｉｔｕｔｅ
 '9213':
   company_name: セイファート
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VIWL.pdf
+  address_source_urls:
+  - https://irbank.net/9213/ir
 '9214':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VIQ7.pdf
   address_source_urls:
@@ -10163,6 +10307,9 @@
   company_name: ジャパン・インフラファンド投資法人
 '9301':
   company_name: 三菱倉庫
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W207.pdf
+  address_source_urls:
+  - https://irbank.net/9301/ir
 '9302':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W15N.pdf
   address_source_urls:
@@ -10170,8 +10317,14 @@
   company_name: 三井倉庫ホールディングス
 '9303':
   company_name: 住友倉庫
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W076.pdf
+  address_source_urls:
+  - https://irbank.net/9303/ir
 '9304':
   company_name: 澁澤倉庫
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4DX.pdf
+  address_source_urls:
+  - https://irbank.net/9304/ir
 '9305':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W18E.pdf
   address_source_urls:
@@ -10318,6 +10471,9 @@
   company_name: 大運
 '9364':
   company_name: 上組
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VZET.pdf
+  address_source_urls:
+  - https://irbank.net/9364/ir
 '9365':
   company_name: トレーディア
 '9366':
@@ -10709,6 +10865,9 @@
   company_name: 東宝
 '9603':
   company_name: エイチ・アイ・エス
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XHDP.pdf
+  address_source_urls:
+  - https://irbank.net/9603/ir
 '9605':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3VP.pdf
   address_source_urls:
@@ -10831,6 +10990,9 @@
   - https://irbank.net/9663/ir
 '9672':
   company_name: 東京都競馬
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHAT.pdf
+  address_source_urls:
+  - https://irbank.net/9672/ir
 '9678':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XGOW.pdf
   address_source_urls:
