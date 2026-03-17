@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
+import atexit
+import json
+import signal
 import stat
+import sys
 from contextlib import contextmanager
+from datetime import datetime
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -21,6 +26,8 @@ _BUILD_FILES = [
     "rust-toolchain.toml",
     ".gitattributes",
 ]
+
+_LOCKDOWN_STATE_FILE = PROJECT_ROOT / "split-address" / "research_logs" / ".lockdown_state.json"
 
 
 def _find_targets(
@@ -80,7 +87,7 @@ def _find_targets(
     research_logs_dir = PROJECT_ROOT / "split-address" / "research_logs"
     if research_logs_dir.exists():
         for p in research_logs_dir.iterdir():
-            if p.is_file():
+            if p.is_file() and p.name != _LOCKDOWN_STATE_FILE.name:
                 targets.append(p)
 
     # --- 追加: data/output/ ディレクトリ制限 ---
@@ -106,6 +113,56 @@ def _find_targets(
     return targets, dirs_to_restrict
 
 
+def _save_lockdown_state(locked: list[tuple[Path, int]]) -> None:
+    """ロック状態をファイルに永続化する."""
+    _LOCKDOWN_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    state = {
+        "locked_at": datetime.now().isoformat(),
+        "items": [{"path": str(p), "orig_mode": mode} for p, mode in locked],
+    }
+    _LOCKDOWN_STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _delete_lockdown_state() -> None:
+    """ロック状態ファイルを削除する."""
+    try:
+        _LOCKDOWN_STATE_FILE.unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
+def recover_stale_lockdown() -> bool:
+    """前回の異常終了で残ったロック状態を復旧する.
+
+    Returns:
+        True if recovery was performed.
+    """
+    if not _LOCKDOWN_STATE_FILE.exists():
+        return False
+
+    print("[lockdown] 前回の異常終了を検出. パーミッション復旧中...")
+    try:
+        state = json.loads(_LOCKDOWN_STATE_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"[lockdown] 状態ファイルの読み込みに失敗: {e}")
+        _delete_lockdown_state()
+        return False
+
+    restored = 0
+    for item in state.get("items", []):
+        p = Path(item["path"])
+        orig_mode = item["orig_mode"]
+        try:
+            p.chmod(orig_mode)
+            restored += 1
+        except OSError:
+            pass
+
+    _delete_lockdown_state()
+    print(f"[lockdown] {restored} items restored (前回ロック時刻: {state.get('locked_at', '不明')})")
+    return True
+
+
 @contextmanager
 def codex_lockdown(
     target_codes: list[str] | None = None,
@@ -117,9 +174,36 @@ def codex_lockdown(
         target_codes: 対象企業の証券コード。これらの企業固有ファイルはロックしない。
         mode: 実行モード ("split-address" / "resolve-address")。対象外スキルをロックする。
     """
+    # 前回の残骸を復旧
+    recover_stale_lockdown()
+
     locked: list[tuple[Path, int]] = []
+    prev_handlers: dict[int, object] = {}
+
+    def _emergency_restore(*_args: object) -> None:
+        """シグナルハンドラ: パーミッション復旧して終了."""
+        for p, orig in locked:
+            try:
+                p.chmod(orig)
+            except OSError:
+                pass
+        _delete_lockdown_state()
+        print(f"\n[lockdown] {len(locked)} items restored (signal)")
+        sys.exit(1)
+
     try:
         targets, dirs_to_restrict = _find_targets(target_codes, mode)
+
+        # 元パーミッションを収集
+        items: list[tuple[Path, int]] = []
+        for p in targets:
+            items.append((p, stat.S_IMODE(p.stat().st_mode)))
+        for d in dirs_to_restrict:
+            items.append((d, stat.S_IMODE(d.stat().st_mode)))
+
+        # ロック状態を永続化（ロック実行前に保存）
+        _save_lockdown_state(items)
+
         # ファイルロック (0o000)
         for p in targets:
             orig = stat.S_IMODE(p.stat().st_mode)
@@ -130,12 +214,36 @@ def codex_lockdown(
             orig = stat.S_IMODE(d.stat().st_mode)
             locked.append((d, orig))
             d.chmod(0o111)
+
+        # シグナルハンドラ登録
+        for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+            try:
+                prev_handlers[sig] = signal.signal(sig, _emergency_restore)
+            except (OSError, ValueError):
+                pass
+
+        # atexit 登録
+        atexit.register(_emergency_restore)
+
         print(f"[lockdown] {len(locked)} items locked")
         yield
     finally:
+        # パーミッション復旧
         for p, orig in locked:
             try:
                 p.chmod(orig)
             except OSError:
                 pass
+        _delete_lockdown_state()
+
+        # シグナルハンドラ復元
+        for sig, handler in prev_handlers.items():
+            try:
+                signal.signal(sig, handler)
+            except (OSError, ValueError):
+                pass
+
+        # atexit 解除
+        atexit.unregister(_emergency_restore)
+
         print(f"[lockdown] {len(locked)} items restored")
