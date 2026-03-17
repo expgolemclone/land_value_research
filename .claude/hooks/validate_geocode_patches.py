@@ -54,6 +54,7 @@ def main() -> None:
     if not data:
         return
 
+    warnings: list[str] = []
     errors: list[str] = []
     for code, sites in data.items():
         for site_name, addr_data in sites.items():
@@ -70,12 +71,22 @@ def main() -> None:
                 if not addr.startswith("東京都"):
                     continue
                 _lat, _lon, level = geocoder.geocode(addr)
-                if level != "gaiku":
+                if level == "muni_centroid":
                     errors.append(f"  {code}/{site_name}: {addr} → {level}")
+                elif level != "gaiku":
+                    warnings.append(f"  {code}/{site_name}: {addr} → {level}")
 
+    if warnings:
+        print(
+            "GEOCODE INFO: 以下の住所が gaiku レベルに到達しません"
+            "(oaza_chome は許容):",
+            file=sys.stderr,
+        )
+        for w in warnings:
+            print(w, file=sys.stderr)
     if errors:
         print(
-            "GEOCODE WARNING: 以下の住所が gaiku レベルに到達しません:",
+            "GEOCODE ERROR: 以下の住所が muni_centroid で止まっています:",
             file=sys.stderr,
         )
         for e in errors:
