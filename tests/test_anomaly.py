@@ -6,8 +6,8 @@ from src.anomaly import (
     detect_duplicate_address_large_area,
     is_aggregate_site_name,
 )
-from src.schema import COL_ADDRESS, COL_LAND_AREA, COL_SITE_NAME
 from src.landprice_tokyo import PriceResult
+from src.schema import COL_ADDRESS, COL_LAND_AREA, COL_SITE_NAME
 
 
 class TestCalcUncertaintyMetrics(unittest.TestCase):

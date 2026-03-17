@@ -9,14 +9,28 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 CMD_RUN = [
-    "nix", "develop", "--command",
-    "land-value-run", "--input", "config/input_full.csv", "--workers", "100",
+    "nix",
+    "develop",
+    "--command",
+    "land-value-run",
+    "--input",
+    "config/input_full.csv",
+    "--workers",
+    "100",
 ]
 WAIT_AFTER_RUN = 5 * 60  # 5 minutes
 
 CMD_SPLIT = [
-    "nix", "develop", "--command",
-    "uv", "run", "python", "scripts/parallel_research.py", "split-address", "--n", "30",
+    "nix",
+    "develop",
+    "--command",
+    "uv",
+    "run",
+    "python",
+    "scripts/parallel_research.py",
+    "split-address",
+    "--n",
+    "30",
 ]
 WAIT_AFTER_SPLIT = 90 * 60  # 1 hour 30 minutes
 

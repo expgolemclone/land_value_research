@@ -85,10 +85,7 @@ def _parse_split_entries(code: str, site_name: str, raw_list: list) -> list[Site
         area_m2_note = str(item.get("area_m2_note", "")).strip() or None
 
         if area_m2_is_estimated and not area_m2_source:
-            raise ValueError(
-                "area_m2_is_estimated=true の場合は area_m2_source が必要です: "
-                f"{code} / {site_name}[{i}]"
-            )
+            raise ValueError(f"area_m2_is_estimated=true の場合は area_m2_source が必要です: {code} / {site_name}[{i}]")
 
         result.append(
             SiteSplitEntry(
@@ -196,5 +193,3 @@ def save_company_master(path: str, data: dict[str, dict[str, Any]]) -> None:
     sorted_data = dict(sorted(data.items(), key=lambda x: x[0]))
     with open(path, "w", encoding="utf-8") as f:
         yaml.dump(sorted_data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
-
-

@@ -72,11 +72,10 @@ class TestMetadataCache(unittest.TestCase):
         self.assertEqual(second.company_name, "テスト株式会社")
         self.assertTrue(second.securities_report_pdf_url.endswith("/S100ABCD.pdf"))
 
-
     def test_fetch_from_irbank_accepts_alpha_suffix_code(self) -> None:
         """英字サフィックス付きコード(xxxA形式)がバリデーションを通過し、IRBank URLが正しく構築される."""
         company_metadata_fallback._METADATA_CACHE.clear()
-        ir_html = '<h1><a>141A トライアル HD</a></h1><dt>時価</dt><dd>4933億円</dd>'.encode()
+        ir_html = "<h1><a>141A トライアル HD</a></h1><dt>時価</dt><dd>4933億円</dd>".encode()
         edinet_html = 'title="有価証券報告書 第11期" href="notes?f=S100WRQT"'.encode()
         with patch(
             "src.company_metadata_fallback.urlopen_with_retry",

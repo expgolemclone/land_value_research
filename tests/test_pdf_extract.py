@@ -17,4 +17,3 @@ class TestExtractLocation(unittest.TestCase):
         loc, has_hoka = pdf_extract._extract_location("本社(東京都千代田区丸の内一丁目4番1号)")
         self.assertEqual(loc, "東京都千代田区")
         self.assertFalse(has_hoka)
-

@@ -47,14 +47,15 @@ class TestRankModuleUsesSchema(unittest.TestCase):
         from pathlib import Path
 
         from rank_market_cap_ratio import write_rank_html
-        from src.schema import COL_CODE, COL_COMPANY_NAME, COL_RATIO
-
         from src.schema import (
             COL_ANOMALY_WARNING,
             COL_BOOK_VALUE,
+            COL_CODE,
+            COL_COMPANY_NAME,
             COL_CONFIDENCE,
             COL_ESTIMATED_VALUE,
             COL_MARKET_CAP,
+            COL_RATIO,
             COL_UNREALIZED_GAIN,
             RANK_COL_GEOCODE_TAG,
             RANK_COL_MEMO,
