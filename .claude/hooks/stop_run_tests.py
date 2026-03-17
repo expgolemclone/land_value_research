@@ -2,6 +2,7 @@
 """Stop hook: Run test suite when Claude finishes responding."""
 
 import os
+import shutil
 import subprocess
 import sys
 
@@ -11,9 +12,22 @@ def main() -> None:
         os.path.join(os.path.dirname(__file__), "..", "..")
     )
 
-    venv_python = os.path.join(project_dir, ".venv", "bin", "python")
+    test_args = ["-m", "unittest", "discover", "-s", "tests", "-v"]
+
+    if sys.platform == "win32":
+        venv_python = os.path.join(project_dir, ".venv", "Scripts", "python.exe")
+    else:
+        venv_python = os.path.join(project_dir, ".venv", "bin", "python")
+
+    if os.path.isfile(venv_python):
+        cmd = [venv_python] + test_args
+    elif shutil.which("nix"):
+        cmd = ["nix", "develop", project_dir, "--command", "python3"] + test_args
+    else:
+        return
+
     result = subprocess.run(
-        [venv_python, "-m", "unittest", "discover", "-s", "tests", "-v"],
+        cmd,
         cwd=project_dir,
         capture_output=True,
         text=True,

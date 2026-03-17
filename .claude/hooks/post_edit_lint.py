@@ -3,6 +3,7 @@
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 
@@ -20,20 +21,25 @@ def main() -> None:
         os.path.join(os.path.dirname(__file__), "..", "..")
     )
 
-    subprocess.run(
-        [
-            "nix",
-            "develop",
-            project_dir,
-            "--command",
-            "bash",
-            "-c",
-            f"ruff check --fix --quiet '{project_dir}' && ruff format --quiet '{project_dir}'",
-        ],
-        cwd=project_dir,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+    if sys.platform == "win32":
+        ruff = os.path.join(project_dir, ".venv", "Scripts", "ruff.exe")
+    else:
+        ruff = os.path.join(project_dir, ".venv", "bin", "ruff")
+
+    devnull = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
+
+    if os.path.isfile(ruff):
+        subprocess.run([ruff, "check", "--fix", "--quiet", project_dir], cwd=project_dir, **devnull)
+        subprocess.run([ruff, "format", "--quiet", project_dir], cwd=project_dir, **devnull)
+    elif shutil.which("nix"):
+        subprocess.run(
+            [
+                "nix", "develop", project_dir, "--command", "bash", "-c",
+                f"ruff check --fix --quiet '{project_dir}' && ruff format --quiet '{project_dir}'",
+            ],
+            cwd=project_dir,
+            **devnull,
+        )
 
 
 if __name__ == "__main__":

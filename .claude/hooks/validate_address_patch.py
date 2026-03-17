@@ -3,7 +3,29 @@
 
 import json
 import os
+import shutil
 import sys
+
+
+def _ensure_project_env() -> None:
+    """Re-exec with venv or nix develop python if not already in project env."""
+    if sys.prefix != sys.base_prefix:
+        return
+    project_dir = os.environ.get("CLAUDE_PROJECT_DIR", ".")
+    if sys.platform == "win32":
+        venv_python = os.path.join(project_dir, ".venv", "Scripts", "python.exe")
+    else:
+        venv_python = os.path.join(project_dir, ".venv", "bin", "python")
+    if os.path.isfile(venv_python):
+        os.execv(venv_python, [venv_python] + sys.argv)
+    elif shutil.which("nix"):
+        os.execvp(
+            "nix",
+            ["nix", "develop", project_dir, "--command", "python3"] + sys.argv,
+        )
+
+
+_ensure_project_env()
 
 import yaml
 
@@ -11,7 +33,8 @@ import yaml
 def main() -> None:
     tool_input = json.loads(os.environ.get("CLAUDE_TOOL_INPUT", "{}"))
     file_path = tool_input.get("file_path", "")
-    if "config/address_patches/" not in file_path or not file_path.endswith(".yaml"):
+    normalized = file_path.replace(os.sep, "/")
+    if not normalized.endswith("config/address_overrides.yaml"):
         return
 
     try:
