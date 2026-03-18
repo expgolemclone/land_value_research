@@ -1,0 +1,18 @@
+"1841":
+  本社・町田営業所他:
+    - name: 本社(南雪谷)
+      address: 東京都大田区南雪谷2丁目17番8号
+      area_m2: 501.76
+      area_m2_is_estimated: false
+  賃貸用不動産:
+    - name: 第一サンユービル・鍋屋横丁住宅
+      address: 東京都中野区中央3丁目24番15号
+      area_m2: 472.73
+      area_m2_is_estimated: true
+      area_m2_source: 第一サンユービルの基準階面積143坪(472.73㎡)による推定
+      area_m2_source_url: https://www.e-miki.com/search/detail/021_03978.html
+      area_m2_note: 有報では賃貸用不動産17,004.58㎡は東京都中野区他の合算。中野区中央3丁目24番15号は第一サンユービル(地上11階、延床1284坪、基準階143坪)の単独建物であり、基準階面積を敷地の保守的近似値として採用
+    - name: 賃貸用不動産(東京都中野区他の残余)
+      address: 全国各所
+      area_m2: 16531.85
+      area_m2_is_estimated: false

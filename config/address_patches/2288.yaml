@@ -1,0 +1,16 @@
+"2288":
+  東日本営業部:
+    - name: 東日本営業部(中央)
+      address: 東京都中央区築地4丁目7番5号
+      area_m2: 1461.0
+      area_m2_is_estimated: true
+      area_m2_source: 公示地価標準地(中央5-42)の同一住居表示地積1461㎡を採用
+      area_m2_source_url: https://cs1.livable.co.jp/baikyaku/tochi/chika/area-tokyo/a13102/kouji-005-042/
+      area_m2_note: 有報では東日本営業部は東京都中央区他の合算5492㎡。公式サイトの中央拠点は築地4丁目7番5号で、同一住居表示の標準地地積を東京側の推定面積として採用
+    - name: 東日本営業部(宇都宮・千葉合算)
+      address: 栃木県下野市下石橋545他
+      area_m2: 4031.0
+      area_m2_is_estimated: true
+      area_m2_source: 有報5492㎡から中央拠点推定1461㎡を控除
+      area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W30K.pdf
+      area_m2_note: 公式サイトの東日本営業部は宇都宮・千葉・中央の3拠点構成。宇都宮は下野市下石橋545、千葉は千葉市若葉区加曽利町262-1を確認済み
