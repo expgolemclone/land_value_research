@@ -1,5 +1,5 @@
 {
-  "code": "2464",
+  "code": "7567",
   "sites": [
     {
       "site_name": "本社",
@@ -7,9 +7,21 @@
       "address_source": "web",
       "has_hoka": false,
       "is_aggregate": false,
-      "area_m2": 357.6,
+      "area_m2": 1934.37,
       "ward": "千代田区",
       "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "西東京営業所",
+      "geocode_level": "gaiku",
+      "address_source": "override",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 73.41,
+      "ward": "昭島市",
+      "has_override": true,
       "bad_pattern_1_risk": false,
       "has_multi_loc_warning": false
     }
