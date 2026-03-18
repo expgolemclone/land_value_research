@@ -277,7 +277,7 @@ def run_split_address(args: argparse.Namespace) -> None:
             code=t["code"],
             mode="split-address",
             cli=args.cli,
-            user_instruction=f"{t['code']} の時価総額比の土地の含み益が高すぎておかしいだろ?. 分割できないか調査しろ.",
+            user_instruction=f"{t['code']} の時価総額比の土地の含み益が高すぎておかしいだろ?. 分割できないか調査しろ. テナントを自社保有かのように書いている悪い会社もあるので注意.",
         )
         for t in selected
     }
