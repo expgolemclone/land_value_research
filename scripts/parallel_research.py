@@ -578,7 +578,18 @@ def _launch_claude_direct(
 
         with open(prompt_file, encoding="utf-8") as stdin_f, open(log_file, "w", encoding="utf-8") as log_f:
             result = subprocess.run(
-                ["claude", "-p", "--dangerously-skip-permissions", "--allowedTools", allowed],
+                [
+                    "claude", "-p",
+                    "--dangerously-skip-permissions",
+                    "--allowedTools", allowed,
+                    "--disallowedTools", "Bash(git:*)",
+                    "--effort", "max",
+                    "--append-system-prompt",
+                    "重要: 1) 必ずWebSearch/WebFetchで住所を調査すること"
+                    " 2) 必ずBashでジオコード検証(TokyoGeocoder)を実行すること"
+                    " 3) 必ずsplit-address/{code}.mdに推論メモを書くこと"
+                    " 4) git commit/pushは絶対に実行しないこと",
+                ],
                 stdin=stdin_f,
                 stdout=log_f,
                 stderr=subprocess.STDOUT,
