@@ -32,9 +32,8 @@ data/output/run_logs/
 plan.md
 fix_plan_*.md
 
-# split-address (keep logs)
-split-address/
-!split-address/log/
+# split-address (keep logs only ignored)
+split-address/research_logs/
 
 # HTML files
 *.html
