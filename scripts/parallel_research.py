@@ -703,10 +703,7 @@ def _launch_processes(
     check_docs: bool = False,
     check_patch: bool = False,
 ) -> None:
-    """Launch CLI processes. claude uses direct subprocess, codex uses terminal windows."""
-    if cli_cmd == "claude":
-        _launch_claude_direct(selected, prompts, check_docs=check_docs, check_patch=check_patch)
-        return
+    """Launch CLI processes in terminal windows (kitty / Windows Terminal)."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     is_win = sys.platform == "win32"
