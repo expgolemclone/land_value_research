@@ -492,7 +492,21 @@ def _build_bash_script(
         shell_cmd += f"cd {_q(cwd)} || exit 1; "
     if is_claude:
         # claude -p は位置引数だとハングするため stdin 経由で渡す
-        shell_cmd += f'{cli_cmd} -p --dangerously-skip-permissions < {prompt_q} 2>&1 | tee {log_q}; '
+        import shlex as _shlex
+
+        _sys_prompt = (
+            "重要: 1) 必ずWebSearch/WebFetchで住所を調査すること"
+            " 2) 必ずBashでジオコード検証(TokyoGeocoder)を実行すること"
+            " 3) 必ずsplit-address/CODE.mdに推論メモを書くこと"
+            " 4) git commit/pushは絶対に実行しないこと"
+        )
+        shell_cmd += (
+            f"{cli_cmd} -p --dangerously-skip-permissions"
+            f" --disallowedTools {_shlex.quote('Bash(git:*)')}"
+            f" --effort max"
+            f" --append-system-prompt {_shlex.quote(_sys_prompt)}"
+            f" < {prompt_q} 2>&1 | tee {log_q}; "
+        )
     else:
         shell_cmd += f'{cli_cmd} exec --full-auto "$(<{prompt_q})" 2>&1 | tee {log_q}; '
     if docs_path is not None:
