@@ -578,7 +578,7 @@ def _launch_claude_direct(
 
         with open(prompt_file, encoding="utf-8") as stdin_f, open(log_file, "w", encoding="utf-8") as log_f:
             result = subprocess.run(
-                ["claude", "-p", "--allowedTools", allowed],
+                ["claude", "-p", "--dangerously-skip-permissions", "--allowedTools", allowed],
                 stdin=stdin_f,
                 stdout=log_f,
                 stderr=subprocess.STDOUT,
