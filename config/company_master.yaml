@@ -3527,6 +3527,9 @@
   company_name: オープンハウスグループ
 '3289':
   company_name: 東急不動産ホールディングス
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W5WX.pdf
+  address_source_urls:
+  - https://irbank.net/3289/ir
 328A:
   company_name: グローバルＸ　プライシングパワー・リーダーズ－日本株式　ＥＴＦ
 '3290':
