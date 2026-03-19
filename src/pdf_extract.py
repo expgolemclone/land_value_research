@@ -59,6 +59,10 @@ def _parse_land_cell(cell: str) -> tuple[float | None, float | None]:
     if m_area:
         area_val = float(m_area.group(1).replace(",", ""))
 
+    # 括弧内の値が主値と同じ場合、面積ではなく注記(単位換算値等)と判断する
+    if land_val is not None and area_val is not None and abs(area_val - land_val) < 1e-6:
+        area_val = None
+
     return land_val, area_val
 
 
@@ -227,19 +231,6 @@ def _extract_from_table(
             area = _parse_land_area_cell(row[dedicated_area_col] or "")
         else:
             area = inline_area
-
-        # 土地と面積が隣接列に分かれる表(例: 9083)への対応
-        if (
-            land is not None
-            and area is not None
-            and land > 0
-            and area > 0
-            and abs(area - land) < 1e-6
-            and land_col + 1 < len(row)
-        ):
-            side = _parse_number(row[land_col + 1] or "")
-            if side is not None and side > area:
-                area = side
 
         if land is None or area is None:
             if land is not None and area is None and location.startswith("東京都"):
