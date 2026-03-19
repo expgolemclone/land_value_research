@@ -234,37 +234,38 @@ def _detect_columns(
     if name_col is None:
         return None
 
-    # --- land_area_col ---
-    for i, (g, s) in enumerate(group_headers):
-        if "土地面積" in g or "土地等面積" in g:
-            land_area_col = i
-            break
-        # group="土地" + sub に "面積" あり、かつ金額単位なし → 面積専用列
-        if "土地" in g and "面積" in s and "百万" not in s and "千円" not in s and "帳簿" not in s:
-            land_area_col = i
-            break
+    # --- 土地関連列の意味分類 (group+sub の結合テキストで判定) ---
+    # group/sub の配置順序に依存せず、含まれるキーワードの組み合わせで分類:
+    #   面積専用: "土地" + "面積" あり, 金額指標なし
+    #   簿価専用: "土地" + 金額指標あり, "面積" なし
+    #   一体セル: "土地" + "面積" + 金額指標 すべてあり (標準形式)
+    _area_col: int | None = None
+    _book_col: int | None = None
+    _combined_col: int | None = None
 
-    # --- land_book_col ---
     for i, (g, s) in enumerate(group_headers):
-        if i == land_area_col:
+        combined = g + s
+        if "土地" not in combined:
             continue
-        # "帳簿価額" group + "土地" sub (3289/8801/8804 形式)
-        if "帳簿価額" in g and "土地" in s and "面積" not in s:
-            land_book_col = i
-            break
-        # "土地" group + "帳簿価額" sub (8802 形式)
-        if "土地" in g and "面積" not in g and "帳簿価額" in s:
-            land_book_col = i
-            break
+        has_area = "面積" in combined
+        has_money = "帳簿" in combined or "百万" in combined or "千円" in combined
 
-    # Fallback: combined "土地" column (standard format — 簿価と面積が1セル)
-    if land_book_col is None:
-        for i, (g, _s) in enumerate(group_headers):
-            if i == land_area_col:
-                continue
-            if "土地" in g and "面積" not in g:
-                land_book_col = i
-                break
+        if has_area and not has_money:
+            if _area_col is None:
+                _area_col = i
+        elif has_money and not has_area:
+            if _book_col is None:
+                _book_col = i
+        elif has_area and has_money:
+            if _combined_col is None:
+                _combined_col = i
+
+    if _area_col is not None and _book_col is not None:
+        land_area_col, land_book_col = _area_col, _book_col
+    elif _combined_col is not None:
+        land_book_col = _combined_col
+    elif _book_col is not None:
+        land_book_col = _book_col
 
     if land_book_col is None:
         return None

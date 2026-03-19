@@ -139,6 +139,25 @@ class TestExtractFromTable(unittest.TestCase):
         self.assertAlmostEqual(rows[0].land_area_m2, 55_719.0)
         self.assertEqual(rows[0].land_book_value_yen, 104_007_000_000)
 
+    # --- 面積グループ内に土地サブ列 (8830 住友不動産) ---
+
+    def test_8830_format_area_group_with_land_sub(self) -> None:
+        """8830形式: 面積(㎡)グループの中に土地サブ列, 帳簿価額グループに土地等サブ列."""
+        table = [
+            ["会社名", "物件名称", None, "所在地", "構造", "面積(㎡)", None, "帳簿価額(百万円)", None, None, "建築年月"],
+            [None, None, None, None, None, "建物", "土地", "建物等", "土地等", "合計", None],
+            ["住友不動産㈱", "泉ガーデン＊", "5", "東京都\n港区", "地上43階\n地下4階", "184,033", "19,547", "23,269", "90,613", "113,883", "2002/10"],
+        ]
+
+        rows, errs = pdf_extract._extract_from_table(table)
+
+        self.assertEqual(errs, [])
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].site_name, "泉ガーデン＊")
+        self.assertEqual(rows[0].location_short, "東京都港区")
+        self.assertAlmostEqual(rows[0].land_area_m2, 19_547.0)
+        self.assertEqual(rows[0].land_book_value_yen, 90_613_000_000)
+
     # --- セクションヘッダー行のスキップ ---
 
     def test_skips_section_header_rows(self) -> None:
