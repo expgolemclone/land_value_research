@@ -277,7 +277,11 @@ def run_split_address(args: argparse.Namespace) -> None:
             code=t["code"],
             mode="split-address",
             cli=args.cli,
-            user_instruction=f"{t['code']} の時価総額比の土地の含み益が高すぎておかしいだろ?. 分割できないか調査しろ. テナントを自社保有かのように書いている悪い会社もあるので注意.",
+            user_instruction=(
+                f"{t['code']} の時価総額比の土地の含み益が高すぎておかしいだろ?. "
+                "分割できないか調査しろ. "
+                "テナントを自社保有かのように書いている悪い会社もあるので注意."
+            ),
         )
         for t in selected
     }
@@ -368,7 +372,10 @@ def _build_injected_prompt(
     if text_path.exists():
         text_content = text_path.read_text(encoding="utf-8")
         parts.append(
-            f'<context path="data/cache/facilities_land/{code}_facilities_text.txt" description="有報「設備の状況」セクション全文（注記含む）">\n{text_content}\n</context>'
+            f'<context path="data/cache/facilities_land/{code}_facilities_text.txt" '
+            'description="有報「設備の状況」セクション全文（注記含む）">\n'
+            f"{text_content}\n"
+            "</context>"
         )
 
     # output CSV 注入
@@ -417,6 +424,12 @@ def _build_ps1_script(
     is_claude = cli_cmd == "claude"
     pf = str(prompt_file).replace("'", "''")
     lf = str(log_file).replace("'", "''")
+    docs_retry_message = f"{docs_label} が空のままです。調査結果を書き込んでください。"
+    patch_retry_message = (
+        f"{patch_label} が作成されていません。"
+        "住所の分割・修正が必要な場合はパッチファイルを作成してください。"
+        f"現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_label} に記載してください。"
+    )
     lines: list[str] = [
         "[Console]::InputEncoding = [System.Text.Encoding]::UTF8",
         "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
@@ -430,7 +443,11 @@ def _build_ps1_script(
     ]
     if is_claude:
         # claude -p は位置引数だとハングするため stdin 経由で渡す
-        lines.append(f"Get-Content -Path '{pf}' -Raw -Encoding UTF8 | & {cli_cmd} -p --dangerously-skip-permissions 2>&1 | Tee-Object -FilePath '{lf}'")
+        lines.append(
+            f"Get-Content -Path '{pf}' -Raw -Encoding UTF8 "
+            f"| & {cli_cmd} -p --dangerously-skip-permissions 2>&1 "
+            f"| Tee-Object -FilePath '{lf}'"
+        )
     else:
         lines.append(f"& {cli_cmd} exec --full-auto $prompt 2>&1 | Tee-Object -FilePath '{lf}'")
     if docs_path is not None:
@@ -442,9 +459,16 @@ def _build_ps1_script(
             f'  Write-Host "`n--- {docs_label} が空. resume リトライ (SID=$sid) ---"',
         ]
         if is_claude:
-            lines.append(f"  '{docs_label} が空のままです。調査結果を書き込んでください。' | & {cli_cmd} -r $sid -p --dangerously-skip-permissions 2>&1 | Tee-Object -FilePath '{lf}' -Append")
+            lines.append(
+                f"  '{docs_retry_message}' "
+                f"| & {cli_cmd} -r $sid -p --dangerously-skip-permissions 2>&1 "
+                f"| Tee-Object -FilePath '{lf}' -Append"
+            )
         else:
-            lines.append(f"  & {cli_cmd} exec resume $sid --full-auto '{docs_label} が空のままです。調査結果を書き込んでください。' 2>&1 | Tee-Object -FilePath '{lf}' -Append")
+            lines.append(
+                f"  & {cli_cmd} exec resume $sid --full-auto '{docs_retry_message}' 2>&1 "
+                f"| Tee-Object -FilePath '{lf}' -Append"
+            )
         lines.append("}")
     if patch_path is not None:
         pp = str(patch_path).replace("'", "''")
@@ -455,9 +479,16 @@ def _build_ps1_script(
             '  Write-Host "`n--- パッチ未作成. コンテキスト注入 (SID=$sid) ---"',
         ]
         if is_claude:
-            lines.append(f"  '{patch_label} が作成されていません。住所の分割・修正が必要な場合はパッチファイルを作成してください。現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_label} に記載してください。' | & {cli_cmd} -r $sid -p --dangerously-skip-permissions 2>&1 | Tee-Object -FilePath '{lf}' -Append")
+            lines.append(
+                f"  '{patch_retry_message}' "
+                f"| & {cli_cmd} -r $sid -p --dangerously-skip-permissions 2>&1 "
+                f"| Tee-Object -FilePath '{lf}' -Append"
+            )
         else:
-            lines.append(f"  & {cli_cmd} exec resume $sid --full-auto '{patch_label} が作成されていません。住所の分割・修正が必要な場合はパッチファイルを作成してください。現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_label} に記載してください。' 2>&1 | Tee-Object -FilePath '{lf}' -Append")
+            lines.append(
+                f"  & {cli_cmd} exec resume $sid --full-auto '{patch_retry_message}' 2>&1 "
+                f"| Tee-Object -FilePath '{lf}' -Append"
+            )
         lines.append("}")
     if docs_path is not None or patch_path is not None:
         lines.append('Write-Host "`n--- 完了 ---"')
@@ -516,7 +547,7 @@ def _build_bash_script(
                 f"  SID=$(grep -m1 'session id: ' {log_q} | sed 's/.*session id: //' | awk '{{print $1}}'); "
                 f'  echo "\\n--- {docs_label} が空. resume リトライ (SID=$SID) ---"; '
                 f"  echo '{docs_label} が空のままです。調査結果を書き込んでください。' "
-                f"| {cli_cmd} -r \"$SID\" -p --dangerously-skip-permissions "
+                f'| {cli_cmd} -r "$SID" -p --dangerously-skip-permissions '
                 f"2>&1 | tee -a {log_q}; "
                 f"fi; "
             )
@@ -539,7 +570,7 @@ def _build_bash_script(
                 f"  echo '{patch_label} が作成されていません。"
                 f"住所の分割・修正が必要な場合はパッチファイルを作成してください。"
                 f"現在の住所が正しい等の正当な理由がある場合は、その旨を {docs_label} に記載してください。' "
-                f"| {cli_cmd} -r \"$SID\" -p --dangerously-skip-permissions "
+                f'| {cli_cmd} -r "$SID" -p --dangerously-skip-permissions '
                 f"2>&1 | tee -a {log_q}; "
                 f"fi; "
             )
@@ -593,11 +624,15 @@ def _launch_claude_direct(
         with open(prompt_file, encoding="utf-8") as stdin_f, open(log_file, "w", encoding="utf-8") as log_f:
             result = subprocess.run(
                 [
-                    "claude", "-p",
+                    "claude",
+                    "-p",
                     "--dangerously-skip-permissions",
-                    "--allowedTools", allowed,
-                    "--disallowedTools", "Bash(git:*)",
-                    "--effort", "max",
+                    "--allowedTools",
+                    allowed,
+                    "--disallowedTools",
+                    "Bash(git:*)",
+                    "--effort",
+                    "max",
                     "--append-system-prompt",
                     "重要: 1) 必ずWebSearch/WebFetchで住所を調査すること"
                     " 2) 必ずBashでジオコード検証(TokyoGeocoder)を実行すること"
@@ -622,7 +657,9 @@ def _launch_claude_direct(
                 sid = _extract_session_id(log_file)
                 if sid:
                     print(f"      split-address/{code}.md が空. resume リトライ (SID={sid})")
-                    _claude_resume(sid, f"split-address/{code}.md が空のままです。調査結果を書き込んでください。", log_file)
+                    _claude_resume(
+                        sid, f"split-address/{code}.md が空のままです。調査結果を書き込んでください。", log_file
+                    )
                 else:
                     print(f"      エラー - split-address/{code}.md が空です (推論メモ未保存)")
 
@@ -635,7 +672,8 @@ def _launch_claude_direct(
                         sid,
                         f"config/address_patches/{code}.yaml が作成されていません。"
                         "住所の分割・修正が必要な場合はパッチファイルを作成してください。"
-                        f"現在の住所が正しい等の正当な理由がある場合は、その旨を split-address/{code}.md に記載してください。",
+                        "現在の住所が正しい等の正当な理由がある場合は、"
+                        f"その旨を split-address/{code}.md に記載してください。",
                         log_file,
                     )
                 else:
