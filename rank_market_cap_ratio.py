@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -42,19 +43,27 @@ DOCS_DIR = BASE_DIR / "split-address"
 logger = logging.getLogger(__name__)
 
 
-def _open_file(path: Path) -> None:
-    """Open a file with the OS default application (cross-platform)."""
+def _open_file(path: Path) -> bool:
+    """Open a file with the OS default application (best-effort)."""
+    resolved_path = path.resolve()
+    logger.info("HTMLを開きます: %s", resolved_path)
     try:
         if sys.platform == "win32":
-            import os
-
-            os.startfile(path)
-        elif sys.platform == "darwin":
-            subprocess.Popen(["open", str(path)])
-        else:
-            subprocess.Popen(["qutebrowser", str(path)])
-    except OSError:
-        logger.warning("ファイルを開けませんでした: %s", path)
+            try:
+                os.startfile(resolved_path)
+                return True
+            except OSError as exc:
+                logger.warning("os.startfileで開けませんでした。cmd /c start を試します: %s (%s)", resolved_path, exc)
+                subprocess.Popen(["cmd", "/c", "start", "", str(resolved_path)])
+                return True
+        if sys.platform == "darwin":
+            subprocess.Popen(["open", str(resolved_path)])
+            return True
+        subprocess.Popen(["qutebrowser", str(resolved_path)])
+        return True
+    except OSError as exc:
+        logger.warning("ファイルを開けませんでした: %s (%s)", resolved_path, exc)
+        return False
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
@@ -337,7 +346,8 @@ _HTML_STYLE = """\
   .modal-close { position: absolute; top: 10px; right: 16px; background: none; border: none;
     color: #888; font-size: 1.6em; cursor: pointer; line-height: 1; }
   .modal-close:hover { color: #e0e0e0; }
-  .docs-body h3 { font-size: 1.2em; color: #e0e0e0; margin: 16px 0 8px; border-bottom: 1px solid #2a2a4a; padding-bottom: 4px; }
+  .docs-body h3 { font-size: 1.2em; color: #e0e0e0; margin: 16px 0 8px;
+    border-bottom: 1px solid #2a2a4a; padding-bottom: 4px; }
   .docs-body h4 { font-size: 1.05em; color: #d0d0d0; margin: 12px 0 6px; }
   .docs-body h5 { font-size: 1em; color: #c0c0c0; margin: 10px 0 4px; }
   .docs-body ul { margin: 6px 0 6px 20px; padding: 0; }
@@ -346,7 +356,8 @@ _HTML_STYLE = """\
   .docs-body code { background: #1a1a2e; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; color: #f0c674; }
   .docs-body a { color: #5dade2; }
   .docs-body .md-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.9em; }
-  .docs-body .md-table th { background: #16213e; padding: 6px 10px; text-align: left; border-bottom: 2px solid #444c6a; white-space: normal; }
+  .docs-body .md-table th { background: #16213e; padding: 6px 10px; text-align: left;
+    border-bottom: 2px solid #444c6a; white-space: normal; }
   .docs-body .md-table td { padding: 5px 10px; border-bottom: 1px solid #2a2a4a; white-space: normal; }
 </style>
 """
@@ -516,6 +527,7 @@ def generate_ranking(
     *,
     open_files: bool = True,
 ) -> None:
+    """Generate ranking HTML and optionally request the OS to open it."""
     resolved_input_dir = Path(input_dir) if input_dir else DEFAULT_INPUT_DIR
     resolved_output_path = Path(output_path) if output_path else DEFAULT_OUTPUT_PATH
     if not resolved_output_path.is_absolute():
