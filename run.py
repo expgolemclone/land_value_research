@@ -426,7 +426,7 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         gaiku_csv=os.path.join(data_dir, "geocoding", "geocode_ref_gaiku_tokyo_2024", "13_2024.csv"),
     )
     web_addr = WebAddressResearcher(cache_dir=os.path.join(cache_dir, "web_address"))
-    landprice = LandPriceTokyo(geojson_path=os.path.join(data_dir, "landprice", "tokyo_2025", "L01-25_13.geojson"))
+    landprice = LandPriceTokyo(geojson_path=os.path.join(data_dir, "landprice", "merged", "L01_L02_merged_13.geojson"))
 
     output_dir = resolve_path(base_dir, args.output)
     ensure_dir(output_dir)
