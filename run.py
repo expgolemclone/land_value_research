@@ -160,14 +160,21 @@ class TransientNetworkError(Exception):
     """一時的な通信エラー。一定回数の再試行対象。"""
 
 
-def _file_fingerprint(path: str) -> dict[str, object]:
-    """mtime + MD5 hash でファイルの同一性を判定."""
-    stat = os.stat(path)
+def _file_md5(path: str) -> str:
+    """ファイルの MD5 ハッシュを返す."""
     h = hashlib.md5()
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(8192), b""):
             h.update(chunk)
-    return {"mtime": stat.st_mtime, "md5": h.hexdigest()}
+    return h.hexdigest()
+
+
+def _combined_md5(*paths: str) -> str:
+    """複数ファイルの MD5 を結合して単一ハッシュを生成."""
+    h = hashlib.md5()
+    for p in sorted(paths):
+        h.update(_file_md5(p).encode())
+    return h.hexdigest()
 
 
 def sanitize_filename_component(name: str) -> str:
@@ -445,11 +452,22 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
     processed_lookup_dir = output_dir
 
     price_cache_disk = load_json_dict(price_cache_path)
-    geojson_fp = _file_fingerprint(geojson_path)
-    if price_cache_disk.get("_geojson_fingerprint") != geojson_fp:
-        logger.info("地価データ変更を検出: price_result_cache をクリア")
-        price_cache_disk = {"_geojson_fingerprint": geojson_fp}
+    price_deps_hash = _combined_md5(
+        geojson_path,
+        os.path.join(base_dir, "rust_src", "landprice_tokyo.rs"),
+    )
+    if price_cache_disk.get("_deps_hash") != price_deps_hash:
+        logger.info("地価推定の依存変更を検出: price_result_cache をクリア")
+        price_cache_disk = {"_deps_hash": price_deps_hash}
+
     geocode_cache_disk = load_json_dict(geocode_cache_path)
+    geocode_deps_hash = _combined_md5(
+        os.path.join(data_dir, "geocoding", "geocode_ref_gaiku_tokyo_2024", "13_2024.csv"),
+        os.path.join(base_dir, "rust_src", "geocode_tokyo.rs"),
+    )
+    if geocode_cache_disk.get("_deps_hash") != geocode_deps_hash:
+        logger.info("ジオコード依存変更を検出: geocode_result_cache をクリア")
+        geocode_cache_disk = {"_deps_hash": geocode_deps_hash}
 
     ctx = RunContext(
         args=args,
