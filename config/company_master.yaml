@@ -6067,6 +6067,9 @@
   - https://irbank.net/5269/ir
 '5271':
   company_name: トーヨーアサノ
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VTEU.pdf
+  address_source_urls:
+  - https://irbank.net/5271/ir
 '5273':
   company_name: 三谷セキサン
 '5279':
@@ -10087,6 +10090,9 @@
   company_name: 栗林商船
 '9173':
   company_name: 東海汽船
+  securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VGWX.pdf
+  address_source_urls:
+  - https://irbank.net/9173/ir
 '9193':
   company_name: 東京汽船
 '9201':

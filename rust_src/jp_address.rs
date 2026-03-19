@@ -161,7 +161,8 @@ static RE_BLOCK_NO_CHOME: Lazy<Regex> =
 
 static RE_FIRST_NUM: Lazy<Regex> = Lazy::new(|| Regex::new(r"(\d{1,4})").unwrap());
 
-static RE_TOWN_ONLY: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[^\d,，、]+$").unwrap());
+static RE_TOWN_ONLY: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"^(?:[^\d,，、]+|.+(?:町|丁目))$").unwrap());
 
 /// 町名/丁目/街区の粗い推定
 pub fn parse_town_chome_block(addr: &str) -> (Option<String>, Option<i32>, Option<i32>) {

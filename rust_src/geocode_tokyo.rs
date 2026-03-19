@@ -67,7 +67,8 @@ impl TokyoGeocoder {
                 continue;
             }
             let muni = row.get("市区町村名").cloned().unwrap_or_default();
-            let oaza = row.get("大字町丁目名").cloned().unwrap_or_default();
+            let oaza =
+                normalize_addr(&row.get("大字町丁目名").cloned().unwrap_or_default());
             let Some(lat) = row.get("緯度").and_then(|s| s.parse::<f64>().ok()) else {
                 continue;
             };
@@ -121,7 +122,8 @@ impl TokyoGeocoder {
                 continue;
             }
             let muni = row.get("市区町村名").cloned().unwrap_or_default();
-            let oaza = row.get("大字・丁目名").cloned().unwrap_or_default();
+            let oaza =
+                normalize_addr(&row.get("大字・丁目名").cloned().unwrap_or_default());
             let block = row.get("街区符号・地番").cloned().unwrap_or_default();
             let rep_flag: i32 = row
                 .get("代表フラグ")
@@ -178,7 +180,7 @@ impl TokyoGeocoder {
         if let Some(ref t) = town {
             if let Some(c) = chome {
                 if (0..=99).contains(&c) {
-                    let oaza_chome = build_oaza_chome_name(t, c);
+                    let oaza_chome = normalize_addr(&build_oaza_chome_name(t, c));
                     oaza_candidates.push(oaza_chome.clone());
                     if let Some(b) = block {
                         gaiku_candidates.push((oaza_chome, b));
@@ -245,6 +247,8 @@ mod tests {
         writeln!(f, "都道府県名,市区町村名,大字町丁目名,緯度,経度").unwrap();
         writeln!(f, "東京都,中央区,日本橋兜町,35.670001,139.770001").unwrap();
         writeln!(f, "東京都,港区,六本木三丁目,35.660001,139.730001").unwrap();
+        writeln!(f, "東京都,千代田区,五番町,35.689685,139.733989").unwrap();
+        writeln!(f, "東京都,千代田区,二番町,35.686185,139.736126").unwrap();
 
         let mut f = fs::File::create(&gaiku_path).unwrap();
         writeln!(
@@ -254,6 +258,8 @@ mod tests {
         .unwrap();
         writeln!(f, "東京都,中央区,日本橋兜町,11,1,1,35.680001,139.780001").unwrap();
         writeln!(f, "東京都,港区,六本木三丁目,4,1,1,35.665001,139.735001").unwrap();
+        writeln!(f, "東京都,千代田区,五番町,4,1,1,35.689856,139.734955").unwrap();
+        writeln!(f, "東京都,千代田区,二番町,3,1,1,35.685929,139.737800").unwrap();
 
         (
             dir,
@@ -300,6 +306,36 @@ mod tests {
         let (_dir, oaza, gaiku) = setup_test_csvs();
         let gc = TokyoGeocoder::new(&oaza, &gaiku).unwrap();
         let (_, _, level) = gc.geocode("東京都港区六本木3-4-33").unwrap();
+        assert_eq!(level, "gaiku");
+    }
+
+    #[test]
+    fn test_geocode_bancho_gaiku() {
+        init_python();
+        let (_dir, oaza, gaiku) = setup_test_csvs();
+        let gc = TokyoGeocoder::new(&oaza, &gaiku).unwrap();
+        let (lat, lon, level) = gc.geocode("東京都千代田区五番町4番7号").unwrap();
+        assert_eq!(level, "gaiku");
+        assert!((lat - 35.689856).abs() < 1e-4);
+        assert!((lon - 139.734955).abs() < 1e-4);
+    }
+
+    #[test]
+    fn test_geocode_bancho_oaza() {
+        init_python();
+        let (_dir, oaza, gaiku) = setup_test_csvs();
+        let gc = TokyoGeocoder::new(&oaza, &gaiku).unwrap();
+        let (lat, _, level) = gc.geocode("東京都千代田区二番町").unwrap();
+        assert_eq!(level, "oaza_chome");
+        assert!((lat - 35.686185).abs() < 1e-4);
+    }
+
+    #[test]
+    fn test_geocode_bancho_with_banchi() {
+        init_python();
+        let (_dir, oaza, gaiku) = setup_test_csvs();
+        let gc = TokyoGeocoder::new(&oaza, &gaiku).unwrap();
+        let (_, _, level) = gc.geocode("東京都千代田区二番町3番地").unwrap();
         assert_eq!(level, "gaiku");
     }
 }
