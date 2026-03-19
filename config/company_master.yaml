@@ -7402,6 +7402,10 @@
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VYWM.pdf
   address_source_urls:
   - https://irbank.net/5857/ir
+'5858':
+  company_name: STG
+  address_source_urls:
+  - https://irbank.net/5858/ir
 '5867':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XS2Y.pdf
   address_source_urls:
