@@ -18,6 +18,18 @@ class FacilityLand:
     location_has_hoka: bool = False
 
 
+@dataclass(frozen=True)
+class _ColumnMap:
+    """テーブルのカラム役割マッピング."""
+
+    name_col: int
+    location_col: int | None  # Noneなら name_col の括弧内から抽出
+    land_book_col: int | None
+    land_area_col: int | None  # Noneなら land_book_col 内の括弧から取得
+    book_mult: int
+    area_scale: float
+
+
 _FW_TRANSLATE = str.maketrans("０１２３４５６７８９，．（）－", "0123456789,.()-")
 _RE_PAGENO = re.compile(r"^\d+/\d+$")
 _RE_LAND_AREA = re.compile(r"(?P<land>\d[\d,]*(?:\.\d+)?)\s*[（(]\s*(?P<area>\d[\d,]*(?:\.\d+)?)\s*[）)]")
@@ -50,6 +62,7 @@ def _parse_land_cell(cell: str) -> tuple[float | None, float | None]:
 
     # [] や () は注記が多いため, 主値は注記外の最初の数値を採用する.
     flat = s.replace("\n", " ")
+    flat = re.sub(r"[※*]\s*\d+", " ", flat)
     flat = re.sub(r"\[[^\]]*\]", " ", flat)
     flat = re.sub(r"[（(][^）)]*[）)]", " ", flat)
     land_val = _parse_number(flat)
@@ -72,6 +85,8 @@ def _parse_land_area_cell(cell: str) -> float | None:
         return None
     # 土地面積列は [] が内書き, () が外書きなので, 主値は注記外を優先する.
     flat = s.replace("\n", " ")
+    # 注記マーカー (※1, *1 等) を除去 — "※1※2 10,255" で "1" を誤認するのを防ぐ
+    flat = re.sub(r"[※*]\s*\d+", " ", flat)
     flat = re.sub(r"\[[^\]]*\]", " ", flat)
     flat = re.sub(r"[（(][^）)]*[）)]", " ", flat)
     return _parse_number(flat)
@@ -113,7 +128,11 @@ def _book_multiplier(header_text: str) -> int:
         return 1_000
     if "帳簿価額(百万円)" in header_text or "帳簿価額（百万円）" in header_text:
         return 1_000_000
-    logger.warning("帳簿価額の単位を特定できません(百万円と仮定): %s", header_text[:80])
+    # 帳簿価額のラベルと単位が離れている場合 (例: "帳簿価額(注)3" + "土地等(百万円)")
+    if "(百万円)" in header_text or "（百万円）" in header_text:
+        return 1_000_000
+    if "(千円)" in header_text or "（千円）" in header_text:
+        return 1_000
     return 1_000_000
 
 
@@ -129,111 +148,210 @@ def _area_scale(header_text: str) -> float:
     return 1.0
 
 
-def _join_header_columns(table: list[list[str | None]], header_row_count: int) -> list[str]:
-    width = max((len(r) for r in table), default=0)
-    headers = [""] * width
-    for i in range(header_row_count):
+# ---------------------------------------------------------------------------
+# Header parsing & column detection
+# ---------------------------------------------------------------------------
+
+_SUB_HEADER_KEYWORDS = ("帳簿", "面積", "百万", "千円", "建物", "土地", "その他", "合計", "規模", "竣工")
+
+
+def _estimate_header_rows(table: list[list[str | None]]) -> int:
+    """テーブルのヘッダー行数を推定する."""
+    if len(table) < 2:
+        return len(table)
+    row1 = table[1]
+    if not row1:
+        return 1
+    none_or_empty = sum(1 for c in row1 if c is None or not _normalize_text(c))
+    keyword_count = sum(
+        1 for c in row1 if c and any(k in _normalize_text(c) for k in _SUB_HEADER_KEYWORDS)
+    )
+    if none_or_empty >= max(len(row1) // 3, 1) or keyword_count >= 2:
+        return 2
+    return 1
+
+
+def _parse_group_headers(
+    table: list[list[str | None]],
+    header_row_count: int,
+) -> list[tuple[str, str]]:
+    """マルチ行ヘッダーを解析し、各列の (group, sub) ペアを返す.
+
+    row[0] でNoneが続く場合、直前の値と同じグループとみなす（セル結合）。
+    row[1..n] を結合して sub とする。
+    """
+    width = max((len(r) for r in table[: header_row_count + 3]), default=0)
+
+    # Group from row[0] with None-span detection
+    groups: list[str] = []
+    current = ""
+    row0 = table[0] if table else []
+    for c in range(width):
+        val = _normalize_text(row0[c]) if c < len(row0) and row0[c] else ""
+        if val:
+            current = val
+        groups.append(current)
+
+    # Sub from remaining header rows
+    subs: list[str] = [""] * width
+    for i in range(1, header_row_count):
+        if i >= len(table):
+            break
         row = table[i]
         for c in range(width):
             val = _normalize_text(row[c]) if c < len(row) and row[c] else ""
             if val:
-                headers[c] = f"{headers[c]} {val}".strip()
-    headers = [h.replace("\n", "").replace(" ", "") for h in headers]
-    return headers
+                subs[c] = f"{subs[c]}{val}" if subs[c] else val
+
+    groups = [re.sub(r"\s+", "", g) for g in groups]
+    subs = [re.sub(r"\s+", "", s) for s in subs]
+
+    return list(zip(groups, subs))
 
 
-def _find_data_start(table: list[list[str | None]]) -> int:
-    for i, row in enumerate(table):
-        c0 = _normalize_text(row[0]) if row and row[0] else ""
-        if not c0:
-            continue
-        if "事業所名" in c0 or "所在地" in c0 or "会社名" in c0:
-            continue
-        if re.search(r"(都|道|府|県)", c0):
-            return i
-    return -1
+def _detect_columns(
+    group_headers: list[tuple[str, str]],
+) -> _ColumnMap | None:
+    """ヘッダーからカラム役割を動的に検出する.
 
-
-def _resolve_column_mapping(headers: list[str]) -> tuple[int | None, int | None]:
-    """ヘッダーから土地簿価列と土地面積列のインデックスを一括決定する.
-
-    Returns:
-        (land_value_col, dedicated_area_col) のタプル.
-        dedicated_area_col が None の場合、面積は土地セル内の括弧表記から取得する.
+    Returns None if the table is not a facilities land table.
     """
-    land_col: int | None = None
-    dedicated_area_col: int | None = None
+    name_col: int | None = None
+    location_col: int | None = None
+    land_area_col: int | None = None
+    land_book_col: int | None = None
 
-    for i, h in enumerate(headers):
-        if land_col is None and "土地" in h and "土地面積" not in h:
-            land_col = i
-        if dedicated_area_col is None and "土地面積" in h:
-            dedicated_area_col = i
+    # --- name_col / location_col ---
+    for i, (g, _s) in enumerate(group_headers):
+        if name_col is None:
+            if "事業所名" in g:
+                name_col = i
+            elif "名称" in g and "会社名" not in g:
+                name_col = i
+        if location_col is None and g == "所在地":
+            location_col = i
 
-    # 「土地面積」ヘッダーが無い場合、土地列の隣に面積列があるかチェック
-    if land_col is not None and dedicated_area_col is None and land_col + 1 < len(headers):
-        if "面積" in headers[land_col + 1]:
-            dedicated_area_col = land_col + 1
+    if name_col is None:
+        return None
 
-    return land_col, dedicated_area_col
+    # --- land_area_col ---
+    for i, (g, s) in enumerate(group_headers):
+        if "土地面積" in g or "土地等面積" in g:
+            land_area_col = i
+            break
+        # group="土地" + sub に "面積" あり、かつ金額単位なし → 面積専用列
+        if "土地" in g and "面積" in s and "百万" not in s and "千円" not in s and "帳簿" not in s:
+            land_area_col = i
+            break
+
+    # --- land_book_col ---
+    for i, (g, s) in enumerate(group_headers):
+        if i == land_area_col:
+            continue
+        # "帳簿価額" group + "土地" sub (3289/8801/8804 形式)
+        if "帳簿価額" in g and "土地" in s and "面積" not in s:
+            land_book_col = i
+            break
+        # "土地" group + "帳簿価額" sub (8802 形式)
+        if "土地" in g and "面積" not in g and "帳簿価額" in s:
+            land_book_col = i
+            break
+
+    # Fallback: combined "土地" column (standard format — 簿価と面積が1セル)
+    if land_book_col is None:
+        for i, (g, _s) in enumerate(group_headers):
+            if i == land_area_col:
+                continue
+            if "土地" in g and "面積" not in g:
+                land_book_col = i
+                break
+
+    if land_book_col is None:
+        return None
+
+    all_text = "".join(g + s for g, s in group_headers)
+
+    return _ColumnMap(
+        name_col=name_col,
+        location_col=location_col,
+        land_book_col=land_book_col,
+        land_area_col=land_area_col,
+        book_mult=_book_multiplier(all_text),
+        area_scale=_area_scale(all_text),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Table extraction
+# ---------------------------------------------------------------------------
+
+_RE_SECTION_HEADER = re.compile(r"^[①-⑩]")
 
 
 def _extract_from_table(
     table: list[list[str | None]],
     skip_hq_row: bool = False,
 ) -> tuple[list[FacilityLand], list[str]]:
-    data_start = _find_data_start(table)
-    if data_start <= 0:
+    if not table or len(table) < 2:
         return [], []
 
-    headers = _join_header_columns(table, data_start)
-    header_text = "".join(headers)
-    if "事業所名" not in header_text:
-        return [], []
+    header_rows = _estimate_header_rows(table)
+    group_headers = _parse_group_headers(table, header_rows)
+    colmap = _detect_columns(group_headers)
 
-    book_mult = _book_multiplier(header_text)
-    area_scale = _area_scale(header_text)
-
-    land_col, dedicated_area_col = _resolve_column_mapping(headers)
-
-    # 土地列が見つからない表は、賃借設備表や投資計画表、従業員数付き設備表などの
-    # 非土地テーブルであることが多い。ここで無理に数値を拾うと、
-    # 年間賃借料や従業員数「100(8)」のような値を土地簿価/面積と誤認する。
-    if land_col is None:
+    if colmap is None:
         return [], []
 
     out: list[FacilityLand] = []
     missing_area_errors: list[str] = []
-    for row in table[data_start:]:
+
+    for row in table[header_rows:]:
         if not row:
             continue
-        site_cell = row[0] if len(row) > 0 and row[0] else ""
-        site_name = _extract_site_name(site_cell)
-        if not site_name or site_name.startswith("計"):
+
+        # --- Site name ---
+        name_cell = row[colmap.name_col] if colmap.name_col < len(row) and row[colmap.name_col] else ""
+        if not name_cell:
+            continue
+        norm_name = _normalize_text(name_cell)
+        # Skip section headers ("① 賃貸用建物等" etc.)
+        if _RE_SECTION_HEADER.match(norm_name):
+            continue
+        site_name = _extract_site_name(name_cell)
+        if not site_name or site_name.startswith("計") or site_name in {"合計", "小計"}:
             continue
         if skip_hq_row and site_name == "本社":
             continue
 
-        location, has_hoka = _extract_location(site_cell)
+        # --- Location ---
+        if colmap.location_col is not None and colmap.location_col < len(row):
+            loc_cell = row[colmap.location_col] or ""
+            location, has_hoka = _extract_location(loc_cell)
+        else:
+            location, has_hoka = _extract_location(name_cell)
+
         if not location:
             continue
 
-        land = None
-        area = None
+        # --- Land book value & area ---
+        land: float | None = None
+        area: float | None = None
 
-        if land_col < len(row):
-            land, inline_area = _parse_land_cell(row[land_col] or "")
+        if colmap.land_area_col is not None:
+            # 面積と簿価が別列のパターン
+            if colmap.land_area_col < len(row):
+                area = _parse_land_area_cell(row[colmap.land_area_col] or "")
+            if colmap.land_book_col is not None and colmap.land_book_col < len(row):
+                land = _parse_number(row[colmap.land_book_col] or "")
+        elif colmap.land_book_col is not None and colmap.land_book_col < len(row):
+            # 簿価と面積が1セルに一体のパターン (標準形式)
+            land, area = _parse_land_cell(row[colmap.land_book_col] or "")
 
         if land is None:
             continue
 
-        if dedicated_area_col is not None and dedicated_area_col < len(row):
-            area = _parse_land_area_cell(row[dedicated_area_col] or "")
-        else:
-            area = inline_area
-
-        if land is None or area is None:
-            if land is not None and area is None and location.startswith("東京都"):
+        if area is None:
+            if location.startswith("東京都"):
                 missing_area_errors.append(f"事業所名={site_name}, 所在地={location}, 土地簿価(raw)={land}")
             continue
 
@@ -241,8 +359,8 @@ def _extract_from_table(
             FacilityLand(
                 site_name=site_name,
                 location_short=location,
-                land_area_m2=area * area_scale,
-                land_book_value_yen=land * book_mult,
+                land_area_m2=area * colmap.area_scale,
+                land_book_value_yen=land * colmap.book_mult,
                 location_has_hoka=has_hoka,
             )
         )
@@ -326,9 +444,6 @@ def _should_skip_hq_row(page_text: str) -> bool:
     txt_compact = re.sub(r"\s+", "", _normalize_text(page_text))
     if ("本社欄に記載の土地" in txt_compact) and ("各所に所在" in txt_compact):
         return True
-    # 一部の有報では、本社行の「土地(面積千㎡)」に鉱業用地等が混在し、
-    # 本社所在地へ機械的に割り当てると過大評価になりやすい。
-    # 例: 「本社の土地のなかに鉱業用地…」の注記。
     if ("本社の土地のなかに鉱業用地" in txt_compact) and ("面積千" in txt_compact):
         return True
     return False
