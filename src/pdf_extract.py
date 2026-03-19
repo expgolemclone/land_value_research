@@ -116,6 +116,7 @@ def _book_multiplier(header_text: str) -> int:
         return 1_000
     if "帳簿価額(百万円)" in header_text or "帳簿価額（百万円）" in header_text:
         return 1_000_000
+    logger.warning("帳簿価額の単位を特定できません(百万円と仮定): %s", header_text[:80])
     return 1_000_000
 
 
