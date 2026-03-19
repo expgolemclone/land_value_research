@@ -183,6 +183,12 @@ def _extract_from_table(
         if area_col is None and ("面積" in h):
             area_col = i
 
+    # 土地列が見つからない表は、賃借設備表や投資計画表、従業員数付き設備表などの
+    # 非土地テーブルであることが多い。ここで無理に数値を拾うと、
+    # 年間賃借料や従業員数「100(8)」のような値を土地簿価/面積と誤認する。
+    if land_col is None:
+        return [], []
+
     out: list[FacilityLand] = []
     missing_area_errors: list[str] = []
     for row in table[data_start:]:
@@ -204,15 +210,6 @@ def _extract_from_table(
 
         if land_col is not None and land_col < len(row):
             land, area = _parse_land_cell(row[land_col] or "")
-
-        if (land is None or area is None) and land_col is None:
-            for cell in row:
-                cell_norm = _normalize_text(cell or "").replace("\n", "")
-                m = _RE_LAND_AREA.search(cell_norm)
-                if m:
-                    land = float(m.group("land").replace(",", ""))
-                    area = float(m.group("area").replace(",", ""))
-                    break
 
         if land_col is not None and land is None:
             continue
@@ -241,15 +238,6 @@ def _extract_from_table(
             side = _parse_number(row[land_col + 1] or "")
             if side is not None and side > area:
                 area = side
-
-        if land is None and land_col is None and area_col is not None:
-            for c in [area_col + 1, area_col - 1]:
-                if c < 0 or c >= len(row):
-                    continue
-                v = _parse_number(row[c] or "")
-                if v is not None:
-                    land = v
-                    break
 
         if land is None or area is None:
             if land is not None and area is None and location.startswith("東京都"):

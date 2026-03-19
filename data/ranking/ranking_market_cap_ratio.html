@@ -212,15 +212,15 @@
 <li>地価推定の信頼度がmedium（最近傍1.3km）で、新木場の実勢価格より高い単価が適用されている可能性</li>
 <li>保守的に見積もると含み益は30-70億円程度（ratio≈2-5）が妥当な範囲</li>
 </ul></template></td>
-  <td class="right">9.149868</td>
+  <td class="right">9.100631</td>
   <td>gaiku</td>
   <td>medium</td>
   <td></td>
   <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/7815_securities_report.pdf" target="_blank">7815_securities_report.pdf</a></td>
-  <td class="right">128.10</td>
+  <td class="right">127.41</td>
   <td class="right">14.00</td>
   <td class="right">11.69</td>
-  <td class="right">116.41</td>
+  <td class="right">115.72</td>
   <td class="right">1</td>
   <td>7815_output.csv</td>
 </tr>
@@ -318,13 +318,13 @@
 <li><code>東京都渋谷区恵比寿1丁目19番16号</code> も同一点に解決されるが、パッチには公式サイト準拠の <code>19番15号</code> を採用した</li>
 <li>今回の含み益の大きさは、少なくとも <code>本社・玉川工場</code> の複数所在地合算では説明できない</li>
 </ul></template></td>
-  <td class="right">5.066730</td>
+  <td class="right">4.956584</td>
   <td>gaiku</td>
   <td>high</td>
   <td>評価倍率閾値超過</td>
   <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/6396_securities_report.pdf" target="_blank">6396_securities_report.pdf</a></td>
   <td class="right">228.00</td>
-  <td class="right">45.00</td>
+  <td class="right">46.00</td>
   <td class="right">6.16</td>
   <td class="right">221.84</td>
   <td class="right">1</td>
@@ -829,80 +829,9 @@
 </tr>
 <tr>
   <td class="right">12</td>
-  <td>9731</td>
-  <td>白洋舎</td>
-  <td><button class="docs-btn" data-idx="12">📋 調査メモ</button><template id="docs-12"><h3>9731 split-address 推論メモ</h3>
-<h4>1. 対象</h4>
-<ul>
-<li>証券コード: 9731</li>
-<li>企業名: 株式会社白洋舍</li>
-<li>対象事業所: 東京支店他 / 神山ビル他 / 本社他</li>
-<li>更新日: 2026-03-17</li>
-</ul>
-<h4>2. 元データ</h4>
-<ul>
-<li>東京支店他: 48,486.93 m2, 東京都大田区他</li>
-<li>神山ビル他: 4,178.00 m2, 東京都渋谷区他</li>
-<li>本社他: 2,554.69 m2, 東京都大田区他</li>
-<li>問題点: 3件とも有報上の事業所名に「他」が付いており、1住所への単純紐付けだと面積合算の過大評価が起こりうる</li>
-</ul>
-<h4>3. 根拠ソース</h4>
-<table class="md-table"><thead><tr>
-<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
-</tr></thead><tbody>
-<tr><td>有報</td><td>2026-03-17</td><td>2024年12月31日現在の主要設備で「東京支店他 (東京都大田区他) 48,486.93㎡」「神山ビル他 (東京都渋谷区他) 4,178.00㎡」「本社他 (東京都大田区他) 2,554.69㎡」を確認</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHPE.pdf</td></tr>
-<tr><td>公式サイト</td><td>2026-03-17</td><td>グループ拠点一覧で、都内クリーニング拠点は東京事務所(東京都大田区下丸子2-11-1)と武蔵野事務所(東京都西東京市芝久保町3-2-1)を確認</td><td>https://www.hakuyosha.co.jp/company/group/</td></tr>
-<tr><td>公式サイト</td><td>2026-03-17</td><td>会社概要で本社所在地が東京都大田区下丸子2丁目11番8号であることを確認</td><td>https://www.hakuyosha.co.jp/company/overview/</td></tr>
-<tr><td>公的データ</td><td>2026-03-17</td><td>近傍標準地「大田-42」(東京都大田区下丸子2-11-11) の地積2055㎡を確認。東京事務所の近傍代理値として採用</td><td>https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131110042.html</td></tr>
-</tbody></table>
-<h4>4. 判断</h4>
-<h5>東京支店他</h5>
-<ul>
-<li>有報の所在地は「東京都大田区他」。</li>
-<li>公式拠点一覧では、親会社クリーニング事業の都内拠点は東京事務所(大田区)と武蔵野事務所(西東京市)の2件だけ。</li>
-<li>したがって、<code>東京支店他</code> は少なくともこの2拠点を含むとみるのが自然。</li>
-<li>東京事務所の敷地面積は未開示のため、近傍標準地「大田-42」の地積2055㎡を代理値とした。</li>
-<li>残余 <code>48,486.93 - 2,055.00 = 46,431.93㎡</code> を武蔵野事務所へ配分。</li>
-</ul>
-<h5>神山ビル他</h5>
-<ul>
-<li>公式に確認できた自社不動産の番地レベル住所は、既存 override の <code>東京都渋谷区神山町4丁目14番</code> に対応する神山ビルのみ。</li>
-<li>追加の番地レベル所在地は今回の調査では裏付け不足で、別住所への分割は見送り。</li>
-</ul>
-<h5>本社他</h5>
-<ul>
-<li>公式会社概要で本社所在地 <code>東京都大田区下丸子2丁目11番8号</code> を確認。</li>
-<li>「他」に含まれる全社資産の追加所在地は今回の調査では特定できず、代表住所のみ確定。</li>
-</ul>
-<h4>5. 最終配分</h4>
-<ul>
-<li>東京支店他(東京事務所): 2,055.00 m2</li>
-<li>東京支店他(武蔵野事務所): 46,431.93 m2</li>
-<li>神山ビル他: 代表住所のみ更新なし</li>
-<li>本社他: 代表住所のみ更新なし</li>
-</ul>
-<h4>6. 推論上の留意点</h4>
-<ul>
-<li>東京支店他の配分は、公式拠点一覧から「都内クリーニング拠点が2件のみ」という事実に基づく推論であり、東京事務所2055㎡は近傍標準地による代理値。</li>
-<li>このため、武蔵野事務所46,431.93㎡は残差配分であり、登記や固定資産注記が見つかれば将来差し替え余地がある。</li>
-</ul></template></td>
-  <td class="right">2.667233</td>
-  <td>gaiku</td>
-  <td>low / high</td>
-  <td>所在地に複数所在地シグナルを含む(他/ほか/及び/等/外)(合算面積の可能性) / 信頼度lowかつ土地面積5000m2以上 / 所在地に複数所在地シグナルを含む(他/ほか/及び/等/外)(合算面積の可能性)</td>
-  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/9731_securities_report.pdf" target="_blank">9731_securities_report.pdf</a></td>
-  <td class="right">378.75</td>
-  <td class="right">142.00</td>
-  <td class="right">41.71</td>
-  <td class="right">337.04</td>
-  <td class="right">1</td>
-  <td>9731_output.csv</td>
-</tr>
-<tr>
-  <td class="right">13</td>
   <td>1866</td>
   <td>北野建設</td>
-  <td><button class="docs-btn" data-idx="13">📋 調査メモ</button><template id="docs-13"><h3>1866 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="12">📋 調査メモ</button><template id="docs-12"><h3>1866 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1866</li>
@@ -959,10 +888,10 @@
   <td>1866_output.csv</td>
 </tr>
 <tr>
-  <td class="right">14</td>
+  <td class="right">13</td>
   <td>9672</td>
   <td>東京都競馬</td>
-  <td><button class="docs-btn" data-idx="14">📋 調査メモ</button><template id="docs-14"><h3>9672 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="13">📋 調査メモ</button><template id="docs-13"><h3>9672 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9672</li>
@@ -1024,6 +953,77 @@
   <td class="right">4,033.18</td>
   <td class="right">1</td>
   <td>9672_output.csv</td>
+</tr>
+<tr>
+  <td class="right">14</td>
+  <td>9731</td>
+  <td>白洋舎</td>
+  <td><button class="docs-btn" data-idx="14">📋 調査メモ</button><template id="docs-14"><h3>9731 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9731</li>
+<li>企業名: 株式会社白洋舍</li>
+<li>対象事業所: 東京支店他 / 神山ビル他 / 本社他</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>東京支店他: 48,486.93 m2, 東京都大田区他</li>
+<li>神山ビル他: 4,178.00 m2, 東京都渋谷区他</li>
+<li>本社他: 2,554.69 m2, 東京都大田区他</li>
+<li>問題点: 3件とも有報上の事業所名に「他」が付いており、1住所への単純紐付けだと面積合算の過大評価が起こりうる</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報</td><td>2026-03-17</td><td>2024年12月31日現在の主要設備で「東京支店他 (東京都大田区他) 48,486.93㎡」「神山ビル他 (東京都渋谷区他) 4,178.00㎡」「本社他 (東京都大田区他) 2,554.69㎡」を確認</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHPE.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>グループ拠点一覧で、都内クリーニング拠点は東京事務所(東京都大田区下丸子2-11-1)と武蔵野事務所(東京都西東京市芝久保町3-2-1)を確認</td><td>https://www.hakuyosha.co.jp/company/group/</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>会社概要で本社所在地が東京都大田区下丸子2丁目11番8号であることを確認</td><td>https://www.hakuyosha.co.jp/company/overview/</td></tr>
+<tr><td>公的データ</td><td>2026-03-17</td><td>近傍標準地「大田-42」(東京都大田区下丸子2-11-11) の地積2055㎡を確認。東京事務所の近傍代理値として採用</td><td>https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131110042.html</td></tr>
+</tbody></table>
+<h4>4. 判断</h4>
+<h5>東京支店他</h5>
+<ul>
+<li>有報の所在地は「東京都大田区他」。</li>
+<li>公式拠点一覧では、親会社クリーニング事業の都内拠点は東京事務所(大田区)と武蔵野事務所(西東京市)の2件だけ。</li>
+<li>したがって、<code>東京支店他</code> は少なくともこの2拠点を含むとみるのが自然。</li>
+<li>東京事務所の敷地面積は未開示のため、近傍標準地「大田-42」の地積2055㎡を代理値とした。</li>
+<li>残余 <code>48,486.93 - 2,055.00 = 46,431.93㎡</code> を武蔵野事務所へ配分。</li>
+</ul>
+<h5>神山ビル他</h5>
+<ul>
+<li>公式に確認できた自社不動産の番地レベル住所は、既存 override の <code>東京都渋谷区神山町4丁目14番</code> に対応する神山ビルのみ。</li>
+<li>追加の番地レベル所在地は今回の調査では裏付け不足で、別住所への分割は見送り。</li>
+</ul>
+<h5>本社他</h5>
+<ul>
+<li>公式会社概要で本社所在地 <code>東京都大田区下丸子2丁目11番8号</code> を確認。</li>
+<li>「他」に含まれる全社資産の追加所在地は今回の調査では特定できず、代表住所のみ確定。</li>
+</ul>
+<h4>5. 最終配分</h4>
+<ul>
+<li>東京支店他(東京事務所): 2,055.00 m2</li>
+<li>東京支店他(武蔵野事務所): 46,431.93 m2</li>
+<li>神山ビル他: 代表住所のみ更新なし</li>
+<li>本社他: 代表住所のみ更新なし</li>
+</ul>
+<h4>6. 推論上の留意点</h4>
+<ul>
+<li>東京支店他の配分は、公式拠点一覧から「都内クリーニング拠点が2件のみ」という事実に基づく推論であり、東京事務所2055㎡は近傍標準地による代理値。</li>
+<li>このため、武蔵野事務所46,431.93㎡は残差配分であり、登記や固定資産注記が見つかれば将来差し替え余地がある。</li>
+</ul></template></td>
+  <td class="right">2.648581</td>
+  <td>gaiku</td>
+  <td>low / high</td>
+  <td>所在地に複数所在地シグナルを含む(他/ほか/及び/等/外)(合算面積の可能性) / 信頼度lowかつ土地面積5000m2以上 / 所在地に複数所在地シグナルを含む(他/ほか/及び/等/外)(合算面積の可能性)</td>
+  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/9731_securities_report.pdf" target="_blank">9731_securities_report.pdf</a></td>
+  <td class="right">378.75</td>
+  <td class="right">143.00</td>
+  <td class="right">41.71</td>
+  <td class="right">337.04</td>
+  <td class="right">1</td>
+  <td>9731_output.csv</td>
 </tr>
 <tr>
   <td class="right">15</td>
@@ -1520,13 +1520,13 @@
 <li>今回のパッチでは、公式サイトで確認できる6拠点へ分割し、面積は近傍公的地積proxyで按分した</li>
 <li>なお、根本原因は「賃借設備の延床面積」を土地面積として扱っている点であり、上流ロジック側では当該注記を土地評価対象から除外するのが本筋</li>
 </ul></template></td>
-  <td class="right">2.153828</td>
+  <td class="right">2.108957</td>
   <td>gaiku</td>
   <td>high</td>
   <td>所在地に複数所在地シグナルを含む(他/ほか/及び/等/外)(合算面積の可能性)</td>
   <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/9929_securities_report.pdf" target="_blank">9929_securities_report.pdf</a></td>
   <td class="right">101.23</td>
-  <td class="right">47.00</td>
+  <td class="right">48.00</td>
   <td class="right">1,359.37</td>
   <td class="right">-1,258.14</td>
   <td class="right">1</td>
@@ -1534,79 +1534,9 @@
 </tr>
 <tr>
   <td class="right">23</td>
-  <td>9845</td>
-  <td>パーカーコーポレーション</td>
-  <td><button class="docs-btn" data-idx="23">📋 調査メモ</button><template id="docs-23"><h3>9845 split-address 推論メモ</h3>
-<h4>1. 対象</h4>
-<ul>
-<li>証券コード: 9845</li>
-<li>企業名: パーカーコーポレーション</li>
-<li>対象事業所: 本社・テクニカルセンター 他</li>
-<li>更新日: 2026-03-17</li>
-</ul>
-<h4>2. 元データ</h4>
-<ul>
-<li>元の土地面積: 38,000 m2</li>
-<li>元住所: 東京都中央区日本橋人形町2-22-1</li>
-<li>問題点: 有報では「本社・テクニカルセンター 他」「東京都中央区他」とされ、中央区1地点に38,000m2を載せると都心商業地として過大評価になる</li>
-</ul>
-<h4>3. 根拠ソース</h4>
-<table class="md-table"><thead><tr>
-<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
-</tr></thead><tbody>
-<tr><td>会社公式</td><td>2026-03-17</td><td>会社概況に本社住所「東京都中央区日本橋人形町2-22-1」</td><td>https://www.parkercorp.co.jp/corporate/outline/</td></tr>
-<tr><td>会社公式</td><td>2026-03-17</td><td>事業所ページに研究開発拠点「テクニカルセンター」「東京都江東区枝川3-1-8」</td><td>https://www.parkercorp.co.jp/corporate/facilities/index.html</td></tr>
-<tr><td>IR</td><td>2026-03-17</td><td>2025年3月期有報の設備の状況では「本社・テクニカルセンター 他」「(東京都中央区他)」「土地(38千㎡)」</td><td>https://www.parkercorp.co.jp/investors/library/annual_report/index.html</td></tr>
-<tr><td>公的データ</td><td>2026-03-17</td><td>国交省鑑定評価書「中央5-20」は中央区日本橋人形町2丁目21番10、地積147㎡</td><td>https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131020520.html</td></tr>
-<tr><td>建築実績</td><td>2026-03-17</td><td>錢高組施工実績でテクニカルセンターは建築面積395.84㎡、延床2,257.76㎡</td><td>https://www.zenitaka.co.jp/news/2007/work/070724.html</td></tr>
-<tr><td>近傍比較</td><td>2026-03-17</td><td>枝川2丁目6番84のブリシア豊洲は敷地687.85㎡、建築面積459.16㎡</td><td>https://xn--cckyb6eodw179at8vb.com/outlines/</td></tr>
-</tbody></table>
-<h4>4. 推論</h4>
-<h5>4.1 拠点分解</h5>
-<ul>
-<li>公式サイト上で提出会社の東京都内実在拠点として確認できたのは <code>本社</code> と <code>テクニカルセンター</code> の2地点。</li>
-<li>有報は <code>他</code> を含み、所在地も <code>東京都中央区他</code> なので、38,000 m2 は2地点以外の保有地を含む合算と判断。</li>
-</ul>
-<h5>4.2 面積配分</h5>
-<ul>
-<li>本社: 147.0 m2</li>
-<li>根拠: 本社住所に隣接する国交省標準地 <code>中央5-20</code> の地積147㎡を近傍代理値として採用。</li>
-<li>テクニカルセンター: 593.0 m2</li>
-<li>根拠: 公式建築実績の建築面積395.84㎡に、近傍枝川2丁目案件の敷地/建築面積比を掛けて敷地規模を推定。</li>
-<li>計算式: 395.84 x (687.85 / 459.16) = 593.01 → 593.0 m2</li>
-<li>その他保有地(合算残): 37,260.0 m2</li>
-<li>計算式: 38,000.0 - 147.0 - 593.0 = 37,260.0 m2</li>
-</ul>
-<h4>5. 最終配分面積</h4>
-<table class="md-table"><thead><tr>
-<th>区分</th><th>住所</th><th>面積(m2)</th><th>備考</th>
-</tr></thead><tbody>
-<tr><td>本社</td><td>東京都中央区日本橋人形町2-22-1</td><td>147.0</td><td>近傍公示地による推定</td></tr>
-<tr><td>テクニカルセンター</td><td>東京都江東区枝川3-1-8</td><td>593.0</td><td>建築面積と近傍枝川案件から推定</td></tr>
-<tr><td>その他保有地(合算残)</td><td>全国各所</td><td>37,260.0</td><td>有報総面積から差引した残余</td></tr>
-</tbody></table>
-<h4>6. メモ</h4>
-<ul>
-<li><code>東京都中央区日本橋人形町2-22-1</code> と <code>東京都江東区枝川3-1-8</code> はローカル geocoder でいずれも <code>gaiku</code> を確認。</li>
-<li><code>全国各所</code> は実在地点未特定の残余資産なので、中央区1地点へ誤集約しないための退避エントリとして扱う。</li>
-</ul></template></td>
-  <td class="right">2.099281</td>
-  <td>gaiku</td>
-  <td>high</td>
-  <td>所在地に複数所在地シグナルを含む(他/ほか/及び/等/外)(合算面積の可能性)</td>
-  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/9845_securities_report.pdf" target="_blank">9845_securities_report.pdf</a></td>
-  <td class="right">917.39</td>
-  <td class="right">437.00</td>
-  <td class="right">34.54</td>
-  <td class="right">882.85</td>
-  <td class="right">1</td>
-  <td>9845_output.csv</td>
-</tr>
-<tr>
-  <td class="right">24</td>
   <td>7567</td>
   <td>栄電子</td>
-  <td><button class="docs-btn" data-idx="24">📋 調査メモ</button><template id="docs-24"><h3>7567 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="23">📋 調査メモ</button><template id="docs-23"><h3>7567 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 7567</li>
@@ -1670,6 +1600,76 @@
   <td class="right">43.31</td>
   <td class="right">1</td>
   <td>7567_output.csv</td>
+</tr>
+<tr>
+  <td class="right">24</td>
+  <td>9845</td>
+  <td>パーカーコーポレーション</td>
+  <td><button class="docs-btn" data-idx="24">📋 調査メモ</button><template id="docs-24"><h3>9845 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9845</li>
+<li>企業名: パーカーコーポレーション</li>
+<li>対象事業所: 本社・テクニカルセンター 他</li>
+<li>更新日: 2026-03-17</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 38,000 m2</li>
+<li>元住所: 東京都中央区日本橋人形町2-22-1</li>
+<li>問題点: 有報では「本社・テクニカルセンター 他」「東京都中央区他」とされ、中央区1地点に38,000m2を載せると都心商業地として過大評価になる</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>会社公式</td><td>2026-03-17</td><td>会社概況に本社住所「東京都中央区日本橋人形町2-22-1」</td><td>https://www.parkercorp.co.jp/corporate/outline/</td></tr>
+<tr><td>会社公式</td><td>2026-03-17</td><td>事業所ページに研究開発拠点「テクニカルセンター」「東京都江東区枝川3-1-8」</td><td>https://www.parkercorp.co.jp/corporate/facilities/index.html</td></tr>
+<tr><td>IR</td><td>2026-03-17</td><td>2025年3月期有報の設備の状況では「本社・テクニカルセンター 他」「(東京都中央区他)」「土地(38千㎡)」</td><td>https://www.parkercorp.co.jp/investors/library/annual_report/index.html</td></tr>
+<tr><td>公的データ</td><td>2026-03-17</td><td>国交省鑑定評価書「中央5-20」は中央区日本橋人形町2丁目21番10、地積147㎡</td><td>https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131020520.html</td></tr>
+<tr><td>建築実績</td><td>2026-03-17</td><td>錢高組施工実績でテクニカルセンターは建築面積395.84㎡、延床2,257.76㎡</td><td>https://www.zenitaka.co.jp/news/2007/work/070724.html</td></tr>
+<tr><td>近傍比較</td><td>2026-03-17</td><td>枝川2丁目6番84のブリシア豊洲は敷地687.85㎡、建築面積459.16㎡</td><td>https://xn--cckyb6eodw179at8vb.com/outlines/</td></tr>
+</tbody></table>
+<h4>4. 推論</h4>
+<h5>4.1 拠点分解</h5>
+<ul>
+<li>公式サイト上で提出会社の東京都内実在拠点として確認できたのは <code>本社</code> と <code>テクニカルセンター</code> の2地点。</li>
+<li>有報は <code>他</code> を含み、所在地も <code>東京都中央区他</code> なので、38,000 m2 は2地点以外の保有地を含む合算と判断。</li>
+</ul>
+<h5>4.2 面積配分</h5>
+<ul>
+<li>本社: 147.0 m2</li>
+<li>根拠: 本社住所に隣接する国交省標準地 <code>中央5-20</code> の地積147㎡を近傍代理値として採用。</li>
+<li>テクニカルセンター: 593.0 m2</li>
+<li>根拠: 公式建築実績の建築面積395.84㎡に、近傍枝川2丁目案件の敷地/建築面積比を掛けて敷地規模を推定。</li>
+<li>計算式: 395.84 x (687.85 / 459.16) = 593.01 → 593.0 m2</li>
+<li>その他保有地(合算残): 37,260.0 m2</li>
+<li>計算式: 38,000.0 - 147.0 - 593.0 = 37,260.0 m2</li>
+</ul>
+<h4>5. 最終配分面積</h4>
+<table class="md-table"><thead><tr>
+<th>区分</th><th>住所</th><th>面積(m2)</th><th>備考</th>
+</tr></thead><tbody>
+<tr><td>本社</td><td>東京都中央区日本橋人形町2-22-1</td><td>147.0</td><td>近傍公示地による推定</td></tr>
+<tr><td>テクニカルセンター</td><td>東京都江東区枝川3-1-8</td><td>593.0</td><td>建築面積と近傍枝川案件から推定</td></tr>
+<tr><td>その他保有地(合算残)</td><td>全国各所</td><td>37,260.0</td><td>有報総面積から差引した残余</td></tr>
+</tbody></table>
+<h4>6. メモ</h4>
+<ul>
+<li><code>東京都中央区日本橋人形町2-22-1</code> と <code>東京都江東区枝川3-1-8</code> はローカル geocoder でいずれも <code>gaiku</code> を確認。</li>
+<li><code>全国各所</code> は実在地点未特定の残余資産なので、中央区1地点へ誤集約しないための退避エントリとして扱う。</li>
+</ul></template></td>
+  <td class="right">2.061541</td>
+  <td>gaiku</td>
+  <td>high</td>
+  <td>所在地に複数所在地シグナルを含む(他/ほか/及び/等/外)(合算面積の可能性)</td>
+  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/9845_securities_report.pdf" target="_blank">9845_securities_report.pdf</a></td>
+  <td class="right">917.39</td>
+  <td class="right">445.00</td>
+  <td class="right">34.54</td>
+  <td class="right">882.85</td>
+  <td class="right">1</td>
+  <td>9845_output.csv</td>
 </tr>
 <tr>
   <td class="right">25</td>
@@ -1810,43 +1810,9 @@
 </tr>
 <tr>
   <td class="right">27</td>
-  <td>5423</td>
-  <td>東京製鐵</td>
-  <td></td>
-  <td class="right">1.858064</td>
-  <td>gaiku</td>
-  <td>high</td>
-  <td>評価倍率閾値超過</td>
-  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/5423_securities_report.pdf" target="_blank">5423_securities_report.pdf</a></td>
-  <td class="right">3,296.21</td>
-  <td class="right">1,774.00</td>
-  <td class="right">0.81</td>
-  <td class="right">3,295.40</td>
-  <td class="right">1</td>
-  <td>5423_output.csv</td>
-</tr>
-<tr>
-  <td class="right">28</td>
-  <td>9304</td>
-  <td>澁澤倉庫</td>
-  <td></td>
-  <td class="right">1.673753</td>
-  <td>gaiku / muni_centroid</td>
-  <td>high</td>
-  <td>所在地に複数所在地シグナルを含む(他/ほか/及び/等/外)(合算面積の可能性) / 同一住所かつ大面積の複数拠点 / 所在地に複数所在地シグナルを含む(他/ほか/及び/等/外)(合算面積の可能性)</td>
-  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/9304_securities_report.pdf" target="_blank">9304_securities_report.pdf</a></td>
-  <td class="right">1,364.11</td>
-  <td class="right">815.00</td>
-  <td class="right">133.98</td>
-  <td class="right">1,230.13</td>
-  <td class="right">2</td>
-  <td>9304_output.csv</td>
-</tr>
-<tr>
-  <td class="right">29</td>
   <td>3690</td>
   <td>イルグルム</td>
-  <td><button class="docs-btn" data-idx="29">📋 調査メモ</button><template id="docs-29"><h3>3690 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="27">📋 調査メモ</button><template id="docs-27"><h3>3690 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 3690</li>
@@ -1890,10 +1856,10 @@
   <td>3690_output.csv</td>
 </tr>
 <tr>
-  <td class="right">30</td>
+  <td class="right">28</td>
   <td>3998</td>
   <td>すららネット</td>
-  <td><button class="docs-btn" data-idx="30">📋 調査メモ</button><template id="docs-30"><h3>3998 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="28">📋 調査メモ</button><template id="docs-28"><h3>3998 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 3998</li>
@@ -1941,27 +1907,10 @@
   <td>3998_output.csv</td>
 </tr>
 <tr>
-  <td class="right">31</td>
-  <td>9119</td>
-  <td>飯野海運</td>
-  <td></td>
-  <td class="right">1.511101</td>
-  <td>gaiku</td>
-  <td>high / medium / low</td>
-  <td></td>
-  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/9119_securities_report.pdf" target="_blank">9119_securities_report.pdf</a></td>
-  <td class="right">2,744.16</td>
-  <td class="right">1,816.00</td>
-  <td class="right">488.25</td>
-  <td class="right">2,255.91</td>
-  <td class="right">1</td>
-  <td>9119_output.csv</td>
-</tr>
-<tr>
-  <td class="right">32</td>
+  <td class="right">29</td>
   <td>4274</td>
   <td>細谷火工</td>
-  <td><button class="docs-btn" data-idx="32">📋 調査メモ</button><template id="docs-32"><h3>4274 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="29">📋 調査メモ</button><template id="docs-29"><h3>4274 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4274</li>
@@ -2008,10 +1957,27 @@
   <td>4274_output.csv</td>
 </tr>
 <tr>
-  <td class="right">33</td>
+  <td class="right">30</td>
+  <td>9119</td>
+  <td>飯野海運</td>
+  <td></td>
+  <td class="right">1.373453</td>
+  <td>gaiku</td>
+  <td>high / medium / low</td>
+  <td></td>
+  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/9119_securities_report.pdf" target="_blank">9119_securities_report.pdf</a></td>
+  <td class="right">2,744.16</td>
+  <td class="right">1,998.00</td>
+  <td class="right">488.25</td>
+  <td class="right">2,255.91</td>
+  <td class="right">1</td>
+  <td>9119_output.csv</td>
+</tr>
+<tr>
+  <td class="right">31</td>
   <td>5199</td>
   <td>不二ラテックス</td>
-  <td><button class="docs-btn" data-idx="33">📋 調査メモ</button><template id="docs-33"><h3>5199 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="31">📋 調査メモ</button><template id="docs-31"><h3>5199 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 5199</li>
@@ -2066,7 +2032,7 @@
   <td>5199_output.csv</td>
 </tr>
 <tr>
-  <td class="right">34</td>
+  <td class="right">32</td>
   <td>9069</td>
   <td>センコーグループホールディングス</td>
   <td></td>
@@ -2083,7 +2049,7 @@
   <td>9069_output.csv</td>
 </tr>
 <tr>
-  <td class="right">35</td>
+  <td class="right">33</td>
   <td>9896</td>
   <td>ＪＫホールディングス</td>
   <td></td>
@@ -2100,7 +2066,7 @@
   <td>9896_output.csv</td>
 </tr>
 <tr>
-  <td class="right">36</td>
+  <td class="right">34</td>
   <td>5852</td>
   <td>アーレスティ</td>
   <td></td>
@@ -2117,10 +2083,10 @@
   <td>5852_output.csv</td>
 </tr>
 <tr>
-  <td class="right">37</td>
+  <td class="right">35</td>
   <td>4840</td>
   <td>トライアイズ</td>
-  <td><button class="docs-btn" data-idx="37">📋 調査メモ</button><template id="docs-37"><h3>4840 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="35">📋 調査メモ</button><template id="docs-35"><h3>4840 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4840</li>
@@ -2178,7 +2144,7 @@
   <td>4840_output.csv</td>
 </tr>
 <tr>
-  <td class="right">38</td>
+  <td class="right">36</td>
   <td>1960</td>
   <td>サンテック</td>
   <td></td>
@@ -2195,10 +2161,10 @@
   <td>1960_output.csv</td>
 </tr>
 <tr>
-  <td class="right">39</td>
+  <td class="right">37</td>
   <td>7614</td>
   <td>オーエムツーネットワーク</td>
-  <td><button class="docs-btn" data-idx="39">📋 調査メモ</button><template id="docs-39"><h3>7614 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="37">📋 調査メモ</button><template id="docs-37"><h3>7614 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 7614</li>
@@ -2250,10 +2216,10 @@
   <td>7614_output.csv</td>
 </tr>
 <tr>
-  <td class="right">40</td>
+  <td class="right">38</td>
   <td>9324</td>
   <td>安田倉庫</td>
-  <td><button class="docs-btn" data-idx="40">📋 調査メモ</button><template id="docs-40"><h3>9324 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="38">📋 調査メモ</button><template id="docs-38"><h3>9324 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9324</li>
@@ -2322,7 +2288,7 @@
   <td>9324_output.csv</td>
 </tr>
 <tr>
-  <td class="right">41</td>
+  <td class="right">39</td>
   <td>5388</td>
   <td>クニミネ工業</td>
   <td></td>
@@ -2339,7 +2305,7 @@
   <td>5388_output.csv</td>
 </tr>
 <tr>
-  <td class="right">42</td>
+  <td class="right">40</td>
   <td>9082</td>
   <td>大和自動車交通</td>
   <td></td>
@@ -2356,24 +2322,24 @@
   <td>9082_output.csv</td>
 </tr>
 <tr>
-  <td class="right">43</td>
+  <td class="right">41</td>
   <td>1762</td>
   <td>高松コンストラクショングループ</td>
   <td></td>
-  <td class="right">0.860722</td>
+  <td class="right">0.834157</td>
   <td>gaiku</td>
   <td>high</td>
   <td>所在地に複数所在地シグナルを含む(他/ほか/及び/等/外)(合算面積の可能性)</td>
   <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/1762_securities_report.pdf" target="_blank">1762_securities_report.pdf</a></td>
   <td class="right">1,081.07</td>
-  <td class="right">1,256.00</td>
+  <td class="right">1,296.00</td>
   <td class="right">167.12</td>
   <td class="right">913.94</td>
   <td class="right">1</td>
   <td>1762_output.csv</td>
 </tr>
 <tr>
-  <td class="right">44</td>
+  <td class="right">42</td>
   <td>7942</td>
   <td>ＪＳＰ</td>
   <td></td>
@@ -2390,10 +2356,10 @@
   <td>7942_output.csv</td>
 </tr>
 <tr>
-  <td class="right">45</td>
+  <td class="right">43</td>
   <td>2464</td>
   <td>Ａｏｂａ‐ＢＢＴ</td>
-  <td><button class="docs-btn" data-idx="45">📋 調査メモ</button><template id="docs-45"><h3>2464 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="43">📋 調査メモ</button><template id="docs-43"><h3>2464 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 2464</li>
@@ -2445,10 +2411,10 @@
   <td>2464_output.csv</td>
 </tr>
 <tr>
-  <td class="right">46</td>
+  <td class="right">44</td>
   <td>6497</td>
   <td>ハマイ</td>
-  <td><button class="docs-btn" data-idx="46">📋 調査メモ</button><template id="docs-46"><h3>6497 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="44">📋 調査メモ</button><template id="docs-44"><h3>6497 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 6497</li>
@@ -2511,7 +2477,7 @@
   <td>6497_output.csv</td>
 </tr>
 <tr>
-  <td class="right">47</td>
+  <td class="right">45</td>
   <td>6758</td>
   <td>ソニーグループ</td>
   <td></td>
@@ -2528,7 +2494,7 @@
   <td>6758_output.csv</td>
 </tr>
 <tr>
-  <td class="right">48</td>
+  <td class="right">46</td>
   <td>3223</td>
   <td>エスエルディー</td>
   <td></td>
@@ -2545,7 +2511,7 @@
   <td>3223_output.csv</td>
 </tr>
 <tr>
-  <td class="right">49</td>
+  <td class="right">47</td>
   <td>7462</td>
   <td>ＣＡＰＩＴＡ</td>
   <td></td>
@@ -2562,7 +2528,7 @@
   <td>7462_output.csv</td>
 </tr>
 <tr>
-  <td class="right">50</td>
+  <td class="right">48</td>
   <td>9663</td>
   <td>ナガワ</td>
   <td></td>
@@ -2579,10 +2545,10 @@
   <td>9663_output.csv</td>
 </tr>
 <tr>
-  <td class="right">51</td>
+  <td class="right">49</td>
   <td>9603</td>
   <td>エイチ・アイ・エス</td>
-  <td><button class="docs-btn" data-idx="51">📋 調査メモ</button><template id="docs-51"><h3>9603 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="49">📋 調査メモ</button><template id="docs-49"><h3>9603 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9603</li>
@@ -2654,7 +2620,7 @@
   <td>9603_output.csv</td>
 </tr>
 <tr>
-  <td class="right">52</td>
+  <td class="right">50</td>
   <td>9303</td>
   <td>住友倉庫</td>
   <td></td>
@@ -2671,7 +2637,7 @@
   <td>9303_output.csv</td>
 </tr>
 <tr>
-  <td class="right">53</td>
+  <td class="right">51</td>
   <td>4031</td>
   <td>片倉コープアグリ</td>
   <td></td>
@@ -2688,7 +2654,7 @@
   <td>4031_output.csv</td>
 </tr>
 <tr>
-  <td class="right">54</td>
+  <td class="right">52</td>
   <td>8131</td>
   <td>ミツウロコグループホールディングス</td>
   <td></td>
@@ -2705,10 +2671,10 @@
   <td>8131_output.csv</td>
 </tr>
 <tr>
-  <td class="right">55</td>
+  <td class="right">53</td>
   <td>9722</td>
   <td>藤田観光</td>
-  <td><button class="docs-btn" data-idx="55">📋 調査メモ</button><template id="docs-55"><h3>9722 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="53">📋 調査メモ</button><template id="docs-53"><h3>9722 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9722</li>
@@ -2755,7 +2721,7 @@
   <td>9722_output.csv</td>
 </tr>
 <tr>
-  <td class="right">56</td>
+  <td class="right">54</td>
   <td>9476</td>
   <td>中央経済社ホールディングス</td>
   <td></td>
@@ -2772,7 +2738,7 @@
   <td>9476_output.csv</td>
 </tr>
 <tr>
-  <td class="right">57</td>
+  <td class="right">55</td>
   <td>1861</td>
   <td>熊谷組</td>
   <td></td>
@@ -2789,27 +2755,27 @@
   <td>1861_output.csv</td>
 </tr>
 <tr>
-  <td class="right">58</td>
+  <td class="right">56</td>
   <td>3680</td>
   <td>ホットリンク</td>
   <td></td>
-  <td class="right">0.364617</td>
+  <td class="right">0.353893</td>
   <td>gaiku</td>
   <td>high</td>
   <td></td>
   <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/3680_securities_report.pdf" target="_blank">3680_securities_report.pdf</a></td>
   <td class="right">12.03</td>
-  <td class="right">33.00</td>
+  <td class="right">34.00</td>
   <td class="right">495.18</td>
   <td class="right">-483.15</td>
   <td class="right">1</td>
   <td>3680_output.csv</td>
 </tr>
 <tr>
-  <td class="right">59</td>
+  <td class="right">57</td>
   <td>1899</td>
   <td>福田組</td>
-  <td><button class="docs-btn" data-idx="59">📋 調査メモ</button><template id="docs-59"><h3>1899 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="57">📋 調査メモ</button><template id="docs-57"><h3>1899 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1899</li>
@@ -2851,7 +2817,7 @@
   <td>1899_output.csv</td>
 </tr>
 <tr>
-  <td class="right">60</td>
+  <td class="right">58</td>
   <td>9005</td>
   <td>東急</td>
   <td></td>
@@ -2868,27 +2834,10 @@
   <td>9005_output.csv</td>
 </tr>
 <tr>
-  <td class="right">61</td>
-  <td>1301</td>
-  <td>極洋</td>
-  <td></td>
-  <td class="right">0.314125</td>
-  <td>gaiku</td>
-  <td>high / low</td>
-  <td>信頼度lowかつ土地面積5000m2以上</td>
-  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/1301_securities_report.pdf" target="_blank">1301_securities_report.pdf</a></td>
-  <td class="right">191.30</td>
-  <td class="right">609.00</td>
-  <td class="right">9.22</td>
-  <td class="right">182.09</td>
-  <td class="right">1</td>
-  <td>1301_output.csv</td>
-</tr>
-<tr>
-  <td class="right">62</td>
+  <td class="right">59</td>
   <td>6360</td>
   <td>東京自働機械製作所</td>
-  <td><button class="docs-btn" data-idx="62">📋 調査メモ</button><template id="docs-62"><h3>6360 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="59">📋 調査メモ</button><template id="docs-59"><h3>6360 split-address 調査メモ</h3>
 <h4>1. 結論</h4>
 <ul>
 <li>証券コード: 6360</li>
@@ -2929,7 +2878,24 @@
   <td>6360_output.csv</td>
 </tr>
 <tr>
-  <td class="right">63</td>
+  <td class="right">60</td>
+  <td>1301</td>
+  <td>極洋</td>
+  <td></td>
+  <td class="right">0.311061</td>
+  <td>gaiku</td>
+  <td>high / low</td>
+  <td>信頼度lowかつ土地面積5000m2以上</td>
+  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/1301_securities_report.pdf" target="_blank">1301_securities_report.pdf</a></td>
+  <td class="right">191.30</td>
+  <td class="right">615.00</td>
+  <td class="right">9.22</td>
+  <td class="right">182.09</td>
+  <td class="right">1</td>
+  <td>1301_output.csv</td>
+</tr>
+<tr>
+  <td class="right">61</td>
   <td>3608</td>
   <td>ＴＳＩホールディングス</td>
   <td></td>
@@ -2946,7 +2912,7 @@
   <td>3608_output.csv</td>
 </tr>
 <tr>
-  <td class="right">64</td>
+  <td class="right">62</td>
   <td>6675</td>
   <td>サクサ</td>
   <td></td>
@@ -2963,7 +2929,7 @@
   <td>6675_output.csv</td>
 </tr>
 <tr>
-  <td class="right">65</td>
+  <td class="right">63</td>
   <td>5269</td>
   <td>日本コンクリート工業</td>
   <td></td>
@@ -2980,10 +2946,10 @@
   <td>5269_output.csv</td>
 </tr>
 <tr>
-  <td class="right">66</td>
+  <td class="right">64</td>
   <td>9301</td>
   <td>三菱倉庫</td>
-  <td><button class="docs-btn" data-idx="66">📋 調査メモ</button><template id="docs-66"><h3>9301 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="64">📋 調査メモ</button><template id="docs-64"><h3>9301 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9301</li>
@@ -3059,7 +3025,7 @@
   <td>9301_output.csv</td>
 </tr>
 <tr>
-  <td class="right">67</td>
+  <td class="right">65</td>
   <td>3863</td>
   <td>日本製紙</td>
   <td></td>
@@ -3076,7 +3042,7 @@
   <td>3863_output.csv</td>
 </tr>
 <tr>
-  <td class="right">68</td>
+  <td class="right">66</td>
   <td>5480</td>
   <td>日本冶金工業</td>
   <td></td>
@@ -3093,10 +3059,10 @@
   <td>5480_output.csv</td>
 </tr>
 <tr>
-  <td class="right">69</td>
+  <td class="right">67</td>
   <td>1827</td>
   <td>ナカノフドー建設</td>
-  <td><button class="docs-btn" data-idx="69">📋 調査メモ</button><template id="docs-69"><h3>1827 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="67">📋 調査メモ</button><template id="docs-67"><h3>1827 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1827</li>
@@ -3163,27 +3129,27 @@
   <td>1827_output.csv</td>
 </tr>
 <tr>
-  <td class="right">70</td>
+  <td class="right">68</td>
   <td>2429</td>
   <td>ワールドホールディングス</td>
   <td></td>
-  <td class="right">0.182927</td>
+  <td class="right">0.178846</td>
   <td>gaiku</td>
   <td>high</td>
   <td></td>
   <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/2429_securities_report.pdf" target="_blank">2429_securities_report.pdf</a></td>
   <td class="right">88.17</td>
-  <td class="right">482.00</td>
+  <td class="right">493.00</td>
   <td class="right">3.06</td>
   <td class="right">85.12</td>
   <td class="right">1</td>
   <td>2429_output.csv</td>
 </tr>
 <tr>
-  <td class="right">71</td>
+  <td class="right">69</td>
   <td>9302</td>
   <td>三井倉庫ホールディングス</td>
-  <td><button class="docs-btn" data-idx="71">📋 調査メモ</button><template id="docs-71"><h3>9302 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="69">📋 調査メモ</button><template id="docs-69"><h3>9302 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9302</li>
@@ -3246,10 +3212,10 @@
   <td>9302_output.csv</td>
 </tr>
 <tr>
-  <td class="right">72</td>
+  <td class="right">70</td>
   <td>4272</td>
   <td>日本化薬</td>
-  <td><button class="docs-btn" data-idx="72">📋 調査メモ</button><template id="docs-72"><h3>4272 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="70">📋 調査メモ</button><template id="docs-70"><h3>4272 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4272</li>
@@ -3304,10 +3270,10 @@
   <td>4272_output.csv</td>
 </tr>
 <tr>
-  <td class="right">73</td>
+  <td class="right">71</td>
   <td>1972</td>
   <td>三晃金属工業</td>
-  <td><button class="docs-btn" data-idx="73">📋 調査メモ</button><template id="docs-73"><h3>1972 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="71">📋 調査メモ</button><template id="docs-71"><h3>1972 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1972</li>
@@ -3358,7 +3324,7 @@
   <td>1972_output.csv</td>
 </tr>
 <tr>
-  <td class="right">74</td>
+  <td class="right">72</td>
   <td>3856</td>
   <td>Ａｂａｌａｎｃｅ</td>
   <td></td>
@@ -3375,7 +3341,7 @@
   <td>3856_output.csv</td>
 </tr>
 <tr>
-  <td class="right">75</td>
+  <td class="right">73</td>
   <td>9997</td>
   <td>ベルーナ</td>
   <td></td>
@@ -3392,10 +3358,10 @@
   <td>9997_output.csv</td>
 </tr>
 <tr>
-  <td class="right">76</td>
+  <td class="right">74</td>
   <td>1887</td>
   <td>日本国土開発</td>
-  <td><button class="docs-btn" data-idx="76">📋 調査メモ</button><template id="docs-76"><h3>1887 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="74">📋 調査メモ</button><template id="docs-74"><h3>1887 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1887</li>
@@ -3453,10 +3419,10 @@
   <td>1887_output.csv</td>
 </tr>
 <tr>
-  <td class="right">77</td>
+  <td class="right">75</td>
   <td>9602</td>
   <td>東宝</td>
-  <td><button class="docs-btn" data-idx="77">📋 調査メモ</button><template id="docs-77"><h3>9602 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="75">📋 調査メモ</button><template id="docs-75"><h3>9602 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9602</li>
@@ -3532,7 +3498,7 @@
   <td>9602_output.csv</td>
 </tr>
 <tr>
-  <td class="right">78</td>
+  <td class="right">76</td>
   <td>8944</td>
   <td>ランドビジネス</td>
   <td></td>
@@ -3549,7 +3515,7 @@
   <td>8944_output.csv</td>
 </tr>
 <tr>
-  <td class="right">79</td>
+  <td class="right">77</td>
   <td>5714</td>
   <td>ＤＯＷＡホールディングス</td>
   <td></td>
@@ -3566,7 +3532,7 @@
   <td>5714_output.csv</td>
 </tr>
 <tr>
-  <td class="right">80</td>
+  <td class="right">78</td>
   <td>2120</td>
   <td>ＬＩＦＵＬＬ</td>
   <td></td>
@@ -3583,10 +3549,10 @@
   <td>2120_output.csv</td>
 </tr>
 <tr>
-  <td class="right">81</td>
+  <td class="right">79</td>
   <td>4247</td>
   <td>ポバール興業</td>
-  <td><button class="docs-btn" data-idx="81">📋 調査メモ</button><template id="docs-81"><h3>4247 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="79">📋 調査メモ</button><template id="docs-79"><h3>4247 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4247</li>
@@ -3639,10 +3605,10 @@
   <td>4247_output.csv</td>
 </tr>
 <tr>
-  <td class="right">82</td>
+  <td class="right">80</td>
   <td>4801</td>
   <td>セントラルスポーツ</td>
-  <td><button class="docs-btn" data-idx="82">📋 調査メモ</button><template id="docs-82"><h3>4801 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="80">📋 調査メモ</button><template id="docs-80"><h3>4801 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4801</li>
@@ -3697,10 +3663,10 @@
   <td>4801_output.csv</td>
 </tr>
 <tr>
-  <td class="right">83</td>
+  <td class="right">81</td>
   <td>1815</td>
   <td>鉄建建設</td>
-  <td><button class="docs-btn" data-idx="83">📋 調査メモ</button><template id="docs-83"><h3>1815 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="81">📋 調査メモ</button><template id="docs-81"><h3>1815 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1815</li>
@@ -3752,7 +3718,7 @@
   <td>1815_output.csv</td>
 </tr>
 <tr>
-  <td class="right">84</td>
+  <td class="right">82</td>
   <td>5715</td>
   <td>古河機械金属</td>
   <td></td>
@@ -3769,10 +3735,10 @@
   <td>5715_output.csv</td>
 </tr>
 <tr>
-  <td class="right">85</td>
+  <td class="right">83</td>
   <td>7955</td>
   <td>クリナップ</td>
-  <td><button class="docs-btn" data-idx="85">📋 調査メモ</button><template id="docs-85"><h3>7955 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="83">📋 調査メモ</button><template id="docs-83"><h3>7955 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 7955</li>
@@ -3827,7 +3793,7 @@
   <td>7955_output.csv</td>
 </tr>
 <tr>
-  <td class="right">86</td>
+  <td class="right">84</td>
   <td>5202</td>
   <td>日本板硝子</td>
   <td></td>
@@ -3844,7 +3810,7 @@
   <td>5202_output.csv</td>
 </tr>
 <tr>
-  <td class="right">87</td>
+  <td class="right">85</td>
   <td>1803</td>
   <td>清水建設</td>
   <td></td>
@@ -3861,10 +3827,10 @@
   <td>1803_output.csv</td>
 </tr>
 <tr>
-  <td class="right">88</td>
+  <td class="right">86</td>
   <td>2108</td>
   <td>日本甜菜製糖</td>
-  <td><button class="docs-btn" data-idx="88">📋 調査メモ</button><template id="docs-88"><h3>2108 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="86">📋 調査メモ</button><template id="docs-86"><h3>2108 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 2108</li>
@@ -3921,10 +3887,10 @@
   <td>2108_output.csv</td>
 </tr>
 <tr>
-  <td class="right">89</td>
+  <td class="right">87</td>
   <td>8066</td>
   <td>三谷商事</td>
-  <td><button class="docs-btn" data-idx="89">📋 調査メモ</button><template id="docs-89"><h3>8066 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="87">📋 調査メモ</button><template id="docs-87"><h3>8066 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 8066</li>
@@ -3985,7 +3951,80 @@
   <td>8066_output.csv</td>
 </tr>
 <tr>
-  <td class="right">90</td>
+  <td class="right">88</td>
+  <td>5423</td>
+  <td>東京製鐵</td>
+  <td><button class="docs-btn" data-idx="88">📋 調査メモ</button><template id="docs-88"><h3>5423 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 5423</li>
+<li>企業名: 東京製鐵株式会社</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-19</li>
+</ul>
+<h4>2. 元データ</h4>
+<ul>
+<li>元の土地面積: 33,070 m2</li>
+<li>元住所: 東京都千代田区霞が関3丁目7番1号</li>
+<li>問題点: 霞が関東急ビル15Fの現本社に 33,070m2 を直接ひも付けており、都心大面積の典型的な過大計上パターンになっている</li>
+</ul>
+<h4>3. 結論</h4>
+<ul>
+<li>現在の本社所在地 <code>東京都千代田区霞が関3丁目7番1号</code> は、公式サイト記載のとおり <code>霞が関東急ビル 15F</code> に入るオフィスである</li>
+<li>有報でも「賃借中の主な設備」として <code>本社(東京都千代田区) 事務所 建物 831㎡ 契約期間7年</code> と明記されており、現本社所在地に 33,070m2 の自社保有地があるとは読めない</li>
+<li>公式沿革では <code>1974年5月</code> に本社を <code>東京都足立区より千代田区に移転</code>、<code>1986年1月</code> に <code>千住工場閉鎖</code> とある</li>
+<li>足立区の千住大川端地区資料では、再開発地区の地権者に <code>東京製鐵株式会社</code> が含まれる</li>
+<li>千住関屋町19-1 は、旧アメージングスクエアの所在地として確認でき、千住大川端地区の旧工場跡地の代表地点として採用可能</li>
+<li>以上から、有報の <code>本社 33,070m2</code> は現霞が関本社ではなく、旧千住工場跡地の保有地を本社勘定で計上している可能性が高い</li>
+</ul>
+<h4>4. 分割方針</h4>
+<p><code>本社</code> を以下の 2 件に分割する。</p>
+<table class="md-table"><thead><tr>
+<th>name</th><th>address</th><th>area_m2</th><th>趣旨</th>
+</tr></thead><tbody>
+<tr><td>本社(霞が関東急ビル・賃借)</td><td>東京都千代田区霞が関3丁目7番1号</td><td>0.0</td><td>現本社は賃借事務所</td></tr>
+<tr><td>本社(旧千住工場跡地)</td><td>東京都足立区千住関屋町19番1号</td><td>33070.0</td><td>旧工場跡地の代表住所に付け替え</td></tr>
+</tbody></table>
+<h4>5. パイプライン影響</h4>
+<p>ローカルの地価推定ロジックで確認すると:</p>
+<ul>
+<li>霞が関3-7-1: 約 9,967,358 円/m2</li>
+<li>千住関屋町19-1: 約 422,773 円/m2</li>
+</ul>
+<p>したがって、同じ <code>33,070m2</code> でも推定時価は約 <code>3,296億円</code> から約 <code>140億円</code> に低下する。</p>
+<p>時価総額 <code>1,774億円</code> に対する ratio は <code>1.858</code> からおおむね <code>0.079</code> まで低下する見込み。</p>
+<h4>6. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報（EDINET）</td><td>2026-03-19</td><td>2025-03-31 時点の主要設備で「本社(東京都千代田区)」に土地 33,070m2 を計上。一方で注記に「賃借中の主な設備」として本社事務所 建物831m2 を明記</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4X9.pdf</td></tr>
+<tr><td>公式サイト 企業情報</td><td>2026-03-19</td><td>現在の本社所在地は「東京都千代田区霞が関三丁目7番1号 霞が関東急ビル15F」</td><td>https://www.tokyosteel.co.jp/company/</td></tr>
+<tr><td>公式サイト 沿革</td><td>2026-03-19</td><td>1974年5月に本社を足立区から千代田区へ移転、1986年1月に千住工場閉鎖</td><td>https://www.tokyosteel.co.jp/company/history/</td></tr>
+<tr><td>足立区 千住大川端地区資料</td><td>2026-03-19</td><td>千住大川端地区の地権者として東京製鐵株式会社を明記</td><td>https://www.city.adachi.tokyo.jp/machizukuri/senjuookawabata.html</td></tr>
+<tr><td>千住大川端地区開発計画</td><td>2026-03-19</td><td>東京製鐵・岡田商事・東武鉄道の3社で開発協定を締結した経緯を記載</td><td>https://senjuokawabata-project.jp/outline</td></tr>
+<tr><td>施設所在地情報</td><td>2026-03-19</td><td>アメージングスクエア内施設の所在地を「東京都足立区千住関屋町19-1」と記載</td><td>https://www.tv-asahi.co.jp/junsanpo/backnumber2/0135/index.html</td></tr>
+</tbody></table>
+<h4>7. 判断メモ</h4>
+<ul>
+<li>本件は <code>BAD_PATTERN_1</code> の「本社勘定に旧工場跡地が残っている」類型とみなすのが自然</li>
+<li>正確な地番単位の登記までは未確認なので、<code>千住関屋町19番1号</code> は旧工場跡地の代表住所として採用している</li>
+<li>この代表住所の採用は上記ソースからの推論である</li>
+<li>それでも、現本社の賃借事務所へ 33,070m2 を置いたままにするより、過大評価是正の方向としてははるかに妥当</li>
+</ul></template></td>
+  <td class="right">0.076988</td>
+  <td>gaiku</td>
+  <td>high</td>
+  <td></td>
+  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/5423_securities_report.pdf" target="_blank">5423_securities_report.pdf</a></td>
+  <td class="right">139.81</td>
+  <td class="right">1,816.00</td>
+  <td class="right">0.81</td>
+  <td class="right">139.00</td>
+  <td class="right">1</td>
+  <td>5423_output.csv</td>
+</tr>
+<tr>
+  <td class="right">89</td>
   <td>3407</td>
   <td>旭化成</td>
   <td></td>
@@ -4002,10 +4041,10 @@
   <td>3407_output.csv</td>
 </tr>
 <tr>
-  <td class="right">91</td>
+  <td class="right">90</td>
   <td>9057</td>
   <td>遠州トラック</td>
-  <td><button class="docs-btn" data-idx="91">📋 調査メモ</button><template id="docs-91"><h3>9057 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="90">📋 調査メモ</button><template id="docs-90"><h3>9057 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9057</li>
@@ -4068,7 +4107,7 @@
   <td>9057_output.csv</td>
 </tr>
 <tr>
-  <td class="right">92</td>
+  <td class="right">91</td>
   <td>5965</td>
   <td>フジマック</td>
   <td></td>
@@ -4085,7 +4124,7 @@
   <td>5965_output.csv</td>
 </tr>
 <tr>
-  <td class="right">93</td>
+  <td class="right">92</td>
   <td>1833</td>
   <td>奥村組</td>
   <td></td>
@@ -4102,44 +4141,44 @@
   <td>1833_output.csv</td>
 </tr>
 <tr>
-  <td class="right">94</td>
+  <td class="right">93</td>
   <td>1871</td>
   <td>ピーエス・コンストラクション</td>
   <td></td>
-  <td class="right">0.056086</td>
+  <td class="right">0.053785</td>
   <td>gaiku</td>
   <td>high</td>
   <td></td>
   <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/1871_securities_report.pdf" target="_blank">1871_securities_report.pdf</a></td>
   <td class="right">76.05</td>
-  <td class="right">1,356.00</td>
+  <td class="right">1,414.00</td>
   <td class="right">0.30</td>
   <td class="right">75.76</td>
   <td class="right">1</td>
   <td>1871_output.csv</td>
 </tr>
 <tr>
-  <td class="right">95</td>
+  <td class="right">94</td>
   <td>4182</td>
   <td>三菱瓦斯化学</td>
   <td></td>
-  <td class="right">0.054936</td>
+  <td class="right">0.053561</td>
   <td>gaiku</td>
   <td>high</td>
   <td>評価倍率閾値超過</td>
   <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/4182_securities_report.pdf" target="_blank">4182_securities_report.pdf</a></td>
   <td class="right">481.51</td>
-  <td class="right">8,765.00</td>
+  <td class="right">8,990.00</td>
   <td class="right">8.60</td>
   <td class="right">472.91</td>
   <td class="right">1</td>
   <td>4182_output.csv</td>
 </tr>
 <tr>
-  <td class="right">96</td>
+  <td class="right">95</td>
   <td>9025</td>
   <td>鴻池運輸</td>
-  <td><button class="docs-btn" data-idx="96">📋 調査メモ</button><template id="docs-96"><h3>9025 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="95">📋 調査メモ</button><template id="docs-95"><h3>9025 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9025</li>
@@ -4203,10 +4242,10 @@
   <td>9025_output.csv</td>
 </tr>
 <tr>
-  <td class="right">97</td>
+  <td class="right">96</td>
   <td>5393</td>
   <td>ニチアス</td>
-  <td><button class="docs-btn" data-idx="97">📋 調査メモ</button><template id="docs-97"><h3>5393 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="96">📋 調査メモ</button><template id="docs-96"><h3>5393 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 5393</li>
@@ -4270,10 +4309,10 @@
   <td>5393_output.csv</td>
 </tr>
 <tr>
-  <td class="right">98</td>
+  <td class="right">97</td>
   <td>1822</td>
   <td>大豊建設</td>
-  <td><button class="docs-btn" data-idx="98">📋 調査メモ</button><template id="docs-98"><h3>1822 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="97">📋 調査メモ</button><template id="docs-97"><h3>1822 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1822</li>
@@ -4343,10 +4382,10 @@
   <td>1822_output.csv</td>
 </tr>
 <tr>
-  <td class="right">99</td>
+  <td class="right">98</td>
   <td>1882</td>
   <td>東亜道路工業</td>
-  <td><button class="docs-btn" data-idx="99">📋 調査メモ</button><template id="docs-99"><h3>1882 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="98">📋 調査メモ</button><template id="docs-98"><h3>1882 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1882</li>
@@ -4412,27 +4451,10 @@
   <td>1882_output.csv</td>
 </tr>
 <tr>
-  <td class="right">100</td>
-  <td>7003</td>
-  <td>三井Ｅ＆Ｓ</td>
-  <td></td>
-  <td class="right">0.034308</td>
-  <td>gaiku</td>
-  <td>high</td>
-  <td>評価倍率閾値超過</td>
-  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/7003_securities_report.pdf" target="_blank">7003_securities_report.pdf</a></td>
-  <td class="right">224.51</td>
-  <td class="right">6,544.00</td>
-  <td class="right">0.20</td>
-  <td class="right">224.31</td>
-  <td class="right">1</td>
-  <td>7003_output.csv</td>
-</tr>
-<tr>
-  <td class="right">101</td>
+  <td class="right">99</td>
   <td>4631</td>
   <td>ＤＩＣ</td>
-  <td><button class="docs-btn" data-idx="101">📋 調査メモ</button><template id="docs-101"><h3>4631 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="99">📋 調査メモ</button><template id="docs-99"><h3>4631 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4631</li>
@@ -4485,10 +4507,27 @@
   <td>4631_output.csv</td>
 </tr>
 <tr>
-  <td class="right">102</td>
+  <td class="right">100</td>
+  <td>7003</td>
+  <td>三井Ｅ＆Ｓ</td>
+  <td></td>
+  <td class="right">0.031854</td>
+  <td>gaiku</td>
+  <td>high</td>
+  <td>評価倍率閾値超過</td>
+  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/7003_securities_report.pdf" target="_blank">7003_securities_report.pdf</a></td>
+  <td class="right">224.51</td>
+  <td class="right">7,048.00</td>
+  <td class="right">0.20</td>
+  <td class="right">224.31</td>
+  <td class="right">1</td>
+  <td>7003_output.csv</td>
+</tr>
+<tr>
+  <td class="right">101</td>
   <td>8091</td>
   <td>ニチモウ</td>
-  <td><button class="docs-btn" data-idx="102">📋 調査メモ</button><template id="docs-102"><h3>8091 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="101">📋 調査メモ</button><template id="docs-101"><h3>8091 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 8091</li>
@@ -4543,10 +4582,10 @@
   <td>8091_output.csv</td>
 </tr>
 <tr>
-  <td class="right">103</td>
+  <td class="right">102</td>
   <td>4004</td>
   <td>レゾナック・ホールディングス</td>
-  <td><button class="docs-btn" data-idx="103">📋 調査メモ</button><template id="docs-103"><h3>4004 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="102">📋 調査メモ</button><template id="docs-102"><h3>4004 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4004</li>
@@ -4600,10 +4639,10 @@
   <td>4004_output.csv</td>
 </tr>
 <tr>
-  <td class="right">104</td>
+  <td class="right">103</td>
   <td>1885</td>
   <td>東亜建設工業</td>
-  <td><button class="docs-btn" data-idx="104">📋 調査メモ</button><template id="docs-104"><h3>1885 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="103">📋 調査メモ</button><template id="docs-103"><h3>1885 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1885</li>
@@ -4680,6 +4719,96 @@
   <td class="right">68.78</td>
   <td class="right">1</td>
   <td>1885_output.csv</td>
+</tr>
+<tr>
+  <td class="right">104</td>
+  <td>9304</td>
+  <td>澁澤倉庫</td>
+  <td><button class="docs-btn" data-idx="104">📋 調査メモ</button><template id="docs-104"><h3>9304 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9304</li>
+<li>企業名: 澁澤倉庫株式会社</li>
+<li>対象事業所: 本店 / 広域営業部 / 引越営業支店 / 東京支店</li>
+<li>更新日: 2026-03-19</li>
+</ul>
+<h4>2. 元データ</h4>
+<table class="md-table"><thead><tr>
+<th>事業所名</th><th>所在地</th><th>土地面積(m2)</th><th>土地簿価(百万円)</th><th>問題点</th>
+</tr></thead><tbody>
+<tr><td>本店</td><td>東京都江東区ほか</td><td>34,650</td><td>5,054</td><td>永代アドレスへ全量が寄っている</td></tr>
+<tr><td>広域営業部</td><td>東京都江東区ほか</td><td>57,092</td><td>3,780</td><td>永代アドレスへ全量が寄っている</td></tr>
+<tr><td>引越営業支店</td><td>東京都江戸川区ほか</td><td>6,592</td><td>334</td><td>区レベルしかなく「ほか」付き</td></tr>
+<tr><td>東京支店</td><td>東京都江東区ほか</td><td>25,388</td><td>4,230</td><td>永代アドレスへ全量が寄っている</td></tr>
+</tbody></table>
+<ul>
+<li>既存出力では <code>本店</code> <code>広域営業部</code> <code>東京支店</code> の 3 件がすべて <code>東京都江東区永代2丁目37番28号</code> にジオコードされていた</li>
+<li>これにより、同一住所へ合計 <code>117,130m2</code> が重複して積み上がり、東京都合計 ratio が <code>1.674</code> まで膨らんでいた</li>
+</ul>
+<h4>3. 判定</h4>
+<ul>
+<li>有報の各行はすべて所在地に <code>ほか</code> を含み、単独地点ではない</li>
+<li>公式事業所一覧でも、各部門の配下に複数の営業所・倉庫がぶら下がっている</li>
+<li>したがって、現在のパイプライン出力は <code>BAD_PATTERN_1</code> の「代表住所への合算誤投影」に該当する</li>
+</ul>
+<h4>4. 分割方針</h4>
+<h5>本店</h5>
+<ul>
+<li>公式事業所一覧から本店住所を <code>東京都江東区永代2丁目37番28号</code> と確定</li>
+<li>有報注記1で <code>北海道小樽市所在の土地 1,050m2</code> が本店所管に含まれることが明示されており、<code>34,650m2</code> 全量が永代ではない</li>
+<li>永代側には <code>澁澤シティプレイス永代</code> の基準階面積 <code>498坪</code> を proxy として採用する</li>
+<li><code>498坪 × 3.305785 = 1,646.28m2</code></li>
+<li>残差 <code>34,650 - 1,646.28 = 33,003.72m2</code> は <code>全国各所</code> に退避</li>
+</ul>
+<h5>広域営業部</h5>
+<ul>
+<li>公式事業所一覧では永代本部のほか、多摩営業所、三芳倉庫、京葉配送営業所、市川倉庫、船橋第二倉庫、西浦倉庫、厚木営業所など多数拠点を所管</li>
+<li><code>57,092m2</code> を永代1地点へ置くのは不適切</li>
+<li>永代は事務所機能とみなし <code>0.0m2</code>、全量を <code>全国各所</code> に退避</li>
+</ul>
+<h5>引越営業支店</h5>
+<ul>
+<li>公式事業所一覧で本拠住所は <code>東京都江戸川区北葛西4丁目11番5号</code></li>
+<li>ただし同一覧では筑波・仙台・中部・西日本引越営業所も同組織配下にあり、有報の <code>東京都江戸川区ほか</code> と整合</li>
+<li>北葛西の事務所側は <code>0.0m2</code>、全量を <code>全国各所</code> に退避</li>
+</ul>
+<h5>東京支店</h5>
+<ul>
+<li>公式事業所一覧では永代本部のほか、東京港営業所、平和島倉庫、青海倉庫、板橋営業所、松戸営業所、三郷営業所、栃木営業所などを所管</li>
+<li><code>25,388m2</code> を永代1地点へ置くのは不適切</li>
+<li>永代は事務所機能とみなし <code>0.0m2</code>、全量を <code>全国各所</code> に退避</li>
+</ul>
+<h4>5. 期待効果</h4>
+<ul>
+<li>現行は永代アドレスへの重複計上が主因</li>
+<li>本パッチでは、永代側の東京評価対象は本店 proxy <code>1,646.28m2</code> のみに縮小</li>
+<li>よって東京都合計 ratio は <code>1.674</code> から大幅に低下する見込み</li>
+</ul>
+<h4>6. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報（EDINET）</td><td>2026-03-19</td><td>本店・広域営業部・引越営業支店・東京支店はいずれも所在地に <code>ほか</code> を含む。注記1で本店所管に北海道小樽市の土地1,050m2を含むと明記</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4DX.pdf</td></tr>
+<tr><td>公式事業所一覧</td><td>2026-03-19</td><td>本店・広域営業部・引越営業支店・東京支店の正式住所、および各組織配下の複数拠点を確認</td><td>https://www.shibusawa.co.jp/company/network/list/</td></tr>
+<tr><td>オフィス物件情報</td><td>2026-03-19</td><td>澁澤シティプレイス永代の基準階面積は 498.00 坪</td><td>https://www.rentoffice-tokyo.com/floor/73/18/50</td></tr>
+</tbody></table>
+<h4>7. 判断メモ</h4>
+<ul>
+<li><code>広域営業部</code> <code>東京支店</code> <code>引越営業支店</code> の東京側面積を 0 としたのは、土地がゼロと断定したのではなく、<code>ほか</code> を含む合算面積を永代/北葛西の単一点へ載せる過大計上を止めるための保守対応</li>
+<li>本店の <code>1,646.28m2</code> は土地実測ではなく、永代の自社ビル規模を示す proxy による推定である</li>
+<li>本件は一次根拠で正確な各倉庫の面積内訳を割り切れないため、<code>全国各所</code> 退避を優先した</li>
+</ul></template></td>
+  <td class="right">0.023166</td>
+  <td>gaiku</td>
+  <td>high</td>
+  <td></td>
+  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/9304_securities_report.pdf" target="_blank">9304_securities_report.pdf</a></td>
+  <td class="right">18.88</td>
+  <td class="right">815.00</td>
+  <td class="right">2.40</td>
+  <td class="right">16.48</td>
+  <td class="right">1</td>
+  <td>9304_output.csv</td>
 </tr>
 <tr>
   <td class="right">105</td>
@@ -5123,13 +5252,13 @@
   <td>2579</td>
   <td>コカ・コーラ　ボトラーズジャパンホールディングス</td>
   <td></td>
-  <td class="right">0.001867</td>
+  <td class="right">0.001911</td>
   <td>gaiku</td>
   <td>high</td>
   <td></td>
   <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/2579_securities_report.pdf" target="_blank">2579_securities_report.pdf</a></td>
   <td class="right">12.82</td>
-  <td class="right">6,867.00</td>
+  <td class="right">6,708.00</td>
   <td class="right">0.04</td>
   <td class="right">12.78</td>
   <td class="right">1</td>
@@ -5281,7 +5410,7 @@
   <td></td>
   <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/1826_securities_report.pdf" target="_blank">1826_securities_report.pdf</a></td>
   <td class="right">0.00</td>
-  <td class="right">162.00</td>
+  <td class="right">167.00</td>
   <td class="right">0.00</td>
   <td class="right">0.00</td>
   <td class="right">1</td>
