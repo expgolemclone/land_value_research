@@ -55,7 +55,7 @@ class TestMetadataCache(unittest.TestCase):
 
     def test_fetch_from_irbank_does_not_cache_transient_failure(self) -> None:
         company_metadata_fallback._METADATA_CACHE.clear()
-        ir_html = "<h1><a>1234 テスト株式会社</a></h1><dt>時価</dt><dd>100億円</dd>".encode()
+        ir_html = "<h1>テスト株式会社（1234）のIR情報・決算資料</h1><dt>時価</dt><dd>100億円</dd>".encode()
         edinet_html = 'title="有価証券報告書 第1期" href="notes?f=S100ABCD"'.encode()
         with patch(
             "src.company_metadata_fallback.urlopen_with_retry",
@@ -75,7 +75,7 @@ class TestMetadataCache(unittest.TestCase):
     def test_fetch_from_irbank_accepts_alpha_suffix_code(self) -> None:
         """英字サフィックス付きコード(xxxA形式)がバリデーションを通過し、IRBank URLが正しく構築される."""
         company_metadata_fallback._METADATA_CACHE.clear()
-        ir_html = "<h1><a>141A トライアル HD</a></h1><dt>時価</dt><dd>4933億円</dd>".encode()
+        ir_html = "<h1>トライアル HD（141A）のIR情報・決算資料</h1><dt>時価</dt><dd>4933億円</dd>".encode()
         edinet_html = 'title="有価証券報告書 第11期" href="notes?f=S100WRQT"'.encode()
         with patch(
             "src.company_metadata_fallback.urlopen_with_retry",

@@ -76,7 +76,7 @@ def fetch_from_irbank(code: str) -> CompanyMetadata:
         try:
             html_ir = ir_future.result()
             ir_ok = True
-            m_name = re.search(r"<h1><a[^>]*>\d+[A-Z]?\s+([^<]+)</a></h1>", html_ir)
+            m_name = re.search(r"<h1[^>]*>([^<（]+)（\d+[A-Z]?）のIR情報・決算資料</h1>", html_ir)
             if m_name:
                 company_name = m_name.group(1).strip()
             m_cap = re.search(r"<dt>時価</dt><dd>([^<]+)</dd>", html_ir)
