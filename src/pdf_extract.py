@@ -82,14 +82,7 @@ def _extract_location(site_cell: str) -> tuple[str, bool]:
     rest = flat[m.end() :]
     # "(東京都千代田区)他60営業所等" のように閉じ括弧の直後に "他/等/外" が続くケースがある
     rest = rest.lstrip(")）】]］")
-    has_hoka = (
-        rest.startswith("他")
-        or rest.startswith("等")
-        or rest.startswith("外")
-        or "ほか" in rest
-        or "及び" in rest
-        or "その他" in rest
-    )
+    has_hoka = bool(re.search(r"^[他等外]|ほか|及び|その他", rest))
     loc = re.sub(r"他$", "", loc)
     loc = re.sub(r"ほか.*$", "", loc)
     return loc, has_hoka
