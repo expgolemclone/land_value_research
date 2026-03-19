@@ -226,60 +226,9 @@
 </tr>
 <tr>
   <td class="right">2</td>
-  <td>9213</td>
-  <td>セイファート</td>
-  <td><button class="docs-btn" data-idx="2">📋 調査メモ</button><template id="docs-2"><h3>9213 split-address 調査メモ</h3>
-<h4>1. 対象</h4>
-<ul>
-<li>証券コード: 9213</li>
-<li>企業名: セイファート</li>
-<li>対象事業所: 本社</li>
-<li>更新日: 2026-03-17</li>
-</ul>
-<h4>2. 結論</h4>
-<ul>
-<li><code>本社</code> は合算拠点ではなく、住所分割の対象ではない。</li>
-<li><code>data/output/9213_output.csv</code> の <code>土地面積(m2)=908.82</code> は、土地面積ではなく有報注記にある本社の賃借床面積を誤って拾っている可能性が高い。</li>
-<li>したがって、時価総額比の異常値は住所の集約や分割不足ではなく、土地データ抽出の誤りに起因すると判断した。</li>
-</ul>
-<h4>3. 元データ</h4>
-<ul>
-<li>出力上の住所: 東京都渋谷区渋谷3丁目27番11号</li>
-<li>出力上の土地面積: 908.82 m2</li>
-<li>出力上の土地簿価: 86,008,000,000 円</li>
-<li>問題点: 都心小規模オフィス住所に対して簿価が極端に大きく、土地評価として不自然</li>
-</ul>
-<h4>4. 根拠ソース</h4>
-<table class="md-table"><thead><tr>
-<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
-</tr></thead><tbody>
-<tr><td>EDINET有報</td><td>2026-03-17</td><td>第35期有価証券報告書（2025-03-31提出）の「主要な設備の状況」には提出会社の設備として土地の記載がなく、建物・工具器具備品・ソフトウエアのみが記載されている。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VIWL.pdf</td></tr>
-<tr><td>EDINET有報</td><td>2026-03-17</td><td>同有報の注記に「主要な賃借設備の内容」に本社の賃借床面積 908.82㎡、年間賃借料 100百万円とあり、908.82 は土地ではなく賃借床面積と読める。</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VIWL.pdf</td></tr>
-<tr><td>会社公式</td><td>2026-03-17</td><td>コーポレートサイトの会社概要で本社所在地は東京都渋谷区渋谷3-27-11 祐真ビル2Fと案内されており、出力CSVの番地と整合する。</td><td>https://www.seyfert.co.jp/company/about/</td></tr>
-</tbody></table>
-<h4>5. 判定</h4>
-<ul>
-<li>判定: 確認済み</li>
-<li>パッチ方針: 本社住所のみを <code>config/address_patches/9213.yaml</code> に登録</li>
-<li>補足: 本件は split-address では解消しないため、後続で土地面積/簿価抽出ロジックの見直し対象</li>
-</ul></template></td>
-  <td class="right">7.485163</td>
-  <td>gaiku</td>
-  <td>high</td>
-  <td></td>
-  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/9213_securities_report.pdf" target="_blank">9213_securities_report.pdf</a></td>
-  <td class="right">74.85</td>
-  <td class="right">10.00</td>
-  <td class="right">860.08</td>
-  <td class="right">-785.23</td>
-  <td class="right">1</td>
-  <td>9213_output.csv</td>
-</tr>
-<tr>
-  <td class="right">3</td>
   <td>9057</td>
   <td>遠州トラック</td>
-  <td><button class="docs-btn" data-idx="3">📋 調査メモ</button><template id="docs-3"><h3>9057 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="2">📋 調査メモ</button><template id="docs-2"><h3>9057 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9057</li>
@@ -342,10 +291,10 @@
   <td>9057_output.csv</td>
 </tr>
 <tr>
-  <td class="right">4</td>
+  <td class="right">3</td>
   <td>9305</td>
   <td>ヤマタネ</td>
-  <td><button class="docs-btn" data-idx="4">📋 調査メモ</button><template id="docs-4"><h3>9305 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="3">📋 調査メモ</button><template id="docs-3"><h3>9305 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9305</li>
@@ -424,10 +373,10 @@
   <td>9305_output.csv</td>
 </tr>
 <tr>
-  <td class="right">5</td>
+  <td class="right">4</td>
   <td>5458</td>
   <td>高砂鐵工</td>
-  <td><button class="docs-btn" data-idx="5">📋 調査メモ</button><template id="docs-5"><h3>5458 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="4">📋 調査メモ</button><template id="docs-4"><h3>5458 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 5458</li>
@@ -475,10 +424,10 @@
   <td>5458_output.csv</td>
 </tr>
 <tr>
-  <td class="right">6</td>
+  <td class="right">5</td>
   <td>6396</td>
   <td>宇野澤組鐵工所</td>
-  <td><button class="docs-btn" data-idx="6">📋 調査メモ</button><template id="docs-6"><h3>6396 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="5">📋 調査メモ</button><template id="docs-5"><h3>6396 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 6396</li>
@@ -530,10 +479,10 @@
   <td>6396_output.csv</td>
 </tr>
 <tr>
-  <td class="right">7</td>
+  <td class="right">6</td>
   <td>5491</td>
   <td>日本金属</td>
-  <td><button class="docs-btn" data-idx="7">📋 調査メモ</button><template id="docs-7"><h3>5491 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="6">📋 調査メモ</button><template id="docs-6"><h3>5491 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 5491</li>
@@ -593,10 +542,10 @@
   <td>5491_output.csv</td>
 </tr>
 <tr>
-  <td class="right">8</td>
+  <td class="right">7</td>
   <td>9351</td>
   <td>東洋埠頭</td>
-  <td><button class="docs-btn" data-idx="8">📋 調査メモ</button><template id="docs-8"><h3>9351 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="7">📋 調査メモ</button><template id="docs-7"><h3>9351 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9351</li>
@@ -676,10 +625,10 @@
   <td>9351_output.csv</td>
 </tr>
 <tr>
-  <td class="right">9</td>
+  <td class="right">8</td>
   <td>2264</td>
   <td>森永乳業</td>
-  <td><button class="docs-btn" data-idx="9">📋 調査メモ</button><template id="docs-9"><h3>2264 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="8">📋 調査メモ</button><template id="docs-8"><h3>2264 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 2264</li>
@@ -730,10 +679,10 @@
   <td>2264_output.csv</td>
 </tr>
 <tr>
-  <td class="right">10</td>
+  <td class="right">9</td>
   <td>8158</td>
   <td>ソーダニッカ</td>
-  <td><button class="docs-btn" data-idx="10">📋 調査メモ</button><template id="docs-10"><h3>8158 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="9">📋 調査メモ</button><template id="docs-9"><h3>8158 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 8158</li>
@@ -784,10 +733,10 @@
   <td>8158_output.csv</td>
 </tr>
 <tr>
-  <td class="right">11</td>
+  <td class="right">10</td>
   <td>6093</td>
   <td>エスクロー・エージェント・ジャパン</td>
-  <td><button class="docs-btn" data-idx="11">📋 調査メモ</button><template id="docs-11"><h3>6093 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="10">📋 調査メモ</button><template id="docs-10"><h3>6093 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 6093</li>
@@ -842,10 +791,10 @@
   <td>6093_output.csv</td>
 </tr>
 <tr>
-  <td class="right">12</td>
+  <td class="right">11</td>
   <td>1793</td>
   <td>大本組</td>
-  <td><button class="docs-btn" data-idx="12">📋 調査メモ</button><template id="docs-12"><h3>1793 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="11">📋 調査メモ</button><template id="docs-11"><h3>1793 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1793</li>
@@ -894,10 +843,10 @@
   <td>1793_output.csv</td>
 </tr>
 <tr>
-  <td class="right">13</td>
+  <td class="right">12</td>
   <td>3494</td>
   <td>マリオン</td>
-  <td><button class="docs-btn" data-idx="13">📋 調査メモ</button><template id="docs-13"><h3>3494 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="12">📋 調査メモ</button><template id="docs-12"><h3>3494 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 3494</li>
@@ -971,10 +920,10 @@
   <td>3494_output.csv</td>
 </tr>
 <tr>
-  <td class="right">14</td>
+  <td class="right">13</td>
   <td>1807</td>
   <td>佐藤渡辺</td>
-  <td><button class="docs-btn" data-idx="14">📋 調査メモ</button><template id="docs-14"><h3>1807 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="13">📋 調査メモ</button><template id="docs-13"><h3>1807 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1807</li>
@@ -1027,10 +976,10 @@
   <td>1807_output.csv</td>
 </tr>
 <tr>
-  <td class="right">15</td>
+  <td class="right">14</td>
   <td>9731</td>
   <td>白洋舎</td>
-  <td><button class="docs-btn" data-idx="15">📋 調査メモ</button><template id="docs-15"><h3>9731 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="14">📋 調査メモ</button><template id="docs-14"><h3>9731 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9731</li>
@@ -1098,10 +1047,10 @@
   <td>9731_output.csv</td>
 </tr>
 <tr>
-  <td class="right">16</td>
+  <td class="right">15</td>
   <td>1866</td>
   <td>北野建設</td>
-  <td><button class="docs-btn" data-idx="16">📋 調査メモ</button><template id="docs-16"><h3>1866 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="15">📋 調査メモ</button><template id="docs-15"><h3>1866 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1866</li>
@@ -1158,10 +1107,10 @@
   <td>1866_output.csv</td>
 </tr>
 <tr>
-  <td class="right">17</td>
+  <td class="right">16</td>
   <td>9672</td>
   <td>東京都競馬</td>
-  <td><button class="docs-btn" data-idx="17">📋 調査メモ</button><template id="docs-17"><h3>9672 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="16">📋 調査メモ</button><template id="docs-16"><h3>9672 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9672</li>
@@ -1225,10 +1174,10 @@
   <td>9672_output.csv</td>
 </tr>
 <tr>
-  <td class="right">18</td>
+  <td class="right">17</td>
   <td>4381</td>
   <td>ビープラッツ</td>
-  <td><button class="docs-btn" data-idx="18">📋 調査メモ</button><template id="docs-18"><h3>4381 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="17">📋 調査メモ</button><template id="docs-17"><h3>4381 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4381</li>
@@ -1281,10 +1230,10 @@
   <td>4381_output.csv</td>
 </tr>
 <tr>
-  <td class="right">19</td>
+  <td class="right">18</td>
   <td>3562</td>
   <td>Ｎｏ．１</td>
-  <td><button class="docs-btn" data-idx="19">📋 調査メモ</button><template id="docs-19"><h3>3562 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="18">📋 調査メモ</button><template id="docs-18"><h3>3562 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 3562</li>
@@ -1368,10 +1317,10 @@
   <td>3562_output.csv</td>
 </tr>
 <tr>
-  <td class="right">20</td>
+  <td class="right">19</td>
   <td>3238</td>
   <td>セントラル総合開発</td>
-  <td><button class="docs-btn" data-idx="20">📋 調査メモ</button><template id="docs-20"><h3>3238 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="19">📋 調査メモ</button><template id="docs-19"><h3>3238 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 3238</li>
@@ -1427,10 +1376,10 @@
   <td>3238_output.csv</td>
 </tr>
 <tr>
-  <td class="right">21</td>
+  <td class="right">20</td>
   <td>8103</td>
   <td>明和産業</td>
-  <td><button class="docs-btn" data-idx="21">📋 調査メモ</button><template id="docs-21"><h3>8103 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="20">📋 調査メモ</button><template id="docs-20"><h3>8103 split-address 調査メモ</h3>
 <h4>結論</h4>
 <ul>
 <li>分割合算の根拠は確認できなかった</li>
@@ -1461,10 +1410,10 @@
   <td>8103_output.csv</td>
 </tr>
 <tr>
-  <td class="right">22</td>
+  <td class="right">21</td>
   <td>3156</td>
   <td>レスター</td>
-  <td><button class="docs-btn" data-idx="22">📋 調査メモ</button><template id="docs-22"><h3>3156 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="21">📋 調査メモ</button><template id="docs-21"><h3>3156 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 3156</li>
@@ -1515,10 +1464,10 @@
   <td>3156_output.csv</td>
 </tr>
 <tr>
-  <td class="right">23</td>
+  <td class="right">22</td>
   <td>8181</td>
   <td>東天紅</td>
-  <td><button class="docs-btn" data-idx="23">📋 調査メモ</button><template id="docs-23"><h3>8181 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="22">📋 調査メモ</button><template id="docs-22"><h3>8181 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 8181</li>
@@ -1573,10 +1522,10 @@
   <td>8181_output.csv</td>
 </tr>
 <tr>
-  <td class="right">24</td>
+  <td class="right">23</td>
   <td>9929</td>
   <td>平和紙業</td>
-  <td><button class="docs-btn" data-idx="24">📋 調査メモ</button><template id="docs-24"><h3>9929 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="23">📋 調査メモ</button><template id="docs-23"><h3>9929 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9929</li>
@@ -1650,10 +1599,10 @@
   <td>9929_output.csv</td>
 </tr>
 <tr>
-  <td class="right">25</td>
+  <td class="right">24</td>
   <td>9845</td>
   <td>パーカーコーポレーション</td>
-  <td><button class="docs-btn" data-idx="25">📋 調査メモ</button><template id="docs-25"><h3>9845 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="24">📋 調査メモ</button><template id="docs-24"><h3>9845 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9845</li>
@@ -1720,10 +1669,10 @@
   <td>9845_output.csv</td>
 </tr>
 <tr>
-  <td class="right">26</td>
+  <td class="right">25</td>
   <td>7567</td>
   <td>栄電子</td>
-  <td><button class="docs-btn" data-idx="26">📋 調査メモ</button><template id="docs-26"><h3>7567 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="25">📋 調査メモ</button><template id="docs-25"><h3>7567 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 7567</li>
@@ -1789,10 +1738,10 @@
   <td>7567_output.csv</td>
 </tr>
 <tr>
-  <td class="right">27</td>
+  <td class="right">26</td>
   <td>9364</td>
   <td>上組</td>
-  <td><button class="docs-btn" data-idx="27">📋 調査メモ</button><template id="docs-27"><h3>9364 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="26">📋 調査メモ</button><template id="docs-26"><h3>9364 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9364</li>
@@ -1865,10 +1814,10 @@
   <td>9364_output.csv</td>
 </tr>
 <tr>
-  <td class="right">28</td>
+  <td class="right">27</td>
   <td>9708</td>
   <td>帝国ホテル</td>
-  <td><button class="docs-btn" data-idx="28">📋 調査メモ</button><template id="docs-28"><h3>9708 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="27">📋 調査メモ</button><template id="docs-27"><h3>9708 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9708</li>
@@ -1926,7 +1875,7 @@
   <td>9708_output.csv</td>
 </tr>
 <tr>
-  <td class="right">29</td>
+  <td class="right">28</td>
   <td>5423</td>
   <td>東京製鐵</td>
   <td></td>
@@ -1943,7 +1892,7 @@
   <td>5423_output.csv</td>
 </tr>
 <tr>
-  <td class="right">30</td>
+  <td class="right">29</td>
   <td>9304</td>
   <td>澁澤倉庫</td>
   <td></td>
@@ -1960,10 +1909,10 @@
   <td>9304_output.csv</td>
 </tr>
 <tr>
-  <td class="right">31</td>
+  <td class="right">30</td>
   <td>3690</td>
   <td>イルグルム</td>
-  <td><button class="docs-btn" data-idx="31">📋 調査メモ</button><template id="docs-31"><h3>3690 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="30">📋 調査メモ</button><template id="docs-30"><h3>3690 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 3690</li>
@@ -2007,10 +1956,10 @@
   <td>3690_output.csv</td>
 </tr>
 <tr>
-  <td class="right">32</td>
+  <td class="right">31</td>
   <td>3998</td>
   <td>すららネット</td>
-  <td><button class="docs-btn" data-idx="32">📋 調査メモ</button><template id="docs-32"><h3>3998 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="31">📋 調査メモ</button><template id="docs-31"><h3>3998 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 3998</li>
@@ -2058,7 +2007,7 @@
   <td>3998_output.csv</td>
 </tr>
 <tr>
-  <td class="right">33</td>
+  <td class="right">32</td>
   <td>9119</td>
   <td>飯野海運</td>
   <td></td>
@@ -2075,10 +2024,10 @@
   <td>9119_output.csv</td>
 </tr>
 <tr>
-  <td class="right">34</td>
+  <td class="right">33</td>
   <td>4274</td>
   <td>細谷火工</td>
-  <td><button class="docs-btn" data-idx="34">📋 調査メモ</button><template id="docs-34"><h3>4274 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="33">📋 調査メモ</button><template id="docs-33"><h3>4274 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4274</li>
@@ -2125,10 +2074,10 @@
   <td>4274_output.csv</td>
 </tr>
 <tr>
-  <td class="right">35</td>
+  <td class="right">34</td>
   <td>5199</td>
   <td>不二ラテックス</td>
-  <td><button class="docs-btn" data-idx="35">📋 調査メモ</button><template id="docs-35"><h3>5199 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="34">📋 調査メモ</button><template id="docs-34"><h3>5199 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 5199</li>
@@ -2183,7 +2132,7 @@
   <td>5199_output.csv</td>
 </tr>
 <tr>
-  <td class="right">36</td>
+  <td class="right">35</td>
   <td>9069</td>
   <td>センコーグループホールディングス</td>
   <td></td>
@@ -2200,7 +2149,7 @@
   <td>9069_output.csv</td>
 </tr>
 <tr>
-  <td class="right">37</td>
+  <td class="right">36</td>
   <td>9896</td>
   <td>ＪＫホールディングス</td>
   <td></td>
@@ -2217,7 +2166,7 @@
   <td>9896_output.csv</td>
 </tr>
 <tr>
-  <td class="right">38</td>
+  <td class="right">37</td>
   <td>5852</td>
   <td>アーレスティ</td>
   <td></td>
@@ -2234,10 +2183,10 @@
   <td>5852_output.csv</td>
 </tr>
 <tr>
-  <td class="right">39</td>
+  <td class="right">38</td>
   <td>4840</td>
   <td>トライアイズ</td>
-  <td><button class="docs-btn" data-idx="39">📋 調査メモ</button><template id="docs-39"><h3>4840 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="38">📋 調査メモ</button><template id="docs-38"><h3>4840 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4840</li>
@@ -2295,7 +2244,7 @@
   <td>4840_output.csv</td>
 </tr>
 <tr>
-  <td class="right">40</td>
+  <td class="right">39</td>
   <td>1960</td>
   <td>サンテック</td>
   <td></td>
@@ -2312,10 +2261,10 @@
   <td>1960_output.csv</td>
 </tr>
 <tr>
-  <td class="right">41</td>
+  <td class="right">40</td>
   <td>7614</td>
   <td>オーエムツーネットワーク</td>
-  <td><button class="docs-btn" data-idx="41">📋 調査メモ</button><template id="docs-41"><h3>7614 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="40">📋 調査メモ</button><template id="docs-40"><h3>7614 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 7614</li>
@@ -2367,10 +2316,10 @@
   <td>7614_output.csv</td>
 </tr>
 <tr>
-  <td class="right">42</td>
+  <td class="right">41</td>
   <td>9324</td>
   <td>安田倉庫</td>
-  <td><button class="docs-btn" data-idx="42">📋 調査メモ</button><template id="docs-42"><h3>9324 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="41">📋 調査メモ</button><template id="docs-41"><h3>9324 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9324</li>
@@ -2439,7 +2388,7 @@
   <td>9324_output.csv</td>
 </tr>
 <tr>
-  <td class="right">43</td>
+  <td class="right">42</td>
   <td>5388</td>
   <td>クニミネ工業</td>
   <td></td>
@@ -2456,7 +2405,7 @@
   <td>5388_output.csv</td>
 </tr>
 <tr>
-  <td class="right">44</td>
+  <td class="right">43</td>
   <td>9082</td>
   <td>大和自動車交通</td>
   <td></td>
@@ -2473,7 +2422,7 @@
   <td>9082_output.csv</td>
 </tr>
 <tr>
-  <td class="right">45</td>
+  <td class="right">44</td>
   <td>1762</td>
   <td>高松コンストラクショングループ</td>
   <td></td>
@@ -2490,7 +2439,7 @@
   <td>1762_output.csv</td>
 </tr>
 <tr>
-  <td class="right">46</td>
+  <td class="right">45</td>
   <td>7942</td>
   <td>ＪＳＰ</td>
   <td></td>
@@ -2507,10 +2456,10 @@
   <td>7942_output.csv</td>
 </tr>
 <tr>
-  <td class="right">47</td>
+  <td class="right">46</td>
   <td>2464</td>
   <td>Ａｏｂａ‐ＢＢＴ</td>
-  <td><button class="docs-btn" data-idx="47">📋 調査メモ</button><template id="docs-47"><h3>2464 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="46">📋 調査メモ</button><template id="docs-46"><h3>2464 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 2464</li>
@@ -2562,10 +2511,10 @@
   <td>2464_output.csv</td>
 </tr>
 <tr>
-  <td class="right">48</td>
+  <td class="right">47</td>
   <td>6497</td>
   <td>ハマイ</td>
-  <td><button class="docs-btn" data-idx="48">📋 調査メモ</button><template id="docs-48"><h3>6497 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="47">📋 調査メモ</button><template id="docs-47"><h3>6497 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 6497</li>
@@ -2628,7 +2577,7 @@
   <td>6497_output.csv</td>
 </tr>
 <tr>
-  <td class="right">49</td>
+  <td class="right">48</td>
   <td>6758</td>
   <td>ソニーグループ</td>
   <td></td>
@@ -2645,7 +2594,7 @@
   <td>6758_output.csv</td>
 </tr>
 <tr>
-  <td class="right">50</td>
+  <td class="right">49</td>
   <td>3223</td>
   <td>エスエルディー</td>
   <td></td>
@@ -2662,7 +2611,7 @@
   <td>3223_output.csv</td>
 </tr>
 <tr>
-  <td class="right">51</td>
+  <td class="right">50</td>
   <td>7462</td>
   <td>ＣＡＰＩＴＡ</td>
   <td></td>
@@ -2679,7 +2628,7 @@
   <td>7462_output.csv</td>
 </tr>
 <tr>
-  <td class="right">52</td>
+  <td class="right">51</td>
   <td>9663</td>
   <td>ナガワ</td>
   <td></td>
@@ -2696,10 +2645,10 @@
   <td>9663_output.csv</td>
 </tr>
 <tr>
-  <td class="right">53</td>
+  <td class="right">52</td>
   <td>9603</td>
   <td>エイチ・アイ・エス</td>
-  <td><button class="docs-btn" data-idx="53">📋 調査メモ</button><template id="docs-53"><h3>9603 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="52">📋 調査メモ</button><template id="docs-52"><h3>9603 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9603</li>
@@ -2771,7 +2720,7 @@
   <td>9603_output.csv</td>
 </tr>
 <tr>
-  <td class="right">54</td>
+  <td class="right">53</td>
   <td>9303</td>
   <td>住友倉庫</td>
   <td></td>
@@ -2788,7 +2737,7 @@
   <td>9303_output.csv</td>
 </tr>
 <tr>
-  <td class="right">55</td>
+  <td class="right">54</td>
   <td>4031</td>
   <td>片倉コープアグリ</td>
   <td></td>
@@ -2805,7 +2754,7 @@
   <td>4031_output.csv</td>
 </tr>
 <tr>
-  <td class="right">56</td>
+  <td class="right">55</td>
   <td>8131</td>
   <td>ミツウロコグループホールディングス</td>
   <td></td>
@@ -2822,10 +2771,10 @@
   <td>8131_output.csv</td>
 </tr>
 <tr>
-  <td class="right">57</td>
+  <td class="right">56</td>
   <td>9722</td>
   <td>藤田観光</td>
-  <td><button class="docs-btn" data-idx="57">📋 調査メモ</button><template id="docs-57"><h3>9722 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="56">📋 調査メモ</button><template id="docs-56"><h3>9722 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9722</li>
@@ -2872,7 +2821,7 @@
   <td>9722_output.csv</td>
 </tr>
 <tr>
-  <td class="right">58</td>
+  <td class="right">57</td>
   <td>9476</td>
   <td>中央経済社ホールディングス</td>
   <td></td>
@@ -2889,7 +2838,7 @@
   <td>9476_output.csv</td>
 </tr>
 <tr>
-  <td class="right">59</td>
+  <td class="right">58</td>
   <td>1861</td>
   <td>熊谷組</td>
   <td></td>
@@ -2906,7 +2855,7 @@
   <td>1861_output.csv</td>
 </tr>
 <tr>
-  <td class="right">60</td>
+  <td class="right">59</td>
   <td>3680</td>
   <td>ホットリンク</td>
   <td></td>
@@ -2923,10 +2872,10 @@
   <td>3680_output.csv</td>
 </tr>
 <tr>
-  <td class="right">61</td>
+  <td class="right">60</td>
   <td>1899</td>
   <td>福田組</td>
-  <td><button class="docs-btn" data-idx="61">📋 調査メモ</button><template id="docs-61"><h3>1899 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="60">📋 調査メモ</button><template id="docs-60"><h3>1899 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1899</li>
@@ -2968,7 +2917,7 @@
   <td>1899_output.csv</td>
 </tr>
 <tr>
-  <td class="right">62</td>
+  <td class="right">61</td>
   <td>9005</td>
   <td>東急</td>
   <td></td>
@@ -2985,7 +2934,7 @@
   <td>9005_output.csv</td>
 </tr>
 <tr>
-  <td class="right">63</td>
+  <td class="right">62</td>
   <td>1301</td>
   <td>極洋</td>
   <td></td>
@@ -3002,10 +2951,10 @@
   <td>1301_output.csv</td>
 </tr>
 <tr>
-  <td class="right">64</td>
+  <td class="right">63</td>
   <td>6360</td>
   <td>東京自働機械製作所</td>
-  <td><button class="docs-btn" data-idx="64">📋 調査メモ</button><template id="docs-64"><h3>6360 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="63">📋 調査メモ</button><template id="docs-63"><h3>6360 split-address 調査メモ</h3>
 <h4>1. 結論</h4>
 <ul>
 <li>証券コード: 6360</li>
@@ -3046,7 +2995,7 @@
   <td>6360_output.csv</td>
 </tr>
 <tr>
-  <td class="right">65</td>
+  <td class="right">64</td>
   <td>3608</td>
   <td>ＴＳＩホールディングス</td>
   <td></td>
@@ -3063,7 +3012,7 @@
   <td>3608_output.csv</td>
 </tr>
 <tr>
-  <td class="right">66</td>
+  <td class="right">65</td>
   <td>6675</td>
   <td>サクサ</td>
   <td></td>
@@ -3080,7 +3029,7 @@
   <td>6675_output.csv</td>
 </tr>
 <tr>
-  <td class="right">67</td>
+  <td class="right">66</td>
   <td>5269</td>
   <td>日本コンクリート工業</td>
   <td></td>
@@ -3097,10 +3046,10 @@
   <td>5269_output.csv</td>
 </tr>
 <tr>
-  <td class="right">68</td>
+  <td class="right">67</td>
   <td>9301</td>
   <td>三菱倉庫</td>
-  <td><button class="docs-btn" data-idx="68">📋 調査メモ</button><template id="docs-68"><h3>9301 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="67">📋 調査メモ</button><template id="docs-67"><h3>9301 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9301</li>
@@ -3176,7 +3125,7 @@
   <td>9301_output.csv</td>
 </tr>
 <tr>
-  <td class="right">69</td>
+  <td class="right">68</td>
   <td>3863</td>
   <td>日本製紙</td>
   <td></td>
@@ -3193,7 +3142,7 @@
   <td>3863_output.csv</td>
 </tr>
 <tr>
-  <td class="right">70</td>
+  <td class="right">69</td>
   <td>5480</td>
   <td>日本冶金工業</td>
   <td></td>
@@ -3210,10 +3159,10 @@
   <td>5480_output.csv</td>
 </tr>
 <tr>
-  <td class="right">71</td>
+  <td class="right">70</td>
   <td>1827</td>
   <td>ナカノフドー建設</td>
-  <td><button class="docs-btn" data-idx="71">📋 調査メモ</button><template id="docs-71"><h3>1827 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="70">📋 調査メモ</button><template id="docs-70"><h3>1827 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1827</li>
@@ -3280,7 +3229,7 @@
   <td>1827_output.csv</td>
 </tr>
 <tr>
-  <td class="right">72</td>
+  <td class="right">71</td>
   <td>2429</td>
   <td>ワールドホールディングス</td>
   <td></td>
@@ -3297,10 +3246,10 @@
   <td>2429_output.csv</td>
 </tr>
 <tr>
-  <td class="right">73</td>
+  <td class="right">72</td>
   <td>9302</td>
   <td>三井倉庫ホールディングス</td>
-  <td><button class="docs-btn" data-idx="73">📋 調査メモ</button><template id="docs-73"><h3>9302 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="72">📋 調査メモ</button><template id="docs-72"><h3>9302 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9302</li>
@@ -3363,10 +3312,10 @@
   <td>9302_output.csv</td>
 </tr>
 <tr>
-  <td class="right">74</td>
+  <td class="right">73</td>
   <td>4272</td>
   <td>日本化薬</td>
-  <td><button class="docs-btn" data-idx="74">📋 調査メモ</button><template id="docs-74"><h3>4272 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="73">📋 調査メモ</button><template id="docs-73"><h3>4272 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4272</li>
@@ -3421,10 +3370,10 @@
   <td>4272_output.csv</td>
 </tr>
 <tr>
-  <td class="right">75</td>
+  <td class="right">74</td>
   <td>1972</td>
   <td>三晃金属工業</td>
-  <td><button class="docs-btn" data-idx="75">📋 調査メモ</button><template id="docs-75"><h3>1972 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="74">📋 調査メモ</button><template id="docs-74"><h3>1972 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1972</li>
@@ -3475,7 +3424,7 @@
   <td>1972_output.csv</td>
 </tr>
 <tr>
-  <td class="right">76</td>
+  <td class="right">75</td>
   <td>3856</td>
   <td>Ａｂａｌａｎｃｅ</td>
   <td></td>
@@ -3492,7 +3441,7 @@
   <td>3856_output.csv</td>
 </tr>
 <tr>
-  <td class="right">77</td>
+  <td class="right">76</td>
   <td>9997</td>
   <td>ベルーナ</td>
   <td></td>
@@ -3509,10 +3458,10 @@
   <td>9997_output.csv</td>
 </tr>
 <tr>
-  <td class="right">78</td>
+  <td class="right">77</td>
   <td>1887</td>
   <td>日本国土開発</td>
-  <td><button class="docs-btn" data-idx="78">📋 調査メモ</button><template id="docs-78"><h3>1887 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="77">📋 調査メモ</button><template id="docs-77"><h3>1887 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1887</li>
@@ -3570,10 +3519,10 @@
   <td>1887_output.csv</td>
 </tr>
 <tr>
-  <td class="right">79</td>
+  <td class="right">78</td>
   <td>9602</td>
   <td>東宝</td>
-  <td><button class="docs-btn" data-idx="79">📋 調査メモ</button><template id="docs-79"><h3>9602 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="78">📋 調査メモ</button><template id="docs-78"><h3>9602 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9602</li>
@@ -3649,7 +3598,7 @@
   <td>9602_output.csv</td>
 </tr>
 <tr>
-  <td class="right">80</td>
+  <td class="right">79</td>
   <td>8944</td>
   <td>ランドビジネス</td>
   <td></td>
@@ -3666,7 +3615,7 @@
   <td>8944_output.csv</td>
 </tr>
 <tr>
-  <td class="right">81</td>
+  <td class="right">80</td>
   <td>5714</td>
   <td>ＤＯＷＡホールディングス</td>
   <td></td>
@@ -3683,7 +3632,7 @@
   <td>5714_output.csv</td>
 </tr>
 <tr>
-  <td class="right">82</td>
+  <td class="right">81</td>
   <td>2120</td>
   <td>ＬＩＦＵＬＬ</td>
   <td></td>
@@ -3700,10 +3649,10 @@
   <td>2120_output.csv</td>
 </tr>
 <tr>
-  <td class="right">83</td>
+  <td class="right">82</td>
   <td>4247</td>
   <td>ポバール興業</td>
-  <td><button class="docs-btn" data-idx="83">📋 調査メモ</button><template id="docs-83"><h3>4247 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="82">📋 調査メモ</button><template id="docs-82"><h3>4247 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4247</li>
@@ -3756,10 +3705,10 @@
   <td>4247_output.csv</td>
 </tr>
 <tr>
-  <td class="right">84</td>
+  <td class="right">83</td>
   <td>4801</td>
   <td>セントラルスポーツ</td>
-  <td><button class="docs-btn" data-idx="84">📋 調査メモ</button><template id="docs-84"><h3>4801 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="83">📋 調査メモ</button><template id="docs-83"><h3>4801 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4801</li>
@@ -3814,10 +3763,10 @@
   <td>4801_output.csv</td>
 </tr>
 <tr>
-  <td class="right">85</td>
+  <td class="right">84</td>
   <td>1815</td>
   <td>鉄建建設</td>
-  <td><button class="docs-btn" data-idx="85">📋 調査メモ</button><template id="docs-85"><h3>1815 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="84">📋 調査メモ</button><template id="docs-84"><h3>1815 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1815</li>
@@ -3869,7 +3818,7 @@
   <td>1815_output.csv</td>
 </tr>
 <tr>
-  <td class="right">86</td>
+  <td class="right">85</td>
   <td>5715</td>
   <td>古河機械金属</td>
   <td></td>
@@ -3886,10 +3835,10 @@
   <td>5715_output.csv</td>
 </tr>
 <tr>
-  <td class="right">87</td>
+  <td class="right">86</td>
   <td>7955</td>
   <td>クリナップ</td>
-  <td><button class="docs-btn" data-idx="87">📋 調査メモ</button><template id="docs-87"><h3>7955 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="86">📋 調査メモ</button><template id="docs-86"><h3>7955 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 7955</li>
@@ -3944,7 +3893,7 @@
   <td>7955_output.csv</td>
 </tr>
 <tr>
-  <td class="right">88</td>
+  <td class="right">87</td>
   <td>5202</td>
   <td>日本板硝子</td>
   <td></td>
@@ -3961,7 +3910,7 @@
   <td>5202_output.csv</td>
 </tr>
 <tr>
-  <td class="right">89</td>
+  <td class="right">88</td>
   <td>1803</td>
   <td>清水建設</td>
   <td></td>
@@ -3978,10 +3927,10 @@
   <td>1803_output.csv</td>
 </tr>
 <tr>
-  <td class="right">90</td>
+  <td class="right">89</td>
   <td>2108</td>
   <td>日本甜菜製糖</td>
-  <td><button class="docs-btn" data-idx="90">📋 調査メモ</button><template id="docs-90"><h3>2108 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="89">📋 調査メモ</button><template id="docs-89"><h3>2108 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 2108</li>
@@ -4038,10 +3987,10 @@
   <td>2108_output.csv</td>
 </tr>
 <tr>
-  <td class="right">91</td>
+  <td class="right">90</td>
   <td>8066</td>
   <td>三谷商事</td>
-  <td><button class="docs-btn" data-idx="91">📋 調査メモ</button><template id="docs-91"><h3>8066 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="90">📋 調査メモ</button><template id="docs-90"><h3>8066 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 8066</li>
@@ -4102,7 +4051,7 @@
   <td>8066_output.csv</td>
 </tr>
 <tr>
-  <td class="right">92</td>
+  <td class="right">91</td>
   <td>3407</td>
   <td>旭化成</td>
   <td></td>
@@ -4119,7 +4068,7 @@
   <td>3407_output.csv</td>
 </tr>
 <tr>
-  <td class="right">93</td>
+  <td class="right">92</td>
   <td>5965</td>
   <td>フジマック</td>
   <td></td>
@@ -4136,7 +4085,7 @@
   <td>5965_output.csv</td>
 </tr>
 <tr>
-  <td class="right">94</td>
+  <td class="right">93</td>
   <td>1833</td>
   <td>奥村組</td>
   <td></td>
@@ -4153,7 +4102,7 @@
   <td>1833_output.csv</td>
 </tr>
 <tr>
-  <td class="right">95</td>
+  <td class="right">94</td>
   <td>1871</td>
   <td>ピーエス・コンストラクション</td>
   <td></td>
@@ -4170,7 +4119,7 @@
   <td>1871_output.csv</td>
 </tr>
 <tr>
-  <td class="right">96</td>
+  <td class="right">95</td>
   <td>4182</td>
   <td>三菱瓦斯化学</td>
   <td></td>
@@ -4187,10 +4136,10 @@
   <td>4182_output.csv</td>
 </tr>
 <tr>
-  <td class="right">97</td>
+  <td class="right">96</td>
   <td>9025</td>
   <td>鴻池運輸</td>
-  <td><button class="docs-btn" data-idx="97">📋 調査メモ</button><template id="docs-97"><h3>9025 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="96">📋 調査メモ</button><template id="docs-96"><h3>9025 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9025</li>
@@ -4254,10 +4203,10 @@
   <td>9025_output.csv</td>
 </tr>
 <tr>
-  <td class="right">98</td>
+  <td class="right">97</td>
   <td>5393</td>
   <td>ニチアス</td>
-  <td><button class="docs-btn" data-idx="98">📋 調査メモ</button><template id="docs-98"><h3>5393 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="97">📋 調査メモ</button><template id="docs-97"><h3>5393 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 5393</li>
@@ -4321,10 +4270,10 @@
   <td>5393_output.csv</td>
 </tr>
 <tr>
-  <td class="right">99</td>
+  <td class="right">98</td>
   <td>1822</td>
   <td>大豊建設</td>
-  <td><button class="docs-btn" data-idx="99">📋 調査メモ</button><template id="docs-99"><h3>1822 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="98">📋 調査メモ</button><template id="docs-98"><h3>1822 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1822</li>
@@ -4394,10 +4343,10 @@
   <td>1822_output.csv</td>
 </tr>
 <tr>
-  <td class="right">100</td>
+  <td class="right">99</td>
   <td>1882</td>
   <td>東亜道路工業</td>
-  <td><button class="docs-btn" data-idx="100">📋 調査メモ</button><template id="docs-100"><h3>1882 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="99">📋 調査メモ</button><template id="docs-99"><h3>1882 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1882</li>
@@ -4463,7 +4412,7 @@
   <td>1882_output.csv</td>
 </tr>
 <tr>
-  <td class="right">101</td>
+  <td class="right">100</td>
   <td>7003</td>
   <td>三井Ｅ＆Ｓ</td>
   <td></td>
@@ -4480,10 +4429,10 @@
   <td>7003_output.csv</td>
 </tr>
 <tr>
-  <td class="right">102</td>
+  <td class="right">101</td>
   <td>4631</td>
   <td>ＤＩＣ</td>
-  <td><button class="docs-btn" data-idx="102">📋 調査メモ</button><template id="docs-102"><h3>4631 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="101">📋 調査メモ</button><template id="docs-101"><h3>4631 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4631</li>
@@ -4536,10 +4485,10 @@
   <td>4631_output.csv</td>
 </tr>
 <tr>
-  <td class="right">103</td>
+  <td class="right">102</td>
   <td>8091</td>
   <td>ニチモウ</td>
-  <td><button class="docs-btn" data-idx="103">📋 調査メモ</button><template id="docs-103"><h3>8091 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="102">📋 調査メモ</button><template id="docs-102"><h3>8091 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 8091</li>
@@ -4594,10 +4543,10 @@
   <td>8091_output.csv</td>
 </tr>
 <tr>
-  <td class="right">104</td>
+  <td class="right">103</td>
   <td>4004</td>
   <td>レゾナック・ホールディングス</td>
-  <td><button class="docs-btn" data-idx="104">📋 調査メモ</button><template id="docs-104"><h3>4004 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="103">📋 調査メモ</button><template id="docs-103"><h3>4004 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4004</li>
@@ -4651,10 +4600,10 @@
   <td>4004_output.csv</td>
 </tr>
 <tr>
-  <td class="right">105</td>
+  <td class="right">104</td>
   <td>1885</td>
   <td>東亜建設工業</td>
-  <td><button class="docs-btn" data-idx="105">📋 調査メモ</button><template id="docs-105"><h3>1885 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="104">📋 調査メモ</button><template id="docs-104"><h3>1885 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 1885</li>
@@ -4733,10 +4682,10 @@
   <td>1885_output.csv</td>
 </tr>
 <tr>
-  <td class="right">106</td>
+  <td class="right">105</td>
   <td>3105</td>
   <td>日清紡ホールディングス</td>
-  <td><button class="docs-btn" data-idx="106">📋 調査メモ</button><template id="docs-106"><h3>3105 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="105">📋 調査メモ</button><template id="docs-105"><h3>3105 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 3105</li>
@@ -4786,10 +4735,10 @@
   <td>3105_output.csv</td>
 </tr>
 <tr>
-  <td class="right">107</td>
+  <td class="right">106</td>
   <td>8059</td>
   <td>第一実業</td>
-  <td><button class="docs-btn" data-idx="107">📋 調査メモ</button><template id="docs-107"><h3>8059 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="106">📋 調査メモ</button><template id="docs-106"><h3>8059 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 8059</li>
@@ -4844,7 +4793,7 @@
   <td>8059_output.csv</td>
 </tr>
 <tr>
-  <td class="right">108</td>
+  <td class="right">107</td>
   <td>4043</td>
   <td>トクヤマ</td>
   <td></td>
@@ -4861,7 +4810,7 @@
   <td>4043_output.csv</td>
 </tr>
 <tr>
-  <td class="right">109</td>
+  <td class="right">108</td>
   <td>7013</td>
   <td>ＩＨＩ</td>
   <td></td>
@@ -4878,10 +4827,10 @@
   <td>7013_output.csv</td>
 </tr>
 <tr>
-  <td class="right">110</td>
+  <td class="right">109</td>
   <td>5201</td>
   <td>ＡＧＣ</td>
-  <td><button class="docs-btn" data-idx="110">📋 調査メモ</button><template id="docs-110"><h3>5201 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="109">📋 調査メモ</button><template id="docs-109"><h3>5201 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 5201</li>
@@ -4943,10 +4892,10 @@
   <td>5201_output.csv</td>
 </tr>
 <tr>
-  <td class="right">111</td>
+  <td class="right">110</td>
   <td>4021</td>
   <td>日産化学</td>
-  <td><button class="docs-btn" data-idx="111">📋 調査メモ</button><template id="docs-111"><h3>4021 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="110">📋 調査メモ</button><template id="docs-110"><h3>4021 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4021</li>
@@ -5024,10 +4973,10 @@
   <td>4021_output.csv</td>
 </tr>
 <tr>
-  <td class="right">112</td>
+  <td class="right">111</td>
   <td>8585</td>
   <td>オリエントコーポレーション</td>
-  <td><button class="docs-btn" data-idx="112">📋 調査メモ</button><template id="docs-112"><h3>8585 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="111">📋 調査メモ</button><template id="docs-111"><h3>8585 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 8585</li>
@@ -5080,7 +5029,7 @@
   <td>8585_output.csv</td>
 </tr>
 <tr>
-  <td class="right">113</td>
+  <td class="right">112</td>
   <td>5706</td>
   <td>三井金属</td>
   <td></td>
@@ -5097,7 +5046,7 @@
   <td>5706_output.csv</td>
 </tr>
 <tr>
-  <td class="right">114</td>
+  <td class="right">113</td>
   <td>3021</td>
   <td>パシフィックネット</td>
   <td></td>
@@ -5114,10 +5063,10 @@
   <td>3021_output.csv</td>
 </tr>
 <tr>
-  <td class="right">115</td>
+  <td class="right">114</td>
   <td>9433</td>
   <td>ＫＤＤＩ</td>
-  <td><button class="docs-btn" data-idx="115">📋 調査メモ</button><template id="docs-115"><h3>9433 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="114">📋 調査メモ</button><template id="docs-114"><h3>9433 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 9433</li>
@@ -5170,7 +5119,7 @@
   <td>9433_output.csv</td>
 </tr>
 <tr>
-  <td class="right">116</td>
+  <td class="right">115</td>
   <td>2579</td>
   <td>コカ・コーラ　ボトラーズジャパンホールディングス</td>
   <td></td>
@@ -5187,10 +5136,10 @@
   <td>2579_output.csv</td>
 </tr>
 <tr>
-  <td class="right">117</td>
+  <td class="right">116</td>
   <td>8253</td>
   <td>クレディセゾン</td>
-  <td><button class="docs-btn" data-idx="117">📋 調査メモ</button><template id="docs-117"><h3>8253 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="116">📋 調査メモ</button><template id="docs-116"><h3>8253 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 8253</li>
@@ -5265,10 +5214,10 @@
   <td>8253_output.csv</td>
 </tr>
 <tr>
-  <td class="right">118</td>
+  <td class="right">117</td>
   <td>6140</td>
   <td>旭ダイヤモンド工業</td>
-  <td><button class="docs-btn" data-idx="118">📋 調査メモ</button><template id="docs-118"><h3>6140 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="117">📋 調査メモ</button><template id="docs-117"><h3>6140 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 6140</li>
@@ -5322,7 +5271,7 @@
   <td>6140_output.csv</td>
 </tr>
 <tr>
-  <td class="right">119</td>
+  <td class="right">118</td>
   <td>1826</td>
   <td>佐田建設</td>
   <td></td>
@@ -5339,7 +5288,7 @@
   <td>1826_output.csv</td>
 </tr>
 <tr>
-  <td class="right">120</td>
+  <td class="right">119</td>
   <td>1911</td>
   <td>住友林業</td>
   <td></td>
@@ -5356,7 +5305,7 @@
   <td>1911_output.csv</td>
 </tr>
 <tr>
-  <td class="right">121</td>
+  <td class="right">120</td>
   <td>3878</td>
   <td>巴川コーポレーション</td>
   <td></td>
@@ -5373,10 +5322,10 @@
   <td>3878_output.csv</td>
 </tr>
 <tr>
-  <td class="right">122</td>
+  <td class="right">121</td>
   <td>3901</td>
   <td>マークラインズ</td>
-  <td><button class="docs-btn" data-idx="122">📋 調査メモ</button><template id="docs-122"><h3>3901 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="121">📋 調査メモ</button><template id="docs-121"><h3>3901 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 3901</li>
@@ -5427,10 +5376,10 @@
   <td>3901_output.csv</td>
 </tr>
 <tr>
-  <td class="right">123</td>
+  <td class="right">122</td>
   <td>4044</td>
   <td>セントラル硝子</td>
-  <td><button class="docs-btn" data-idx="123">📋 調査メモ</button><template id="docs-123"><h3>4044 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="122">📋 調査メモ</button><template id="docs-122"><h3>4044 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4044</li>
@@ -5481,10 +5430,10 @@
   <td>4044_output.csv</td>
 </tr>
 <tr>
-  <td class="right">124</td>
+  <td class="right">123</td>
   <td>4064</td>
   <td>日本カーバイド工業</td>
-  <td><button class="docs-btn" data-idx="124">📋 調査メモ</button><template id="docs-124"><h3>4064 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="123">📋 調査メモ</button><template id="docs-123"><h3>4064 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 4064</li>
@@ -5552,10 +5501,10 @@
   <td>4064_output.csv</td>
 </tr>
 <tr>
-  <td class="right">125</td>
+  <td class="right">124</td>
   <td>5010</td>
   <td>日本精蝋</td>
-  <td><button class="docs-btn" data-idx="125">📋 調査メモ</button><template id="docs-125"><h3>5010 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="124">📋 調査メモ</button><template id="docs-124"><h3>5010 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 5010</li>
@@ -5610,7 +5559,7 @@
   <td>5010_output.csv</td>
 </tr>
 <tr>
-  <td class="right">126</td>
+  <td class="right">125</td>
   <td>5011</td>
   <td>ニチレキグループ</td>
   <td></td>
@@ -5627,10 +5576,10 @@
   <td>5011_output.csv</td>
 </tr>
 <tr>
-  <td class="right">127</td>
+  <td class="right">126</td>
   <td>5019</td>
   <td>出光興産</td>
-  <td><button class="docs-btn" data-idx="127">📋 調査メモ</button><template id="docs-127"><h3>5019 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="126">📋 調査メモ</button><template id="docs-126"><h3>5019 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 5019</li>
@@ -5696,7 +5645,7 @@
   <td>5019_output.csv</td>
 </tr>
 <tr>
-  <td class="right">128</td>
+  <td class="right">127</td>
   <td>5021</td>
   <td>コスモエネルギーホールディングス</td>
   <td></td>
@@ -5713,10 +5662,10 @@
   <td>5021_output.csv</td>
 </tr>
 <tr>
-  <td class="right">129</td>
+  <td class="right">128</td>
   <td>5411</td>
   <td>ＪＦＥホールディングス</td>
-  <td><button class="docs-btn" data-idx="129">📋 調査メモ</button><template id="docs-129"><h3>5411 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="128">📋 調査メモ</button><template id="docs-128"><h3>5411 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 5411</li>
@@ -5771,10 +5720,10 @@
   <td>5411_output.csv</td>
 </tr>
 <tr>
-  <td class="right">130</td>
+  <td class="right">129</td>
   <td>5563</td>
   <td>新日本電工</td>
-  <td><button class="docs-btn" data-idx="130">📋 調査メモ</button><template id="docs-130"><h3>5563 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="129">📋 調査メモ</button><template id="docs-129"><h3>5563 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 5563</li>
@@ -5825,7 +5774,7 @@
   <td>5563_output.csv</td>
 </tr>
 <tr>
-  <td class="right">131</td>
+  <td class="right">130</td>
   <td>5707</td>
   <td>東邦亜鉛</td>
   <td></td>
@@ -5842,10 +5791,10 @@
   <td>5707_output.csv</td>
 </tr>
 <tr>
-  <td class="right">132</td>
+  <td class="right">131</td>
   <td>6181</td>
   <td>タメニー</td>
-  <td><button class="docs-btn" data-idx="132">📋 調査メモ</button><template id="docs-132"><h3>6181 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="131">📋 調査メモ</button><template id="docs-131"><h3>6181 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 6181</li>
@@ -5935,10 +5884,10 @@
   <td>6181_output.csv</td>
 </tr>
 <tr>
-  <td class="right">133</td>
+  <td class="right">132</td>
   <td>6305</td>
   <td>日立建機</td>
-  <td><button class="docs-btn" data-idx="133">📋 調査メモ</button><template id="docs-133"><h3>6305 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="132">📋 調査メモ</button><template id="docs-132"><h3>6305 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 6305</li>
@@ -5987,10 +5936,10 @@
   <td>6305_output.csv</td>
 </tr>
 <tr>
-  <td class="right">134</td>
+  <td class="right">133</td>
   <td>7042</td>
   <td>アクセスグループ・ホールディングス</td>
-  <td><button class="docs-btn" data-idx="134">📋 調査メモ</button><template id="docs-134"><h3>7042 split-address 推論メモ</h3>
+  <td><button class="docs-btn" data-idx="133">📋 調査メモ</button><template id="docs-133"><h3>7042 split-address 推論メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 7042</li>
@@ -6098,7 +6047,7 @@
   <td>7042_output.csv</td>
 </tr>
 <tr>
-  <td class="right">135</td>
+  <td class="right">134</td>
   <td>7414</td>
   <td>小野建</td>
   <td></td>
@@ -6115,10 +6064,10 @@
   <td>7414_output.csv</td>
 </tr>
 <tr>
-  <td class="right">136</td>
+  <td class="right">135</td>
   <td>7602</td>
   <td>レダックス</td>
-  <td><button class="docs-btn" data-idx="136">📋 調査メモ</button><template id="docs-136"><h3>7602 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="135">📋 調査メモ</button><template id="docs-135"><h3>7602 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 7602</li>
@@ -6169,10 +6118,10 @@
   <td>7602_output.csv</td>
 </tr>
 <tr>
-  <td class="right">137</td>
+  <td class="right">136</td>
   <td>8912</td>
   <td>エリアクエスト</td>
-  <td><button class="docs-btn" data-idx="137">📋 調査メモ</button><template id="docs-137"><h3>8912 split-address 調査メモ</h3>
+  <td><button class="docs-btn" data-idx="136">📋 調査メモ</button><template id="docs-136"><h3>8912 split-address 調査メモ</h3>
 <h4>1. 対象</h4>
 <ul>
 <li>証券コード: 8912</li>
@@ -6220,6 +6169,71 @@
   <td class="right">0.00</td>
   <td class="right">1</td>
   <td>8912_output.csv</td>
+</tr>
+<tr>
+  <td class="right">137</td>
+  <td>9213</td>
+  <td>セイファート</td>
+  <td><button class="docs-btn" data-idx="137">📋 調査メモ</button><template id="docs-137"><h3>9213 split-address 推論メモ</h3>
+<h4>1. 対象</h4>
+<ul>
+<li>証券コード: 9213</li>
+<li>企業名: 株式会社セイファート</li>
+<li>対象事業所: 本社</li>
+<li>更新日: 2026-03-19</li>
+</ul>
+<h4>2. 判定: 含み益は存在しない（誤抽出）</h4>
+<p><strong>この銘柄の土地含み益はゼロ。ratio=7.485は賃借設備の誤抽出が原因。</strong></p>
+<h5>パイプライン出力</h5>
+<table class="md-table"><thead><tr>
+<th>事業所名</th><th>土地面積(m2)</th><th>土地簿価(円)</th><th>推定時価(億円)</th>
+</tr></thead><tbody>
+<tr><td>本社</td><td>908.82</td><td>86,008,000,000</td><td>75</td></tr>
+</tbody></table>
+<ul>
+<li>時価総額10億円に対し ratio=7.485</li>
+</ul>
+<h5>有報の実態</h5>
+<p>有報「主要な設備の状況」(1)提出会社の設備表に<strong>土地列は存在しない</strong>。帳簿価額の列は建物・車両運搬具・工具器具備品・ソフトウエア・ソフトウエア仮勘定・その他のみ。</p>
+<p>有報注記3に「連結会社以外から賃借している設備」として：</p>
+<table class="md-table"><thead><tr>
+<th>事業所名</th><th>床面積(m2)</th><th>年間賃借料(千円)</th>
+</tr></thead><tbody>
+<tr><td>本社(渋谷区)</td><td>908.82</td><td>86,008</td></tr>
+<tr><td>東海ブランチ</td><td>107.59</td><td>4,384</td></tr>
+<tr><td>関西ブランチ</td><td>224.43</td><td>8,506</td></tr>
+</tbody></table>
+<p>パイプラインが <strong>床面積908.82m²</strong> を土地面積、<strong>年間賃借料86,008千円</strong> を土地簿価86,008,000,000円（千円→円の単位変換も誤り）として取り込んだ。</p>
+<h5>簿価の異常値</h5>
+<ul>
+<li>「土地簿価」860億円 — 渋谷区の909m²が860億円は明らかに異常</li>
+<li>推定時価75億に対し簿価860億で評価倍率0.087 — 含み損状態は通常ありえない</li>
+<li>実際は年間賃借料8,601万円（渋谷の事務所賃料として妥当）</li>
+</ul>
+<h4>3. 根拠ソース</h4>
+<table class="md-table"><thead><tr>
+<th>種別</th><th>取得日</th><th>要点</th><th>URL</th>
+</tr></thead><tbody>
+<tr><td>有報（EDINET）</td><td>2026-03-19</td><td>提出会社の設備表に土地列なし。注記3で賃借設備として床面積908.82m²・年間賃借料86,008千円</td><td>https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VIWL.pdf</td></tr>
+<tr><td>公式サイト</td><td>2026-03-17</td><td>本社: 東京都渋谷区渋谷3-27-11 祐真ビル2F</td><td>https://www.seyfert.co.jp/company/about/</td></tr>
+</tbody></table>
+<h4>4. 結論</h4>
+<ul>
+<li>この銘柄に土地含み益は存在しない</li>
+<li>7042(アクセスグループHD)と同一の誤抽出パターン</li>
+<li>パッチでテナント判定（area_m2=0.0）を適用して是正</li>
+</ul></template></td>
+  <td class="right">0.000000</td>
+  <td>gaiku</td>
+  <td>high</td>
+  <td></td>
+  <td><a href="file:///C:/Users/0000250059/Desktop/land_value_research/data/cache/pdf/9213_securities_report.pdf" target="_blank">9213_securities_report.pdf</a></td>
+  <td class="right">0.00</td>
+  <td class="right">10.00</td>
+  <td class="right">0.00</td>
+  <td class="right">0.00</td>
+  <td class="right">1</td>
+  <td>9213_output.csv</td>
 </tr>
 </tbody>
 </table>
