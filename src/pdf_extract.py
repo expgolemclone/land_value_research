@@ -150,6 +150,30 @@ def _find_data_start(table: list[list[str | None]]) -> int:
     return -1
 
 
+def _resolve_column_mapping(headers: list[str]) -> tuple[int | None, int | None]:
+    """ヘッダーから土地簿価列と土地面積列のインデックスを一括決定する.
+
+    Returns:
+        (land_value_col, dedicated_area_col) のタプル.
+        dedicated_area_col が None の場合、面積は土地セル内の括弧表記から取得する.
+    """
+    land_col: int | None = None
+    dedicated_area_col: int | None = None
+
+    for i, h in enumerate(headers):
+        if land_col is None and "土地" in h and "土地面積" not in h:
+            land_col = i
+        if dedicated_area_col is None and "土地面積" in h:
+            dedicated_area_col = i
+
+    # 「土地面積」ヘッダーが無い場合、土地列の隣に面積列があるかチェック
+    if land_col is not None and dedicated_area_col is None and land_col + 1 < len(headers):
+        if "面積" in headers[land_col + 1]:
+            dedicated_area_col = land_col + 1
+
+    return land_col, dedicated_area_col
+
+
 def _extract_from_table(
     table: list[list[str | None]],
     skip_hq_row: bool = False,
@@ -166,16 +190,7 @@ def _extract_from_table(
     book_mult = _book_multiplier(header_text)
     area_scale = _area_scale(header_text)
 
-    land_col = None
-    area_col = None
-    land_area_col = None
-    for i, h in enumerate(headers):
-        if land_col is None and ("土地" in h) and ("土地面積" not in h):
-            land_col = i
-        if land_area_col is None and ("土地面積" in h):
-            land_area_col = i
-        if area_col is None and ("面積" in h):
-            area_col = i
+    land_col, dedicated_area_col = _resolve_column_mapping(headers)
 
     # 土地列が見つからない表は、賃借設備表や投資計画表、従業員数付き設備表などの
     # 非土地テーブルであることが多い。ここで無理に数値を拾うと、
@@ -202,22 +217,16 @@ def _extract_from_table(
         land = None
         area = None
 
-        if land_col is not None and land_col < len(row):
-            land, area = _parse_land_cell(row[land_col] or "")
+        if land_col < len(row):
+            land, inline_area = _parse_land_cell(row[land_col] or "")
 
-        if land_col is not None and land is None:
+        if land is None:
             continue
 
-        if area is None and land_area_col is not None and land_area_col < len(row):
-            area = _parse_land_area_cell(row[land_area_col] or "")
-
-        if area is None and land_col is not None and land_col + 1 < len(row):
-            next_header = headers[land_col + 1] if land_col + 1 < len(headers) else ""
-            if "面積" in (next_header or ""):
-                area = _parse_number(row[land_col + 1] or "")
-
-        if area is None and land_col is None and area_col is not None and area_col < len(row):
-            area = _parse_number(row[area_col] or "")
+        if dedicated_area_col is not None and dedicated_area_col < len(row):
+            area = _parse_land_area_cell(row[dedicated_area_col] or "")
+        else:
+            area = inline_area
 
         # 土地と面積が隣接列に分かれる表(例: 9083)への対応
         if (
@@ -226,7 +235,6 @@ def _extract_from_table(
             and land > 0
             and area > 0
             and abs(area - land) < 1e-6
-            and land_col is not None
             and land_col + 1 < len(row)
         ):
             side = _parse_number(row[land_col + 1] or "")
