@@ -1852,6 +1852,69 @@
     name: 大井営業所
   東京都合計: 東京都江東区青海3丁目2番17号
 '9305':
+  不動産本部:
+  - address: 東京都中央区日本橋箱崎町8番1号
+    area_m2: 3345.71
+    area_m2_is_estimated: false
+    area_m2_source: 公式PROPERTY LIST記載のヤマタネ箱崎ビル土地面積
+    name: ヤマタネ箱崎ビル
+  - address: 東京都江東区越中島1丁目1番1号
+    area_m2: 3062.5
+    area_m2_is_estimated: false
+    area_m2_source: 公式PROPERTY LIST記載のヤマタネ深川2号館土地面積
+    name: ヤマタネ深川2号館
+  - address: 東京都江東区越中島1丁目2番21号
+    area_m2: 2718.0
+    area_m2_is_estimated: false
+    area_m2_source: 公式PROPERTY LIST記載のヤマタネ深川1号館土地面積
+    name: ヤマタネ深川1号館
+  - address: 東京都江東区越中島1丁目3番1号
+    area_m2: 3853.75
+    area_m2_is_estimated: false
+    area_m2_source: 公式PROPERTY LIST記載のヤマタネビル土地面積
+    name: ヤマタネビル
+  - address: 東京都江東区門前仲町1丁目16番3号
+    area_m2: 1307.48
+    area_m2_is_estimated: false
+    area_m2_source: 公式PROPERTY LIST記載の門前仲町賃貸不動産土地面積
+    name: 門前仲町賃貸不動産
+  - address: 東京都江東区東陽5丁目29番17号
+    area_m2: 732.71
+    area_m2_is_estimated: false
+    area_m2_source: 公式PROPERTY LIST記載の東陽町賃貸不動産土地面積
+    name: 東陽町賃貸不動産
+  - address: 東京都中央区京橋1丁目10番7号
+    area_m2: 2386.34
+    area_m2_is_estimated: false
+    area_m2_source: 公式PROPERTY LIST記載の京橋賃貸不動産土地面積
+    name: 京橋賃貸不動産
+  - address: 東京都渋谷区代々木2丁目10番8号
+    area_m2: 788.84
+    area_m2_is_estimated: false
+    area_m2_source: 公式PROPERTY LIST記載の代々木賃貸不動産土地面積
+    name: 代々木賃貸不動産
+  - address: 東京都中央区日本橋兜町7番1号
+    area_m2: 6625.93
+    area_m2_is_estimated: false
+    area_m2_source: 公式PROPERTY LIST記載のKABUTO ONE土地面積
+    name: KABUTO ONE
+  - address: 東京都墨田区江東橋3丁目13番1号
+    area_m2: 1732.0
+    area_m2_is_estimated: false
+    area_m2_source: 公式PROPERTY LIST記載の錦糸町賃貸不動産土地面積
+    name: 錦糸町賃貸不動産
+  - address: 東京都港区赤坂5丁目3番1号
+    area_m2: 566.21
+    area_m2_is_estimated: false
+    area_m2_source: 公式PROPERTY LIST記載の赤坂賃貸不動産土地面積
+    name: 赤坂賃貸不動産
+  - address: 全国各所
+    area_m2: 9880.53
+    area_m2_is_estimated: true
+    area_m2_note: 37,000 - 東京11物件27,119.47 = 9,880.53。高崎タワー21(8,216.80m2)等の非東京資産含む。
+    area_m2_source: 有報の不動産本部37千m2から公式PROPERTY LIST東京11物件を控除
+    name: その他賃貸不動産・合算残差
+  深川営業所: 東京都江東区越中島1丁目2番21号
   立川営業所: 東京都立川市富士見町1-14-5
 '9324':
   東京地区芝浦営業所:
