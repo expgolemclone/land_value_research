@@ -64,6 +64,35 @@
   東京本社: 東京都港区芝4丁目8番2号
   東京都合計: 東京都港区芝4丁目8番2号
   賃貸設備: 東京都港区芝4丁目8番2号
+'1776':
+  関東支店:
+  - address: 東京都新宿区余丁町13番27号
+    area_m2: 219.0
+    area_m2_is_estimated: true
+    area_m2_note: 近傍基準地価標準地(市谷甲良町35-2外)の地積219m2を代理値として採用。
+    area_m2_source: 基準地価標準地の地積による推定
+    name: 関東支店(余丁町)
+  - address: 東京都江戸川区西瑞江5丁目19番5号
+    area_m2: 100.0
+    area_m2_is_estimated: true
+    area_m2_note: 近傍公示地価標準地(西瑞江5-14-46)の地積100m2を代理値として採用。
+    area_m2_source: 公示地価標準地の地積による推定
+    name: 関東支店(東京営業所)
+  - address: 東京都町田市真光寺2丁目1番1号
+    area_m2: 157.0
+    area_m2_is_estimated: true
+    area_m2_note: 近傍公示地価標準地(真光寺1-18-10)の地積157m2を代理値として採用。
+    area_m2_source: 公示地価標準地の地積による推定
+    name: 関東支店(町田共同アスコン)
+  - address: 全国各所
+    area_m2: 27674.0
+    area_m2_is_estimated: true
+    area_m2_note: 28,150 - 219 - 100 - 157 = 27,674。関東支店配下の埼玉・千葉・神奈川拠点等。
+    area_m2_source: 有報の関東支店土地面積28,150m2から東京3拠点476m2を控除
+    name: 関東支店(東京都外各所・合算)
+'1793':
+  東京支店: 東京都港区南青山5丁目9番15号
+  東京本社: 東京都港区南青山5丁目9番15号
 '1803':
   NOVARE: 東京都江東区豊洲2丁目2番1号
   グリーンエネルギー事業本部:
@@ -135,6 +164,9 @@
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W7C5.pdf
     name: 本社（全国各所・合算残差）
   東京都合計: 東京都中央区京橋2丁目16番1号
+'1807':
+  本店: 東京都港区南麻布1丁目18番4号
+  関東支店: 東京都港区南麻布1丁目18番4号
 '1810':
   本社: 東京都中央区新川1丁目17番22号
   東京支店: 東京都中央区新川1丁目17番22号
@@ -153,6 +185,35 @@
     area_m2_note: 有報注記6で賃貸中の主要資産。個別所在地は有報から特定不可
     area_m2_source: 有報「主要な設備の状況」注記6
     name: 本店(賃貸物件・全国合算)
+'1822':
+  本 社:
+  - address: 東京都中央区新川1丁目24番4号
+    area_m2: 1167.0
+    area_m2_is_estimated: false
+    area_m2_source: 有報注記の本社賃貸中土地面積1,167m²
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3CM.pdf
+    name: 本社(新川)
+  - address: 全国各所
+    area_m2: 286548.0
+    area_m2_is_estimated: true
+    area_m2_note: 287,715 - 1,167 = 286,548。阿見町中央機材センター63,000m²等を含む全国合算残余。
+    area_m2_source: 有報の本社土地面積287,715m²から新川配分1,167m²を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3CM.pdf
+    name: 本社(その他保有土地・合算残余)
+  東京土木支店:
+  - address: 東京都中央区新富2丁目14番4号
+    area_m2: 415.0
+    area_m2_is_estimated: true
+    area_m2_note: 近傍標準地「中央5-7」(新富1-16-8)の地積415m²を代理値として採用。
+    area_m2_source: 公示地価標準地の地積による推定
+    name: 東京土木支店(新富)
+  - address: 全国各所
+    area_m2: 22581.0
+    area_m2_is_estimated: true
+    area_m2_note: 22,996 - 415 = 22,581。
+    area_m2_source: 有報の東京土木支店土地面積22,996m²から新富配分415m²を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3CM.pdf
+    name: 東京土木支店(その他保有土地・合算残余)
 '1826':
   本店:
   - address: 群馬県前橋市元総社町1-1-7
@@ -170,6 +231,24 @@
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W2PG.pdf
     name: 東京支店(賃借のみ)
   東京都合計: 東京都豊島区池袋2丁目48番1号
+'1827':
+  本店・東京本店:
+  - address: 東京都千代田区九段北4丁目2番28号
+    area_m2: 231.0
+    area_m2_is_estimated: true
+    area_m2_source: 公示地価標準地の地積による推定
+    name: 本社(NF九段)
+  - address: 東京都千代田区五番町4番7号
+    area_m2: 793.0
+    area_m2_is_estimated: true
+    area_m2_source: 有報の国内子会社設備NFエージェンシー土地面積
+    name: 東京本店(五番町)
+  - address: 全国各所
+    area_m2: 9248.0
+    area_m2_is_estimated: true
+    area_m2_note: 10,272 - 231 - 793 = 9,248
+    area_m2_source: 有報の本店・東京本店土地面積10,272m2から九段北231m2・五番町793m2を控除
+    name: 本店・東京本店(合算残余資産)
 '1833':
   投資開発事業本部:
   - address: 全国各所
@@ -189,6 +268,8 @@
 '1841':
   本社・町田営業所他: 東京都大田区南雪谷2丁目17番8号
   賃貸用不動産: 東京都中野区中央3丁目24番15号
+'1866':
+  東京本社: 東京都中央区銀座1丁目9番2号
 '1871':
   本社:
   - address: 東京都港区東新橋1丁目9番1号
@@ -221,6 +302,44 @@
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VZVW.pdf
     name: 東京土木支店・東京建築支店(土地/所在地短縮表示のため退避)
   東京都合計: 東京都港区東新橋1丁目9番1号
+'1882':
+  本社: 東京都港区六本木7丁目3番7号
+  関東支社:
+  - address: 東京都港区六本木7丁目3番7号
+    area_m2: 348.0
+    area_m2_is_estimated: true
+    area_m2_note: 本社536m²×関東支社273名/(本社148名+関東支社273名)=348m²。本社と同一ビル共有の按分。
+    area_m2_source: 有報の従業員数比按分による推定
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W59L.pdf
+    name: 関東支社(六本木オフィス)
+  - address: 関東地区各所
+    area_m2: 83916.0
+    area_m2_is_estimated: true
+    area_m2_note: 84,264 - 348 = 83,916。関東地区の施工設備・製造販売設備の合算残余。
+    area_m2_source: 有報の関東支社土地面積84,264m²から六本木配分348m²を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W59L.pdf
+    name: 関東支社(関東地区施工設備・製造販売設備等合算)
+'1885':
+  本社:
+  - address: 東京都新宿区西新宿3丁目7番1号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: 新宿パークタワー31階はテナント（東京ガス不動産所有）。土地非保有。
+    name: 本社(新宿パークタワー31階・テナント)
+  - address: 全国各所
+    area_m2: 708028.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報708,028m²全量。本社はテナントのため東京配分なし。賃貸中土地503,331m²含む。
+    area_m2_source: 有報第135期の本社土地面積708,028m²（テナントのため全量退避）
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4T6.pdf
+    name: 本社(賃貸中土地・その他全国合算)
+  東京支店: 東京都中央区日本橋室町4丁目1番6号
+  東日本建築支店:
+  - address: 東京都新宿区西新宿3丁目7番1号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: 有報13,604m²は賃借地面積（土地簿価0円）。自社保有地なし。
+    name: 東日本建築支店(新宿パークタワー31階・賃借地)
 '1887':
   本社:
   - address: 東京都港区虎ノ門4丁目3番13号
@@ -238,7 +357,21 @@
     area_m2_source: 有価証券報告書注記(本社に含む)から差分配分
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100WKKV.pdf
     name: つくば未来センター
-  東京支店: 東京都港区虎ノ門4丁目3番13号
+  東京支店:
+  - address: 東京都港区虎ノ門4丁目3番13号
+    area_m2: 326.68
+    area_m2_is_estimated: true
+    area_m2_note: 本社と同一住所のオフィス相当分。656.46×211/(213+211)=326.68。
+    area_m2_source: 本社オフィス面積の従業員数比按分
+    name: 東京支店(虎ノ門オフィス)
+  - address: 全国各所
+    area_m2: 55854.32
+    area_m2_is_estimated: true
+    area_m2_note: 56,181 - 326.68 = 55,854.32。有報注記6の賃貸土地残余。
+    area_m2_source: 有報の東京支店土地面積56,181m²から虎ノ門オフィス326.68m²を控除
+    name: 東京支店(賃貸土地・所在地未詳)
+'1899':
+  東京本社・東京本店: 東京都千代田区九段北3丁目2番4号
 '1911':
   住宅事業本部支店等:
   - address: 全国各所
@@ -275,6 +408,32 @@
     name: 本社(群馬倉庫)
 '1968':
   本社等: 東京都千代田区神田神保町2丁目4番地
+'1972':
+  本社:
+  - address: 東京都港区芝浦4丁目13番23号
+    area_m2: 822.0
+    area_m2_is_estimated: true
+    area_m2_source: 有報の東京側土地面積proxy
+    name: 本社(芝浦)
+  - address: 全国各所
+    area_m2: 8840.0
+    area_m2_is_estimated: true
+    area_m2_note: 9,662 - 822 = 8,840
+    area_m2_source: 有報の本社土地面積9,662m2から芝浦822m2を控除
+    name: 本社(その他合算)
+'2108':
+  本社 外:
+  - address: 東京都港区三田3丁目12番14号
+    area_m2: 891.09
+    area_m2_is_estimated: false
+    area_m2_source: 会社開示「固定資産の譲渡に関するお知らせ」記載の本社ビル土地面積
+    name: 本社 外(三田本社ビル)
+  - address: 全国各所
+    area_m2: 31042.13
+    area_m2_is_estimated: true
+    area_m2_note: 31,933.22 - 891.09 = 31,042.13。山口県下関市21,100m2・千葉県千葉市7,806m2等含む。
+    area_m2_source: 有報の本社外土地面積31,933.22m2から三田本社ビル891.09m2を控除
+    name: 本社 外(下関・千葉等・全国合算)
 '2120':
   本社:
   - address: 東京都千代田区麹町1丁目4番4号
@@ -293,6 +452,37 @@
   東京都合計: 東京都千代田区麹町1丁目4番4号
 '2207':
   八王子工場および東京研究所: 東京都八王子市石川町2973番2号
+'2264':
+  本社・その他:
+  - address: 東京都港区芝5丁目33番1号
+    area_m2: 6135.55
+    area_m2_is_estimated: false
+    area_m2_source: 田町駅西口駅前地区開発計画の計画地面積
+    area_m2_source_url: https://www.morinagamilk.co.jp/release/newsentry-4405.html
+    name: 本社・その他(旧東京本社跡地)
+  - address: 全国各所
+    area_m2: 976306.45
+    area_m2_is_estimated: true
+    area_m2_note: 982,442 - 6,135.55 = 976,306.45。有報「目黒区、座間市・他」の合算残余。
+    area_m2_source: 有報の本社・その他土地面積982,442m²から旧本社跡地6,135.55m²を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4TH.pdf
+    name: 本社・その他(目黒区・座間市・その他合算)
+'2288':
+  東日本営業部:
+  - address: 東京都中央区築地4丁目7番5号
+    area_m2: 1461.0
+    area_m2_is_estimated: true
+    area_m2_note: 同一住居表示の公示地価標準地「中央5-42」の地積1,461m2を代理値として採用。
+    area_m2_source: 公示地価標準地の地積による推定
+    name: 東日本営業部(中央・築地)
+  - address: 全国各所
+    area_m2: 4031.0
+    area_m2_is_estimated: true
+    area_m2_note: 5,492 - 1,461 = 4,031。宇都宮・千葉の非東京拠点合算。
+    area_m2_source: 有報の東日本営業部土地面積5,492m2から築地1,461m2を控除
+    name: 東日本営業部(宇都宮・千葉合算)
+'2332':
+  本社: 東京都港区芝浦3丁目1番1号
 '2429':
   ㈱ワールドレジデンシャル:
   - address: 東京都港区白金1丁目25番21号
@@ -366,6 +556,8 @@
     area_m2_source: 有報の土地面積(23,290.03㎡)から上記配分分を控除した残差
     area_m2_source_url: https://world-hd.co.jp/app/wp-content/uploads/2025/03/32TH_Annual-Securities-Report.pdf
     name: その他（所在地非開示・残差）
+'2464':
+  本社: 東京都千代田区二番町3番地
 '2579':
   本社他:
   - address: 東京都港区赤坂9丁目7番1号
@@ -381,6 +573,21 @@
     area_m2_note: 1,394,000 - 132 = 1,393,868
     area_m2_source: 有報の合計面積から東京推定面積を控除
     name: 本社他(全国各所・合算)
+'3105':
+  本社:
+  - address: 東京都中央区日本橋人形町2丁目31番11号
+    area_m2: 2409.0
+    area_m2_is_estimated: true
+    area_m2_source: 公示地価標準地の地積による推定
+    name: 本社(人形町)
+  - address: 全国各所
+    area_m2: 654591.0
+    area_m2_is_estimated: true
+    area_m2_note: 657,000 - 2,409 = 654,591
+    area_m2_source: 有報の本社土地面積657千m2から人形町2,409m2を控除
+    name: 本社(全国子会社貸与資産等・合算)
+'3156':
+  本社: 東京都港区港南2丁目12番32号
 '3238':
   本社: 東京都千代田区飯田橋3丁目3番7号
   東京都合計: 東京都千代田区飯田橋3丁目3番7号
@@ -400,14 +607,54 @@
     area_m2_source: 有報の合計面積から東京推定面積を控除
     name: 本社(全国資産・合算)
 '3494':
+  ハイホーム本陣: 東京都中野区本町6丁目27番14号
   マリオン浅草雷門他2棟: 東京都台東区雷門2-15-2
   マリオン田端: 東京都荒川区西尾久4-6-10
   寿3丁目倉庫: 東京都台東区寿3丁目
   門前仲町弐番館他20棟: 東京都江東区永代2-32-3
 '3562':
-  城北サービスセンター: 東京都文京区湯島2丁目7番16号
-  城南サービスセンター城西サービスセンター: 東京都渋谷区幡ケ谷1丁目34番14号
-  新橋オフィス: 東京都港区新橋2丁目13番8号
+  城北サービスセンター:
+  - address: 東京都文京区湯島2丁目7番16号
+    area_m2: 152.88
+    area_m2_is_estimated: true
+    area_m2_note: プリ・テックビル4F。募集面積46.24坪=152.88m²。
+    area_m2_source: オフィスビル募集情報の階面積
+    area_m2_source_url: https://www.chintai-jimusho.com/building/22253/
+    name: 城北SC(プリ・テックビル4F)
+  - address: 全国各所
+    area_m2: 13164.12
+    area_m2_is_estimated: true
+    area_m2_note: 13,317 - 152.88 = 13,164.12。
+    area_m2_source: 有報の城北SC土地面積13,317m²から東京配分152.88m²を控除
+    name: 城北SC(合算残余)
+  城南サービスセンター城西サービスセンター:
+  - address: 東京都渋谷区幡ケ谷1丁目34番14号
+    area_m2: 217.25
+    area_m2_is_estimated: true
+    area_m2_note: 宝ビル6F。募集面積65.72坪=217.25m²。
+    area_m2_source: オフィスビル募集情報の階面積
+    area_m2_source_url: https://www.officetar.jp/building/4730/133410/
+    name: 城南城西SC(宝ビル6F)
+  - address: 全国各所
+    area_m2: 4464.75
+    area_m2_is_estimated: true
+    area_m2_note: 4,682 - 217.25 = 4,464.75。
+    area_m2_source: 有報の城南城西SC土地面積4,682m²から東京配分217.25m²を控除
+    name: 城南城西SC(合算残余)
+  新橋オフィス:
+  - address: 東京都港区新橋2丁目13番8号
+    area_m2: 252.89
+    area_m2_is_estimated: true
+    area_m2_note: 新橋東和ビル4F。募集面積76.50坪=252.89m²。
+    area_m2_source: オフィスビル募集情報の階面積
+    area_m2_source_url: https://www.chintai-jimusho.com/building/7668/
+    name: 新橋オフィス(新橋東和ビル4F)
+  - address: 全国各所
+    area_m2: 4993.11
+    area_m2_is_estimated: true
+    area_m2_note: 5,246 - 252.89 = 4,993.11。
+    area_m2_source: 有報の新橋オフィス土地面積5,246m²から東京配分252.89m²を控除
+    name: 新橋オフィス(合算残余)
   本社、営業所他:
   - address: 東京都千代田区内幸町1丁目5番2号
     area_m2: 523.3
@@ -456,6 +703,8 @@
   東京都合計: 東京都港区港南2丁目15番1号
 '3680':
   本社: 東京都千代田区富士見1丁目3番11号
+'3690':
+  東京本社: 東京都千代田区有楽町2丁目2番1号
 '3856':
   本社:
   - address: 東京都品川区東品川2丁目2番4号
@@ -503,6 +752,53 @@
     area_m2_source: 有報の面積値(12千m2)を静岡側に割当(所在地割当が推定)
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W2Y3.pdf
     name: 本社他(用宗・保有土地/合算)
+'3901':
+  本社:
+  - address: 東京都千代田区永田町2丁目11番1号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: 山王パークタワー14Fはテナント。有報注記で本社事務所を賃借と明記。土地非保有。
+    name: 本社(永田町・テナント)
+  - address: 神奈川県厚木市森の里青山14番10号
+    area_m2: 4416.52
+    area_m2_is_estimated: false
+    area_m2_source: 公式リリース記載のベンチマークセンター敷地面積
+    area_m2_source_url: https://www.marklines.com/ja/news/2785739
+    name: ベンチマークセンター(所有地)
+'3998':
+  本社: 東京都千代田区内神田1丁目14番10号
+'4004':
+  本社:
+  - address: 東京都港区東新橋1丁目9番1号
+    area_m2: 5000.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報の子会社㈱レゾナック本社(東京都港区)土地5千m²をproxy採用。
+    area_m2_source: 有報の国内子会社欄「㈱レゾナック本社(東京都港区)」土地面積5千m²
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHA9.pdf
+    name: 本社(東新橋)
+  - address: 全国各所
+    area_m2: 5225000.0
+    area_m2_is_estimated: true
+    area_m2_note: 5,230,000 - 5,000 = 5,225,000。有報注記「国内子会社に賃貸中の設備を含む」の全国合算残余。
+    area_m2_source: 有報の本社土地面積5,230千m²から東京配分5千m²を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHA9.pdf
+    name: 本社(国内子会社貸与資産・全国合算)
+'4021':
+  本社:
+  - address: 東京都中央区日本橋2丁目5番1号
+    area_m2: 216.49
+    area_m2_is_estimated: true
+    area_m2_note: 日本橋高島屋三井ビル18・19F入居。敷地6,023.84m²×占有床5,321.19m²/延床148,064.05m²=216.49m²。
+    area_m2_source: ビル敷地面積と占有床面積比による推定
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4NI.pdf
+    name: 本社(日本橋高島屋三井ビル)
+  - address: 全国各所
+    area_m2: 131783.51
+    area_m2_is_estimated: true
+    area_m2_note: 132,000 - 216.49 = 131,783.51。有報「その他設備」の全国合算残余。
+    area_m2_source: 有報の本社土地面積132,000m²から日本橋配分216.49m²を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4NI.pdf
+    name: 本社(その他全国合算)
 '4031':
   本社:
   - address: 東京都渋谷区神南1丁目22番1号
@@ -544,6 +840,19 @@
     area_m2_is_estimated: false
     area_m2_note: 本社は興和一橋ビルのテナント（日鉄興和不動産所有）。113.6千m²は全国の管理部門帰属資産。
     name: 本社(管理部門資産・全国合算)
+'4064':
+  本社:
+  - address: 東京都港区港南2丁目16番2号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: 太陽生命品川ビルはテナント。土地非保有。
+    name: 本社(品川・テナント)
+  - address: 全国各所
+    area_m2: 739000.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報739千m2全量。テナントのため東京配分なし。
+    area_m2_source: 有報の本社土地面積739千m2(テナントのため全量退避)
+    name: 本社(全国工場等・合算)
 '4182':
   本社:
   - address: 東京都千代田区丸の内2-5-2
@@ -564,17 +873,95 @@
 '4220':
   本社等: 東京都千代田区神田淡路町2丁目101番地
   研究開発センター: 東京都大田区南六郷2丁目38番9号
+'4247':
+  東京営業所:
+  - address: 東京都千代田区九段南3丁目7番14号
+    area_m2: 139.72
+    area_m2_is_estimated: true
+    area_m2_note: 3営業所掲載面積比按分。328.05×196.52/461.41=139.72。
+    area_m2_source: 公式サイト掲載の各営業所面積比による按分
+    name: 東京営業所(九段南)
+  - address: 全国各所
+    area_m2: 188.33
+    area_m2_is_estimated: true
+    area_m2_note: 328.05 - 139.72 = 188.33。大阪営業所・福岡営業所の合算。
+    area_m2_source: 有報の東京営業所他2営業所328.05m2から東京配分139.72m2を控除
+    name: 他2営業所(大阪・福岡合算)
 '4272':
   ファインケミカルズ研究所: 東京都北区志茂3-31-12
+  本社:
+  - address: 東京都千代田区丸の内2丁目1番1号
+    area_m2: 756.5
+    area_m2_is_estimated: true
+    area_m2_note: 明治安田生命ビル19F・20F入居。敷地11,346.78m²×(2/30)=756.5m²。
+    area_m2_source: ビル敷地面積とフロア按分による推定
+    area_m2_source_url: https://office.mec.co.jp/search/detail/010025/
+    name: 本社(明治安田生命ビル)
+  - address: 全国各所
+    area_m2: 31243.5
+    area_m2_is_estimated: true
+    area_m2_note: 32,000 - 756.5 = 31,243.5。有報注記の米沢工場用地24,000m²等を含む全国合算残余。
+    area_m2_source: 有報の本社土地面積32,000m²から丸の内配分756.5m²を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W41Y.pdf
+    name: 本社(米沢工場用地等・東京外合算)
   東京工場: 東京都足立区新田1-23-1
+'4274':
+  本社工場: 東京都あきる野市菅生1847番地
+'4381':
+  本社: 東京都千代田区神田練塀町3番
 '4548':
   中央研究所及びCMC研究所: 東京都東大和市立野3丁目1253
 '4619':
   本社 他: 東京都北区王子3丁目23番2号
+'4631':
+  本社:
+  - address: 東京都中央区日本橋3丁目7番20号
+    area_m2: 1376.0
+    area_m2_is_estimated: true
+    area_m2_note: ディーアイシービル(DIC自社ビル)。近傍公示地「中央5-8」(日本橋3-11-1)の地積1,376m²を代理値として採用。
+    area_m2_source: 近傍公示地価標準地の地積による推定
+    area_m2_source_url: https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131020508.html
+    name: 本社(日本橋・ディーアイシービル)
+  - address: 全国各所
+    area_m2: 87624.0
+    area_m2_is_estimated: true
+    area_m2_note: 89,000 - 1,376 = 87,624。有報注記「工場建設用地、厚生施設、物流施設等」の全国合算残余。
+    area_m2_source: 有報の本社土地面積89,000m²から日本橋配分1,376m²を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VH8S.pdf
+    name: 本社(本社管轄資産・全国合算)
 '4801':
   亀有: 東京都葛飾区亀有3-26-1
+  本社:
+  - address: 東京都中央区新川1丁目21番2号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: 茅場町タワーはテナント（有報注記3で本社建物は賃借設備と明記）。土地非保有。
+    name: 本社(茅場町タワー・テナント)
+  - address: 全国各所
+    area_m2: 29685.7
+    area_m2_is_estimated: true
+    area_m2_note: 有報29,685.7m²全量。本社はテナントのため東京配分なし。福利厚生設備等含む。
+    area_m2_source: 有報の本社土地面積29,685.7m²（テナントのため全量退避）
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W21S.pdf
+    name: 本社(福利厚生施設等・全国合算)
+'4840':
+  本社: 東京都港区虎ノ門1丁目2番3号
 '4951':
   本社・首都圏支店: 東京都新宿区下落合1丁目4番10号
+'5010':
+  本社:
+  - address: 東京都中央区京橋2丁目5番18号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: 京橋創生館10Fはテナント（第一生命保険所有）。有報で本社建物を賃借と明記。土地非保有。
+    name: 本社(京橋創生館10F・テナント)
+  - address: 全国各所
+    area_m2: 2000.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報2,000m²全量。本社はテナントのため東京配分なし。
+    area_m2_source: 有報の本社土地面積2,000m²（テナントのため全量退避）
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VIKL.pdf
+    name: 本社(全国合算)
 '5011':
   本社:
   - address: 東京都千代田区九段北4丁目3番29号
@@ -623,6 +1010,24 @@
 '5189':
   本社他: 東京都渋谷区笹塚1丁目48番3号 笹塚太陽ビル5階
   笹塚ショッピングモール他: 東京都渋谷区笹塚1丁目21番17号
+'5199':
+  本社ビル: 東京都千代田区神田錦町3丁目19番1号
+'5201':
+  本社:
+  - address: 東京都千代田区丸の内1丁目5番1号
+    area_m2: 190.4
+    area_m2_is_estimated: true
+    area_m2_note: 新丸の内ビル30F入居。敷地9,997.44m²×基準階3,727.01m²/延床195,685.43m²=190.4m²。
+    area_m2_source: ビル敷地面積と占有床面積比による推定
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VI0L.pdf
+    name: 本社(新丸の内ビル)
+  - address: 全国各所
+    area_m2: 408809.6
+    area_m2_is_estimated: true
+    area_m2_note: 409,000 - 190.4 = 408,809.6。有報注記「関係会社に賃貸している土地等を含む」の全国合算残余。
+    area_m2_source: 有報の本社土地面積409,000m²から丸の内配分190.4m²を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VI0L.pdf
+    name: 本社(関係会社賃貸土地等・全国合算)
 '5202':
   本社・他営業所等:
   - address: 東京都港区三田3丁目5番27号
@@ -653,12 +1058,44 @@
     area_m2_note: 117,000.0 - 993.0 = 116,007.0
     area_m2_source: 有報の合計面積から東京推定面積を控除
     name: 本社(全国資産・合算)
+'5271':
+  東京工場: 東京都西多摩郡瑞穂町大字富士山栗原新田161番地1
 '5388':
   本社: 東京都千代田区岩本町1丁目10番5号
   本社その他(推定): 東京都千代田区岩本町1丁目10番5号
+'5393':
+  本社:
+  - address: 東京都中央区八丁堀1丁目6番1号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: PMO八重洲通は野村不動産の賃貸物件。ニチアスはテナント。土地非保有。
+    name: 本社(八丁堀・テナント)
+  - address: 全国各所
+    area_m2: 307000.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報307,000m²全量。本社はテナントのため東京配分なし。子会社貸与資産295,000m²含む。
+    area_m2_source: 有報の本社土地面積307,000m²（テナントのため全量退避）
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3DV.pdf
+    name: 本社(子会社貸与資産・その他全国合算)
+  東京支社: 東京都中央区八丁堀1丁目6番1号
+'5411':
+  本社:
+  - address: 東京都千代田区内幸町2丁目2番3号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: 日比谷国際ビルはテナント。土地非保有。
+    name: 本社(日比谷国際ビル・テナント)
+  - address: 全国各所
+    area_m2: 23386000.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報23,386千m2全量。テナントのため東京配分なし。
+    area_m2_source: 有報の本社土地面積23,386千m2(テナントのため全量退避)
+    name: 本社(全国製鉄所等・合算)
 '5423':
   本社: 東京都千代田区霞が関3丁目7番1号
   東京都合計: 東京都千代田区霞が関3丁目7番1号
+'5458':
+  本社工場: 東京都板橋区新河岸1丁目1番1号
 '5480':
   本社等:
   - address: 東京都中央区京橋1丁目5番8号
@@ -674,6 +1111,21 @@
     area_m2_note: 191,169 - 930.0 = 190,239.0
     area_m2_source: 有報の合計面積から東京推定面積を控除
     name: 本社等(全国合算)
+'5491':
+  板橋工場: 東京都板橋区舟渡4丁目10番1号
+'5563':
+  リケン工業㈱本社・工場:
+  - address: 東京都千代田区岩本町3丁目11番9号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: KDX岩本町ビル6Fはテナント。土地非保有。
+    name: リケン工業本社(岩本町・テナント)
+  - address: 全国各所
+    area_m2: 7000.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報7千m2全量。東京本社はテナントのため東京配分なし。秋田工場(北秋田市綴子字作坂314-5)が主。
+    area_m2_source: 有報のリケン工業本社・工場土地面積7千m2(テナントのため全量退避)
+    name: リケン工業秋田工場等(全国合算)
 '5706':
   本店:
   - address: 東京都品川区大崎1丁目11番1号
@@ -765,8 +1217,22 @@
     area_m2_note: 48,112.14 - 274.99 = 47,837.15
     area_m2_source: 有報の合計面積から東京推定面積を控除
     name: 本社(子会社貸与資産等・合算)
+'6093':
+  本社: 東京都千代田区大手町2丁目2番1号
 '6140':
-  本社他: 東京都千代田区丸の内1丁目4番1号
+  本社他:
+  - address: 東京都千代田区紀尾井町4番1号
+    area_m2: 1.0
+    area_m2_is_estimated: true
+    area_m2_note: ニューオータニガーデンコートはテナント。有報で本社事務所の賃借を明記。便宜値1.0m²。
+    area_m2_source: 有報注記「本社・支店及び営業所の事務所の賃借」に基づくテナント判定。1.0m²は便宜値
+    name: 本社(紀尾井町・テナント)
+  - address: 山梨県韮崎市富士見ヶ丘2丁目1番11号
+    area_m2: 22000.0
+    area_m2_is_estimated: false
+    area_m2_note: 有報注記「山梨旭ダイヤモンド工業への貸与中の土地22千m²」。
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100WDPB.pdf
+    name: 山梨旭ダイヤモンド工業(貸与土地)
 '6181':
   お台場店:
   - address: 東京都江東区青海2丁目5番10号
@@ -783,10 +1249,29 @@
     area_m2: 0.0
     area_m2_note: 賃借設備。他16店舗との合算床面積2,983.82㎡は賃借床面積であり土地面積ではない
     name: 銀座店(賃借のみ)
+'6305':
+  本社:
+  - address: 東京都台東区東上野2丁目16番1号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: 上野イーストタワーはテナント（日本ビルファンド投資法人所有）。土地非保有。
+    name: 本社(上野イーストタワー・テナント)
+  - address: 全国各所
+    area_m2: 607000.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報607,000m²全量。本社はテナントのため東京配分なし。日立建機日本向け賃貸526千m²含む。
+    area_m2_source: 有報の本社土地面積607,000m²（テナントのため全量退避）
+    area_m2_source_url: https://www.hitachicm.com/content/dam/hitachicm/global/ja/ir/library/securities-report/docs/20250624_yuho_ja.pdf
+    name: 本社(日立建機日本向け賃貸・その他全国合算)
 '6343':
   本社・その他: 東京都千代田区神田東松下町17番地
+'6360':
+  本社: 東京都千代田区内神田3丁目14番8号
 '6396':
   本社・玉川工場: 東京都大田区下丸子2丁目36-40
+'6497':
+  府中工場: 東京都府中市西原町1丁目3番
+  賃貸不動産: 東京都府中市分梅町1丁目16番15号
 '6675':
   本社:
   - address: 東京都港区白金1丁目17番3号
@@ -853,6 +1338,7 @@
     name: 本社(全国各所・合算)
 '7042':
   世田谷オフィス: 東京都世田谷区瀬田3丁目15番10号
+  本社: 東京都港区南青山1丁目1番1号
   渋谷オフィス: 東京都渋谷区渋谷2丁目15番1号
 '7414':
   東京支店:
@@ -915,10 +1401,24 @@
     area_m2_source: 有報注記の賃貸部分
     name: 賃貸用建物(賃貸部分・合算)
 '7567':
+  本社: 東京都千代田区外神田2丁目9番10号
   西東京営業所: 東京都昭島市玉川町3-10-1
 '7602':
-  本社: 東京都千代田区紀尾井町4番1号
+  本社:
+  - address: 東京都千代田区紀尾井町4番1号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: ニューオータニガーデンコート(新紀尾井町ビル2F)はテナント。ニュー・オータニ所有の賃貸オフィスビル。土地非保有。
+    name: 本社(紀尾井町・テナント)
+  - address: 全国各所
+    area_m2: 16465.57
+    area_m2_is_estimated: true
+    area_m2_note: 有報16,465.57m²全量。本社はテナントのため東京配分なし。
+    area_m2_source: 有報の本社土地面積16,465.57m²（テナントのため全量退避）
+    name: 本社(全国合算)
   東京都合計: 東京都千代田区紀尾井町4番1号
+'7614':
+  ㈱オーエムツーネットワーク: 東京都港区芝大門2丁目4番7号
 '7815':
   新木場リサイクリング: 東京都江東区新木場2丁目11番1号
   本社: 東京都江東区新木場2丁目11番1号
@@ -937,8 +1437,67 @@
     area_m2_note: 58,000 - 2,457.45 = 55,542.55
     area_m2_source: 有報の合計面積から東京推定面積を控除
     name: 本社(賃貸設備・合算)
+'7955':
+  東京支社 他2支社、:
+  - address: 東京都千代田区内神田3丁目6番2号
+    area_m2: 484.29
+    area_m2_is_estimated: true
+    area_m2_source: アーバンネット神田ビル敷地面積
+    name: 東京支社(内神田)
+  - address: 全国各所
+    area_m2: 8114.71
+    area_m2_is_estimated: true
+    area_m2_note: 8,599 - 484.29 = 8,114.71
+    area_m2_source: 有報の東京支社他土地面積8,599m2から内神田484.29m2を控除
+    name: 他2支社・4支店(全国合算)
+'8059':
+  本社管轄:
+  - address: 東京都千代田区神田駿河台4丁目6番地
+    area_m2: 438.0
+    area_m2_is_estimated: true
+    area_m2_note: 御茶ノ水ソラシティ17Fはテナント。近傍標準地(千代田5-26)地積438m2を代理値として採用。
+    area_m2_source: 公示地価標準地の地積による推定
+    name: 本社管轄(神田駿河台)
+  - address: 全国各所
+    area_m2: 10662.0
+    area_m2_is_estimated: true
+    area_m2_note: 11,100 - 438 = 10,662。賃貸用資産・太陽光発電・ESCO事業資産等含む。
+    area_m2_source: 有報の本社管轄土地面積11,100m2から神田駿河台438m2を控除
+    name: 本社管轄(賃貸用資産・太陽光等・全国合算)
 '8066':
-  その他賃貸資産等: 東京都千代田区丸の内1-6-5
+  その他賃貸資産等:
+  - address: 東京都千代田区丸の内1丁目6番5号
+    area_m2: 598.0
+    area_m2_is_estimated: true
+    area_m2_note: 丸の内北口ビルディング2F。敷地15,861.71m²×基準階平均1,479.95m²/有効面積39,266.90m²=598m²。
+    area_m2_source: ビル敷地面積と1フロア面積比による推定
+    area_m2_source_url: https://office.mec.co.jp/search/detail/011416/
+    name: その他賃貸資産等(東京本社)
+  - address: 全国各所
+    area_m2: 52402.0
+    area_m2_is_estimated: true
+    area_m2_note: 53,000 - 598 = 52,402。介護施設、給油施設、工場、充填所、事務所等の全国合算残余。
+    area_m2_source: 有報のその他賃貸資産等53,000m²から東京配分598m²を控除
+    area_m2_source_url: https://www.mitani-corp.co.jp/ir/library/20250630ir.pdf
+    name: その他賃貸資産等(全国賃貸資産等・合算残余)
+'8091':
+  本社:
+  - address: 東京都品川区東品川2丁目2番20号
+    area_m2: 376.4
+    area_m2_is_estimated: true
+    area_m2_note: 天王洲オーシャンスクエア。敷地8,248.09m²×賃借面積2,779m²/延床60,904.09m²=376.4m²。
+    area_m2_source: ビル敷地面積と賃借面積按分による推定
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W743.pdf
+    name: 本社(東品川・賃借本社相当)
+  - address: 全国各所
+    area_m2: 26623.6
+    area_m2_is_estimated: true
+    area_m2_note: 27,000 - 376.4 = 26,623.6。有報注記の賃貸設備27,000m²の全国合算残余。
+    area_m2_source: 有報の本社賃貸設備27,000m²から東品川配分376.4m²を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W743.pdf
+    name: 本社(全国貸与資産・合算)
+'8103':
+  本店: 東京都千代田区丸の内3丁目3番1号
 '8131':
   本社事務所 他:
   - address: 東京都中央区京橋3丁目1-1
@@ -972,6 +1531,8 @@
     name: 本社事業所 他(全国・合算)
   東京都合計: 東京都中央区京橋3丁目1-1
   ＶＩＰ大島 他: 東京都江東区大島1丁目1-5
+'8158':
+  本社: 東京都中央区日本橋3丁目6番2号
 '8181':
   上野店:
   - address: 東京都台東区池之端1丁目4番1号
@@ -994,9 +1555,55 @@
     name: 上野賃貸不動産(その他地域・合算)
   東京都合計: 東京都台東区池之端1丁目4番1号
 '8253':
-  本社他: 東京都豊島区東池袋3-1-1
+  本社他:
+  - address: 東京都豊島区東池袋3丁目1番1号
+    area_m2: 181.0
+    area_m2_is_estimated: true
+    area_m2_note: サンシャイン60・52F入居。敷地54,687m2×基準階1,943.6m2/延床585,895m2=181m2。
+    area_m2_source: サンシャインシティ敷地面積と占有床面積比による推定
+    name: 本社(池袋・サンシャイン60)
+  - address: 群馬県渋川市赤城町南赤城山892
+    area_m2: 1200000.0
+    area_m2_is_estimated: true
+    area_m2_note: 赤城自然園は約120ha=1,200,000m2。クレディセゾン運営。
+    area_m2_source: 赤城自然園公式サイト記載の面積(約120ha)
+    area_m2_source_url: https://akagishizenen.jp/english/
+    name: 赤城自然園
+  - address: 全国各所
+    area_m2: 41611.0
+    area_m2_is_estimated: true
+    area_m2_note: 1,241,792 - 181 - 1,200,000 = 41,611。
+    area_m2_source: 有報の本社他土地面積1,241,792m2から池袋181m2・赤城1,200,000m2を控除
+    name: 本社他(残余・全国各所)
+'8585':
+  本社部門:
+  - address: 東京都千代田区麹町5丁目2番1号
+    area_m2: 97.0
+    area_m2_is_estimated: true
+    area_m2_note: K-WINGビル基準階97m2を代理値として採用。
+    area_m2_source: JLL物件情報のK-WINGビル基準階面積
+    area_m2_source_url: https://www.jllproperty.jp/listings/k-wing-building-office
+    name: 本社部門(麹町本社)
+  - address: 全国各所
+    area_m2: 21903.0
+    area_m2_is_estimated: true
+    area_m2_note: 22,000 - 97 = 21,903。本社別館(埼玉県ふじみ野市)等の合算。
+    area_m2_source: 有報の本社部門土地面積22千m2から麹町97m2を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W0EA.pdf
+    name: 本社部門(本社別館等・合算)
 '8912':
-  本社: 東京都新宿区西新宿6丁目5番1号
+  本社:
+  - address: 東京都新宿区西新宿6丁目5番1号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: 新宿アイランドタワー7Fはテナント。都市再生機構(UR)所有の賃貸オフィスビル。土地非保有。
+    name: 本社(新宿アイランドタワー・テナント)
+  - address: 全国各所
+    area_m2: 1358.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報1,358m²全量。本社はテナントのため東京配分なし。
+    area_m2_source: 有報の本社土地面積1,358m²（テナントのため全量退避）
+    name: 本社(全国合算)
 '8944':
   原宿プラザビル:
   - address: 東京都渋谷区千駄ケ谷3丁目16番1号
@@ -1012,6 +1619,33 @@
     area_m2_note: 122,549.73 - 321.0 = 122,228.73
     area_m2_source: 有報の合計面積から東京推定面積を控除
     name: 原宿プラザビル(他・合算)
+'9025':
+  東日本支店:
+  - address: 東京都中央区銀座6丁目10番1号
+    area_m2: 130.0
+    area_m2_is_estimated: true
+    area_m2_note: GINZA SIX 7F入居。近傍公示地(中央5-2)地積260m2を2支店で均等按分。
+    area_m2_source: 公示地価標準地の地積を2支店均等按分
+    name: 東日本支店(銀座統括拠点)
+  - address: 全国各所
+    area_m2: 174301.0
+    area_m2_is_estimated: true
+    area_m2_note: 174,431 - 130 = 174,301。府中・稲城・山梨・長野等の全国拠点合算。
+    area_m2_source: 有報の東日本支店土地面積174,431m2から銀座130m2を控除
+    name: 東日本支店(全国合算)
+  関東・北日本支店:
+  - address: 東京都中央区銀座6丁目10番1号
+    area_m2: 130.0
+    area_m2_is_estimated: true
+    area_m2_note: GINZA SIX 7F入居。近傍公示地(中央5-2)地積260m2を2支店で均等按分。
+    area_m2_source: 公示地価標準地の地積を2支店均等按分
+    name: 関東・北日本支店(銀座統括拠点)
+  - address: 全国各所
+    area_m2: 133353.0
+    area_m2_is_estimated: true
+    area_m2_note: 133,483 - 130 = 133,353。北海道・新潟・茨城等の全国拠点合算。
+    area_m2_source: 有報の関東・北日本支店土地面積133,483m2から銀座130m2を控除
+    name: 関東・北日本支店(全国合算)
 '9057':
   関東事業部: 東京都港区芝1丁目12番7号
 '9059':
@@ -1066,6 +1700,72 @@
     area_m2_source_url: https://www.iino.co.jp/kaiun/service/estate/buil_ns.html
     name: 本社(NS虎ノ門ビル)
   東京都合計: 東京都千代田区内幸町2丁目1番1号
+'9173':
+  その他:
+  - address: 全国各所
+    area_m2: 1163686.0
+    area_m2_is_estimated: false
+    name: その他(大島・八丈島・伊東・各代理店の合算)
+'9213':
+  本社: 東京都渋谷区渋谷3丁目27番11号
+'9301':
+  本店:
+  - address: 東京都中央区日本橋1丁目19番1号
+    area_m2: 5265.97
+    area_m2_is_estimated: false
+    area_m2_source: 日本橋ダイヤビルディング建替計画の敷地面積
+    area_m2_source_url: https://www.mitsubishi-logistics.co.jp/news/2024/news20241220.pdf
+    name: 本店(日本橋ダイヤビルディング)
+  - address: 全国各所
+    area_m2: 98734.03
+    area_m2_is_estimated: true
+    area_m2_note: 104,000 - 5,265.97 = 98,734.03。有報「ほか所在」の合算資産。
+    area_m2_source: 有報の本店土地面積104千m²から日本橋配分5,265.97m²を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W207.pdf
+    name: 本店(ほか所在・合算)
+  東京支店:
+  - address: 東京都中央区新川1丁目28番24号
+    area_m2: 458.0
+    area_m2_is_estimated: true
+    area_m2_note: 近傍標準地「13102-005-021」(新川2-101-10外)の地積458m²を代理値として採用。
+    area_m2_source: 公示地価標準地の地積による推定
+    area_m2_source_url: https://www.reinfolib.mlit.go.jp/
+    name: 東京支店(新川)
+  - address: 東京都江東区青海4丁目7番6号
+    area_m2: 152542.0
+    area_m2_is_estimated: true
+    area_m2_note: 153,000 - 458 = 152,542。東京支店配下の湾岸物流拠点群の合算残余。
+    area_m2_source: 有報の東京支店土地面積153千m²から新川配分458m²を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W207.pdf
+    name: 東京支店(青海営業所ほか)
+'9302':
+  箱崎ビルほか:
+  - address: 東京都中央区日本橋箱崎町19番21号
+    area_m2: 24230.35
+    area_m2_is_estimated: false
+    area_m2_source: 公式環境計画書記載のMSH日本橋箱崎ビル敷地面積
+    name: 箱崎ビルほか(MSH日本橋箱崎ビル・リバー＆タワー)
+  - address: 東京都港区西新橋3丁目20番1号
+    area_m2: 1341.86
+    area_m2_is_estimated: false
+    area_m2_source: 公的建築データの御成門M-SQUARE敷地面積
+    name: 箱崎ビルほか(MSC御成門ビル・パークアクシス御成門)
+  - address: 東京都江東区佐賀2丁目8番20号
+    area_m2: 4083.91
+    area_m2_is_estimated: false
+    area_m2_source: 公的建築データのMSC深川ビル敷地面積
+    name: 箱崎ビルほか(MSC深川ビル)
+  - address: 東京都江東区佐賀2丁目9番8号
+    area_m2: 7383.24
+    area_m2_is_estimated: false
+    area_m2_source: 公的建築データのMSC深川ビル2号館敷地面積
+    name: 箱崎ビルほか(MSC深川ビル2号館)
+  - address: 全国各所
+    area_m2: 18960.64
+    area_m2_is_estimated: true
+    area_m2_note: 56,000 - 37,039.36 = 18,960.64。MSCセンタービル・ポートヴィラ靱公園等の残余。
+    area_m2_source: 有報の箱崎ビルほか土地面積56千m2から確認済み4街区37,039.36m2を控除
+    name: 箱崎ビルほか(MSCセンタービル・ポートヴィラ靱公園等の残余)
 '9303':
   本店:
   - address: 東京都江東区青海3丁目2番17号
@@ -1121,14 +1821,117 @@
   東京都合計: 東京都江東区青海3丁目2番17号
 '9305':
   立川営業所: 東京都立川市富士見町1-14-5
+'9324':
+  東京地区芝浦営業所:
+  - address: 東京都大田区平和島3丁目6番1号
+    area_m2: 14878.0
+    area_m2_is_estimated: false
+    area_m2_source: 公式事例ページ記載の平和島営業所敷地面積
+    name: 平和島営業所
+  - address: 東京都江東区東雲2丁目13番35号
+    area_m2: 10863.95
+    area_m2_is_estimated: true
+    area_m2_note: 3,286坪x3.305785=10,863.95m2
+    area_m2_source: 公式掲載FISCOレポート記載の東雲営業所敷地面積(坪換算)
+    name: 東雲営業所
+  - address: 東京都江東区辰巳3丁目6番3号
+    area_m2: 5202.9
+    area_m2_is_estimated: false
+    area_m2_source: 公式プレスリリース記載の辰巳倉庫敷地面積
+    name: 東雲営業所辰巳倉庫
+  - address: 全国各所
+    area_m2: 21055.15
+    area_m2_is_estimated: true
+    area_m2_note: 52,000 - 14,878 - 10,863.95 - 5,202.90 = 21,055.15
+    area_m2_source: 有報の東京地区芝浦営業所52千m2から確認済み3拠点を控除
+    name: その他東京物流拠点・合算残余
 '9351':
   本社: 東京都中央区晴海1丁目8番8号
   東京支店: 東京都江東区有明4丁目3番22号
+'9364':
+  本社:
+  - address: 兵庫県神戸市中央区浜辺通4丁目1番11号
+    area_m2: 1161.0
+    area_m2_is_estimated: true
+    area_m2_source: 公示地価標準地の地積による推定
+    name: 本社(神戸)
+  - address: 全国各所
+    area_m2: 888839.0
+    area_m2_is_estimated: true
+    area_m2_note: 890,000 - 1,161 = 888,839
+    area_m2_source: 有報の本社土地面積890千m2から神戸1,161m2を控除
+    name: 本社(全国港湾倉庫等・合算)
+'9433':
+  本社:
+  - address: 東京都千代田区飯田橋3丁目10番10号
+    area_m2: 7396.0
+    area_m2_is_estimated: false
+    area_m2_source: ガーデンエアタワー敷地面積(公式データ)
+    name: 本社(飯田橋・ガーデンエアタワー)
+  - address: 全国各所
+    area_m2: 2578604.0
+    area_m2_is_estimated: true
+    area_m2_note: 2,586,000 - 7,396 = 2,578,604
+    area_m2_source: 有報の本社土地面積2,586千m2から飯田橋7,396m2を控除
+    name: 本社(全国通信設備等・合算)
 '9476':
   本社: 東京都千代田区神田神保町1-35
   東京都合計: 東京都千代田区神田神保町1-35
 '9602':
-  東京宝塚ビル他: 東京都千代田区有楽町1-1-3
+  東京宝塚ビル他:
+  - address: 東京都千代田区有楽町1丁目1番3号
+    area_m2: 3874.04
+    area_m2_is_estimated: false
+    area_m2_source: 東宝公式物件詳細の東京宝塚ビル敷地面積
+    area_m2_source_url: https://www.toho.co.jp/company/business/realestate/detail/009.html
+    name: 東京宝塚ビル
+  - address: 東京都千代田区有楽町1丁目2番2号
+    area_m2: 6845.95
+    area_m2_is_estimated: false
+    area_m2_source: 東宝公式物件詳細の東宝日比谷ビル敷地面積
+    area_m2_source_url: https://www.toho.co.jp/company/business/realestate/detail/010.html
+    name: 東宝日比谷ビル
+  - address: 東京都千代田区有楽町1丁目5番2号
+    area_m2: 1491.83
+    area_m2_is_estimated: false
+    area_m2_source: 竹中工務店設計施工実績の東宝日比谷プロムナードビル敷地面積
+    area_m2_source_url: https://www.takenaka.co.jp/majorworks/49664642018.html
+    name: 東宝日比谷プロムナードビル
+  - address: 東京都新宿区歌舞伎町1丁目19番1号
+    area_m2: 5590.65
+    area_m2_is_estimated: false
+    area_m2_source: 竹中工務店設計施工実績の新宿東宝ビル敷地面積
+    area_m2_source_url: https://www.takenaka.co.jp/majorworks/21301972015.html
+    name: 新宿東宝ビル
+  - address: 東京都渋谷区道玄坂2丁目6番17号
+    area_m2: 1513.71
+    area_m2_is_estimated: false
+    area_m2_source: 東宝公式物件詳細の渋東シネタワー敷地面積
+    area_m2_source_url: https://www.toho.co.jp/company/business/realestate/detail/053.html
+    name: 渋東シネタワー
+  - address: 全国各所
+    area_m2: 412776.82
+    area_m2_is_estimated: true
+    area_m2_note: 432,093 - 19,316.18 = 412,776.82。不動産ポートフォリオ129物件のうち未個別特定分。
+    area_m2_source: 有報の東京宝塚ビル他土地面積432,093m2から主要5物件19,316.18m2を控除
+    area_m2_source_url: https://www.toho.co.jp/ir/library/securities_report/assets/pdf/2025.pdf
+    name: その他不動産ポートフォリオ残余
+'9603':
+  Ｈ.Ｉ.Ｓ.ホテルホールディン:
+  - address: 東京都港区港南2丁目15番1号
+    area_m2: 3811.0
+    area_m2_is_estimated: true
+    area_m2_note: 港南近傍公示地「港5-26」(港南2-16-2外)の地積3,811m²を代理値として採用。
+    area_m2_source: 公示地価標準地「港5-26」の地積
+    area_m2_source_url: https://www.reinfolib.mlit.go.jp/
+    name: HISホテルHD(港区代表地点)
+  - address: 全国各所
+    area_m2: 68189.0
+    area_m2_is_estimated: true
+    area_m2_note: 72,000 - 3,811 = 68,189。有報「東京都港区他」の全国ホテル資産合算残余。
+    area_m2_source: 有報のHISホテルHD土地面積72千m²から港区配分3,811m²を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XHDP.pdf
+    name: HISホテルHD(全国ホテル資産・合算残余)
 '9663':
   本社: 東京都千代田区丸の内1丁目4番1号
   東京支店:
@@ -1141,10 +1944,45 @@
     name: 東京支店(他60営業所等・全国合算)
 '9672':
   東京サマーランド: あきる野市上代継白岩600番地
+'9708':
+  本社:
+  - address: 東京都千代田区内幸町1丁目1番1号
+    area_m2: 11897.0
+    area_m2_is_estimated: false
+    area_m2_source: 帝国ホテル東京の敷地面積(公式データ)
+    name: 本社(帝国ホテル東京)
+  - address: 全国各所
+    area_m2: 86103.0
+    area_m2_is_estimated: true
+    area_m2_note: 98,000 - 11,897 = 86,103
+    area_m2_source: 有報の本社土地面積98千m2から帝国ホテル東京11,897m2を控除
+    name: 本社(上高地等・全国合算)
+'9722':
+  ホテル椿山荘東京:
+  - address: 東京都文京区関口2丁目10番8号
+    area_m2: 49000.0
+    area_m2_is_estimated: false
+    area_m2_note: 有報の土地面積は49千m2。出力CSVの293千は「その他」列の誤抽出。
+    area_m2_source: 有報「設備の状況」のホテル椿山荘東京土地面積49千m2
+    name: ホテル椿山荘東京
+  本社:
+  - address: 東京都文京区関口2丁目10番8号
+    area_m2: 33819.0
+    area_m2_is_estimated: false
+    area_m2_source: 椿山荘の敷地面積(公式データ)
+    name: 本社(椿山荘)
+  - address: 全国各所
+    area_m2: 355181.0
+    area_m2_is_estimated: true
+    area_m2_note: 389,000 - 33,819 = 355,181
+    area_m2_source: 有報の本社土地面積389千m2から椿山荘33,819m2を控除
+    name: 本社(全国ホテル等・合算)
 '9731':
   本社他: 東京都大田区下丸子2丁目11番8号
   東京支店他: 東京都大田区下丸子2丁目11番1号
   神山ビル他: 東京都渋谷区神山町4-14
+'9788':
+  本社: 東京都新宿区西新宿1丁目25番1号
 '9845':
   本社・テクニカルセンター 他: 東京都中央区日本橋人形町2-22-1
 '9896':
