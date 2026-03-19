@@ -2,6 +2,7 @@ import argparse
 import atexit
 import csv
 import gc
+import hashlib
 import logging
 import math
 import os
@@ -157,6 +158,16 @@ class CompanySkipError(Exception):
 
 class TransientNetworkError(Exception):
     """一時的な通信エラー。一定回数の再試行対象。"""
+
+
+def _file_fingerprint(path: str) -> dict[str, object]:
+    """mtime + MD5 hash でファイルの同一性を判定."""
+    stat = os.stat(path)
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return {"mtime": stat.st_mtime, "md5": h.hexdigest()}
 
 
 def sanitize_filename_component(name: str) -> str:
@@ -426,13 +437,18 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         gaiku_csv=os.path.join(data_dir, "geocoding", "geocode_ref_gaiku_tokyo_2024", "13_2024.csv"),
     )
     web_addr = WebAddressResearcher(cache_dir=os.path.join(cache_dir, "web_address"))
-    landprice = LandPriceTokyo(geojson_path=os.path.join(data_dir, "landprice", "merged", "L01_L02_merged_13.geojson"))
+    geojson_path = os.path.join(data_dir, "landprice", "merged", "L01_L02_merged_13.geojson")
+    landprice = LandPriceTokyo(geojson_path=geojson_path)
 
     output_dir = resolve_path(base_dir, args.output)
     ensure_dir(output_dir)
     processed_lookup_dir = output_dir
 
     price_cache_disk = load_json_dict(price_cache_path)
+    geojson_fp = _file_fingerprint(geojson_path)
+    if price_cache_disk.get("_geojson_fingerprint") != geojson_fp:
+        logger.info("地価データ変更を検出: price_result_cache をクリア")
+        price_cache_disk = {"_geojson_fingerprint": geojson_fp}
     geocode_cache_disk = load_json_dict(geocode_cache_path)
 
     ctx = RunContext(
