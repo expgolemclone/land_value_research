@@ -163,7 +163,9 @@ def _allocate_book_values(
     remaining_book = original.land_book_value_yen - specified_total
     if remaining_book < 0:
         raise ValueError(
-            f"指定済み book_value_yen の合計 ({specified_total}) が元の簿価 ({original.land_book_value_yen}) を超えています: {original.site_name}"
+            "指定済み book_value_yen の合計 "
+            f"({specified_total}) が元の簿価 ({original.land_book_value_yen}) "
+            f"を超えています: {original.site_name}"
         )
 
     unspecified_area_total = sum(e.area_m2 for e in entries if e.book_value_yen is None)

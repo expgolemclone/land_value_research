@@ -2,18 +2,21 @@
 
 from __future__ import annotations
 
+import importlib
 import sys
 import tempfile
 import urllib.request
 from pathlib import Path
 
+import xlrd
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-import xlrd
-
-from src.company_config import load_company_master, save_company_master
+company_config = importlib.import_module("src.company_config")
+load_company_master = company_config.load_company_master
+save_company_master = company_config.save_company_master
 
 COMPANY_MASTER_PATH = str(PROJECT_ROOT / "config" / "company_master.yaml")
 JPX_URL = "https://www.jpx.co.jp/markets/statistics-equities/misc/tvdivq0000001vg2-att/data_j.xls"
