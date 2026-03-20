@@ -287,7 +287,8 @@ def run_split_address(args: argparse.Namespace) -> None:
     }
     codes = [t["code"] for t in selected]
     with codex_lockdown(target_codes=codes, mode="split-address"):
-        _launch_processes(selected, prompts, args.cli, check_docs=True, check_patch=True)
+        timestamp = _launch_processes(selected, prompts, args.cli, check_docs=True, check_patch=True)
+    _post_process(timestamp)
 
 
 # ---------------------------------------------------------------------------
@@ -327,7 +328,8 @@ def run_resolve_address(args: argparse.Namespace) -> None:
     }
     codes = [t["code"] for t in selected]
     with codex_lockdown(target_codes=codes, mode="resolve-address"):
-        _launch_processes(selected, prompts, args.cli)
+        timestamp = _launch_processes(selected, prompts, args.cli)
+    _post_process(timestamp)
 
 
 # ---------------------------------------------------------------------------
@@ -680,6 +682,7 @@ def _launch_claude_direct(
                     print(f"      注意 - パッチ未作成 (address_patches/{code}.yaml)")
 
     print(f"\n=== 全 {len(selected)} 件完了 ===\n")
+    return timestamp
 
 
 def _extract_session_id(log_file: Path) -> str | None:
@@ -733,6 +736,27 @@ def _terminal_cmd(title: str, script_file: Path) -> list[str]:
     return ["kitty", "--title", title, "-e", "bash", str(script_file)]
 
 
+def _post_process(timestamp: str) -> None:
+    """パッチマージと run.py を実行する (lockdown 解除後に呼ぶ)."""
+    # パッチファイルが存在すればマージを自動実行
+    patch_files = list(PATCH_DIR.glob("*.yaml"))
+    if patch_files:
+        print("=== パッチマージ実行 ===\n")
+        subprocess.run(
+            [sys.executable, str(PROJECT_ROOT / "scripts" / "merge_address_patches.py")],
+            cwd=PROJECT_ROOT,
+        )
+        print()
+
+    print(f"ログ確認: ls {LOG_DIR}/{timestamp}_*.log")
+
+    print("\n=== run.py 実行 ===\n")
+    subprocess.run(
+        [sys.executable, str(PROJECT_ROOT / "run.py")],
+        cwd=PROJECT_ROOT,
+    )
+
+
 def _launch_processes(
     selected: list[dict[str, str]],
     prompts: dict[str, str],
@@ -740,11 +764,10 @@ def _launch_processes(
     *,
     check_docs: bool = False,
     check_patch: bool = False,
-) -> None:
-    """Launch CLI processes. claude uses direct subprocess, codex uses terminal windows."""
+) -> str:
+    """Launch CLI processes. Returns timestamp for post-processing."""
     if cli_cmd == "claude":
-        _launch_claude_direct(selected, prompts, check_docs=check_docs, check_patch=check_patch)
-        return
+        return _launch_claude_direct(selected, prompts, check_docs=check_docs, check_patch=check_patch)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     is_win = sys.platform == "win32"
@@ -841,24 +864,7 @@ def _launch_processes(
                 print(f"  {p['code']} {p['name']}: 注意 - パッチ未作成 (address_patches/{p['code']}.yaml)")
 
     print("\n=== 全プロセス完了 ===\n")
-
-    # パッチファイルが存在すればマージを自動実行
-    patch_files = list(PATCH_DIR.glob("*.yaml"))
-    if patch_files:
-        print("=== パッチマージ実行 ===\n")
-        subprocess.run(
-            [sys.executable, str(PROJECT_ROOT / "scripts" / "merge_address_patches.py")],
-            cwd=PROJECT_ROOT,
-        )
-        print()
-
-    print(f"ログ確認: ls {LOG_DIR}/{timestamp}_*.log")
-
-    print("\n=== run.py 実行 ===\n")
-    subprocess.run(
-        [sys.executable, str(PROJECT_ROOT / "run.py")],
-        cwd=PROJECT_ROOT,
-    )
+    return timestamp
 
 
 # ---------------------------------------------------------------------------
