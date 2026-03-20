@@ -1847,6 +1847,7 @@
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VGYI.pdf
   address_source_urls:
   - https://irbank.net/2489/ir
+  company_name: アドウェイズ
 248A:
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHKZ.pdf
   address_source_urls:
@@ -2506,6 +2507,7 @@
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W6LA.pdf
   address_source_urls:
   - https://irbank.net/2875/ir
+  company_name: 東洋水産
 '2876':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3FA.pdf
   address_source_urls:
@@ -2935,6 +2937,7 @@
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VU9B.pdf
   address_source_urls:
   - https://irbank.net/304A/ir
+  company_name: フォルシア
 '3050':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VUJ1.pdf
   address_source_urls:
@@ -5629,6 +5632,7 @@
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VZX7.pdf
   address_source_urls:
   - https://irbank.net/4061/ir
+  company_name: デンカ
 '4062':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VXHK.pdf
   address_source_urls:
@@ -7738,6 +7742,7 @@
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100WLO4.pdf
   address_source_urls:
   - https://irbank.net/4829/ir
+  company_name: 日本エンタープライズ
 '4832':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W18V.pdf
   address_source_urls:
@@ -7942,6 +7947,7 @@
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VWVL.pdf
   address_source_urls:
   - https://irbank.net/4929/ir
+  company_name: アジュバン HD
 '4931':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XA5Q.pdf
   address_source_urls:
@@ -8176,6 +8182,7 @@
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W5G6.pdf
   address_source_urls:
   - https://irbank.net/5029/ir
+  company_name: サークレイス
 '5031':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VO8B.pdf
   address_source_urls:
@@ -11804,6 +11811,7 @@
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100WQD6.pdf
   address_source_urls:
   - https://irbank.net/6785/ir
+  company_name: 鈴木
 '6786':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W3TE.pdf
   address_source_urls:
@@ -12008,6 +12016,7 @@
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W6ZV.pdf
   address_source_urls:
   - https://irbank.net/6862/ir
+  company_name: ミナト HD
 '6863':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W0SV.pdf
   address_source_urls:
@@ -12197,6 +12206,7 @@
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VYL7.pdf
   address_source_urls:
   - https://irbank.net/6942/ir
+  company_name: ソフィア HD
 '6943':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W6FX.pdf
   address_source_urls:
@@ -17851,6 +17861,7 @@
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VIQH.pdf
   address_source_urls:
   - https://irbank.net/9612/ir
+  company_name: ラックランド
 '9616':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W29G.pdf
   address_source_urls:
@@ -18010,6 +18021,7 @@
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W1FF.pdf
   address_source_urls:
   - https://irbank.net/9697/ir
+  company_name: カプコン
 '9698':
   securities_report_pdf_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W62O.pdf
   address_source_urls:
