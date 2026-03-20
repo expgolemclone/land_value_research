@@ -984,6 +984,22 @@
     area_m2_is_estimated: false
     area_m2_note: 有報注記3で他全国7支店を含む。給油所賃借地1,900千m²は別枠。
     name: 関東第一支店(他全国7支店・給油所等)
+'5020':
+  東京支店:
+  - address: 東京都千代田区大手町1丁目1番2号
+    area_m2: 6898.0
+    area_m2_is_estimated: true
+    area_m2_note: 大手門タワー・ENEOSビル敷地面積6,898.38㎡。三菱地所・JX HD・SPCの共同開発。 共有持分73%が三菱UFJ信託銀行に信託済み（うち20%をダイビルが取得）。
+      ENEOS持分比率は非開示だがビル名にENEOSを冠しており相当の持分があると推定。 敷地全面積を上限値として採用（ENEOS持分は実際にはこれより小さい可能性が高い）。
+    area_m2_source: 大手門タワー・ENEOSビル建築概要（敷地面積）
+    area_m2_source_url: https://skyskysky.net/construction/201626.html
+    name: 東京支店(本社・大手町)
+  - address: 全国各所
+    area_m2: 1214102.0
+    area_m2_is_estimated: false
+    area_m2_note: 有報「東京支店(東京都千代田区)ほか」の自社保有土地面積1,221千㎡から 本社敷地推定面積を差し引いた残余。全国約11,000箇所のENEOS系列SSのうち
+      自社保有用地、事務所等が合算されている。別途賃借地[2,676千㎡]も存在。
+    name: 東京支店(SS・販売拠点他・合算)
 '5021':
   本社:
   - address: 千葉県市原市五井海岸2
