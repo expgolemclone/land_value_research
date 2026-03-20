@@ -8,8 +8,9 @@
 graph LR
     subgraph データ
         GeoJSON["data/landprice/merged/<br>L01_L02_merged_13.geojson"]
-        GaikuCSV["data/geocoding/<br>13_2024.csv"]
+        GaikuCSV["data/geocoding/geocode_ref_gaiku_tokyo_2024/<br>13_2024.csv"]
         PDF["data/cache/pdf/<br>{code}_securities_report.pdf"]
+        AddrYAML["config/<br>address_overrides.yaml"]
     end
 
     subgraph コード
@@ -22,6 +23,11 @@ graph LR
         PriceCache["data/cache/<br>price_result_cache.json"]
         GeocodeCache["data/cache/<br>geocode_result_cache.json"]
         FacilitiesCache["data/cache/facilities_land/<br>{code}_sites.json"]
+        AddrHash["data/cache/<br>addr_overrides_hash.json"]
+    end
+
+    subgraph 出力
+        OutputCSV["output/<br>{code}_output.csv"]
     end
 
     GeoJSON -->|MD5| PriceCache
@@ -33,18 +39,23 @@ graph LR
     PDF -->|size+mtime| FacilitiesCache
     PdfExtract -->|cache_version| FacilitiesCache
 
+    AddrYAML -->|MD5| AddrHash
+    AddrHash -->|変更時削除| OutputCSV
+
     style PriceCache fill:#2a4a2a,stroke:#4a8a4a
     style GeocodeCache fill:#2a4a2a,stroke:#4a8a4a
     style FacilitiesCache fill:#2a3a4a,stroke:#4a7a9a
+    style AddrHash fill:#2a3a4a,stroke:#4a7a9a
 ```
 
 ### 自動無効化の方式
 
-| キャッシュ                 | 無効化トリガー                                 | 方式                                        |
-| -------------------------- | ---------------------------------------------- | ------------------------------------------- |
-| `price_result_cache.json`  | GeoJSON or `landprice_tokyo.rs` の内容変更     | 依存ファイル群の結合MD5をキャッシュ内に記録  |
-| `geocode_result_cache.json`| gaiku CSV or `geocode_tokyo.rs` の内容変更     | 同上                                        |
-| `facilities_land/*.json`   | PDF の size/mtime 変更 or `pdf_extract.py` 変更 | `cache_version`(手動) + PDF stat            |
+| キャッシュ                   | 無効化トリガー                                                      | 方式                                       |
+| ---------------------------- | ------------------------------------------------------------------- | ------------------------------------------ |
+| `price_result_cache.json`    | GeoJSON or `landprice_tokyo.rs` の内容変更                          | 依存ファイル群の結合MD5をキャッシュ内に記録 |
+| `geocode_result_cache.json`  | gaiku CSV (`geocode_ref_gaiku_tokyo_2024/`) or `geocode_tokyo.rs` の内容変更 | 同上                                       |
+| `facilities_land/*.json`     | PDF の size/mtime 変更 or `pdf_extract.py` 変更                     | `cache_version`(手動) + PDF stat           |
+| `addr_overrides_hash.json`   | `address_overrides.yaml` の企業別エントリ変更                       | 企業別MD5を記録し、変更時に出力CSVを削除   |
 
 ### 対象外のキャッシュ
 
