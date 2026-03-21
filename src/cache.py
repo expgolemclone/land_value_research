@@ -51,7 +51,7 @@ def load_sites_cache(cache_path: str, pdf_path: str) -> list[FacilityLand] | Non
             d = json.load(f)
         stat = os.stat(pdf_path)
         if (
-            d.get("cache_version") != 4
+            d.get("cache_version") != 5
             or int(d.get("pdf_size", -1)) != int(stat.st_size)
             or float(d.get("pdf_mtime", -1.0)) != float(stat.st_mtime)
         ):
@@ -65,6 +65,7 @@ def load_sites_cache(cache_path: str, pdf_path: str) -> list[FacilityLand] | Non
                     land_area_m2=float(x.get("land_area_m2", 0.0)),
                     land_book_value_yen=float(x.get("land_book_value_yen", 0.0)),
                     location_has_hoka=bool(x.get("location_has_hoka", False)),
+                    equipment_type=str(x.get("equipment_type", "")),
                 )
             )
         return out
@@ -76,7 +77,7 @@ def load_sites_cache(cache_path: str, pdf_path: str) -> list[FacilityLand] | Non
 def save_sites_cache(cache_path: str, pdf_path: str, sites: list[FacilityLand]) -> None:
     stat = os.stat(pdf_path)
     payload = {
-        "cache_version": 4,
+        "cache_version": 5,
         "pdf_size": int(stat.st_size),
         "pdf_mtime": float(stat.st_mtime),
         "sites": [
@@ -86,6 +87,7 @@ def save_sites_cache(cache_path: str, pdf_path: str, sites: list[FacilityLand]) 
                 "land_area_m2": float(s.land_area_m2),
                 "land_book_value_yen": float(s.land_book_value_yen),
                 "location_has_hoka": s.location_has_hoka,
+                "equipment_type": s.equipment_type,
             }
             for s in sites
         ],

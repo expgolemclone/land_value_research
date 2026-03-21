@@ -146,13 +146,41 @@ impl LandPriceTokyo {
             }
         }
         let mut landuse_trees = HashMap::new();
-        for (kind, indices) in landuse_map {
+        for (kind, indices) in &landuse_map {
             let mut sub_tree: KdTree<f64, 2> = KdTree::new();
             for (local_idx, &global_idx) in indices.iter().enumerate() {
                 let pt = &points[global_idx];
                 sub_tree.add(&[pt.plane_x, pt.plane_y], local_idx as u64);
             }
-            landuse_trees.insert(kind, (sub_tree, indices));
+            landuse_trees.insert(kind.clone(), (sub_tree, indices.clone()));
+        }
+
+        // 用途ファミリー別の複合ツリー構築
+        let families: &[(&str, &[&str])] = &[
+            ("工業系", &["工業", "工専", "準工"]),
+            ("商業系", &["商業", "近商"]),
+            (
+                "住居系",
+                &["1住居", "2住居", "準住居", "1中専", "2中専", "1低専", "2低専"],
+            ),
+        ];
+        for (family_name, members) in families {
+            let mut family_indices: Vec<usize> = Vec::new();
+            for member in *members {
+                if let Some(indices) = landuse_map.get(*member) {
+                    family_indices.extend(indices.iter());
+                }
+            }
+            if !family_indices.is_empty() {
+                family_indices.sort_unstable();
+                family_indices.dedup();
+                let mut sub_tree: KdTree<f64, 2> = KdTree::new();
+                for (local_idx, &global_idx) in family_indices.iter().enumerate() {
+                    let pt = &points[global_idx];
+                    sub_tree.add(&[pt.plane_x, pt.plane_y], local_idx as u64);
+                }
+                landuse_trees.insert(family_name.to_string(), (sub_tree, family_indices));
+            }
         }
 
         Ok(Self {

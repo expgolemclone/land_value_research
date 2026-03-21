@@ -81,6 +81,7 @@ fn validate_url_not_private @src/utils.py:10 <-src/company_metadata_fallback.py,
 fn normalize_addr @src/jp_address.py:42 <-src/web_address_research.py
 fn split_tokyo_municipality @src/jp_address.py:120 <-src/web_address_research.py
 fn merge_patches_safe @scripts/merge_address_patches.py:51 <-run.py
+fn _infer_landuse_family @run.py:735 <-run.py (equipment_type→用途ファミリー推定)
 fn generate_ranking @rank_market_cap_ratio.py:524 <-run.py
 fn download_file @src/web_cache.py:19 <-run.py
 fn is_pdf_file @src/web_cache.py:10 <-run.py
@@ -110,7 +111,7 @@ scripts._codex_geocode_check -> {src.geocode_tokyo}
 
 price_result_cache.json invalidated by MD5(data/landprice/merged/*.geojson + rust_src/landprice_tokyo.rs)
 geocode_result_cache.json invalidated by MD5(data/geocoding/**/*.csv + rust_src/geocode_tokyo.rs)
-facilities_land/{code}_sites.json invalidated by PDF stat(size+mtime) + cache_version
+facilities_land/{code}_sites.json invalidated by PDF stat(size+mtime) + cache_version (v5: equipment_type追加)
 addr_overrides_hash.json invalidated by MD5(address_overrides.yaml per-company); triggers delete output/{code}_output.csv
 price_overrides_hash.json invalidated by MD5(price_overrides.yaml per-company); triggers delete output/{code}_output.csv
 market_cap_cache.json: external API, daily refresh (no auto-invalidation)

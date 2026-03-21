@@ -718,6 +718,30 @@ def _deserialize_price_result(dp: dict[str, Any]) -> PriceResult:
     )
 
 
+# 設備内容 → 用途ファミリー
+_EQUIPMENT_FAMILY_MAP: dict[str, str] = {
+    # 工業系
+    "タンク": "工業系", "工場": "工業系", "倉庫": "工業系", "製造": "工業系",
+    "洗濯": "工業系", "車庫": "工業系", "整備": "工業系", "物流": "工業系",
+    "配送": "工業系", "リサイクル": "工業系", "プラント": "工業系",
+    "生産": "工業系", "作業所": "工業系", "油槽": "工業系",
+    # 商業系
+    "事務所": "商業系", "本社機能": "商業系", "店舗": "商業系", "営業所": "商業系",
+    "賃貸ビル": "商業系", "賃貸オフィス": "商業系",
+    # 住居系
+    "社宅": "住居系", "寮": "住居系", "社員寮": "住居系", "独身寮": "住居系",
+    "賃貸マンション": "住居系",
+}
+
+
+def _infer_landuse_family(equipment_type: str) -> str | None:
+    """設備内容から用途ファミリーを推定。推定不可なら None。"""
+    for keyword, family in _EQUIPMENT_FAMILY_MAP.items():
+        if keyword in equipment_type:
+            return family
+    return None
+
+
 def _estimate_price(lat: float, lon: float, target_landuse_kind: str, ctx: RunContext) -> PriceResult:
     """Estimate land price using disk cache or landprice engine.
 
@@ -817,7 +841,12 @@ def _process_site(
     else:
         target_landuse_kind = ""
         if ctx.args.landuse_match:
-            seed_pr = ctx.landprice.nearest(lat=lat, lon=lon)
+            # 設備内容からファミリーを推定 → ファミリーツリーで最近傍検索
+            family = _infer_landuse_family(s.equipment_type)
+            if family:
+                seed_pr = ctx.landprice.nearest(lat=lat, lon=lon, landuse_kind=family)
+            else:
+                seed_pr = ctx.landprice.nearest(lat=lat, lon=lon)
             target_landuse_kind = ctx.landprice.get_point_landuse_kind(seed_pr.nearest_id)
 
         pr = _estimate_price(lat, lon, target_landuse_kind, ctx)

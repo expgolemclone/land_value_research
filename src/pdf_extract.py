@@ -16,6 +16,7 @@ class FacilityLand:
     land_area_m2: float
     land_book_value_yen: float
     location_has_hoka: bool = False
+    equipment_type: str = ""
 
 
 @dataclass(frozen=True)
@@ -24,6 +25,7 @@ class _ColumnMap:
 
     name_col: int
     location_col: int | None  # Noneなら name_col の括弧内から抽出
+    equip_col: int | None  # 「設備の内容」列
     land_book_col: int | None
     land_area_col: int | None  # Noneなら land_book_col 内の括弧から取得
     book_mult: int
@@ -218,10 +220,11 @@ def _detect_columns(
     """
     name_col: int | None = None
     location_col: int | None = None
+    equip_col: int | None = None
     land_area_col: int | None = None
     land_book_col: int | None = None
 
-    # --- name_col / location_col ---
+    # --- name_col / location_col / equip_col ---
     for i, (g, _s) in enumerate(group_headers):
         if name_col is None:
             if "事業所名" in g:
@@ -230,6 +233,8 @@ def _detect_columns(
                 name_col = i
         if location_col is None and g == "所在地":
             location_col = i
+        if equip_col is None and "設備" in g and "内容" in g:
+            equip_col = i
 
     if name_col is None:
         return None
@@ -275,6 +280,7 @@ def _detect_columns(
     return _ColumnMap(
         name_col=name_col,
         location_col=location_col,
+        equip_col=equip_col,
         land_book_col=land_book_col,
         land_area_col=land_area_col,
         book_mult=_book_multiplier(all_text),
@@ -334,6 +340,11 @@ def _extract_from_table(
         if not location:
             continue
 
+        # --- Equipment type ---
+        equip_type = ""
+        if colmap.equip_col is not None and colmap.equip_col < len(row):
+            equip_type = _normalize_text(row[colmap.equip_col] or "")
+
         # --- Land book value & area ---
         land: float | None = None
         area: float | None = None
@@ -363,6 +374,7 @@ def _extract_from_table(
                 land_area_m2=area * colmap.area_scale,
                 land_book_value_yen=land * colmap.book_mult,
                 location_has_hoka=has_hoka,
+                equipment_type=equip_type,
             )
         )
 
