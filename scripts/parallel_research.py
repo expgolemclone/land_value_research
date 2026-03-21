@@ -27,12 +27,12 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from scripts._codex_precheck import precheck
 from scripts.codex_lockdown import codex_lockdown
-from src.paths import (
+from src.config import (
     DEFAULT_OUTPUT_DIR,
     DEFAULT_RANKING_PATH,
     FACILITIES_CACHE_DIR,
 )
-from src.paths import PATCH_DIR as _PATCH_DIR
+from src.config import PATCH_DIR as _PATCH_DIR
 
 RANKING_FILE = DEFAULT_RANKING_PATH
 PATCH_DIR = _PATCH_DIR

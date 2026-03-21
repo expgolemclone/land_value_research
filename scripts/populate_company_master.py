@@ -28,8 +28,8 @@ import yaml
 
 from src.company_config import load_company_master
 from src.network import urlopen_with_retry
-from src.paths import COMPANY_MASTER_PATH as _COMPANY_MASTER_PATH
-from src.paths import INPUT_FULL_CSV
+from src.config import COMPANY_MASTER_PATH as _COMPANY_MASTER_PATH
+from src.config import INPUT_FULL_CSV
 from src.utils import validate_url_not_private
 
 COMPANY_MASTER_PATH = str(_COMPANY_MASTER_PATH)

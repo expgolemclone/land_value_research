@@ -29,7 +29,7 @@ sys.path.insert(0, os.environ.get("CLAUDE_PROJECT_DIR", "."))
 
 
 def main() -> None:
-    from src.paths import ADDRESS_OVERRIDES_PATH, GAIKU_CSV, OAZA_CSV
+    from src.config import ADDRESS_OVERRIDES_PATH, GAIKU_CSV, OAZA_CSV
 
     overrides_file = str(ADDRESS_OVERRIDES_PATH)
     if not os.path.isfile(overrides_file):

@@ -37,7 +37,7 @@ from src.company_config import (
     save_company_master,
 )
 from src.company_metadata_fallback import fetch_from_irbank
-from src.paths import (
+from src.config import (
     ADDRESS_OVERRIDES_PATH,
     CACHE_DIR,
     COMPANY_MASTER_PATH,

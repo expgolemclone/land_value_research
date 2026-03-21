@@ -15,7 +15,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.paths import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR, DEFAULT_RANKING_PATH
+from src.config import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR, DEFAULT_RANKING_PATH
 
 # import に必要なため除外
 _SRC_ALLOW = {"geocode_tokyo.py", "__init__.py", "pdf_extract.py"}

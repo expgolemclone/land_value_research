@@ -19,8 +19,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.paths import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR
-from src.paths import PATCH_DIR as _PATCH_DIR
+from src.config import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR
+from src.config import PATCH_DIR as _PATCH_DIR
 
 OVERRIDES_FILE = ADDRESS_OVERRIDES_PATH
 PATCH_DIR = _PATCH_DIR

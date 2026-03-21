@@ -32,7 +32,7 @@ from src.schema import (
     COL_SITE_NAME,
 )
 
-from src.paths import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR
+from src.config import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR
 
 OVERRIDES_FILE = ADDRESS_OVERRIDES_PATH
 DOCS_DIR = PROJECT_ROOT / "split-address"

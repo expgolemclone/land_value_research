@@ -18,7 +18,7 @@ company_config = importlib.import_module("src.company_config")
 load_company_master = company_config.load_company_master
 save_company_master = company_config.save_company_master
 
-from src.paths import COMPANY_MASTER_PATH as _COMPANY_MASTER_PATH
+from src.config import COMPANY_MASTER_PATH as _COMPANY_MASTER_PATH
 
 COMPANY_MASTER_PATH = str(_COMPANY_MASTER_PATH)
 JPX_URL = "https://www.jpx.co.jp/markets/statistics-equities/misc/tvdivq0000001vg2-att/data_j.xls"

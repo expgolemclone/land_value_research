@@ -7,8 +7,8 @@ import pdfplumber
 import pypdfium2 as pdfium
 from rapidocr_onnxruntime import RapidOCR
 
-from src.paths import INPUT_CSV
-from src.paths import PDF_CACHE_DIR as _PDF_CACHE_DIR
+from src.config import INPUT_CSV
+from src.config import PDF_CACHE_DIR as _PDF_CACHE_DIR
 from src.pdf_extract import extract_major_facilities_land
 
 # 補助スクリプト: OCR検証専用. 本体処理(run.py)には必須ではない.

@@ -8,7 +8,7 @@ from typing import Any
 
 from src.company_config import load_company_master, save_company_master
 from src.company_metadata_fallback import fetch_from_irbank
-from src.paths import (
+from src.config import (
     COMPANY_MASTER_PATH,
     DEFAULT_OUTPUT_DIR,
     DEFAULT_RANKING_PATH,
