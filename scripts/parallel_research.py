@@ -386,6 +386,18 @@ def _build_injected_prompt(
         csv_content = csv_path.read_text(encoding="utf-8")
         parts.append(f'<context path="data/output/{code}_output.csv">\n{csv_content}\n</context>')
 
+    # doubtful.md (信頼性チェックリスト) 注入 — split-address のみ
+    if mode == "split-address":
+        doubtful_path = PROJECT_ROOT / "split-address" / "doubtful.md"
+        if doubtful_path.exists():
+            doubtful_content = doubtful_path.read_text(encoding="utf-8")
+            parts.append(
+                f'<context path="split-address/doubtful.md" '
+                'description="過去の調査で発見された問題パターン集。同様のパターンに該当しないか最終確認に使用せよ">\n'
+                f"{doubtful_content}\n"
+                "</context>"
+            )
+
     # ユーザー指示
     parts.append(user_instruction)
 
