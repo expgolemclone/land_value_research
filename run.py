@@ -18,7 +18,6 @@ from typing import Any
 
 import shtab
 
-from src.rank_market_cap_ratio import generate_ranking
 from scripts.merge_address_patches import merge_patches_safe
 from src.anomaly import (
     CRITICAL_EVAL_MULTIPLE,
@@ -64,7 +63,13 @@ from src.config import (
 from src.geocode_tokyo import TokyoGeocoder
 from src.landprice_tokyo import LandPriceTokyo, PriceResult
 from src.network import is_transient_network_error
-from src.pdf_extract import FacilityLand, extract_facilities_section_text, extract_major_facilities_land
+from src.pdf_extract import (
+    FacilityLand,
+    batch_extract_facilities,
+    extract_facilities_section_text,
+    extract_major_facilities_land,
+)
+from src.rank_market_cap_ratio import generate_ranking
 from src.schema import (
     COL_ADDRESS,
     COL_ADDRESS_SOURCE,
@@ -1210,6 +1215,27 @@ def _main_worker(args: argparse.Namespace) -> None:
         total_companies = len(targets_to_process)
         max_workers = max(1, min(args.workers, total_companies))
         logger.info("処理開始: %d社 (workers=%d)", total_companies, max_workers)
+
+        # --- バッチPDF並列抽出: キャッシュ未取得のPDFを事前に並列処理 ---
+        uncached_pdfs: dict[str, str] = {}
+        for t in targets_to_process:
+            code = t["code"]
+            pdf_path = get_pdf_path(ctx.cache_dir, code)
+            if not os.path.exists(pdf_path):
+                continue
+            sites_cache_path = os.path.join(ctx.facilities_cache_dir, f"{code}_sites.json")
+            if load_sites_cache(sites_cache_path, pdf_path) is None:
+                uncached_pdfs[code] = pdf_path
+
+        if uncached_pdfs:
+            pdf_workers = max(1, min(max_workers, len(uncached_pdfs), os.cpu_count() or 4))
+            logger.info("PDF並列抽出開始: %d件 (workers=%d)", len(uncached_pdfs), pdf_workers)
+            batch_results = batch_extract_facilities(uncached_pdfs, max_workers=pdf_workers)
+            for code, sites in batch_results.items():
+                sites_cache_path = os.path.join(ctx.facilities_cache_dir, f"{code}_sites.json")
+                pdf_path = uncached_pdfs[code]
+                save_sites_cache(sites_cache_path, pdf_path, sites)
+            logger.info("PDF並列抽出完了: %d件", len(batch_results))
 
         failed_companies: list[tuple[str, str, str]] = []
         written_count = 0

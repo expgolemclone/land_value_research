@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import re
+import sys
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
 
 import pdfplumber
@@ -460,3 +462,60 @@ def _should_skip_hq_row(page_text: str) -> bool:
     if ("本社の土地のなかに鉱業用地" in txt_compact) and ("面積千" in txt_compact):
         return True
     return False
+
+
+# ---------------------------------------------------------------------------
+# Batch parallel extraction
+# ---------------------------------------------------------------------------
+
+_MAX_WORKERS_WIN = 61  # Windows ProcessPoolExecutor の上限
+
+
+def _extract_one(args: tuple[str, str]) -> tuple[str, list[FacilityLand]]:
+    """ProcessPoolExecutor 用ワーカー関数. (code, pdf_path) -> (code, sites)."""
+    code, pdf_path = args
+    try:
+        return code, extract_major_facilities_land(pdf_path)
+    except Exception as e:
+        logger.warning("PDF並列抽出失敗: %s: %s: %s", pdf_path, type(e).__name__, e)
+        return code, []
+
+
+def batch_extract_facilities(
+    pdf_paths: dict[str, str],
+    max_workers: int = 4,
+) -> dict[str, list[FacilityLand]]:
+    """複数PDFを ProcessPoolExecutor で並列抽出.
+
+    Args:
+        pdf_paths: {証券コード: PDFファイルパス} の辞書
+        max_workers: 並列プロセス数
+
+    Returns:
+        {証券コード: FacilityLandリスト} の辞書
+    """
+    if not pdf_paths:
+        return {}
+
+    if sys.platform == "win32":
+        max_workers = min(max_workers, _MAX_WORKERS_WIN)
+    max_workers = max(1, min(max_workers, len(pdf_paths)))
+
+    # 1件だけならプロセス起動オーバーヘッドを避ける
+    if len(pdf_paths) == 1:
+        code, path = next(iter(pdf_paths.items()))
+        return {code: extract_major_facilities_land(path)}
+
+    results: dict[str, list[FacilityLand]] = {}
+    items = list(pdf_paths.items())
+
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        future_to_code = {
+            executor.submit(_extract_one, (code, path)): code
+            for code, path in items
+        }
+        for future in as_completed(future_to_code):
+            code, sites = future.result()
+            results[code] = sites
+
+    return results

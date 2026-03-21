@@ -1,6 +1,6 @@
 # TREE
 
-run.py [1300L] -> src.rank_market_cap_ratio, scripts.merge_address_patches, src.*
+run.py [1326L] -> src.rank_market_cap_ratio, scripts.merge_address_patches, src.*
 src/
   rank_market_cap_ratio.py [568L] -> src.company_config, src.company_metadata_fallback, src.schema
   config.py [42L] (SSOT: PROJECT_ROOT, CONFIG_DIR, DATA_DIR, CACHE_DIR, 全パス定数)
@@ -12,7 +12,7 @@ src/
   jp_address.py [17L] re-export land_value_core{normalize_addr, split_tokyo_municipality, parse_town_chome_block, num_to_kanji, build_oaza_chome_name, kanji_to_int}
   landprice_tokyo.py [3L] re-export land_value_core{LandPriceTokyo, PriceResult}
   geocode_tokyo.py [3L] re-export land_value_core{TokyoGeocoder}
-  pdf_extract.py [462L] (FacilityLand, extract_major_facilities_land, extract_facilities_section_text)
+  pdf_extract.py [521L] (FacilityLand, extract_major_facilities_land, extract_facilities_section_text, batch_extract_facilities)
   anomaly.py [130L] -> src.landprice_tokyo, src.schema
   company_config.py [201L] -> src.pdf_extract
   company_metadata_fallback.py [113L] -> src.network, src.utils
@@ -60,7 +60,8 @@ class SiteSplitEntry @src/company_config.py:16 <-run.py
 class WebAddressResearcher @src/web_address_research.py:35 <-run.py
 class CompanyMetadata @src/company_metadata_fallback.py:16 <-run.py, src/rank_market_cap_ratio.py
 class OutputRow @src/schema.py:51 <-src/anomaly.py, run.py
-fn extract_major_facilities_land @src/pdf_extract.py:372 <-run.py, scripts/validate_ocr_accuracy.py
+fn extract_major_facilities_land @src/pdf_extract.py:386 <-run.py, scripts/validate_ocr_accuracy.py
+fn batch_extract_facilities @src/pdf_extract.py:484 <-run.py
 fn calc_uncertainty_metrics @src/anomaly.py:21 <-run.py
 fn detect_anomaly_warnings @src/anomaly.py:42 <-run.py
 fn detect_duplicate_address_large_area @src/anomaly.py:94 <-run.py
