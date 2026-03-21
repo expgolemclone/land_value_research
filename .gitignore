@@ -28,6 +28,9 @@ data/output/run_logs/
 # Backup files
 *.bak
 
+# Company master cache
+config/company_master.yaml
+
 # Temporary planning files
 plan.md
 fix_plan_*.md
