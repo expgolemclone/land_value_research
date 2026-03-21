@@ -29,7 +29,7 @@ data/output/run_logs/
 *.bak
 
 # Company master cache
-config/company_master.yaml
+data/cache/company_master.yaml
 
 # Temporary planning files
 plan.md

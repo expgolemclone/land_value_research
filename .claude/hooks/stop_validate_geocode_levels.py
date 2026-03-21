@@ -29,8 +29,9 @@ sys.path.insert(0, os.environ.get("CLAUDE_PROJECT_DIR", "."))
 
 
 def main() -> None:
-    project_dir = os.environ.get("CLAUDE_PROJECT_DIR", ".")
-    overrides_file = os.path.join(project_dir, "config", "address_overrides.yaml")
+    from src.paths import ADDRESS_OVERRIDES_PATH, GAIKU_CSV, OAZA_CSV
+
+    overrides_file = str(ADDRESS_OVERRIDES_PATH)
     if not os.path.isfile(overrides_file):
         return
 
@@ -39,14 +40,8 @@ def main() -> None:
     from src.geocode_tokyo import TokyoGeocoder
 
     geocoder = TokyoGeocoder(
-        oaza_csv=os.path.join(
-            project_dir,
-            "data/geocoding/geocode_ref_oaza_chome_tokyo_2024/13_2024.csv",
-        ),
-        gaiku_csv=os.path.join(
-            project_dir,
-            "data/geocoding/geocode_ref_gaiku_tokyo_2024/13_2024.csv",
-        ),
+        oaza_csv=str(OAZA_CSV),
+        gaiku_csv=str(GAIKU_CSV),
     )
 
     with open(overrides_file) as f:

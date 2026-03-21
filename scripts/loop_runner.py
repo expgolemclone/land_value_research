@@ -7,6 +7,10 @@ from datetime import datetime
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.paths import INPUT_FULL_CSV
 
 CMD_RUN = [
     "nix",
@@ -14,7 +18,7 @@ CMD_RUN = [
     "--command",
     "land-value-run",
     "--input",
-    "config/input_full.csv",
+    str(INPUT_FULL_CSV),
     "--workers",
     "100",
 ]

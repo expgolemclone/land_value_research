@@ -20,18 +20,20 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 
 import yaml
 
 from src.company_config import load_company_master
 from src.network import urlopen_with_retry
+from src.paths import COMPANY_MASTER_PATH as _COMPANY_MASTER_PATH
+from src.paths import INPUT_FULL_CSV
 from src.utils import validate_url_not_private
 
-COMPANY_MASTER_PATH = str(PROJECT_ROOT / "config" / "company_master.yaml")
-INPUT_FULL_PATH = str(PROJECT_ROOT / "config" / "input_full.csv")
+COMPANY_MASTER_PATH = str(_COMPANY_MASTER_PATH)
+INPUT_FULL_PATH = str(INPUT_FULL_CSV)
 
 DEFAULT_TIMEOUT_SEC = 20
 SAVE_INTERVAL = 100

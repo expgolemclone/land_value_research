@@ -8,6 +8,13 @@ from typing import Any
 
 from src.company_config import load_company_master, save_company_master
 from src.company_metadata_fallback import fetch_from_irbank
+from src.paths import (
+    COMPANY_MASTER_PATH,
+    DEFAULT_OUTPUT_DIR,
+    DEFAULT_RANKING_PATH,
+    PDF_CACHE_DIR,
+    PROJECT_ROOT,
+)
 from src.schema import (
     COL_ANOMALY_WARNING,
     COL_BOOK_VALUE,
@@ -34,11 +41,11 @@ from src.schema import (
     RANKING_COLUMNS,
 )
 
-BASE_DIR = Path(__file__).resolve().parent
-DEFAULT_INPUT_DIR = BASE_DIR / "data" / "output"
-DEFAULT_OUTPUT_PATH = BASE_DIR / "data" / "ranking" / "ranking_market_cap_ratio.html"
-DEFAULT_COMPANY_MASTER_PATH = BASE_DIR / "config" / "company_master.yaml"
-DOCS_DIR = BASE_DIR / "split-address"
+BASE_DIR = PROJECT_ROOT
+DEFAULT_INPUT_DIR = DEFAULT_OUTPUT_DIR
+DEFAULT_OUTPUT_PATH = DEFAULT_RANKING_PATH
+DEFAULT_COMPANY_MASTER_PATH = COMPANY_MASTER_PATH
+DOCS_DIR = PROJECT_ROOT / "split-address"
 
 logger = logging.getLogger(__name__)
 
@@ -307,7 +314,7 @@ def collect_rank_rows(input_dir: Path, company_master: dict[str, dict[str, Any]]
 def _html_pdf_link(code: str, report_pdf_url: str, output_path: Path) -> str:
     import html
 
-    local_pdf_path = BASE_DIR / "data" / "cache" / "pdf" / f"{code}_securities_report.pdf"
+    local_pdf_path = PDF_CACHE_DIR / f"{code}_securities_report.pdf"
     if local_pdf_path.exists():
         href = html.escape(local_pdf_path.as_uri())
         return f'<a href="{href}" target="_blank">{html.escape(local_pdf_path.name)}</a>'

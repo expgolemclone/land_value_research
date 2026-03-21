@@ -32,9 +32,11 @@ from src.schema import (
     COL_SITE_NAME,
 )
 
-OVERRIDES_FILE = PROJECT_ROOT / "config" / "address_overrides.yaml"
+from src.paths import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR
+
+OVERRIDES_FILE = ADDRESS_OVERRIDES_PATH
 DOCS_DIR = PROJECT_ROOT / "split-address"
-OUTPUT_DIR = PROJECT_ROOT / "data" / "output"
+OUTPUT_DIR = DEFAULT_OUTPUT_DIR
 
 # High-price wards where large area is suspicious (BAD_PATTERN_1)
 HIGH_PRICE_WARDS = {

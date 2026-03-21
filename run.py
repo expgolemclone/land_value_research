@@ -37,6 +37,30 @@ from src.company_config import (
     save_company_master,
 )
 from src.company_metadata_fallback import fetch_from_irbank
+from src.paths import (
+    ADDRESS_OVERRIDES_PATH,
+    CACHE_DIR,
+    COMPANY_MASTER_PATH,
+    CONFIG_DIR,
+    DATA_DIR,
+    DEFAULT_OUTPUT_DIR,
+    FACILITIES_CACHE_DIR,
+    GAIKU_CSV,
+    GEOCODE_CACHE_PATH,
+    GEOCODE_RS,
+    GEOJSON_PATH,
+    INPUT_CSV,
+    LANDPRICE_RS,
+    MARKET_CAP_CACHE_PATH,
+    OAZA_CSV,
+    PATCH_DIR,
+    PDF_CACHE_DIR,
+    PRICE_CACHE_PATH,
+    PRICE_OVERRIDES_PATH,
+    PROJECT_ROOT,
+    RUN_LOGS_DIR,
+    WEB_ADDRESS_CACHE_DIR,
+)
 from src.geocode_tokyo import TokyoGeocoder
 from src.landprice_tokyo import LandPriceTokyo, PriceResult
 from src.network import is_transient_network_error
@@ -259,7 +283,7 @@ def load_targets(input_path: str) -> list[dict[str, Any]]:
 
 
 def resolve_default_input(base_dir: str) -> str:
-    return os.path.join(base_dir, "config", "input.csv")
+    return str(INPUT_CSV)
 
 
 def migrate_legacy_pdf_cache(cache_dir: str) -> None:
@@ -297,7 +321,7 @@ def get_geocode_adjustment_factor(level: str, args: argparse.Namespace) -> float
 
 
 def _setup_logging() -> None:
-    log_dir = os.path.join(os.path.dirname(__file__), "data", "output", "run_logs")
+    log_dir = str(RUN_LOGS_DIR)
     os.makedirs(log_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = os.path.join(log_dir, f"{timestamp}.log")
@@ -324,7 +348,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="land-value-run", description="東京都の土地推定時価を算出する")
     shtab.add_argument_to(parser)
     parser.add_argument("--input", default="")
-    parser.add_argument("--output", default="data/output")
+    parser.add_argument("--output", default=str(DEFAULT_OUTPUT_DIR))
     parser.add_argument("--price-method", choices=["idw", "nearest"], default="idw")
     parser.add_argument("--k", type=int, default=3)
     parser.add_argument("--p", type=int, default=3)
@@ -405,32 +429,30 @@ def parse_args() -> argparse.Namespace:
 
 
 def setup_environment(args: argparse.Namespace) -> RunContext:
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    config_dir = os.path.join(base_dir, "config")
-    data_dir = os.path.join(base_dir, "data")
-    cache_dir = os.path.join(data_dir, "cache")
-    ensure_dir(cache_dir)
-    pdf_cache_dir = os.path.join(cache_dir, "pdf")
-    ensure_dir(pdf_cache_dir)
-    migrate_legacy_pdf_cache(cache_dir)
-    facilities_cache_dir = os.path.join(cache_dir, "facilities_land")
-    ensure_dir(facilities_cache_dir)
-    price_cache_path = os.path.join(cache_dir, "price_result_cache.json")
-    geocode_cache_path = os.path.join(cache_dir, "geocode_result_cache.json")
+    base_dir = str(PROJECT_ROOT)
+    cache_dir = str(CACHE_DIR)
+    facilities_cache_dir = str(FACILITIES_CACHE_DIR)
+    price_cache_path = str(PRICE_CACHE_PATH)
+    geocode_cache_path = str(GEOCODE_CACHE_PATH)
+    company_master_path = str(COMPANY_MASTER_PATH)
+    market_cap_cache_path = str(MARKET_CAP_CACHE_PATH)
 
-    company_master_path = os.path.join(config_dir, "company_master.yaml")
+    ensure_dir(cache_dir)
+    ensure_dir(str(PDF_CACHE_DIR))
+    migrate_legacy_pdf_cache(cache_dir)
+    ensure_dir(facilities_cache_dir)
+
     company_master = load_company_master(company_master_path)
-    addr_overrides = load_address_overrides(os.path.join(config_dir, "address_overrides.yaml"))
-    price_overrides = load_price_overrides(os.path.join(config_dir, "price_overrides.yaml"))
-    market_cap_cache_path = os.path.join(cache_dir, "market_cap_cache.json")
+    addr_overrides = load_address_overrides(str(ADDRESS_OVERRIDES_PATH))
+    price_overrides = load_price_overrides(str(PRICE_OVERRIDES_PATH))
     market_cap_cache = load_json_dict(market_cap_cache_path)
 
     geocoder = TokyoGeocoder(
-        oaza_csv=os.path.join(data_dir, "geocoding", "geocode_ref_oaza_chome_tokyo_2024", "13_2024.csv"),
-        gaiku_csv=os.path.join(data_dir, "geocoding", "geocode_ref_gaiku_tokyo_2024", "13_2024.csv"),
+        oaza_csv=str(OAZA_CSV),
+        gaiku_csv=str(GAIKU_CSV),
     )
-    web_addr = WebAddressResearcher(cache_dir=os.path.join(cache_dir, "web_address"))
-    geojson_path = os.path.join(data_dir, "landprice", "merged", "L01_L02_merged_13.geojson")
+    web_addr = WebAddressResearcher(cache_dir=str(WEB_ADDRESS_CACHE_DIR))
+    geojson_path = str(GEOJSON_PATH)
     landprice = LandPriceTokyo(geojson_path=geojson_path)
 
     output_dir = resolve_path(base_dir, args.output)
@@ -440,7 +462,7 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
     price_cache_disk = load_json_dict(price_cache_path)
     price_deps_hash = combined_md5(
         geojson_path,
-        os.path.join(base_dir, "rust_src", "landprice_tokyo.rs"),
+        str(LANDPRICE_RS),
     )
     if price_cache_disk.get("_deps_hash") != price_deps_hash:
         logger.info("地価推定の依存変更を検出: price_result_cache をクリア")
@@ -448,8 +470,8 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
 
     geocode_cache_disk = load_json_dict(geocode_cache_path)
     geocode_deps_hash = combined_md5(
-        os.path.join(data_dir, "geocoding", "geocode_ref_gaiku_tokyo_2024", "13_2024.csv"),
-        os.path.join(base_dir, "rust_src", "geocode_tokyo.rs"),
+        str(GAIKU_CSV),
+        str(GEOCODE_RS),
     )
     if geocode_cache_disk.get("_deps_hash") != geocode_deps_hash:
         logger.info("ジオコード依存変更を検出: geocode_result_cache をクリア")
@@ -1228,13 +1250,11 @@ def _post_pipeline_cleanup(base_dir: str, keep_logs: int = 5) -> None:
     """Post-pipeline cleanup: merge patches, prune old logs, delete .bak files."""
     logger.info("パイプライン後クリーンアップ開始")
 
-    config_dir = os.path.join(base_dir, "config")
-
     # 1. Merge pending address patches
     try:
         merged = merge_patches_safe(
-            patch_dir=Path(os.path.join(config_dir, "address_patches")),
-            overrides_file=Path(os.path.join(config_dir, "address_overrides.yaml")),
+            patch_dir=PATCH_DIR,
+            overrides_file=ADDRESS_OVERRIDES_PATH,
         )
         if merged:
             logger.info("アドレスパッチをマージ: %d件", merged)
@@ -1253,6 +1273,7 @@ def _post_pipeline_cleanup(base_dir: str, keep_logs: int = 5) -> None:
         logger.warning("ログファイルの整理に失敗", exc_info=True)
 
     # 3. Delete .bak files
+    config_dir = os.path.join(base_dir, "config")
     try:
         for bf in os.listdir(config_dir):
             if bf.endswith(".bak"):

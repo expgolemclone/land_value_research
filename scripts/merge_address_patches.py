@@ -16,8 +16,14 @@ import yaml
 logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-OVERRIDES_FILE = PROJECT_ROOT / "config" / "address_overrides.yaml"
-PATCH_DIR = PROJECT_ROOT / "config" / "address_patches"
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.paths import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR
+from src.paths import PATCH_DIR as _PATCH_DIR
+
+OVERRIDES_FILE = ADDRESS_OVERRIDES_PATH
+PATCH_DIR = _PATCH_DIR
 
 
 def load_yaml(path: Path) -> dict:
@@ -123,7 +129,7 @@ def merge_patches_safe(
         pf.unlink()
 
     # マージで影響を受けた企業の output CSV を削除 (run.py で再計算させる)
-    output_dir = PROJECT_ROOT / "data" / "output"
+    output_dir = DEFAULT_OUTPUT_DIR
     for code_key in sorted(affected_codes):
         csv_path = output_dir / f"{code_key}_output.csv"
         if csv_path.exists():
@@ -211,7 +217,7 @@ def merge_patches() -> None:
         print(f"    削除済み: {pf.name}")
 
     # マージで影響を受けた企業の output CSV を削除 (run.py で再計算させる)
-    output_dir = PROJECT_ROOT / "data" / "output"
+    output_dir = DEFAULT_OUTPUT_DIR
     csv_deleted = 0
     for code_key in sorted(affected_codes):
         csv_path = output_dir / f"{code_key}_output.csv"

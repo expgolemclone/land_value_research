@@ -9,6 +9,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.geocode_tokyo import TokyoGeocoder
+from src.paths import GAIKU_CSV, OAZA_CSV
 
 
 def main(argv: list[str]) -> int:
@@ -18,8 +19,8 @@ def main(argv: list[str]) -> int:
         return 2
 
     geocoder = TokyoGeocoder(
-        oaza_csv="data/geocoding/geocode_ref_oaza_chome_tokyo_2024/13_2024.csv",
-        gaiku_csv="data/geocoding/geocode_ref_gaiku_tokyo_2024/13_2024.csv",
+        oaza_csv=str(OAZA_CSV),
+        gaiku_csv=str(GAIKU_CSV),
     )
 
     for addr in addrs:

@@ -83,7 +83,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Merge L01 + L02 GeoJSON")
     parser.add_argument("--l01", default=str(base / "tokyo_2025" / "L01-25_13.geojson"))
     parser.add_argument("--l02", default=str(base / "chika_chousa_2024" / "L02-24_13.geojson"))
-    parser.add_argument("-o", "--output", default=str(base / "merged" / "L01_L02_merged_13.geojson"))
+    from src.paths import GEOJSON_PATH
+    parser.add_argument("-o", "--output", default=str(GEOJSON_PATH))
     args = parser.parse_args()
 
     stats = merge(args.l01, args.l02, args.output)

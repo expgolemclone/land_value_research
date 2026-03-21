@@ -3,6 +3,7 @@
 run.py [1268L] -> rank_market_cap_ratio, scripts.merge_address_patches, src.*
 rank_market_cap_ratio.py [568L] -> src.company_config, src.company_metadata_fallback, src.schema
 src/
+  paths.py [42L] (SSOT: PROJECT_ROOT, CONFIG_DIR, DATA_DIR, CACHE_DIR, 全パス定数)
   schema.py [121L] (SSOT: OUTPUT_COLUMNS, RANKING_COLUMNS, COL_* constants)
   utils.py [23L] (ensure_dir, validate_url_not_private)
   cache.py [118L] -> src.pdf_extract (file_md5, combined_md5, string_md5)
@@ -35,7 +36,6 @@ scripts/
   _codex_precheck.py [182L] standalone CSV/JSON checker
   _codex_geocode_check.py [33L] -> src.geocode_tokyo
 config/
-  company_master.yaml
   address_overrides.yaml
   price_overrides.yaml
   address_patches/*.precheck.json
@@ -43,7 +43,7 @@ config/
 data/
   landprice/merged/ (GeoJSON)
   geocoding/geocode_ref_gaiku_tokyo_2024/ (CSV)
-  cache/ {price_result_cache.json, geocode_result_cache.json, addr_overrides_hash.json, price_overrides_hash.json}
+  cache/ {company_master.yaml, price_result_cache.json, geocode_result_cache.json, addr_overrides_hash.json, price_overrides_hash.json}
   cache/pdf/ {code}_securities_report.pdf
   cache/facilities_land/ {code}_sites.json
   cache/web_address/
@@ -118,4 +118,5 @@ facilities_land/{code}_sites.json invalidated by PDF stat(size+mtime) + cache_ve
 addr_overrides_hash.json invalidated by MD5(address_overrides.yaml per-company); triggers delete output/{code}_output.csv
 price_overrides_hash.json invalidated by MD5(price_overrides.yaml per-company); triggers delete output/{code}_output.csv
 market_cap_cache.json: external API, daily refresh (no auto-invalidation)
+company_master.yaml: IRBank fallback cache, auto-populated on pipeline run (no auto-invalidation)
 web_address/: external web results, volatile (no auto-invalidation)

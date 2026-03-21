@@ -34,7 +34,9 @@ def main() -> None:
     tool_input = json.loads(os.environ.get("CLAUDE_TOOL_INPUT", "{}"))
     file_path = tool_input.get("file_path", "")
     normalized = file_path.replace(os.sep, "/")
-    if not normalized.endswith("config/address_overrides.yaml"):
+    from src.paths import ADDRESS_OVERRIDES_PATH
+
+    if not normalized.endswith(str(ADDRESS_OVERRIDES_PATH)):
         return
 
     try:

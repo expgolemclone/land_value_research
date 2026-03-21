@@ -7,13 +7,15 @@ import pdfplumber
 import pypdfium2 as pdfium
 from rapidocr_onnxruntime import RapidOCR
 
+from src.paths import INPUT_CSV
+from src.paths import PDF_CACHE_DIR as _PDF_CACHE_DIR
 from src.pdf_extract import extract_major_facilities_land
 
 # 補助スクリプト: OCR検証専用. 本体処理(run.py)には必須ではない.
 
 FW_TRANS = str.maketrans("０１２３４５６７８９，．（）－", "0123456789,.()-")
 BASE_DIR = Path(__file__).resolve().parents[1]
-PDF_CACHE_DIR = BASE_DIR / "data" / "cache" / "pdf"
+PDF_CACHE_DIR = _PDF_CACHE_DIR
 
 
 def norm(s: str) -> str:
@@ -71,7 +73,7 @@ def read_codes(path: Path) -> list[str]:
 def resolve_pdf_path(code: str) -> Path:
     PDF_CACHE_DIR.mkdir(parents=True, exist_ok=True)
     new_path = PDF_CACHE_DIR / f"{code}_securities_report.pdf"
-    legacy_path = BASE_DIR / "data" / "cache" / f"{code}_securities_report.pdf"
+    legacy_path = PDF_CACHE_DIR.parent / f"{code}_securities_report.pdf"
     if (not new_path.exists()) and legacy_path.exists():
         legacy_path.replace(new_path)
     return new_path
@@ -93,7 +95,7 @@ class CheckResult:
 
 def main() -> None:
     engine = RapidOCR()
-    input_path = BASE_DIR / "config" / "input.csv"
+    input_path = INPUT_CSV
     codes = read_codes(input_path)
     all_results: list[CheckResult] = []
 
