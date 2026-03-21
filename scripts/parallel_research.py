@@ -400,8 +400,21 @@ def _print_targets(selected: list[dict[str, str]]) -> None:
 
 
 def _prepare_patch_dir() -> None:
-    """Clean patch dir (YAML + precheck JSON) or create it."""
+    """Clean patch dir (YAML + precheck JSON) or create it.
+
+    未マージのパッチが残っている場合は先にマージする。
+    """
     if PATCH_DIR.exists():
+        # 未マージパッチがあれば先にマージ
+        leftover_patches = list(PATCH_DIR.glob("*.yaml"))
+        if leftover_patches:
+            print(f"未マージパッチ検出 ({len(leftover_patches)}件). 先にマージします...\n")
+            subprocess.run(
+                [sys.executable, str(PROJECT_ROOT / "scripts" / "merge_address_patches.py")],
+                cwd=PROJECT_ROOT,
+            )
+            print()
+        # マージ後に残った YAML (マージ失敗分) と precheck を削除
         for f in PATCH_DIR.glob("*.yaml"):
             f.unlink()
         for f in PATCH_DIR.glob("*.precheck.json"):
