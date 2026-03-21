@@ -1,6 +1,6 @@
 # TREE
 
-run.py [1268L] -> rank_market_cap_ratio, scripts.merge_address_patches, src.*
+run.py [1300L] -> rank_market_cap_ratio, scripts.merge_address_patches, src.*
 rank_market_cap_ratio.py [568L] -> src.company_config, src.company_metadata_fallback, src.schema
 src/
   paths.py [42L] (SSOT: PROJECT_ROOT, CONFIG_DIR, DATA_DIR, CACHE_DIR, 全パス定数)

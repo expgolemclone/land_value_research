@@ -402,6 +402,12 @@ def parse_args() -> argparse.Namespace:
         help="対象地点の最近傍公示点と同じ用途区分のみで地価推定するか(default: on)",
     )
     parser.add_argument(
+        "--landuse-fallback-dist",
+        type=float,
+        default=1500.0,
+        help="用途ファミリーツリーの最近傍がこの距離(m)を超えたら全用途ツリーにフォールバック(default: 1500.0)",
+    )
+    parser.add_argument(
         "--workers",
         type=int,
         default=4,
@@ -853,7 +859,12 @@ def _process_site(
                 seed_pr = ctx.landprice.nearest(lat=lat, lon=lon, landuse_kind=family)
             else:
                 seed_pr = ctx.landprice.nearest(lat=lat, lon=lon)
-            target_landuse_kind = ctx.landprice.get_point_landuse_kind(seed_pr.nearest_id)
+            # 距離フォールバック: 用途ツリーの最近傍が閾値を超えたらtree_allで再検索
+            if family and seed_pr.nearest_dist_m > ctx.args.landuse_fallback_dist:
+                seed_pr_all = ctx.landprice.nearest(lat=lat, lon=lon)
+                target_landuse_kind = ctx.landprice.get_point_landuse_kind(seed_pr_all.nearest_id)
+            else:
+                target_landuse_kind = ctx.landprice.get_point_landuse_kind(seed_pr.nearest_id)
 
         pr = _estimate_price(lat, lon, target_landuse_kind, ctx)
 
