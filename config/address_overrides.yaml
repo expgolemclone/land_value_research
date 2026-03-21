@@ -612,7 +612,21 @@
     area_m2_source: 有報の本社土地面積657千m2から人形町2,409m2を控除
     name: 本社(全国子会社貸与資産等・合算)
 '3156':
-  本社: 東京都港区港南2丁目12番32号
+  本社:
+  - address: 東京都港区港南2丁目10番9号
+    area_m2: 379.0
+    area_m2_is_estimated: true
+    area_m2_note: 近傍公示地価標準地(港5-24, 港区港南2-8-67)の地積379m²を本社敷地の代理値として採用
+    area_m2_source: 公示地価標準地の地積
+    area_m2_source_url: https://www.land.mlit.go.jp/landPrice/AriaServlet?MOD=0&TYP=0
+    name: 本社(レスタービルディング・港南)
+  - address: 全国各所
+    area_m2: 121852.71
+    area_m2_is_estimated: true
+    area_m2_note: 122,231.71 - 379.0 = 121,852.71。有報の「システムBU 発電設備」は全国メガソーラー発電所群
+    area_m2_source: 有報の合計面積から本社推定面積を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W8N9.pdf
+    name: 本社(全国メガソーラー発電設備・合算)
 '3238':
   本社: 東京都千代田区飯田橋3丁目3番7号
   東京都合計: 東京都千代田区飯田橋3丁目3番7号
@@ -633,10 +647,38 @@
     name: 本社(全国資産・合算)
 '3494':
   ハイホーム本陣: 東京都中野区本町6丁目27番14号
-  マリオン浅草雷門他2棟: 東京都台東区雷門2-15-2
+  マリオン浅草雷門他2棟:
+  - address: 東京都台東区雷門2丁目15番2号
+    area_m2: 329.0
+    area_m2_is_estimated: true
+    area_m2_note: 近傍公示地価標準地(台東区雷門1-27-1)の地積329m²を代理値として採用
+    area_m2_source: 近傍公示地価標準地の地積
+    area_m2_source_url: https://www.reinfolib.mlit.go.jp/
+    name: マリオン浅草雷門他2棟(浅草雷門)
+  - address: 東京都他
+    area_m2: 160.52
+    area_m2_is_estimated: true
+    area_m2_note: 489.52 - 329.0 = 160.52。有報が「台東区 他」としており残り2棟は所在地分散
+    area_m2_source: 有報の合計面積から代表物件推定地積を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XAPZ.pdf
+    name: マリオン浅草雷門他2棟(残余2棟・東京都他)
   マリオン田端: 東京都荒川区西尾久4-6-10
   寿3丁目倉庫: 東京都台東区寿3丁目
-  門前仲町弐番館他20棟: 東京都江東区永代2-32-3
+  門前仲町弐番館他20棟:
+  - address: 東京都江東区永代2丁目32番3号
+    area_m2: 331.07
+    area_m2_is_estimated: false
+    area_m2_note: i-Bond公式で門前仲町レジデンス弐番館の地積331.07m²を確認
+    area_m2_source: i-Bond公式 物件情報
+    area_m2_source_url: https://www.i-bond.jp/products/13/
+    name: 門前仲町弐番館他20棟(門前仲町レジデンス弐番館)
+  - address: 東京都他
+    area_m2: 5053.14
+    area_m2_is_estimated: true
+    area_m2_note: 5,384.21 - 331.07 = 5,053.14。有報が「江東区 他」としており残り20棟は所在地分散
+    area_m2_source: 有報の合計面積から代表物件地積を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XAPZ.pdf
+    name: 門前仲町弐番館他20棟(残余20棟・東京都他)
 '3562':
   城北サービスセンター:
   - address: 東京都文京区湯島2丁目7番16号
@@ -776,6 +818,21 @@
     area_m2_source: 有報の合計面積から東京推定面積を控除
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W5KI.pdf
     name: 本店事務所他(営業支社・営業所・厚生施設等)
+  本社・工場他:
+  - address: 東京都北区豊島8丁目27番4号
+    area_m2: 95.0
+    area_m2_is_estimated: true
+    area_m2_note: 東京側代表地はクレシア研究所。近傍標準地(北区豊島8-13-1)の地積95m²を代理値として採用
+    area_m2_source: 近傍公示地価標準地の地積
+    area_m2_source_url: https://tochidai.info/area/kita-toshima/
+    name: 本社・工場他(クレシア研究所・東京代表)
+  - address: 全国各所
+    area_m2: 361905.0
+    area_m2_is_estimated: true
+    area_m2_note: 362,000 - 95 = 361,905。千代田区本社は御茶ノ水ソラシティのテナントであり土地代表点から除外
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W5KI.pdf
+    name: 本社・工場他(工場他・全国各所)
 '3865':
   本社他: 東京都中央区日本橋本石町3-2-2
 '3878':
@@ -1407,6 +1464,21 @@
     area_m2_source_url: https://www.hitachicm.com/content/dam/hitachicm/global/ja/ir/library/securities-report/docs/20250624_yuho_ja.pdf
     name: 本社(日立建機日本向け賃貸・その他全国合算)
 '6343':
+  本社:
+  - address: 東京都千代田区外神田3丁目16番16号
+    area_m2: 55.4
+    area_m2_is_estimated: true
+    area_m2_note: フリージア外神田3丁目ビル(4階建て延床221.44m²)の1フロア相当55.4m²を代理値として採用
+    area_m2_source: ビル情報サイトの延床面積221.44m²÷4F
+    area_m2_source_url: https://birusaku.jp/buildings?max_tsubo=70&min_tsubo=20&minutes_on_foot=3&order=rent_asc&page=416&tsubo_radio=people
+    name: 本社(フリージアトレーディング旧本店・外神田)
+  - address: 全国各所
+    area_m2: 13164.6
+    area_m2_is_estimated: true
+    area_m2_note: 13,220.0 - 55.4 = 13,164.6。有報の賃貸設備13,220m²・簿価317,938千円は千代田区単独と整合しない
+    area_m2_source: 有報の合計面積から東京推定面積を控除
+    area_m2_source_url: https://moneyworld.jp/discl-pdf/edinet/S100W2YD.pdf
+    name: 本社(賃貸設備・全国各所)
   本社・その他: 東京都千代田区神田東松下町17番地
 '6360':
   本社: 東京都千代田区内神田3丁目14番8号
@@ -2423,7 +2495,21 @@
     name: 本社(全国ホテル等・合算)
 '9731':
   本社他: 東京都大田区下丸子2丁目11番8号
-  東京支店他: 東京都大田区下丸子2丁目11番1号
+  東京支店他:
+  - address: 東京都大田区下丸子2丁目11番1号
+    area_m2: 2055.0
+    area_m2_is_estimated: true
+    area_m2_note: 近傍標準地「大田-42」(大田区下丸子2-11-11)の地積2,055m²を東京事務所の代理値として採用
+    area_m2_source: 公示地価標準地の地積
+    area_m2_source_url: https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131110042.html
+    name: 東京支店他(東京事務所・大田区)
+  - address: 東京都西東京市芝久保町3丁目2番1号
+    area_m2: 46431.93
+    area_m2_is_estimated: true
+    area_m2_note: 48,486.93 - 2,055.0 = 46,431.93。公式拠点一覧の都内クリーニング拠点2件のうち残余を武蔵野事務所に配分
+    area_m2_source: 有報の東京支店他面積から東京事務所推定面積を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VHPE.pdf
+    name: 東京支店他(武蔵野事務所・西東京市)
   神山ビル他: 東京都渋谷区神山町4-14
 '9767':
   本社: 福岡県宗像市池田965-2
