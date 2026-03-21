@@ -288,7 +288,7 @@ def run_split_address(args: argparse.Namespace) -> None:
     codes = [t["code"] for t in selected]
     with codex_lockdown(target_codes=codes, mode="split-address"):
         timestamp = _launch_processes(selected, prompts, args.cli, check_docs=True, check_patch=True)
-    _post_process(timestamp)
+    _post_process(timestamp, selected)
 
 
 # ---------------------------------------------------------------------------
@@ -329,7 +329,7 @@ def run_resolve_address(args: argparse.Namespace) -> None:
     codes = [t["code"] for t in selected]
     with codex_lockdown(target_codes=codes, mode="resolve-address"):
         timestamp = _launch_processes(selected, prompts, args.cli)
-    _post_process(timestamp)
+    _post_process(timestamp, selected)
 
 
 # ---------------------------------------------------------------------------
@@ -749,8 +749,114 @@ def _terminal_cmd(title: str, script_file: Path) -> list[str]:
     return ["kitty", "--title", title, "-e", "bash", str(script_file)]
 
 
-def _post_process(timestamp: str) -> None:
+def _collect_missing_artifacts(
+    selected: list[dict[str, str]],
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    """未生成の .md / .yaml を持つ企業を収集."""
+    missing_docs: list[dict[str, str]] = []
+    missing_patches: list[dict[str, str]] = []
+    for t in selected:
+        code = t["code"]
+        docs_md = PROJECT_ROOT / "split-address" / f"{code}.md"
+        patch_yaml = PATCH_DIR / f"{code}.yaml"
+        if not docs_md.exists() or docs_md.stat().st_size == 0:
+            missing_docs.append(t)
+        if not patch_yaml.exists() or patch_yaml.stat().st_size == 0:
+            missing_patches.append(t)
+    return missing_docs, missing_patches
+
+
+def _build_recovery_prompt(
+    selected: list[dict[str, str]],
+    missing_docs: list[dict[str, str]],
+    missing_patches: list[dict[str, str]],
+) -> str:
+    """欠損ファイル一覧をまとめたリカバリプロンプトを構築."""
+    lines: list[str] = []
+    lines.append("# split-address 実行結果レポート\n")
+    lines.append(
+        f"対象企業 {len(selected)} 件の並行調査が完了しましたが、"
+        "一部の成果物が欠損しています。\n"
+    )
+
+    if missing_docs:
+        lines.append("## 調査メモ未生成 (split-address/*.md)\n")
+        for t in missing_docs:
+            lines.append(
+                f"- {t['code']} {t['name']}: "
+                f"`split-address/{t['code']}.md` が空または未作成"
+            )
+        lines.append("")
+
+    if missing_patches:
+        lines.append("## パッチ未生成 (config/address_patches/*.yaml)\n")
+        for t in missing_patches:
+            docs_md = PROJECT_ROOT / "split-address" / f"{t['code']}.md"
+            has_docs = docs_md.exists() and docs_md.stat().st_size > 0
+            note = "調査メモあり → パッチ生成可能" if has_docs else "調査メモも未生成"
+            lines.append(
+                f"- {t['code']} {t['name']}: "
+                f"`config/address_patches/{t['code']}.yaml` 未作成 ({note})"
+            )
+        lines.append("")
+
+    lines.append("## 対処方法\n")
+    lines.append(
+        "調査メモ (`split-address/{code}.md`) が存在する企業については、"
+        "その内容を元に `config/address_patches/{code}.yaml` を生成できます。"
+    )
+    lines.append(
+        "パッチの書式は `config/address_overrides.yaml` の既存エントリを参考にしてください。\n"
+    )
+    lines.append("上記の欠損状況をユーザに報告し、どの企業から対処するか確認してください。")
+
+    return "\n".join(lines)
+
+
+def _launch_recovery_session(
+    selected: list[dict[str, str]],
+    missing_docs: list[dict[str, str]],
+    missing_patches: list[dict[str, str]],
+) -> None:
+    """欠損ファイルの一覧を注入して claude を新規ターミナルで対話起動."""
+    import shlex
+
+    prompt = _build_recovery_prompt(selected, missing_docs, missing_patches)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    prompt_file = LOG_DIR / f"{timestamp}_recovery.prompt.txt"
+    prompt_file.write_text(prompt, encoding="utf-8")
+
+    if sys.platform == "win32":
+        script = (
+            f"cd '{PROJECT_ROOT}'\n"
+            f"Get-Content '{prompt_file}' | claude\n"
+            f"Read-Host 'Press Enter to close'\n"
+        )
+        script_file = LOG_DIR / f"{timestamp}_recovery.ps1"
+        script_file.write_text(script, encoding="utf-8")
+    else:
+        script = (
+            f"cd {shlex.quote(str(PROJECT_ROOT))} || exit 1\n"
+            f"claude < {shlex.quote(str(prompt_file))}\n"
+        )
+        script_file = LOG_DIR / f"{timestamp}_recovery.sh"
+        script_file.write_text(script, encoding="utf-8")
+
+    cmd = _terminal_cmd("split-address recovery", script_file)
+    subprocess.Popen(cmd, cwd=PROJECT_ROOT)
+    print(f"  リカバリプロンプト: {prompt_file}")
+
+
+def _post_process(timestamp: str, selected: list[dict[str, str]]) -> None:
     """パッチマージと run.py を実行する (lockdown 解除後に呼ぶ)."""
+    # 欠損検出 → リカバリセッション起動
+    missing_docs, missing_patches = _collect_missing_artifacts(selected)
+    if missing_docs or missing_patches:
+        n_docs = len(missing_docs)
+        n_patches = len(missing_patches)
+        print(f"\n=== 欠損検出: md={n_docs}, yaml={n_patches} → リカバリセッション起動 ===\n")
+        _launch_recovery_session(selected, missing_docs, missing_patches)
+
     # パッチファイルが存在すればマージを自動実行
     patch_files = list(PATCH_DIR.glob("*.yaml"))
     if patch_files:

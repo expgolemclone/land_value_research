@@ -24,7 +24,7 @@ rust_src/ (PyO3 module: land_value_core)
   geocode_tokyo.rs [341L] -> jp_address
   jp_address.rs [321L] (normalize_addr, split_tokyo_municipality, parse_town_chome_block)
 scripts/
-  parallel_research.py [935L] -> scripts._codex_precheck, scripts.codex_lockdown
+  parallel_research.py [1054L] -> scripts._codex_precheck, scripts.codex_lockdown
   merge_address_patches.py [220L] (merge_patches_safe; マージ時に影響企業のoutput CSVを削除)
   merge_landprice.py [97L] standalone GeoJSON merge
   populate_company_master.py [184L] -> src.company_config, src.network
