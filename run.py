@@ -34,6 +34,7 @@ from src.company_config import (
     expand_site_splits,
     load_address_overrides,
     load_company_master,
+    load_price_overrides,
     save_company_master,
 )
 from src.company_metadata_fallback import fetch_from_irbank
@@ -114,6 +115,7 @@ class RunContext:
     company_master_path: str
     company_master: dict[str, dict[str, Any]]
     addr_overrides: dict[str, dict[str, str | list[SiteSplitEntry]]]
+    price_overrides: dict[str, dict[str, int]]
     market_cap_cache_path: str
     market_cap_cache: dict[str, Any]
     geocoder: TokyoGeocoder
@@ -436,6 +438,7 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
     company_master_path = os.path.join(config_dir, "company_master.yaml")
     company_master = load_company_master(company_master_path)
     addr_overrides = load_address_overrides(os.path.join(config_dir, "address_overrides.yaml"))
+    price_overrides = load_price_overrides(os.path.join(config_dir, "price_overrides.yaml"))
     market_cap_cache_path = os.path.join(cache_dir, "market_cap_cache.json")
     market_cap_cache = load_json_dict(market_cap_cache_path)
 
@@ -481,6 +484,7 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         company_master_path=company_master_path,
         company_master=company_master,
         addr_overrides=addr_overrides,
+        price_overrides=price_overrides,
         market_cap_cache_path=market_cap_cache_path,
         market_cap_cache=market_cap_cache,
         geocoder=geocoder,
@@ -494,43 +498,51 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
 
 
 def _invalidate_stale_override_csvs(ctx: RunContext) -> list[str]:
-    """Delete output CSVs for companies whose addr_overrides changed since last run."""
+    """Delete output CSVs for companies whose addr/price overrides changed since last run."""
     import hashlib
     import json
 
-    hash_path = os.path.join(ctx.cache_dir, "addr_overrides_hash.json")
-    old_hashes = load_json_dict(hash_path)
-    new_hashes: dict[str, str] = {}
     invalidated: list[str] = []
 
-    for code, overrides in ctx.addr_overrides.items():
-        serialized = json.dumps(overrides, sort_keys=True, ensure_ascii=False, default=str)
-        h = hashlib.md5(serialized.encode()).hexdigest()
-        new_hashes[code] = h
+    def _check_overrides(
+        overrides_dict: dict[str, Any],
+        hash_filename: str,
+        label: str,
+    ) -> None:
+        hash_path = os.path.join(ctx.cache_dir, hash_filename)
+        old_hashes = load_json_dict(hash_path)
+        new_hashes: dict[str, str] = {}
 
-        if old_hashes.get(code) != h:
-            csv_path = os.path.join(
-                ctx.processed_lookup_dir,
-                f"{sanitize_filename_component(code)}_output.csv",
-            )
-            if os.path.exists(csv_path):
-                os.remove(csv_path)
-                invalidated.append(code)
-                logger.info("住所オーバーライド変更: %s のCSVを削除", code)
+        for code, overrides in overrides_dict.items():
+            serialized = json.dumps(overrides, sort_keys=True, ensure_ascii=False, default=str)
+            h = hashlib.md5(serialized.encode()).hexdigest()
+            new_hashes[code] = h
 
-    # override が削除された企業も再計算対象にする
-    for code in old_hashes:
-        if code not in new_hashes:
-            csv_path = os.path.join(
-                ctx.processed_lookup_dir,
-                f"{sanitize_filename_component(code)}_output.csv",
-            )
-            if os.path.exists(csv_path):
-                os.remove(csv_path)
-                invalidated.append(code)
-                logger.info("住所オーバーライド削除: %s のCSVを削除", code)
+            if old_hashes.get(code) != h:
+                csv_path = os.path.join(
+                    ctx.processed_lookup_dir,
+                    f"{sanitize_filename_component(code)}_output.csv",
+                )
+                if os.path.exists(csv_path):
+                    os.remove(csv_path)
+                    invalidated.append(code)
+                    logger.info("%s変更: %s のCSVを削除", label, code)
 
-    save_json_dict(hash_path, new_hashes)
+        for code in old_hashes:
+            if code not in new_hashes:
+                csv_path = os.path.join(
+                    ctx.processed_lookup_dir,
+                    f"{sanitize_filename_component(code)}_output.csv",
+                )
+                if os.path.exists(csv_path):
+                    os.remove(csv_path)
+                    invalidated.append(code)
+                    logger.info("%s削除: %s のCSVを削除", label, code)
+
+        save_json_dict(hash_path, new_hashes)
+
+    _check_overrides(ctx.addr_overrides, "addr_overrides_hash.json", "住所オーバーライド")
+    _check_overrides(ctx.price_overrides, "price_overrides_hash.json", "地価オーバーライド")
     return invalidated
 
 
@@ -783,23 +795,43 @@ def _process_site(
 
     lat, lon, geocode_level = _geocode_address(full_addr, ctx)
 
-    target_landuse_kind = ""
-    if ctx.args.landuse_match:
-        seed_pr = ctx.landprice.nearest(lat=lat, lon=lon)
-        target_landuse_kind = ctx.landprice.get_point_landuse_kind(seed_pr.nearest_id)
+    price_override = ctx.price_overrides.get(code, {}).get(s.site_name)
+    if price_override is not None:
+        unit_price = price_override
+        unit_price_raw = float(price_override)
+        total_factor = 1.0
+        method = "override"
+        pr = PriceResult(
+            unit_price=price_override,
+            nearest_id="",
+            nearest_dist_m=0.0,
+            knn_ids=[],
+            knn_dist_m=[],
+            knn_prices=[],
+        )
+        geocode_factor = 1.0
+        dist_var, max_knn_dist_m, confidence_score, confidence_label = 0.0, 0.0, 1.0, "override"
+        target_landuse_kind = ""
+        nearest_landuse_kind = ""
+        knn_landuse_kinds = []
+    else:
+        target_landuse_kind = ""
+        if ctx.args.landuse_match:
+            seed_pr = ctx.landprice.nearest(lat=lat, lon=lon)
+            target_landuse_kind = ctx.landprice.get_point_landuse_kind(seed_pr.nearest_id)
 
-    pr = _estimate_price(lat, lon, target_landuse_kind, ctx)
+        pr = _estimate_price(lat, lon, target_landuse_kind, ctx)
 
-    dist_var, max_knn_dist_m, confidence_score, confidence_label = calc_uncertainty_metrics(pr)
-    geocode_factor = get_geocode_adjustment_factor(geocode_level, ctx.args)
-    total_factor = geocode_factor
-    unit_price_raw = float(pr.unit_price) * total_factor
-    unit_price = int(round(unit_price_raw))
-    method = "nearest" if ctx.args.price_method == "nearest" else f"idw(k={ctx.args.k},p={ctx.args.p})"
-    if ctx.args.landuse_match:
-        method = f"{method}+landuse_match"
-    nearest_landuse_kind = ctx.landprice.get_point_landuse_kind(pr.nearest_id)
-    knn_landuse_kinds = ctx.landprice.get_landuse_kinds_for_ids(pr.knn_ids)
+        dist_var, max_knn_dist_m, confidence_score, confidence_label = calc_uncertainty_metrics(pr)
+        geocode_factor = get_geocode_adjustment_factor(geocode_level, ctx.args)
+        total_factor = geocode_factor
+        unit_price_raw = float(pr.unit_price) * total_factor
+        unit_price = int(round(unit_price_raw))
+        method = "nearest" if ctx.args.price_method == "nearest" else f"idw(k={ctx.args.k},p={ctx.args.p})"
+        if ctx.args.landuse_match:
+            method = f"{method}+landuse_match"
+        nearest_landuse_kind = ctx.landprice.get_point_landuse_kind(pr.nearest_id)
+        knn_landuse_kinds = ctx.landprice.get_landuse_kinds_for_ids(pr.knn_ids)
 
     est_raw = unit_price_raw * float(s.land_area_m2)
     est = int(round(float(unit_price) * float(s.land_area_m2)))

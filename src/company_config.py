@@ -213,6 +213,26 @@ def _allocate_book_values(
     return result
 
 
+def load_price_overrides(path: str) -> dict[str, dict[str, int]]:
+    """price_overrides.yaml をロードする.
+
+    Returns:
+        {証券コード: {事業所名: 地価単価(円/m²)}}
+    """
+    if not os.path.exists(path):
+        return {}
+    with open(path, encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+    if not isinstance(data, dict):
+        return {}
+    out: dict[str, dict[str, int]] = {}
+    for code, mapping in data.items():
+        if not isinstance(mapping, dict):
+            continue
+        out[str(code)] = {str(k): int(v) for k, v in mapping.items()}
+    return out
+
+
 def save_company_master(path: str, data: dict[str, dict[str, Any]]) -> None:
     """company_master.yaml に証券コード昇順で保存する."""
     sorted_data = dict(sorted(data.items(), key=lambda x: x[0]))

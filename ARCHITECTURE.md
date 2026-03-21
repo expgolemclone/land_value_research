@@ -37,12 +37,13 @@ scripts/
 config/
   company_master.yaml
   address_overrides.yaml
+  price_overrides.yaml
   address_patches/*.precheck.json
   input.csv, input_full.csv
 data/
   landprice/merged/ (GeoJSON)
   geocoding/geocode_ref_gaiku_tokyo_2024/ (CSV)
-  cache/ {price_result_cache.json, geocode_result_cache.json, addr_overrides_hash.json}
+  cache/ {price_result_cache.json, geocode_result_cache.json, addr_overrides_hash.json, price_overrides_hash.json}
   cache/pdf/ {code}_securities_report.pdf
   cache/facilities_land/ {code}_sites.json
   cache/web_address/
@@ -67,6 +68,7 @@ fn should_accept_web_address @src/anomaly.py:72 <-run.py
 fn load_company_master @src/company_config.py:29 <-run.py, rank_market_cap_ratio.py, scripts/populate_company_master.py, scripts/populate_company_names.py
 fn save_company_master @src/company_config.py:197 <-run.py, rank_market_cap_ratio.py, scripts/populate_company_names.py
 fn load_address_overrides @src/company_config.py:40 <-run.py
+fn load_price_overrides @src/company_config.py:216 <-run.py
 fn expand_site_splits @src/company_config.py:105 <-run.py
 fn fetch_from_irbank @src/company_metadata_fallback.py:54 <-run.py, rank_market_cap_ratio.py
 fn load_json_dict @src/cache.py:29 <-run.py
@@ -110,5 +112,6 @@ price_result_cache.json invalidated by MD5(data/landprice/merged/*.geojson + rus
 geocode_result_cache.json invalidated by MD5(data/geocoding/**/*.csv + rust_src/geocode_tokyo.rs)
 facilities_land/{code}_sites.json invalidated by PDF stat(size+mtime) + cache_version
 addr_overrides_hash.json invalidated by MD5(address_overrides.yaml per-company); triggers delete output/{code}_output.csv
+price_overrides_hash.json invalidated by MD5(price_overrides.yaml per-company); triggers delete output/{code}_output.csv
 market_cap_cache.json: external API, daily refresh (no auto-invalidation)
 web_address/: external web results, volatile (no auto-invalidation)
