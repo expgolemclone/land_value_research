@@ -438,7 +438,7 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
     processed_lookup_dir = output_dir
 
     price_cache_disk = load_json_dict(price_cache_path)
-    price_deps_hash = _combined_md5(
+    price_deps_hash = combined_md5(
         geojson_path,
         os.path.join(base_dir, "rust_src", "landprice_tokyo.rs"),
     )
@@ -447,7 +447,7 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         price_cache_disk = {"_deps_hash": price_deps_hash}
 
     geocode_cache_disk = load_json_dict(geocode_cache_path)
-    geocode_deps_hash = _combined_md5(
+    geocode_deps_hash = combined_md5(
         os.path.join(data_dir, "geocoding", "geocode_ref_gaiku_tokyo_2024", "13_2024.csv"),
         os.path.join(base_dir, "rust_src", "geocode_tokyo.rs"),
     )
