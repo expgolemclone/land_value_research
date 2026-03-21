@@ -725,13 +725,13 @@
     area_m2_source: 近傍公示地価標準地の地積
     area_m2_source_url: https://www.reinfolib.mlit.go.jp/
     name: マリオン浅草雷門他2棟(浅草雷門)
-  - address: 東京都他
+  - address: 所在地分散
     area_m2: 160.52
     area_m2_is_estimated: true
     area_m2_note: 489.52 - 329.0 = 160.52。有報が「台東区 他」としており残り2棟は所在地分散
     area_m2_source: 有報の合計面積から代表物件推定地積を控除
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XAPZ.pdf
-    name: マリオン浅草雷門他2棟(残余2棟・東京都他)
+    name: マリオン浅草雷門他2棟(残余2棟)
   マリオン田端: 東京都荒川区西尾久4-6-10
   寿3丁目倉庫: 東京都台東区寿3丁目
   門前仲町弐番館他20棟:
@@ -742,13 +742,13 @@
     area_m2_source: i-Bond公式 物件情報
     area_m2_source_url: https://www.i-bond.jp/products/13/
     name: 門前仲町弐番館他20棟(門前仲町レジデンス弐番館)
-  - address: 東京都他
+  - address: 所在地分散
     area_m2: 5053.14
     area_m2_is_estimated: true
     area_m2_note: 5,384.21 - 331.07 = 5,053.14。有報が「江東区 他」としており残り20棟は所在地分散
     area_m2_source: 有報の合計面積から代表物件地積を控除
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XAPZ.pdf
-    name: 門前仲町弐番館他20棟(残余20棟・東京都他)
+    name: 門前仲町弐番館他20棟(残余20棟)
 '3562':
   城北サービスセンター:
   - address: 東京都文京区湯島2丁目7番16号
