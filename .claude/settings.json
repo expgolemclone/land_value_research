@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_git_add_all.py\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/pretool_block_git_add_all.py\""
           }
         ]
       }
@@ -28,11 +28,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_edit_lint.py\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/posttool_ruff_autofix_on_edit.py\""
           },
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate_address_patch.py\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/posttool_validate_address_overrides_yaml.py\""
           }
         ]
       }
@@ -47,11 +47,11 @@
           },
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate_geocode_patches.py\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_validate_geocode_levels.py\""
           },
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_check_architecture.py\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_require_architecture_md_update.py\""
           }
         ]
       }
