@@ -84,7 +84,7 @@ fn validate_url_not_private @src/utils.py:10 <-src/company_metadata_fallback.py,
 fn normalize_addr @src/jp_address.py:42 <-src/web_address_research.py
 fn split_tokyo_municipality @src/jp_address.py:120 <-src/web_address_research.py
 fn merge_patches_safe @scripts/merge_address_patches.py:51 <-run.py
-fn _infer_landuse_family @run.py:735 <-run.py (equipment_type→用途ファミリー推定)
+fn _infer_landuse_family @run.py:735 <-run.py (equipment_type→用途ファミリー推定, _EQUIPMENT_FAMILY_MAP参照)
 fn generate_ranking @rank_market_cap_ratio.py:524 <-run.py
 fn download_file @src/web_cache.py:19 <-run.py
 fn is_pdf_file @src/web_cache.py:10 <-run.py
