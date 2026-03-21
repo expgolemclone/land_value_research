@@ -12,7 +12,7 @@ src/
   landprice_tokyo.py [3L] re-export land_value_core{LandPriceTokyo, PriceResult}
   geocode_tokyo.py [3L] re-export land_value_core{TokyoGeocoder}
   pdf_extract.py [450L] (FacilityLand, extract_major_facilities_land, extract_facilities_section_text)
-  anomaly.py [132L] -> src.landprice_tokyo, src.schema
+  anomaly.py [130L] -> src.landprice_tokyo, src.schema
   company_config.py [201L] -> src.pdf_extract
   company_metadata_fallback.py [113L] -> src.network, src.utils
   web_address_research.py [328L] -> src.jp_address, src.network, src.utils
