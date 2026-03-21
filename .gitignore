@@ -42,6 +42,9 @@ split-address/research_logs/
 
 # Agent/Claude config
 .agents/
-.claude/
-.playwright-mcp/
+.claude/*
+!.claude/hooks/
+!.claude/settings.json
+!.claude/settings.local.json
+!.claude/skills/
 .playwright-mcp/
