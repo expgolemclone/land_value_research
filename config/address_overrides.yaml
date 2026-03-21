@@ -38,6 +38,29 @@
     area_m2: 3022790.0
     area_m2_is_estimated: false
     name: 本社ほか(炭鉱跡地等・合算)
+'1662':
+  本社:
+  - address: 東京都千代田区丸の内1丁目7番12号
+    area_m2: 0.0
+    area_m2_is_estimated: true
+    area_m2_note: 本社はサピアタワー(JR東日本の賃貸オフィスビル)のテナント。自社土地なし
+    area_m2_source: 公式サイトで本社所在地は「東京都千代田区丸の内1-7-12 サピアタワー」
+    area_m2_source_url: https://www.japex.co.jp/company/organization/offices/
+    name: 本社(サピアタワー・テナント)
+  - address: 全国各所
+    area_m2: 30061.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報の本社行土地面積。サピアタワーはテナントのため全量を全国各所に退避
+    area_m2_source: 有報の本社土地面積
+    name: 本社(全国鉱区・福利厚生施設等)
+  本社新潟鉱業所:
+  - address: 新潟県長岡市東蔵王2丁目2番83号
+    area_m2: 177329.0
+    area_m2_is_estimated: false
+    area_m2_note: 有報の「本社新潟鉱業所」は国内事業本部(新潟県長岡市)の鉱業用地。千代田区ではなく長岡市に帰属
+    area_m2_source: 公式サイトで国内事業本部の所在地は「新潟県長岡市東蔵王2-2-83」
+    area_m2_source_url: https://www.japex.co.jp/company/organization/offices/
+    name: 本社新潟鉱業所(国内事業本部・長岡市)
 '1762':
   本社大阪本店:
   - address: 大阪府大阪市淀川区新北野1丁目2番3号
@@ -1117,6 +1140,50 @@
   本社: 東京都港区虎ノ門1丁目2番3号
 '4951':
   本社・首都圏支店: 東京都新宿区下落合1丁目4番10号
+'4985':
+  本社:
+  - address: 東京都千代田区神田司町2丁目12番地1
+    area_m2: 769.0
+    area_m2_is_estimated: false
+    area_m2_note: アース製薬本社ビル(自社ビル)。有報の本社行土地面積をそのまま採用
+    area_m2_source: 公式サイトで本社所在地は「東京都千代田区神田司町二丁目12番地1」
+    area_m2_source_url: https://corp.earth.jp/jp/company/company-profile/index.html
+    name: 本社(アース製薬本社ビル・神田司町)
+  本社及び埼玉工場他:
+  - address: 全国各所
+    area_m2: 41328.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報で「東京都台東区他」の合算行。埼玉工場等が全国に分散
+    area_m2_source: 有報の本社及び埼玉工場他土地面積(location_has_hoka=True)
+    name: 本社及び埼玉工場他(全国各所)
+  本社及び彩都総合:
+  - address: 全国各所
+    area_m2: 14914.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報の合算行。彩都総合研究センター(大阪府茨木市)等が含まれる
+    area_m2_source: 有報の本社及び彩都総合土地面積
+    name: 本社及び彩都総合(全国各所)
+  本社及び徳島工場他:
+  - address: 全国各所
+    area_m2: 9575.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報で「東京都港区他」の合算行。徳島工場等が全国に分散
+    area_m2_source: 有報の本社及び徳島工場他土地面積(location_has_hoka=True)
+    name: 本社及び徳島工場他(全国各所)
+  本社及び静岡工場他:
+  - address: 東京都千代田区神田司町2丁目12番地1
+    area_m2: 0.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報で「東京都千代田区他」の合算行。本社は自社ビルだが本社行で計上済み。静岡工場等は全国に分散
+    area_m2_source: 有報の所在地に「他」を含む合算行(location_has_hoka=True)
+    name: 本社及び静岡工場他(本社・重複除外)
+  - address: 全国各所
+    area_m2: 19175.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報の合計面積。静岡工場(藤枝市)等の全国拠点を含む合算
+    area_m2_source: 有報の本社及び静岡工場他土地面積
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VI8H.pdf
+    name: 本社及び静岡工場他(全国各所)
 '5010':
   本社:
   - address: 東京都中央区京橋2丁目5番18号
