@@ -14,4 +14,15 @@ if ! command -v rustc &>/dev/null; then
     exec nix develop "${REPO_DIR}" --command "$0" "$@"
 fi
 
+# Rustソース変更検知 → uv cache clean
+RUST_HASH=$(cat "${REPO_DIR}"/rust_src/*.rs "${REPO_DIR}/Cargo.toml" | md5sum | cut -d' ' -f1)
+HASH_FILE="${REPO_DIR}/data/cache/.rust_src_hash"
+mkdir -p "$(dirname "$HASH_FILE")"
+
+if [[ ! -f "$HASH_FILE" ]] || [[ "$(cat "$HASH_FILE")" != "$RUST_HASH" ]]; then
+    echo "[land-value-run] Rustソース変更を検知、uvキャッシュをクリア..." >&2
+    uv cache clean land-value-research
+    printf '%s' "$RUST_HASH" > "$HASH_FILE"
+fi
+
 exec uv run --no-build-isolation python "${REPO_DIR}/run.py" "$@"
