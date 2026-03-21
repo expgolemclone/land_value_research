@@ -40,6 +40,9 @@ split-address/research_logs/
 !data/output/ranking_market_cap_ratio.html
 !data/ranking/ranking_market_cap_ratio.html
 
+# Test directories
+test_camelot/
+
 # Agent/Claude config
 .agents/
 .claude/*
