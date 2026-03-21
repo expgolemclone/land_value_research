@@ -75,6 +75,7 @@ def merge_patches_safe(
     added = 0
     updated = 0
     errors = 0
+    affected_codes: set[str] = set()
     merged_patch_files: list[Path] = []
 
     for pf in patch_files:
@@ -92,6 +93,8 @@ def merge_patches_safe(
                 logger.warning("  警告: %s の値が辞書ではありません。スキップ。", code)
                 errors += 1
                 continue
+
+            affected_codes.add(code_key)
 
             if code_key in overrides:
                 existing = overrides[code_key]
@@ -119,6 +122,14 @@ def merge_patches_safe(
     for pf in merged_patch_files:
         pf.unlink()
 
+    # マージで影響を受けた企業の output CSV を削除 (run.py で再計算させる)
+    output_dir = PROJECT_ROOT / "data" / "output"
+    for code_key in sorted(affected_codes):
+        csv_path = output_dir / f"{code_key}_output.csv"
+        if csv_path.exists():
+            csv_path.unlink()
+            logger.info("  CSV削除 (再計算対象): %s", csv_path.name)
+
     logger.info("パッチマージ完了: 追加=%d, 上書き=%d, エラー=%d", added, updated, errors)
     return len(merged_patch_files)
 
@@ -143,6 +154,7 @@ def merge_patches() -> None:
     added = 0
     updated = 0
     errors = 0
+    affected_codes: set[str] = set()
     merged_patch_files: list[Path] = []
 
     for pf in patch_files:
@@ -160,6 +172,8 @@ def merge_patches() -> None:
                 print(f"    警告: {code} の値が辞書ではありません。スキップ。")
                 errors += 1
                 continue
+
+            affected_codes.add(code_key)
 
             if code_key in overrides:
                 existing = overrides[code_key]
@@ -195,12 +209,25 @@ def merge_patches() -> None:
     for pf in merged_patch_files:
         pf.unlink()
         print(f"    削除済み: {pf.name}")
+
+    # マージで影響を受けた企業の output CSV を削除 (run.py で再計算させる)
+    output_dir = PROJECT_ROOT / "data" / "output"
+    csv_deleted = 0
+    for code_key in sorted(affected_codes):
+        csv_path = output_dir / f"{code_key}_output.csv"
+        if csv_path.exists():
+            csv_path.unlink()
+            print(f"    CSV削除 (再計算対象): {csv_path.name}")
+            csv_deleted += 1
+
     print()
     print("--- 統計 ---")
     print(f"  新規追加: {added} 件")
     print(f"  上書き:   {updated} 件")
     if errors:
         print(f"  エラー:   {errors} 件")
+    if csv_deleted:
+        print(f"  CSV削除:  {csv_deleted} 件")
     print(f"  合計企業: {len(overrides)} 件 (address_overrides.yaml)")
 
 
