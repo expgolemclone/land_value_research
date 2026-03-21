@@ -1,4 +1,5 @@
 use once_cell::sync::Lazy;
+use pyo3::prelude::*;
 use regex::Regex;
 
 const KANJI_DIGITS: &[(i32, &str)] = &[
@@ -207,6 +208,44 @@ pub fn parse_town_chome_block(addr: &str) -> (Option<String>, Option<i32>, Optio
 /// 「{町名}{漢数字}丁目」の構築
 pub fn build_oaza_chome_name(town: &str, chome: i32) -> String {
     format!("{}{}丁目", town, num_to_kanji(chome).unwrap())
+}
+
+// ── PyO3 ラッパー ──────────────────────────────────
+
+#[pyfunction]
+#[pyo3(name = "normalize_addr")]
+pub fn py_normalize_addr(s: &str) -> String {
+    normalize_addr(s)
+}
+
+#[pyfunction]
+#[pyo3(name = "split_tokyo_municipality")]
+pub fn py_split_tokyo_municipality(addr: &str) -> (Option<String>, String) {
+    split_tokyo_municipality(addr)
+}
+
+#[pyfunction]
+#[pyo3(name = "parse_town_chome_block")]
+pub fn py_parse_town_chome_block(addr: &str) -> (Option<String>, Option<i32>, Option<i32>) {
+    parse_town_chome_block(addr)
+}
+
+#[pyfunction]
+#[pyo3(name = "num_to_kanji")]
+pub fn py_num_to_kanji(n: i32) -> PyResult<String> {
+    num_to_kanji(n).map_err(|e| pyo3::exceptions::PyValueError::new_err(e))
+}
+
+#[pyfunction]
+#[pyo3(name = "build_oaza_chome_name")]
+pub fn py_build_oaza_chome_name(town: &str, chome: i32) -> String {
+    build_oaza_chome_name(town, chome)
+}
+
+#[pyfunction]
+#[pyo3(name = "kanji_to_int")]
+pub fn py_kanji_to_int(token: &str) -> Option<i32> {
+    kanji_to_int(token)
 }
 
 #[cfg(test)]

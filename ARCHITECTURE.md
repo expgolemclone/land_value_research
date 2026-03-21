@@ -9,7 +9,7 @@ src/
   cache.py [118L] -> src.pdf_extract (file_md5, combined_md5, string_md5)
   network.py [53L] (is_transient_network_error, urlopen_with_retry)
   web_cache.py [30L] -> src.network, src.utils
-  jp_address.py [178L] (normalize_addr, split_tokyo_municipality, parse_town_chome_block)
+  jp_address.py [17L] re-export land_value_core{normalize_addr, split_tokyo_municipality, parse_town_chome_block, num_to_kanji, build_oaza_chome_name, kanji_to_int}
   landprice_tokyo.py [3L] re-export land_value_core{LandPriceTokyo, PriceResult}
   geocode_tokyo.py [3L] re-export land_value_core{TokyoGeocoder}
   pdf_extract.py [462L] (FacilityLand, extract_major_facilities_land, extract_facilities_section_text)
@@ -18,12 +18,12 @@ src/
   company_metadata_fallback.py [113L] -> src.network, src.utils
   web_address_research.py [328L] -> src.jp_address, src.network, src.utils
 rust_src/ (PyO3 module: land_value_core)
-  lib.rs [36L] registers {PriceResult, LandPriceTokyo, TokyoGeocoder}
+  lib.rs [42L] registers {PriceResult, LandPriceTokyo, TokyoGeocoder, normalize_addr, split_tokyo_municipality, parse_town_chome_block, num_to_kanji, build_oaza_chome_name, kanji_to_int}
   types.rs [35L] struct PriceResult
   coord.rs [85L] (lonlat_to_plane, ellipsoid_distance, ellipsoid_distances)
   landprice_tokyo.rs [584L] -> coord, types
   geocode_tokyo.rs [341L] -> jp_address
-  jp_address.rs [321L] (normalize_addr, split_tokyo_municipality, parse_town_chome_block)
+  jp_address.rs [360L] (normalize_addr, split_tokyo_municipality, parse_town_chome_block + PyO3 wrappers)
 scripts/
   parallel_research.py [1054L] -> scripts._codex_precheck, scripts.codex_lockdown
   merge_address_patches.py [220L] (merge_patches_safe; マージ時に影響企業のoutput CSVを削除)
@@ -81,8 +81,8 @@ fn save_sites_cache @src/cache.py:100 <-run.py
 fn is_transient_network_error @src/network.py:14 <-run.py
 fn urlopen_with_retry @src/network.py:37 <-src/company_metadata_fallback.py, src/web_address_research.py, src/web_cache.py, scripts/populate_company_master.py
 fn validate_url_not_private @src/utils.py:10 <-src/company_metadata_fallback.py, src/web_address_research.py, src/web_cache.py
-fn normalize_addr @src/jp_address.py:42 <-src/web_address_research.py
-fn split_tokyo_municipality @src/jp_address.py:120 <-src/web_address_research.py
+fn normalize_addr @rust_src/jp_address.rs:127 <-src/jp_address.py(re-export), src/web_address_research.py
+fn split_tokyo_municipality @rust_src/jp_address.rs:144 <-src/jp_address.py(re-export), src/web_address_research.py
 fn merge_patches_safe @scripts/merge_address_patches.py:51 <-run.py
 fn _infer_landuse_family @run.py:735 <-run.py (equipment_type→用途ファミリー推定, _EQUIPMENT_FAMILY_MAP参照)
 fn generate_ranking @rank_market_cap_ratio.py:524 <-run.py
@@ -101,9 +101,10 @@ src.company_config -> {src.pdf_extract}
 src.company_metadata_fallback -> {src.network, src.utils}
 src.web_address_research -> {src.cache, src.jp_address, src.network, src.utils}
 src.web_cache -> {src.network, src.utils}
+src.jp_address -> land_value_core (Rust)
 src.landprice_tokyo -> land_value_core (Rust)
 src.geocode_tokyo -> land_value_core (Rust)
-land_value_core: landprice_tokyo -> {coord, types}; geocode_tokyo -> {jp_address}
+land_value_core: landprice_tokyo -> {coord, types}; geocode_tokyo -> {jp_address}; jp_address (PyO3 direct)
 scripts.parallel_research -> {scripts._codex_precheck, scripts.codex_lockdown}
 scripts.populate_company_master -> {src.company_config, src.network}
 scripts.populate_company_names -> {src.company_config}

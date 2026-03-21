@@ -14,8 +14,8 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from src.jp_address import (
-    _kanji_to_int,
     build_oaza_chome_name,
+    kanji_to_int,
     normalize_addr,
     num_to_kanji,
     split_tokyo_municipality,
@@ -78,10 +78,10 @@ class TestJpAddressProperties(unittest.TestCase):
     def test_num_to_kanji_roundtrip(self, n: int) -> None:
         """num_to_kanji で変換した漢字を _kanji_to_int で戻すと元の数値になる."""
         kanji = num_to_kanji(n)
-        back = _kanji_to_int(kanji)
+        back = kanji_to_int(kanji)
         self.assertEqual(back, n)
 
-    @given(n=st.integers().filter(lambda x: x < 0 or x > 99))
+    @given(n=st.integers(min_value=-1000, max_value=-1) | st.integers(min_value=100, max_value=1000))
     def test_num_to_kanji_out_of_range_raises(self, n: int) -> None:
         """0-99 範囲外の整数で ValueError が発生する."""
         with self.assertRaises(ValueError):

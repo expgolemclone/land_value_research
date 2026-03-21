@@ -19,6 +19,12 @@ fn land_value_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<types::PriceResult>()?;
     m.add_class::<landprice_tokyo::LandPriceTokyo>()?;
     m.add_class::<geocode_tokyo::TokyoGeocoder>()?;
+    m.add_function(wrap_pyfunction!(jp_address::py_normalize_addr, m)?)?;
+    m.add_function(wrap_pyfunction!(jp_address::py_split_tokyo_municipality, m)?)?;
+    m.add_function(wrap_pyfunction!(jp_address::py_parse_town_chome_block, m)?)?;
+    m.add_function(wrap_pyfunction!(jp_address::py_num_to_kanji, m)?)?;
+    m.add_function(wrap_pyfunction!(jp_address::py_build_oaza_chome_name, m)?)?;
+    m.add_function(wrap_pyfunction!(jp_address::py_kanji_to_int, m)?)?;
     Ok(())
 }
 
