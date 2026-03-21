@@ -1,8 +1,6 @@
 *.pdf
 *.PDF
-data/cache/web_address/*
-data/cache/facilities_land/
-data/cache/*.json
+data/cache/
 data/output/*
 data/output_*/
 data/ranking/*
@@ -21,15 +19,13 @@ __pycache__/
 *.pyd
 *.dll
 land_value_core/
+a.out
 
 # Pipeline run logs
 data/output/run_logs/
 
 # Backup files
 *.bak
-
-# Company master cache
-data/cache/company_master.yaml
 
 # Temporary planning files
 plan.md
