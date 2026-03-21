@@ -475,6 +475,36 @@
 '2207':
   八王子工場および東京研究所: 東京都八王子市石川町2973番2号
 '2264':
+  ㈱フリジポート東京本社:
+  - address: 東京都千代田区神田小川町3丁目3番
+    area_m2: 0.0
+    area_m2_is_estimated: true
+    area_m2_note: フリジポート本社はHF神田小川町ビルディングのテナント。自社土地なし
+    area_m2_source: 公式サイトで本社所在地は「東京都千代田区神田小川町3-3 HF神田小川町ビルディング」
+    area_m2_source_url: https://www.fr-port.co.jp/about/
+    name: ㈱フリジポート東京本社(テナント)
+  - address: 全国各所
+    area_m2: 21641.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報で「東京都千代田区他」の合算行。全国21事業所(配送センター・工場)の土地
+    area_m2_source: 有報のフリジポート東京本社土地面積(location_has_hoka=True)
+    area_m2_source_url: https://www.fr-port.co.jp/office/
+    name: ㈱フリジポート東京本社(全国配送センター・工場)
+  支社・支店・センター:
+  - address: 東京都港区東新橋1丁目5番2号
+    area_m2: 0.0
+    area_m2_is_estimated: true
+    area_m2_note: 本社は汐留シティセンター(住友不動産の賃貸オフィスビル)のテナント。自社土地なし
+    area_m2_source: 公式サイトで本社所在地は「東京都港区東新橋1-5-2 汐留シティセンター」
+    area_m2_source_url: https://www.morinagamilk.co.jp/corporate/map/01.html
+    name: 支社・支店・センター(本社ビル・テナント)
+  - address: 全国各所
+    area_m2: 35409.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報で「東京都港区他」の合算行。東北支店・関東支店・北陸支店・東海支社・関西支社・中四国支店等の全国拠点
+    area_m2_source: 有報の支社・支店・センター土地面積(location_has_hoka=True)
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4TH.pdf
+    name: 支社・支店・センター(全国各所)
   本社・その他:
   - address: 東京都港区芝5丁目33番1号
     area_m2: 6135.55
@@ -489,6 +519,21 @@
     area_m2_source: 有報の本社・その他土地面積982,442m²から旧本社跡地6,135.55m²を控除
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W4TH.pdf
     name: 本社・その他(目黒区・座間市・その他合算)
+  森永乳業販売㈱東京本社:
+  - address: 東京都港区芝浦3丁目13番8号
+    area_m2: 0.0
+    area_m2_is_estimated: true
+    area_m2_note: 森永乳業販売本社はデイリーフーズビル2Fのテナント。自社土地なし
+    area_m2_source: 公式サイトで本社所在地は「東京都港区芝浦3-13-8 デイリーフーズビル2F」
+    area_m2_source_url: https://www.morinagamilk-sales.com/company/office.html
+    name: 森永乳業販売㈱東京本社(テナント)
+  - address: 全国各所
+    area_m2: 23603.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報で「東京都港区他」の合算行。全国30+事業所(支店・営業所・センター)の土地
+    area_m2_source: 有報の森永乳業販売東京本社土地面積(location_has_hoka=True)
+    area_m2_source_url: https://www.morinagamilk-sales.com/company/office.html
+    name: 森永乳業販売㈱東京本社(全国支店・センター)
 '2288':
   東日本営業部:
   - address: 東京都中央区築地4丁目7番5号
@@ -1675,17 +1720,18 @@
 '7942':
   本社:
   - address: 東京都千代田区丸の内3丁目4番2号
-    area_m2: 2457.45
+    area_m2: 0.0
     area_m2_is_estimated: true
-    area_m2_source: 新日石ビルの敷地面積2,457.45m2
-    area_m2_source_url: https://kenchiku.city/chiyoda/238
-    name: 本社(丸の内・新日石ビル)
+    area_m2_note: 丸の内本社は賃借オフィスと判断し土地評価対象を0㎡とした
+    area_m2_source: 2025/3期有報「主な賃借設備」で本社は年間賃借料300百万円の賃借及びリース
+    area_m2_source_url: https://www.co-jsp.co.jp/ir/upload_file/m005-m005_03/S100W6DX.pdf
+    name: 本社(丸の内・賃借オフィス)
   - address: 全国各所
-    area_m2: 55542.55
+    area_m2: 58000.0
     area_m2_is_estimated: true
-    area_m2_note: 58,000 - 2,457.45 = 55,542.55
-    area_m2_source: 有報の合計面積から東京推定面積を控除
-    name: 本社(賃貸設備・合算)
+    area_m2_note: 有報の本社行面積58,000㎡。丸の内本社は賃借のため全量を所在未特定として退避
+    area_m2_source: 有報の合計面積
+    name: 本社(土地所在未特定・全国各所)
   本社(丸の内・新日石ビル):
   - address: 東京都千代田区丸の内3丁目4番2号
     area_m2: 0.0
@@ -2363,7 +2409,21 @@
     name: その他東京物流拠点・合算残余
 '9351':
   本社: 東京都中央区晴海1丁目8番8号
-  東京支店: 東京都江東区有明4丁目3番22号
+  東京支店:
+  - address: 東京都江東区有明4丁目4番21号
+    area_m2: 16316.0
+    area_m2_is_estimated: true
+    area_m2_note: 26,847 × 14,128 / (14,128 + 9,119) = 16,315.84。公式サイト掲載の倉庫面積比で按分
+    area_m2_source: 公式拠点紹介ページの設備面積比(第一倉庫14,128m²)
+    area_m2_source_url: https://www.toyofuto.co.jp/company/base/tokyo.html
+    name: 東京支店(有明営業所第一倉庫)
+  - address: 東京都江東区有明4丁目3番22号
+    area_m2: 10531.0
+    area_m2_is_estimated: true
+    area_m2_note: 26,847 × 9,119 / (14,128 + 9,119) = 10,531.16。公式サイト掲載の倉庫面積比で按分
+    area_m2_source: 公式拠点紹介ページの設備面積比(第二倉庫9,119m²)
+    area_m2_source_url: https://www.toyofuto.co.jp/company/base/tokyo.html
+    name: 東京支店(有明営業所第二倉庫)
 '9364':
   本社:
   - address: 兵庫県神戸市中央区浜辺通4丁目1番11号
