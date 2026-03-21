@@ -2475,7 +2475,21 @@
     area_m2_source: 有報の東京地区芝浦営業所52千m2から確認済み3拠点を控除
     name: その他東京物流拠点・合算残余
 '9351':
-  本社: 東京都中央区晴海1丁目8番8号
+  本社:
+  - address: 東京都中央区晴海1丁目8番8号
+    area_m2: 0.0
+    area_m2_is_estimated: true
+    area_m2_note: 本社は晴海トリトンスクエアW棟19階のテナント。子会社も同W棟18階に入居。自社土地なし
+    area_m2_source: 公式サイトで「晴海トリトンスクエアW棟19階」、子会社も同W棟18階
+    area_m2_source_url: https://www.toyofuto.co.jp/company/outline/
+    name: 本社(晴海トリトンスクエア・テナント)
+  - address: 全国各所
+    area_m2: 18146.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報で「東京都中央区他」の合算行。本社はテナントのため全量を全国各所に退避
+    area_m2_source: 有報の本社土地面積(location_has_hoka=True)
+    area_m2_source_url: https://irbank.net/E04321/S100W18K
+    name: 本社(賃貸用地・その他全国合算)
   東京支店:
   - address: 東京都江東区有明4丁目4番21号
     area_m2: 16316.0
