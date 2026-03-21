@@ -161,5 +161,49 @@ class TestBookValueAllocation(unittest.TestCase):
         self.assertAlmostEqual(expanded[2].land_book_value_yen, 2_000_000_000.0 * 10000 / 22000, places=0)
 
 
+class TestDuplicateSiteNameExpansion(unittest.TestCase):
+    def test_duplicate_site_names_expanded_once(self) -> None:
+        """When multiple sites share the same name, split entries are expanded only once."""
+        sites = [
+            FacilityLand("本社営業所", "東京都足立区", 1322.3, 358_000_000.0),
+            FacilityLand("本社営業所", "東京都中央区", 761.3, 19_000_000.0),
+        ]
+        overrides = {
+            "本社営業所": [
+                SiteSplitEntry(name="本社営業所(北千住)", address="東京都足立区千住関屋町8-6", area_m2=1322.3),
+                SiteSplitEntry(name="本社営業所(スリーディ)", address="東京都中央区銀座1-13-5", area_m2=761.3),
+            ],
+        }
+        expanded, flat = expand_site_splits(sites, overrides)
+        self.assertEqual(len(expanded), 2)
+        self.assertEqual(expanded[0].site_name, "本社営業所(北千住)")
+        self.assertEqual(expanded[1].site_name, "本社営業所(スリーディ)")
+        # 簿価は合算 (358M + 19M = 377M) から面積比で按分
+        total_book = 358_000_000.0 + 19_000_000.0
+        self.assertAlmostEqual(
+            expanded[0].land_book_value_yen, total_book * 1322.3 / (1322.3 + 761.3), places=0
+        )
+
+    def test_duplicate_with_non_split_sites(self) -> None:
+        """Duplicate site names are merged for split; other sites are preserved."""
+        sites = [
+            FacilityLand("工場", "東京都大田区", 5000.0, 200_000_000.0),
+            FacilityLand("本社", "東京都品川区", 165.0, 76_000_000.0),
+            FacilityLand("本社", "東京都港区", 2321.0, 1_308_000_000.0),
+        ]
+        overrides = {
+            "工場": "東京都大田区城南島2-6-1",
+            "本社": [
+                SiteSplitEntry(name="本社(品川)", address="東京都品川区西五反田8-1-1", area_m2=165.0),
+                SiteSplitEntry(name="本社(港区)", address="東京都港区赤坂3-7-13", area_m2=2321.0),
+            ],
+        }
+        expanded, flat = expand_site_splits(sites, overrides)
+        self.assertEqual(len(expanded), 3)
+        self.assertEqual(expanded[0].site_name, "工場")
+        self.assertEqual(expanded[1].site_name, "本社(品川)")
+        self.assertEqual(expanded[2].site_name, "本社(港区)")
+
+
 if __name__ == "__main__":
     unittest.main()

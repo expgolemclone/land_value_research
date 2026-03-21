@@ -131,10 +131,29 @@ def expand_site_splits(
         return sites, flat_overrides
 
     expanded: list[FacilityLand] = []
+    expanded_splits: set[str] = set()
     for s in sites:
         if s.site_name in split_map:
+            if s.site_name in expanded_splits:
+                continue
+            expanded_splits.add(s.site_name)
+            # 同名行の簿価を合算して按分の母数にする
+            total_book = sum(
+                x.land_book_value_yen
+                for x in sites
+                if x.site_name == s.site_name
+            )
+            merged = FacilityLand(
+                site_name=s.site_name,
+                location_short=s.location_short,
+                land_area_m2=sum(
+                    x.land_area_m2 for x in sites if x.site_name == s.site_name
+                ),
+                land_book_value_yen=total_book,
+                location_has_hoka=s.location_has_hoka,
+            )
             split_entries = split_map[s.site_name]
-            allocated = _allocate_book_values(s, split_entries)
+            allocated = _allocate_book_values(merged, split_entries)
             for entry in allocated:
                 expanded.append(
                     FacilityLand(
