@@ -73,14 +73,14 @@ class TestDetectAnomalyWarnings(unittest.TestCase):
         )
         self.assertTrue(any("muni_centroid" in w for w in warnings))
 
-    def test_muni_centroid_small_area_no_warning(self) -> None:
+    def test_muni_centroid_small_area_still_warns(self) -> None:
         warnings = detect_anomaly_warnings(
             land_area_m2=5000.0,
             geocode_level="muni_centroid",
             confidence_label="high",
             max_knn_dist_m=100.0,
         )
-        self.assertFalse(any("muni_centroid" in w for w in warnings))
+        self.assertTrue(any("muni_centroid" in w for w in warnings))
 
     def test_oaza_chome_large_area(self) -> None:
         warnings = detect_anomaly_warnings(

@@ -12,8 +12,8 @@ DUPLICATE_ADDRESS_WARNING_AREA_M2 = 50_000.0
 DUPLICATE_ADDRESS_CRITICAL_SITE_COUNT = 2
 UNCERTAINTY_MAX_DIST_REF_M = 5_000.0
 UNCERTAINTY_DIST_VAR_REF_M2 = 1_000_000.0
-ANOMALY_MUNI_CENTROID_AREA_M2 = 10_000.0
-ANOMALY_OAZA_CHOME_AREA_M2 = 50_000.0
+
+
 ANOMALY_KNN_FAR_DIST_M = 10_000.0
 ANOMALY_LOW_CONFIDENCE_AREA_M2 = 5_000.0
 
@@ -49,10 +49,10 @@ def detect_anomaly_warnings(
     warnings: list[str] = []
     if location_has_hoka:
         warnings.append("所在地に複数所在地シグナルを含む(他/ほか/及び/等/外)(合算面積の可能性)")
-    if geocode_level == "muni_centroid" and land_area_m2 >= ANOMALY_MUNI_CENTROID_AREA_M2:
-        warnings.append("muni_centroidかつ土地面積10000m2以上")
-    if geocode_level == "oaza_chome" and land_area_m2 >= ANOMALY_OAZA_CHOME_AREA_M2:
-        warnings.append("oaza_chomeかつ土地面積50000m2以上")
+    if geocode_level == "muni_centroid":
+        warnings.append("muni_centroid")
+    if geocode_level == "oaza_chome":
+        warnings.append("oaza_chome")
     if max_knn_dist_m >= ANOMALY_KNN_FAR_DIST_M:
         warnings.append("k近傍最遠距離10000m以上")
     if confidence_label == "low" and land_area_m2 >= ANOMALY_LOW_CONFIDENCE_AREA_M2:
