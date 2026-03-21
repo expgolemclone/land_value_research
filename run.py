@@ -13,7 +13,6 @@ import urllib.error
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from pathlib import Path
 from typing import Any
 
 import shtab
@@ -40,8 +39,6 @@ from src.config import (
     ADDRESS_OVERRIDES_PATH,
     CACHE_DIR,
     COMPANY_MASTER_PATH,
-    CONFIG_DIR,
-    DATA_DIR,
     DEFAULT_OUTPUT_DIR,
     FACILITIES_CACHE_DIR,
     GAIKU_CSV,
