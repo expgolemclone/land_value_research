@@ -1,0 +1,20 @@
+{
+  "code": "7831",
+  "sites": [
+    {
+      "site_name": "本社",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 198.0,
+      "ward": "千代田区",
+      "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": true
+    }
+  ],
+  "all_gaiku": true,
+  "has_risk": true,
+  "docs_exists": false
+}

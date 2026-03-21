@@ -1,0 +1,32 @@
+{
+  "code": "8281",
+  "sites": [
+    {
+      "site_name": "ヴィクトリア本店他",
+      "geocode_level": "muni_centroid",
+      "address_source": "securities_report",
+      "has_hoka": true,
+      "is_aggregate": true,
+      "area_m2": 1086.0,
+      "ward": "千代田区",
+      "has_override": false,
+      "bad_pattern_1_risk": true,
+      "has_multi_loc_warning": true
+    },
+    {
+      "site_name": "宝町昭和通り店 他",
+      "geocode_level": "muni_centroid",
+      "address_source": "securities_report",
+      "has_hoka": true,
+      "is_aggregate": true,
+      "area_m2": 81793.0,
+      "ward": "中央区",
+      "has_override": false,
+      "bad_pattern_1_risk": true,
+      "has_multi_loc_warning": true
+    }
+  ],
+  "all_gaiku": false,
+  "has_risk": true,
+  "docs_exists": false
+}

@@ -1,17 +1,17 @@
 {
-  "code": "1491",
+  "code": "3758",
   "sites": [
     {
-      "site_name": "ルピナス御徒町支店 他",
+      "site_name": "本社",
       "geocode_level": "muni_centroid",
       "address_source": "securities_report",
-      "has_hoka": true,
-      "is_aggregate": true,
-      "area_m2": 84.0,
-      "ward": "台東区",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 165.0,
+      "ward": "品川区",
       "has_override": false,
-      "bad_pattern_1_risk": true,
-      "has_multi_loc_warning": true
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
     },
     {
       "site_name": "本社",
@@ -19,8 +19,8 @@
       "address_source": "web",
       "has_hoka": false,
       "is_aggregate": false,
-      "area_m2": 3772.0,
-      "ward": "千代田区",
+      "area_m2": 2321.0,
+      "ward": "港区",
       "has_override": false,
       "bad_pattern_1_risk": false,
       "has_multi_loc_warning": false

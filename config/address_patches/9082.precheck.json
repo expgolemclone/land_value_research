@@ -1,0 +1,92 @@
+{
+  "code": "9082",
+  "sites": [
+    {
+      "site_name": "大和自動車交通江東他各営業所",
+      "geocode_level": "gaiku",
+      "address_source": "override",
+      "has_hoka": true,
+      "is_aggregate": false,
+      "area_m2": 1117.2,
+      "ward": "江東区",
+      "has_override": true,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "王子ビル他各賃貸施設",
+      "geocode_level": "gaiku",
+      "address_source": "override",
+      "has_hoka": true,
+      "is_aggregate": false,
+      "area_m2": 25832.5,
+      "ward": "北区",
+      "has_override": true,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "本社",
+      "geocode_level": "gaiku",
+      "address_source": "override",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 190.1,
+      "ward": "江東区",
+      "has_override": true,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "本社営業所",
+      "geocode_level": "muni_centroid",
+      "address_source": "securities_report",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 1322.3,
+      "ward": "足立区",
+      "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "本社営業所",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 761.3,
+      "ward": "中央区",
+      "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "清澄スタンド他各事業所",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": true,
+      "is_aggregate": false,
+      "area_m2": 4341.2,
+      "ward": "江東区",
+      "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "本社営業所他各営業所",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": true,
+      "is_aggregate": false,
+      "area_m2": 1830.3,
+      "ward": "江東区",
+      "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    }
+  ],
+  "all_gaiku": false,
+  "has_risk": true,
+  "docs_exists": false
+}

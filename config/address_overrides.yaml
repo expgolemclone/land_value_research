@@ -505,6 +505,9 @@
     name: 東日本営業部(宇都宮・千葉合算)
 '2332':
   本社: 東京都港区芝浦3丁目1番1号
+'2418':
+  青山事業所: 東京都港区北青山3丁目9番14号
+  ＡＮＡホリデイ・イン東京ベイ: 東京都品川区東品川2丁目3番15号
 '2429':
   ㈱ワールドレジデンシャル:
   - address: 東京都港区白金1丁目25番21号
@@ -727,6 +730,22 @@
   本社: 東京都千代田区富士見1丁目3番11号
 '3690':
   東京本社: 東京都千代田区有楽町2丁目2番1号
+'3758':
+  本社:
+  - address: 東京都品川区西五反田8丁目1番1号
+    area_m2: 165.0
+    area_m2_is_estimated: false
+    area_m2_note: ㈱Impression 本社(東京都品川区)の土地面積165㎡。公式サイトでは本社所在地を東京都品川区西五反田8-1-1 GWビル5階と表示。
+    area_m2_source: 2024年12月期有価証券報告書「主要な設備の状況」
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VJ2F.pdf
+    name: 本社(品川区・㈱Impression)
+  - address: 東京都港区赤坂3丁目7番13号
+    area_m2: 2321.0
+    area_m2_is_estimated: false
+    area_m2_note: ㈱トータルマネージメント 本社(東京都港区)の土地面積2321㎡。アエリア本社所在地は東京都港区赤坂3-7-13 赤坂HMビル4Fで一致。
+    area_m2_source: 2024年12月期有価証券報告書「主要な設備の状況」
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100VJ2F.pdf
+    name: 本社(港区・㈱トータルマネージメント)
 '3856':
   本社:
   - address: 東京都品川区東品川2丁目2番4号
@@ -885,6 +904,22 @@
     area_m2_note: 有報739千m2全量。テナントのため東京配分なし。
     area_m2_source: 有報の本社土地面積739千m2(テナントのため全量退避)
     name: 本社(全国工場等・合算)
+'4095':
+  加工事業:
+  - address: 東京都中央区日本橋3丁目12番1号
+    area_m2: 490.0
+    area_m2_is_estimated: true
+    area_m2_note: 公式サイトで本社は第1三木ビル5F。賃貸オフィスのため東京単独93,000㎡は不自然と判断し、残余を全国工場等へ配分
+    area_m2_source: 第1三木ビルの基準階面積490.90㎡を東京本社部分の上限代理値として採用
+    area_m2_source_url: https://www.officetar.jp/building/35074/312888/
+    name: 加工事業(日本橋本社・テナント)
+  - address: 全国各所
+    area_m2: 92510.0
+    area_m2_is_estimated: false
+    area_m2_note: 総面積93,000㎡から東京本社推定490㎡を控除した残余
+    name: 加工事業(全国工場等・合算)
+  薬品事業加工事業: 東京都足立区宮城1丁目35番11号
+  装置事業: 東京都中央区日本橋2丁目16番8号
 '4182':
   本社:
   - address: 東京都千代田区丸の内2-5-2
@@ -1106,6 +1141,12 @@
     area_m2_note: 117,000.0 - 993.0 = 116,007.0
     area_m2_source: 有報の合計面積から東京推定面積を控除
     name: 本社(全国資産・合算)
+  本社(芝浦・本店所在地): 東京都港区芝浦4丁目6番14号
+  本社・工場:
+  - address: 全国各所
+    area_m2: 33000.0
+    area_m2_is_estimated: false
+    name: 結城工場・鈴鹿工場(東京外合算)
 '5271':
   東京工場: 東京都西多摩郡瑞穂町大字富士山栗原新田161番地1
 '5288':
@@ -1391,6 +1432,9 @@
     area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W1H6.pdf
     name: 本社(土地150千㎡のうち東京以外・合算)
   東京都合計: 東京都港区白金1丁目17番3号
+'6743':
+  不動産関連事業: 東京都千代田区丸の内1丁目1-2588
+  本社: 東京都渋谷区幡ケ谷2-37-6
 '7003':
   本社:
   - address: 東京都中央区日本橋1丁目13番1号
@@ -1540,6 +1584,22 @@
   新木場リサイクリング: 東京都江東区新木場2丁目12番5号
   本社: 東京都江東区新木場2丁目11番1号
   東京都合計: 東京都江東区新木場2丁目11番1号
+'7831':
+  本社:
+  - address: 東京都千代田区神田神保町2-3-1
+    area_m2: 0.0
+    area_m2_is_estimated: true
+    area_m2_note: 岩波書店アネックスは地上8階の賃貸オフィスで、鈴木出版本社は5F入居。自社保有土地の根拠を確認できず 0㎡ 扱い
+    area_m2_source: 鈴木出版公式サイトの本社所在地表示と賃貸オフィス物件情報に基づき、自社保有土地ではなく賃借拠点と判断
+    area_m2_source_url: https://www.chintai-jimusho.com/building/1666/
+    name: 本社(神保町本社・賃貸オフィス)
+  - address: 東京都荒川区西尾久5-12-3
+    area_m2: 198.0
+    area_m2_is_estimated: true
+    area_m2_note: 東京営業所は公式サイトで西尾久5-12-3-1F。現地住所の物件情報は1F-3Fの低層事務所で、同住所の2026年分譲情報の土地面積合計は約186㎡となり有報198㎡に近い
+    area_m2_source: 有報上の鈴木出版「本社(東京都千代田区)ほか3支店」合算198㎡を、東京の実在拠点のうち土地保有が最も妥当な東京営業所へ配分
+    area_m2_source_url: https://www.homes.co.jp/kodate/b-17069000000055/
+    name: 東京営業所(西尾久)
 '7942':
   本社:
   - address: 東京都千代田区丸の内3丁目4番2号
@@ -1554,6 +1614,42 @@
     area_m2_note: 58,000 - 2,457.45 = 55,542.55
     area_m2_source: 有報の合計面積から東京推定面積を控除
     name: 本社(賃貸設備・合算)
+  本社(丸の内・新日石ビル):
+  - address: 東京都千代田区丸の内3丁目4番2号
+    area_m2: 0.0
+    area_m2_is_estimated: true
+    area_m2_note: 丸の内本社は賃借オフィスと判断し土地評価対象を0㎡とした
+    area_m2_source: 2025/3期有報「主な賃借設備」で本社(東京都千代田区)は年間賃借料300百万円の賃借及びリース
+    area_m2_source_url: https://www.co-jsp.co.jp/ir/upload_file/m005-m005_03/S100W6DX.pdf
+    name: 株式会社JSP本社(丸の内賃借オフィス)
+  - address: 全国各所
+    area_m2: 58000.0
+    area_m2_is_estimated: false
+    area_m2_note: 2025/3期有報_sites.jsonの本社(東京都千代田区)土地58,000㎡の残余。丸の内本社自体は賃借で所在地未特定
+    name: 株式会社JSP本社行(土地所在未特定)
+  - address: 栃木県鹿沼市茂呂901
+    area_m2: 16000.0
+    area_m2_is_estimated: false
+    name: 株式会社KP本社
+  - address: 茨城県稲敷郡阿見町中央8丁目3番3号
+    area_m2: 23000.0
+    area_m2_is_estimated: true
+    area_m2_note: 浜松町本社はオフィスビル入居のため23,000㎡の土地は筑波工場へ帰属させた
+    area_m2_source: 2025/3期有報「関係会社の状況」で三昌フォームテック本社は東京都港区で当社所有の建物を賃借、公式サイトで製造拠点は筑波工場
+    area_m2_source_url: https://sanshofoamtech.com/corporate/access.html
+    name: 三昌フォームテック筑波工場
+  - address: 千葉県野田市中里3102-6
+    area_m2: 11000.0
+    area_m2_is_estimated: false
+    name: セイホクパッケージ本社工場
+  - address: 群馬県前橋市総社町1丁目5番4号
+    area_m2: 10000.0
+    area_m2_is_estimated: false
+    name: 本州油化本社
+  - address: 茨城県下妻市鎌庭木仙房2052
+    area_m2: 42000.0
+    area_m2_is_estimated: false
+    name: NK化成本社
 '7955':
   東京支社 他2支社、:
   - address: 東京都千代田区内神田3丁目6番2号
@@ -1648,6 +1744,8 @@
     name: 本社事業所 他(全国・合算)
   東京都合計: 東京都中央区京橋3丁目1-1
   ＶＩＰ大島 他: 東京都江東区大島1丁目1-5
+'8144':
+  全社: 大阪府大阪市浪速区日本橋東2丁目1番3号
 '8158':
   本社: 東京都中央区日本橋3丁目6番2号
 '8181':
@@ -1692,6 +1790,23 @@
     area_m2_note: 1,241,792 - 181 - 1,200,000 = 41,611。
     area_m2_source: 有報の本社他土地面積1,241,792m2から池袋181m2・赤城1,200,000m2を控除
     name: 本社他(残余・全国各所)
+'8281':
+  ヴィクトリア本店他: 東京都千代田区神田小川町3-4
+  宝町昭和通り店 他:
+  - address: 東京都中央区京橋2-11-3
+    area_m2: 0.0
+    area_m2_is_estimated: true
+    area_m2_note: 服部ビルは地上10階の賃貸オフィスビルで、宝町昭和通り店は1F区画かつ駐車場0台・打席0打席
+    area_m2_source: 公式店舗ページでは服部ビル1Fの賃借店舗であり、有報注記では土地は自己所有分のみ記載のため東京側土地は0㎡と推定
+    area_m2_source_url: https://www.golfpartner.co.jp/116/
+    name: 宝町昭和通り店(京橋・賃借店舗)
+  - address: 全国各所
+    area_m2: 81793.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報 row は「宝町昭和通り店 他」の集約表示で、中央区京橋の代表店舗へ東京商業地価を全量配賦するのは不適切
+    area_m2_source: 有報の合計81,793㎡から京橋の賃借店舗0㎡推定を控除した残余
+    area_m2_source_url: https://www.golfpartner.co.jp/116/
+    name: 宝町昭和通り店 他(全国各所・残余)
 '8585':
   本社部門:
   - address: 東京都千代田区麹町5丁目2番1号
@@ -1793,6 +1908,17 @@
 '9082':
   大和自動車交通江東他各営業所: 東京都江東区猿江2丁目16番27号
   本社: 東京都江東区猿江2丁目16番31号
+  本社営業所:
+  - address: 東京都足立区千住関屋町8番6号
+    area_m2: 1322.3
+    area_m2_is_estimated: false
+    name: 本社営業所(大和自動車交通北千住)
+  - address: 東京都中央区銀座1丁目13番5号
+    area_m2: 761.3
+    area_m2_is_estimated: false
+    name: 本社営業所(株式会社スリーディ)
+  本社営業所他各営業所: 東京都江東区猿江2丁目16番31号
+  清澄スタンド他各事業所: 東京都江東区白河1丁目5番16号
   王子ビル他各賃貸施設: 東京都北区豊島5丁目1番32号
 '9119':
   本社:

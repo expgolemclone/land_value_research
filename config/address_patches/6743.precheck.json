@@ -1,0 +1,32 @@
+{
+  "code": "6743",
+  "sites": [
+    {
+      "site_name": "不動産関連事業",
+      "geocode_level": "gaiku",
+      "address_source": "web",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 585.0,
+      "ward": "千代田区",
+      "has_override": false,
+      "bad_pattern_1_risk": false,
+      "has_multi_loc_warning": false
+    },
+    {
+      "site_name": "本社",
+      "geocode_level": "muni_centroid",
+      "address_source": "securities_report",
+      "has_hoka": false,
+      "is_aggregate": false,
+      "area_m2": 11057.0,
+      "ward": "渋谷区",
+      "has_override": false,
+      "bad_pattern_1_risk": true,
+      "has_multi_loc_warning": false
+    }
+  ],
+  "all_gaiku": false,
+  "has_risk": true,
+  "docs_exists": false
+}
