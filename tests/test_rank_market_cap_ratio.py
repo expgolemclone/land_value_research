@@ -3,8 +3,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-import rank_market_cap_ratio
-from rank_market_cap_ratio import collect_rank_rows, generate_ranking, write_rank_html
+from src import rank_market_cap_ratio
+from src.rank_market_cap_ratio import collect_rank_rows, generate_ranking, write_rank_html
 from src.schema import (
     COL_ANOMALY_WARNING,
     COL_BOOK_VALUE,
@@ -90,7 +90,7 @@ class TestRankMarketCapRatio(unittest.TestCase):
         )
 
     def test_open_file_logs_warning_when_all_methods_fail(self) -> None:
-        with self.assertLogs("rank_market_cap_ratio", level="WARNING") as captured:
+        with self.assertLogs("src.rank_market_cap_ratio", level="WARNING") as captured:
             with patch.object(rank_market_cap_ratio.sys, "platform", "win32"):
                 with patch.object(
                     rank_market_cap_ratio.os,

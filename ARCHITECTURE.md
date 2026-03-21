@@ -1,8 +1,8 @@
 # TREE
 
-run.py [1300L] -> rank_market_cap_ratio, scripts.merge_address_patches, src.*
-rank_market_cap_ratio.py [568L] -> src.company_config, src.company_metadata_fallback, src.schema
+run.py [1300L] -> src.rank_market_cap_ratio, scripts.merge_address_patches, src.*
 src/
+  rank_market_cap_ratio.py [568L] -> src.company_config, src.company_metadata_fallback, src.schema
   config.py [42L] (SSOT: PROJECT_ROOT, CONFIG_DIR, DATA_DIR, CACHE_DIR, 全パス定数)
   schema.py [121L] (SSOT: OUTPUT_COLUMNS, RANKING_COLUMNS, COL_* constants)
   utils.py [23L] (ensure_dir, validate_url_not_private)
@@ -58,19 +58,19 @@ struct PriceResult @rust_src/types.rs:6 <-src/landprice_tokyo.py, src/anomaly.py
 class FacilityLand @src/pdf_extract.py:13 <-src/cache.py, src/company_config.py, run.py
 class SiteSplitEntry @src/company_config.py:16 <-run.py
 class WebAddressResearcher @src/web_address_research.py:35 <-run.py
-class CompanyMetadata @src/company_metadata_fallback.py:16 <-run.py, rank_market_cap_ratio.py
+class CompanyMetadata @src/company_metadata_fallback.py:16 <-run.py, src/rank_market_cap_ratio.py
 class OutputRow @src/schema.py:51 <-src/anomaly.py, run.py
 fn extract_major_facilities_land @src/pdf_extract.py:372 <-run.py, scripts/validate_ocr_accuracy.py
 fn calc_uncertainty_metrics @src/anomaly.py:21 <-run.py
 fn detect_anomaly_warnings @src/anomaly.py:42 <-run.py
 fn detect_duplicate_address_large_area @src/anomaly.py:94 <-run.py
 fn should_accept_web_address @src/anomaly.py:72 <-run.py
-fn load_company_master @src/company_config.py:29 <-run.py, rank_market_cap_ratio.py, scripts/populate_company_master.py, scripts/populate_company_names.py
-fn save_company_master @src/company_config.py:197 <-run.py, rank_market_cap_ratio.py, scripts/populate_company_names.py
+fn load_company_master @src/company_config.py:29 <-run.py, src/rank_market_cap_ratio.py, scripts/populate_company_master.py, scripts/populate_company_names.py
+fn save_company_master @src/company_config.py:197 <-run.py, src/rank_market_cap_ratio.py, scripts/populate_company_names.py
 fn load_address_overrides @src/company_config.py:40 <-run.py
 fn load_price_overrides @src/company_config.py:216 <-run.py
 fn expand_site_splits @src/company_config.py:105 <-run.py
-fn fetch_from_irbank @src/company_metadata_fallback.py:54 <-run.py, rank_market_cap_ratio.py
+fn fetch_from_irbank @src/company_metadata_fallback.py:54 <-run.py, src/rank_market_cap_ratio.py
 fn file_md5 @src/cache.py:15 <-run.py
 fn combined_md5 @src/cache.py:24 <-run.py
 fn string_md5 @src/cache.py:32 <-run.py, src/web_address_research.py
@@ -85,16 +85,16 @@ fn normalize_addr @rust_src/jp_address.rs:127 <-src/jp_address.py(re-export), sr
 fn split_tokyo_municipality @rust_src/jp_address.rs:144 <-src/jp_address.py(re-export), src/web_address_research.py
 fn merge_patches_safe @scripts/merge_address_patches.py:51 <-run.py
 fn _infer_landuse_family @run.py:735 <-run.py (equipment_type→用途ファミリー推定, _EQUIPMENT_FAMILY_MAP参照)
-fn generate_ranking @rank_market_cap_ratio.py:524 <-run.py
+fn generate_ranking @src/rank_market_cap_ratio.py:524 <-run.py
 fn download_file @src/web_cache.py:19 <-run.py
 fn is_pdf_file @src/web_cache.py:10 <-run.py
 const OUTPUT_COLUMNS @src/schema.py:17 <-run.py
-const RANKING_COLUMNS @src/schema.py:56 <-rank_market_cap_ratio.py
+const RANKING_COLUMNS @src/schema.py:56 <-src/rank_market_cap_ratio.py
 
 # GRAPH
 
-run.py -> {rank_market_cap_ratio, scripts.merge_address_patches, src.anomaly, src.cache, src.company_config, src.company_metadata_fallback, src.geocode_tokyo, src.landprice_tokyo, src.network, src.pdf_extract, src.schema, src.utils, src.web_address_research, src.web_cache}
-rank_market_cap_ratio.py -> {src.company_config, src.company_metadata_fallback, src.schema}
+run.py -> {src.rank_market_cap_ratio, scripts.merge_address_patches, src.anomaly, src.cache, src.company_config, src.company_metadata_fallback, src.geocode_tokyo, src.landprice_tokyo, src.network, src.pdf_extract, src.schema, src.utils, src.web_address_research, src.web_cache}
+src.rank_market_cap_ratio -> {src.company_config, src.company_metadata_fallback, src.schema}
 src.anomaly -> {src.landprice_tokyo, src.schema}
 src.cache -> {src.pdf_extract}
 src.company_config -> {src.pdf_extract}

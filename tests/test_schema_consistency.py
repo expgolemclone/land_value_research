@@ -46,7 +46,7 @@ class TestRankModuleUsesSchema(unittest.TestCase):
         import tempfile
         from pathlib import Path
 
-        from rank_market_cap_ratio import write_rank_html
+        from src.rank_market_cap_ratio import write_rank_html
         from src.schema import (
             COL_ANOMALY_WARNING,
             COL_BOOK_VALUE,

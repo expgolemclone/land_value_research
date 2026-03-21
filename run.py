@@ -18,7 +18,7 @@ from typing import Any
 
 import shtab
 
-from rank_market_cap_ratio import generate_ranking
+from src.rank_market_cap_ratio import generate_ranking
 from scripts.merge_address_patches import merge_patches_safe
 from src.anomaly import (
     CRITICAL_EVAL_MULTIPLE,
