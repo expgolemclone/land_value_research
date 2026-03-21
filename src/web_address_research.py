@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import html
 import io
 import json
@@ -15,6 +14,7 @@ from dataclasses import dataclass
 
 import pdfplumber
 
+from src.cache import string_md5
 from src.jp_address import normalize_addr, split_tokyo_municipality
 from src.network import urlopen_with_retry
 from src.utils import validate_url_not_private
@@ -62,11 +62,11 @@ class WebAddressResearcher:
             shutil.copy2(local_path, cache_path)
 
     def _cache_path(self, url: str) -> str:
-        key = hashlib.sha1(url.encode("utf-8")).hexdigest()
+        key = string_md5(url)
         return os.path.join(self.cache_dir, key)
 
     def _analysis_cache_path(self, url: str) -> str:
-        key = hashlib.sha1(url.encode("utf-8")).hexdigest()
+        key = string_md5(url)
         return os.path.join(self.cache_dir, f"{key}.analysis.json")
 
     def _fetch_bytes(self, url: str) -> bytes:

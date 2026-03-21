@@ -1,11 +1,11 @@
 # TREE
 
-run.py [1223L] -> rank_market_cap_ratio, scripts.merge_address_patches, src.*
+run.py [1266L] -> rank_market_cap_ratio, scripts.merge_address_patches, src.*
 rank_market_cap_ratio.py [568L] -> src.company_config, src.company_metadata_fallback, src.schema
 src/
   schema.py [121L] (SSOT: OUTPUT_COLUMNS, RANKING_COLUMNS, COL_* constants)
   utils.py [23L] (ensure_dir, validate_url_not_private)
-  cache.py [93L] -> src.pdf_extract
+  cache.py [118L] -> src.pdf_extract (file_md5, combined_md5, string_md5)
   network.py [53L] (is_transient_network_error, urlopen_with_retry)
   web_cache.py [30L] -> src.network, src.utils
   jp_address.py [178L] (normalize_addr, split_tokyo_municipality, parse_town_chome_block)
@@ -71,10 +71,13 @@ fn load_address_overrides @src/company_config.py:40 <-run.py
 fn load_price_overrides @src/company_config.py:216 <-run.py
 fn expand_site_splits @src/company_config.py:105 <-run.py
 fn fetch_from_irbank @src/company_metadata_fallback.py:54 <-run.py, rank_market_cap_ratio.py
-fn load_json_dict @src/cache.py:29 <-run.py
-fn save_json_dict @src/cache.py:42 <-run.py
-fn load_sites_cache @src/cache.py:46 <-run.py
-fn save_sites_cache @src/cache.py:76 <-run.py
+fn file_md5 @src/cache.py:15 <-run.py
+fn combined_md5 @src/cache.py:24 <-run.py
+fn string_md5 @src/cache.py:32 <-run.py, src/web_address_research.py
+fn load_json_dict @src/cache.py:52 <-run.py
+fn save_json_dict @src/cache.py:65 <-run.py
+fn load_sites_cache @src/cache.py:69 <-run.py
+fn save_sites_cache @src/cache.py:100 <-run.py
 fn is_transient_network_error @src/network.py:14 <-run.py
 fn urlopen_with_retry @src/network.py:37 <-src/company_metadata_fallback.py, src/web_address_research.py, src/web_cache.py, scripts/populate_company_master.py
 fn validate_url_not_private @src/utils.py:10 <-src/company_metadata_fallback.py, src/web_address_research.py, src/web_cache.py
@@ -96,7 +99,7 @@ src.anomaly -> {src.landprice_tokyo, src.schema}
 src.cache -> {src.pdf_extract}
 src.company_config -> {src.pdf_extract}
 src.company_metadata_fallback -> {src.network, src.utils}
-src.web_address_research -> {src.jp_address, src.network, src.utils}
+src.web_address_research -> {src.cache, src.jp_address, src.network, src.utils}
 src.web_cache -> {src.network, src.utils}
 src.landprice_tokyo -> land_value_core (Rust)
 src.geocode_tokyo -> land_value_core (Rust)

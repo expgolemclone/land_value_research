@@ -2,7 +2,6 @@ import argparse
 import atexit
 import csv
 import gc
-import hashlib
 import logging
 import math
 import os
@@ -28,7 +27,7 @@ from src.anomaly import (
     detect_duplicate_address_large_area,
     should_accept_web_address,
 )
-from src.cache import load_json_dict, load_sites_cache, save_json_dict, save_sites_cache
+from src.cache import combined_md5, load_json_dict, load_sites_cache, save_json_dict, save_sites_cache, string_md5
 from src.company_config import (
     SiteSplitEntry,
     expand_site_splits,
@@ -161,22 +160,6 @@ class CompanySkipError(Exception):
 class TransientNetworkError(Exception):
     """一時的な通信エラー。一定回数の再試行対象。"""
 
-
-def _file_md5(path: str) -> str:
-    """ファイルの MD5 ハッシュを返す."""
-    h = hashlib.md5()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
-            h.update(chunk)
-    return h.hexdigest()
-
-
-def _combined_md5(*paths: str) -> str:
-    """複数ファイルの MD5 を結合して単一ハッシュを生成."""
-    h = hashlib.md5()
-    for p in sorted(paths):
-        h.update(_file_md5(p).encode())
-    return h.hexdigest()
 
 
 def sanitize_filename_component(name: str) -> str:
@@ -499,7 +482,6 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
 
 def _invalidate_stale_override_csvs(ctx: RunContext) -> list[str]:
     """Delete output CSVs for companies whose addr/price overrides changed since last run."""
-    import hashlib
     import json
 
     invalidated: list[str] = []
@@ -515,7 +497,7 @@ def _invalidate_stale_override_csvs(ctx: RunContext) -> list[str]:
 
         for code, overrides in overrides_dict.items():
             serialized = json.dumps(overrides, sort_keys=True, ensure_ascii=False, default=str)
-            h = hashlib.md5(serialized.encode()).hexdigest()
+            h = string_md5(serialized)
             new_hashes[code] = h
 
             if old_hashes.get(code) != h:
