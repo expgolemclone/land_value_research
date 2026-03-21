@@ -1,6 +1,6 @@
 # TREE
 
-run.py [1266L] -> rank_market_cap_ratio, scripts.merge_address_patches, src.*
+run.py [1268L] -> rank_market_cap_ratio, scripts.merge_address_patches, src.*
 rank_market_cap_ratio.py [568L] -> src.company_config, src.company_metadata_fallback, src.schema
 src/
   schema.py [121L] (SSOT: OUTPUT_COLUMNS, RANKING_COLUMNS, COL_* constants)
@@ -11,7 +11,7 @@ src/
   jp_address.py [178L] (normalize_addr, split_tokyo_municipality, parse_town_chome_block)
   landprice_tokyo.py [3L] re-export land_value_core{LandPriceTokyo, PriceResult}
   geocode_tokyo.py [3L] re-export land_value_core{TokyoGeocoder}
-  pdf_extract.py [450L] (FacilityLand, extract_major_facilities_land, extract_facilities_section_text)
+  pdf_extract.py [462L] (FacilityLand, extract_major_facilities_land, extract_facilities_section_text)
   anomaly.py [130L] -> src.landprice_tokyo, src.schema
   company_config.py [201L] -> src.pdf_extract
   company_metadata_fallback.py [113L] -> src.network, src.utils
@@ -20,7 +20,7 @@ rust_src/ (PyO3 module: land_value_core)
   lib.rs [36L] registers {PriceResult, LandPriceTokyo, TokyoGeocoder}
   types.rs [35L] struct PriceResult
   coord.rs [85L] (lonlat_to_plane, ellipsoid_distance, ellipsoid_distances)
-  landprice_tokyo.rs [556L] -> coord, types
+  landprice_tokyo.rs [584L] -> coord, types
   geocode_tokyo.rs [341L] -> jp_address
   jp_address.rs [321L] (normalize_addr, split_tokyo_municipality, parse_town_chome_block)
 scripts/
