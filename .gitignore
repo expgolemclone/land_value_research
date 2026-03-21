@@ -40,8 +40,6 @@ split-address/research_logs/
 
 # HTML files
 *.html
-!data/output/ranking_market_cap_ratio.html
-!data/ranking/ranking_market_cap_ratio.html
 
 # Test directories
 test_camelot/
