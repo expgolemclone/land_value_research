@@ -15,7 +15,7 @@ src/
   pdf_extract.py [521L] (FacilityLand, extract_major_facilities_land, extract_facilities_section_text, batch_extract_facilities)
   anomaly.py [130L] -> src.landprice_tokyo, src.schema
   company_config.py [201L] -> src.pdf_extract
-  company_metadata_fallback.py [113L] -> src.network, src.utils
+  company_metadata_fallback.py [118L] -> src.network, src.utils
   web_address_research.py [328L] -> src.jp_address, src.network, src.utils
 rust_src/ (PyO3 module: land_value_core)
   lib.rs [42L] registers {PriceResult, LandPriceTokyo, TokyoGeocoder, normalize_addr, split_tokyo_municipality, parse_town_chome_block, num_to_kanji, build_oaza_chome_name, kanji_to_int}

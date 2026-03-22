@@ -93,6 +93,11 @@ def fetch_from_irbank(code: str) -> CompanyMetadata:
                 r'title="有価証券報告書[^"]*" href="notes\?f=(S100[0-9A-Z]+)"',
                 html_edinet,
             )
+            if not doc_ids:
+                doc_ids = re.findall(
+                    r'href="notes\?f=(S100[0-9A-Z]+)" title="有価証券報告書[^"]*"',
+                    html_edinet,
+                )
             if doc_ids:
                 securities_report_pdf_url = (
                     f"https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/{doc_ids[0]}.pdf"
