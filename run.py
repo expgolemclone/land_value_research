@@ -822,7 +822,7 @@ def _process_site(
                 location_short=s.location_short,
                 source_urls=address_source_urls,
             )
-            if cand and should_accept_web_address(s.site_name, cand.score):
+            if cand and should_accept_web_address(s.site_name, cand.score, location_has_hoka=s.location_has_hoka):
                 full_addr = cand.address
                 addr_source = "web"
                 addr_source_url = cand.source_url

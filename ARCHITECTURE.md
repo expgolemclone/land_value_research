@@ -13,7 +13,7 @@ src/
   landprice_tokyo.py [3L] re-export land_value_core{LandPriceTokyo, PriceResult}
   geocode_tokyo.py [3L] re-export land_value_core{TokyoGeocoder}
   pdf_extract.py [521L] (FacilityLand, extract_major_facilities_land, extract_facilities_section_text, batch_extract_facilities)
-  anomaly.py [130L] -> src.landprice_tokyo, src.schema
+  anomaly.py [137L] -> src.landprice_tokyo, src.schema
   company_config.py [201L] -> src.pdf_extract
   company_metadata_fallback.py [118L] -> src.network, src.utils
   web_address_research.py [328L] -> src.jp_address, src.network, src.utils
@@ -64,8 +64,8 @@ fn extract_major_facilities_land @src/pdf_extract.py:386 <-run.py, scripts/valid
 fn batch_extract_facilities @src/pdf_extract.py:484 <-run.py
 fn calc_uncertainty_metrics @src/anomaly.py:21 <-run.py
 fn detect_anomaly_warnings @src/anomaly.py:42 <-run.py
-fn detect_duplicate_address_large_area @src/anomaly.py:94 <-run.py
-fn should_accept_web_address @src/anomaly.py:72 <-run.py
+fn detect_duplicate_address_large_area @src/anomaly.py:99 <-run.py
+fn should_accept_web_address @src/anomaly.py:70 <-run.py
 fn load_company_master @src/company_config.py:29 <-run.py, src/rank_market_cap_ratio.py, scripts/populate_company_master.py, scripts/populate_company_names.py
 fn save_company_master @src/company_config.py:197 <-run.py, src/rank_market_cap_ratio.py, scripts/populate_company_names.py
 fn load_address_overrides @src/company_config.py:40 <-run.py

@@ -67,8 +67,15 @@ def is_aggregate_site_name(site_name: str) -> bool:
     return normalized.endswith("他") or normalized.endswith("等")
 
 
-def should_accept_web_address(site_name: str, score: int) -> bool:
+def should_accept_web_address(
+    site_name: str,
+    score: int,
+    *,
+    location_has_hoka: bool = False,
+) -> bool:
     if is_aggregate_site_name(site_name):
+        return False
+    if location_has_hoka:
         return False
     return score >= WEB_ADDRESS_SCORE_MIN
 
