@@ -1097,6 +1097,48 @@ def save_caches(ctx: RunContext) -> None:
     ctx.web_addr.flush()
 
 
+def _pre_download_pdf(t: dict[str, Any], ctx: RunContext) -> None:
+    """Phase 1: PDF URLが既知のターゲットのPDFを事前ダウンロード."""
+    code = t["code"]
+    pdf_path = get_pdf_path(ctx.cache_dir, code)
+    if os.path.exists(pdf_path) and is_pdf_file(pdf_path):
+        return
+    if os.path.exists(pdf_path):
+        os.remove(pdf_path)
+    meta = ctx.company_master.get(code, {})
+    pdf_url = t["pdf_url"] or meta.get("securities_report_pdf_url", "")
+    if not pdf_url or not ctx.args.allow_download:
+        return
+    try:
+        download_file(pdf_url, pdf_path)
+    except Exception as e:
+        logger.debug("PDF事前ダウンロード失敗(後で再試行): %s: %s", code, e)
+
+
+def _pre_download_pdfs(
+    targets: list[dict[str, Any]],
+    max_workers: int,
+    ctx: RunContext,
+) -> None:
+    """ThreadPoolExecutorでPDFを事前ダウンロード (I/O bound)."""
+    need_download = []
+    for t in targets:
+        p = get_pdf_path(ctx.cache_dir, t["code"])
+        if not os.path.exists(p) or not is_pdf_file(p):
+            need_download.append(t)
+    if not need_download:
+        return
+    dl_workers = max(1, min(max_workers, len(need_download)))
+    logger.info("PDF事前ダウンロード開始: %d件 (workers=%d)", len(need_download), dl_workers)
+    with ThreadPoolExecutor(max_workers=dl_workers) as executor:
+        futures = {executor.submit(_pre_download_pdf, t, ctx): t for t in need_download}
+        done = 0
+        for future in as_completed(futures):
+            future.result()  # 例外は _pre_download_pdf 内で処理済み
+            done += 1
+        logger.info("PDF事前ダウンロード完了: %d/%d件", done, len(need_download))
+
+
 def _process_company_with_retry(
     t: dict[str, Any],
     company_index: int,
@@ -1213,7 +1255,10 @@ def _main_worker(args: argparse.Namespace) -> None:
         max_workers = max(1, min(args.workers, total_companies))
         logger.info("処理開始: %d社 (workers=%d)", total_companies, max_workers)
 
-        # --- バッチPDF並列抽出: キャッシュ未取得のPDFを事前に並列処理 ---
+        # --- Phase 1: PDF事前ダウンロード (I/O bound → ThreadPoolExecutor) ---
+        _pre_download_pdfs(targets_to_process, max_workers, ctx)
+
+        # --- Phase 2: バッチPDF並列抽出 (CPU bound → ProcessPoolExecutor) ---
         uncached_pdfs: dict[str, str] = {}
         for t in targets_to_process:
             code = t["code"]
