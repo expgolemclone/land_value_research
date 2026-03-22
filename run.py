@@ -1112,7 +1112,7 @@ def _pre_download_pdf(t: dict[str, Any], ctx: RunContext) -> None:
     try:
         download_file(pdf_url, pdf_path)
     except Exception as e:
-        logger.debug("PDF事前ダウンロード失敗(後で再試行): %s: %s", code, e)
+        logger.warning("PDF事前ダウンロード失敗(後で再試行): %s: %s", code, e)
 
 
 def _pre_download_pdfs(
@@ -1132,11 +1132,16 @@ def _pre_download_pdfs(
     logger.info("PDF事前ダウンロード開始: %d件 (workers=%d)", len(need_download), dl_workers)
     with ThreadPoolExecutor(max_workers=dl_workers) as executor:
         futures = {executor.submit(_pre_download_pdf, t, ctx): t for t in need_download}
-        done = 0
+        failed = 0
         for future in as_completed(futures):
-            future.result()  # 例外は _pre_download_pdf 内で処理済み
-            done += 1
-        logger.info("PDF事前ダウンロード完了: %d/%d件", done, len(need_download))
+            try:
+                future.result()
+            except Exception:
+                failed += 1
+        if failed:
+            logger.warning("PDF事前ダウンロード完了: %d/%d件失敗", failed, len(need_download))
+        else:
+            logger.info("PDF事前ダウンロード完了: %d件", len(need_download))
 
 
 def _process_company_with_retry(
