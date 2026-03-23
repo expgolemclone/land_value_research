@@ -23,19 +23,19 @@ pub struct LandPriceTokyo {
     points: Vec<LandPoint>,
     point_idx_by_id: HashMap<String, usize>,
     tree_all: KdTree<f64, 2>,
+    all_idx: Vec<usize>,
     /// 用途区分別: (サブKdTree, グローバルインデックス配列)
     landuse_trees: HashMap<String, (KdTree<f64, 2>, Vec<usize>)>,
 }
 
 impl LandPriceTokyo {
-    fn get_tree_and_index(&self, landuse_kind: Option<&str>) -> (&KdTree<f64, 2>, Vec<usize>) {
+    fn get_tree_and_index(&self, landuse_kind: Option<&str>) -> (&KdTree<f64, 2>, &[usize]) {
         if let Some(kind) = landuse_kind {
             if let Some((tree, indices)) = self.landuse_trees.get(kind) {
-                return (tree, indices.clone());
+                return (tree, indices);
             }
         }
-        let all_idx: Vec<usize> = (0..self.points.len()).collect();
-        (&self.tree_all, all_idx)
+        (&self.tree_all, &self.all_idx)
     }
 
     fn ellipsoid_dists_for(&self, lat: f64, lon: f64, global_indices: &[usize]) -> Vec<f64> {
@@ -183,9 +183,11 @@ impl LandPriceTokyo {
             }
         }
 
+        let all_idx: Vec<usize> = (0..points.len()).collect();
         Ok(Self {
             points,
             point_idx_by_id,
+            all_idx,
             tree_all,
             landuse_trees,
         })

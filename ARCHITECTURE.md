@@ -13,7 +13,7 @@ src/
   landprice_tokyo.py [3L] re-export land_value_core{LandPriceTokyo, PriceResult}
   geocode_tokyo.py [3L] re-export land_value_core{TokyoGeocoder}
   pdf_extract.py [521L] (FacilityLand, extract_major_facilities_land, extract_facilities_section_text, batch_extract_facilities)
-  anomaly.py [137L] -> src.landprice_tokyo, src.schema
+  anomaly.py [141L] -> src.landprice_tokyo, src.schema
   company_config.py [201L] -> src.pdf_extract
   company_metadata_fallback.py [118L] -> src.network, src.utils
   web_address_research.py [328L] -> src.jp_address, src.network, src.utils
@@ -21,7 +21,7 @@ rust_src/ (PyO3 module: land_value_core)
   lib.rs [42L] registers {PriceResult, LandPriceTokyo, TokyoGeocoder, normalize_addr, split_tokyo_municipality, parse_town_chome_block, num_to_kanji, build_oaza_chome_name, kanji_to_int}
   types.rs [35L] struct PriceResult
   coord.rs [85L] (lonlat_to_plane, ellipsoid_distance, ellipsoid_distances)
-  landprice_tokyo.rs [584L] -> coord, types
+  landprice_tokyo.rs [586L] -> coord, types
   geocode_tokyo.rs [341L] -> jp_address
   jp_address.rs [360L] (normalize_addr, split_tokyo_municipality, parse_town_chome_block + PyO3 wrappers)
 scripts/
@@ -62,10 +62,10 @@ class CompanyMetadata @src/company_metadata_fallback.py:16 <-run.py, src/rank_ma
 class OutputRow @src/schema.py:51 <-src/anomaly.py, run.py
 fn extract_major_facilities_land @src/pdf_extract.py:386 <-run.py, scripts/validate_ocr_accuracy.py
 fn batch_extract_facilities @src/pdf_extract.py:484 <-run.py
-fn calc_uncertainty_metrics @src/anomaly.py:21 <-run.py
-fn detect_anomaly_warnings @src/anomaly.py:42 <-run.py
-fn detect_duplicate_address_large_area @src/anomaly.py:99 <-run.py
-fn should_accept_web_address @src/anomaly.py:70 <-run.py
+fn calc_uncertainty_metrics @src/anomaly.py:23 <-run.py
+fn detect_anomaly_warnings @src/anomaly.py:44 <-run.py
+fn detect_duplicate_address_large_area @src/anomaly.py:103 <-run.py
+fn should_accept_web_address @src/anomaly.py:74 <-run.py
 fn load_company_master @src/company_config.py:29 <-run.py, src/rank_market_cap_ratio.py, scripts/populate_company_master.py, scripts/populate_company_names.py
 fn save_company_master @src/company_config.py:197 <-run.py, src/rank_market_cap_ratio.py, scripts/populate_company_names.py
 fn load_address_overrides @src/company_config.py:40 <-run.py
