@@ -14,6 +14,10 @@ UNCERTAINTY_MAX_DIST_REF_M = 5_000.0
 UNCERTAINTY_DIST_VAR_REF_M2 = 1_000_000.0
 ANOMALY_KNN_FAR_DIST_M = 10_000.0
 ANOMALY_LOW_CONFIDENCE_AREA_M2 = 5_000.0
+UNCERTAINTY_WEIGHT_MAX_DIST = 0.7
+UNCERTAINTY_WEIGHT_DIST_VAR = 0.3
+CONFIDENCE_THRESHOLD_HIGH = 0.67
+CONFIDENCE_THRESHOLD_MEDIUM = 0.34
 
 
 def calc_uncertainty_metrics(pr: PriceResult) -> tuple[float, float, float, str]:
@@ -27,10 +31,10 @@ def calc_uncertainty_metrics(pr: PriceResult) -> tuple[float, float, float, str]
 
     max_component = min(max_dist / UNCERTAINTY_MAX_DIST_REF_M, 1.0)
     var_component = min(dist_var / UNCERTAINTY_DIST_VAR_REF_M2, 1.0)
-    score = max(0.0, min(1.0, 1.0 - (0.7 * max_component + 0.3 * var_component)))
-    if score >= 0.67:
+    score = max(0.0, min(1.0, 1.0 - (UNCERTAINTY_WEIGHT_MAX_DIST * max_component + UNCERTAINTY_WEIGHT_DIST_VAR * var_component)))
+    if score >= CONFIDENCE_THRESHOLD_HIGH:
         label = "high"
-    elif score >= 0.34:
+    elif score >= CONFIDENCE_THRESHOLD_MEDIUM:
         label = "medium"
     else:
         label = "low"
