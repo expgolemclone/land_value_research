@@ -137,6 +137,7 @@ def _book_multiplier(header_text: str) -> int:
         return 1_000_000
     if "(千円)" in header_text or "（千円）" in header_text:
         return 1_000
+    logger.warning("帳簿価額の単位を検出できませんでした。百万円をデフォルトとして使用します。ヘッダー: %s", header_text[:200])
     return 1_000_000
 
 
