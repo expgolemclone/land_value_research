@@ -171,7 +171,7 @@ class WebAddressResearcher:
                     raw_stat = os.stat(raw_cache_path)
                     with open(analysis_cache_path, encoding="utf-8") as f:
                         d = json.load(f)
-                    if int(d.get("raw_size", -1)) == int(raw_stat.st_size) and float(d.get("raw_mtime", -1.0)) == float(
+                    if int(d.get("raw_size", -1)) == int(raw_stat.st_size) and str(d.get("raw_mtime", "")) == str(
                         raw_stat.st_mtime
                     ):
                         text = str(d.get("text", ""))

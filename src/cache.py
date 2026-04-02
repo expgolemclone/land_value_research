@@ -76,7 +76,7 @@ def load_sites_cache(cache_path: str, pdf_path: str) -> list[FacilityLand] | Non
         if (
             d.get("cache_version") != 5
             or int(d.get("pdf_size", -1)) != int(stat.st_size)
-            or float(d.get("pdf_mtime", -1.0)) != float(stat.st_mtime)
+            or str(d.get("pdf_mtime", "")) != str(stat.st_mtime)
         ):
             return None
         out: list[FacilityLand] = []
