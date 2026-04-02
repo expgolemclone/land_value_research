@@ -1061,17 +1061,21 @@ def _get_memory_usage_percent() -> float:
         ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
         return float(stat.dwMemoryLoad)
     else:
-        with open("/proc/meminfo") as f:
-            info: dict[str, int] = {}
-            for line in f:
-                parts = line.split()
-                if parts[0] in ("MemTotal:", "MemAvailable:"):
-                    info[parts[0]] = int(parts[1])
-                if len(info) == 2:
-                    break
-        total = info["MemTotal:"]
-        available = info["MemAvailable:"]
-        return (total - available) / total * 100
+        try:
+            with open("/proc/meminfo") as f:
+                info: dict[str, int] = {}
+                for line in f:
+                    parts = line.split()
+                    if parts[0] in ("MemTotal:", "MemAvailable:"):
+                        info[parts[0]] = int(parts[1])
+                    if len(info) == 2:
+                        break
+            total = info["MemTotal:"]
+            available = info["MemAvailable:"]
+            return (total - available) / total * 100
+        except (KeyError, OSError, IndexError, ValueError) as e:
+            logger.debug("メモリ情報の取得に失敗: %s", e)
+            return 0.0
 
 
 def _memory_watchdog(ctx: RunContext, limit_percent: float, check_interval: float = 5.0) -> None:
