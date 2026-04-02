@@ -1,5 +1,6 @@
 import logging
 import re
+import threading
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
@@ -21,6 +22,7 @@ class CompanyMetadata:
 
 
 _METADATA_CACHE: dict[str, CompanyMetadata] = {}
+_METADATA_CACHE_LOCK = threading.Lock()
 
 
 def _fetch_text(url: str) -> str:
@@ -55,7 +57,8 @@ def fetch_from_irbank(code: str) -> CompanyMetadata:
     code = str(code).strip()
     if not code or not re.fullmatch(r"\d{3,4}[A-Z]?", code):
         return CompanyMetadata()
-    cached = _METADATA_CACHE.get(code)
+    with _METADATA_CACHE_LOCK:
+        cached = _METADATA_CACHE.get(code)
     if cached is not None:
         return cached
 
@@ -114,5 +117,6 @@ def fetch_from_irbank(code: str) -> CompanyMetadata:
     # 通信断などの一時失敗を固定化しないため、空結果はキャッシュしない。
     has_data = meta.company_name or meta.securities_report_pdf_url or (meta.market_cap_yen is not None)
     if has_data or (ir_ok and edinet_ok):
-        _METADATA_CACHE[code] = meta
+        with _METADATA_CACHE_LOCK:
+            _METADATA_CACHE[code] = meta
     return meta
