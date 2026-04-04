@@ -30,6 +30,7 @@ from src.company_config import load_company_master
 from src.network import urlopen_with_retry
 from src.config import COMPANY_MASTER_PATH as _COMPANY_MASTER_PATH
 from src.config import INPUT_FULL_CSV
+from src.stealth import ProxyPool
 from src.utils import validate_url_not_private
 
 COMPANY_MASTER_PATH = str(_COMPANY_MASTER_PATH)
@@ -53,27 +54,31 @@ def _atomic_save_company_master(path: str, data: dict[str, dict[str, Any]]) -> N
         raise
 
 
-def _fetch_text(url: str) -> str:
+def _fetch_text(url: str, *, pool: ProxyPool | None = None) -> str:
     validate_url_not_private(url)
-    req = urllib.request.Request(
+    req: urllib.request.Request = urllib.request.Request(
         url,
         headers={"User-Agent": "Mozilla/5.0 (compatible; land_value_research/1.0)"},
     )
-    body = urlopen_with_retry(req, timeout_sec=DEFAULT_TIMEOUT_SEC)
+    body: bytes = urlopen_with_retry(req, timeout_sec=DEFAULT_TIMEOUT_SEC, pool=pool)
     return body.decode("utf-8", errors="ignore")
 
 
-def fetch_metadata(code: str) -> dict[str, Any] | None:
+def fetch_metadata(
+    code: str,
+    *,
+    pool: ProxyPool | None = None,
+) -> dict[str, str | list[str]] | None:
     """Fetch EDINET PDF URL and IR page URL for a single company code."""
-    ir_url = f"https://irbank.net/{code}/ir"
-    edinet_url = f"https://irbank.net/{code}/edinet"
+    ir_url: str = f"https://irbank.net/{code}/ir"
+    edinet_url: str = f"https://irbank.net/{code}/edinet"
 
-    securities_report_pdf_url = ""
-    ir_ok = False
+    securities_report_pdf_url: str = ""
+    ir_ok: bool = False
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        ir_future = executor.submit(_fetch_text, ir_url)
-        edinet_future = executor.submit(_fetch_text, edinet_url)
+        ir_future = executor.submit(_fetch_text, ir_url, pool=pool)
+        edinet_future = executor.submit(_fetch_text, edinet_url, pool=pool)
 
         try:
             ir_future.result()
@@ -97,7 +102,7 @@ def fetch_metadata(code: str) -> dict[str, Any] | None:
     if not ir_ok and not securities_report_pdf_url:
         return None
 
-    entry: dict[str, Any] = {}
+    entry: dict[str, str | list[str]] = {}
     if securities_report_pdf_url:
         entry["securities_report_pdf_url"] = securities_report_pdf_url
     if ir_ok:
@@ -116,12 +121,21 @@ def load_input_codes(path: str) -> list[str]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Populate company_master.yaml from IRBank")
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(description="Populate company_master.yaml from IRBank")
     parser.add_argument("--workers", type=int, default=4, help="Number of concurrent workers (default: 4)")
     parser.add_argument("--delay", type=float, default=0.3, help="Delay in seconds between requests (default: 0.3)")
     parser.add_argument("--dry-run", action="store_true", help="Preview without writing")
     parser.add_argument("--limit", type=int, default=0, help="Limit number of codes to process (0=all)")
-    args = parser.parse_args()
+    parser.add_argument("--proxy", default=None, help="HTTP proxy URL (e.g. http://host:port)")
+    parser.add_argument("--no-proxy", action="store_true", default=False, help="Disable auto-proxy")
+    args: argparse.Namespace = parser.parse_args()
+
+    if args.proxy:
+        pool: ProxyPool = ProxyPool.from_url(args.proxy)
+    elif args.no_proxy:
+        pool = ProxyPool.direct()
+    else:
+        pool = ProxyPool.from_auto()
 
     input_codes = load_input_codes(INPUT_FULL_PATH)
     master = load_company_master(COMPANY_MASTER_PATH)
@@ -142,10 +156,10 @@ def main() -> None:
     lock = threading.Lock()
     processed = 0
 
-    def process_code(code: str) -> tuple[str, dict[str, Any] | None]:
+    def process_code(code: str) -> tuple[str, dict[str, str | list[str]] | None]:
         time.sleep(args.delay)
         try:
-            return code, fetch_metadata(code)
+            return code, fetch_metadata(code, pool=pool)
         except Exception as e:
             print(f"  ERROR {code}: {e}")
             return code, None

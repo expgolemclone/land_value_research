@@ -1,6 +1,14 @@
 """プロジェクト全体のパス定数を一元管理する."""
 
+from __future__ import annotations
+
+import sys
 from pathlib import Path
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -39,3 +47,14 @@ DEFAULT_RANKING_PATH = DATA_DIR / "ranking" / "ranking_market_cap_ratio.html"
 RUST_SRC_DIR = PROJECT_ROOT / "rust_src"
 LANDPRICE_RS = RUST_SRC_DIR / "landprice_tokyo.rs"
 GEOCODE_RS = RUST_SRC_DIR / "geocode_tokyo.rs"
+
+# magic numbers
+MAGIC_NUMBERS_PATH = CONFIG_DIR / "magic_numbers.toml"
+
+
+def _load_magic_numbers() -> dict[str, dict[str, int | float]]:
+    with MAGIC_NUMBERS_PATH.open("rb") as f:
+        return tomllib.load(f)  # type: ignore[return-value]
+
+
+MAGIC: dict[str, dict[str, int | float]] = _load_magic_numbers()

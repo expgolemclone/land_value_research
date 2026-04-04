@@ -104,6 +104,7 @@ from src.schema import (
     OUTPUT_COLUMNS,
     OutputRow,
 )
+from src.stealth import ProxyPool
 from src.utils import ensure_dir
 from src.web_address_research import WebAddressResearcher
 from src.web_cache import download_file, is_pdf_file
@@ -146,6 +147,7 @@ class RunContext:
     geocoder: TokyoGeocoder
     web_addr: WebAddressResearcher
     landprice: LandPriceTokyo
+    pool: ProxyPool
     price_cache_disk: dict[str, Any]
     geocode_cache_disk: dict[str, Any]
     cache_lock: threading.Lock = field(default_factory=threading.Lock)
@@ -433,6 +435,17 @@ def parse_args() -> argparse.Namespace:
         default=False,
         help="メモリ制限終了時の自動再起動を無効化する",
     )
+    parser.add_argument(
+        "--proxy",
+        default=None,
+        help="HTTP proxy URL (e.g. http://host:port)",
+    )
+    parser.add_argument(
+        "--no-proxy",
+        action="store_true",
+        default=False,
+        help="自動プロキシ取得を無効化し直接接続する",
+    )
     return parser.parse_args()
 
 
@@ -459,7 +472,14 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         oaza_csv=str(OAZA_CSV),
         gaiku_csv=str(GAIKU_CSV),
     )
-    web_addr = WebAddressResearcher(cache_dir=str(WEB_ADDRESS_CACHE_DIR))
+    if getattr(args, "proxy", None):
+        pool: ProxyPool = ProxyPool.from_url(args.proxy)
+    elif getattr(args, "no_proxy", False):
+        pool = ProxyPool.direct()
+    else:
+        pool = ProxyPool.from_auto()
+
+    web_addr = WebAddressResearcher(cache_dir=str(WEB_ADDRESS_CACHE_DIR), pool=pool)
     geojson_path = str(GEOJSON_PATH)
     landprice = LandPriceTokyo(geojson_path=geojson_path)
 
@@ -503,6 +523,7 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         geocoder=geocoder,
         web_addr=web_addr,
         landprice=landprice,
+        pool=pool,
         price_cache_disk=price_cache_disk,
         geocode_cache_disk=geocode_cache_disk,
     )
@@ -595,7 +616,7 @@ def _resolve_company_metadata(
     address_source_urls = t["address_source_urls"] or list(meta.get("address_source_urls", []) or [])
     fallback = None
     if ctx.args.allow_auto_metadata and (not company_name or company_name == code or not pdf_url):
-        fallback = fetch_from_irbank(code)
+        fallback = fetch_from_irbank(code, pool=ctx.pool)
         if (not company_name or company_name == code) and fallback.company_name:
             company_name = fallback.company_name
         if not pdf_url and fallback.securities_report_pdf_url:
@@ -636,7 +657,7 @@ def _resolve_company_metadata(
                 f"PDFが見つかりません: {pdf_path} ネットワーク無し環境では, 事前にdata/cache/pdfへ配置してください."
             )
         try:
-            download_file(pdf_url, pdf_path)
+            download_file(pdf_url, pdf_path, pool=ctx.pool)
         except (ValueError, urllib.error.URLError, OSError) as e:
             if is_transient_network_error(e):
                 raise TransientNetworkError(f"証券コード{code}の有報PDF取得で一時通信エラー: {e}") from e
@@ -678,7 +699,7 @@ def _resolve_company_metadata(
             mcap = cached["market_cap_yen"]
         elif ctx.args.allow_auto_metadata:
             if fallback is None:
-                fallback = fetch_from_irbank(code)
+                fallback = fetch_from_irbank(code, pool=ctx.pool)
             if fallback.market_cap_yen is not None:
                 mcap = fallback.market_cap_yen
                 with ctx.cache_lock:
@@ -1114,7 +1135,7 @@ def _pre_download_pdf(t: dict[str, Any], ctx: RunContext) -> None:
     if not pdf_url or not ctx.args.allow_download:
         return
     try:
-        download_file(pdf_url, pdf_path)
+        download_file(pdf_url, pdf_path, pool=ctx.pool)
     except Exception as e:
         logger.warning("PDF事前ダウンロード失敗(後で再試行): %s: %s", code, e)
 
@@ -1329,7 +1350,7 @@ def _main_worker(args: argparse.Namespace) -> None:
         logger.info("処理対象がありません. すべて調査済みとしてスキップしました.")
 
     logger.info("ランキング生成開始")
-    generate_ranking(input_dir=ctx.output_dir)
+    generate_ranking(input_dir=ctx.output_dir, pool=ctx.pool)
 
     _post_pipeline_cleanup(ctx.base_dir)
 

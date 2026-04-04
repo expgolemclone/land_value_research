@@ -1,12 +1,18 @@
+from __future__ import annotations
+
 import logging
 import re
 import threading
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from src.network import urlopen_with_retry
 from src.utils import validate_url_not_private
+
+if TYPE_CHECKING:
+    from src.stealth import ProxyPool
 
 logger = logging.getLogger(__name__)
 
@@ -22,16 +28,16 @@ class CompanyMetadata:
 
 
 _METADATA_CACHE: dict[str, CompanyMetadata] = {}
-_METADATA_CACHE_LOCK = threading.Lock()
+_METADATA_CACHE_LOCK: threading.Lock = threading.Lock()
 
 
-def _fetch_text(url: str) -> str:
+def _fetch_text(url: str, *, pool: ProxyPool | None = None) -> str:
     validate_url_not_private(url)
-    req = urllib.request.Request(
+    req: urllib.request.Request = urllib.request.Request(
         url,
         headers={"User-Agent": "Mozilla/5.0 (compatible; land_value_research/1.0)"},
     )
-    body = urlopen_with_retry(req, timeout_sec=DEFAULT_TIMEOUT_SEC)
+    body: bytes = urlopen_with_retry(req, timeout_sec=DEFAULT_TIMEOUT_SEC, pool=pool)
     return body.decode("utf-8", errors="ignore")
 
 
@@ -53,7 +59,11 @@ def _parse_yen_text(text: str) -> int | None:
     return None
 
 
-def fetch_from_irbank(code: str) -> CompanyMetadata:
+def fetch_from_irbank(
+    code: str,
+    *,
+    pool: ProxyPool | None = None,
+) -> CompanyMetadata:
     code = str(code).strip()
     if not code or not re.fullmatch(r"\d{3,4}[A-Z]?", code):
         return CompanyMetadata()
@@ -62,19 +72,18 @@ def fetch_from_irbank(code: str) -> CompanyMetadata:
     if cached is not None:
         return cached
 
-    ir_url = f"https://irbank.net/{code}/ir"
-    edinet_url = f"https://irbank.net/{code}/edinet"
+    ir_url: str = f"https://irbank.net/{code}/ir"
+    edinet_url: str = f"https://irbank.net/{code}/edinet"
 
-    company_name = ""
+    company_name: str = ""
     market_cap_yen: int | None = None
-    securities_report_pdf_url = ""
-    ir_ok = False
-    edinet_ok = False
+    securities_report_pdf_url: str = ""
+    ir_ok: bool = False
+    edinet_ok: bool = False
 
-    # Fetch IR page and EDINET page concurrently
     with ThreadPoolExecutor(max_workers=2) as executor:
-        ir_future = executor.submit(_fetch_text, ir_url)
-        edinet_future = executor.submit(_fetch_text, edinet_url)
+        ir_future = executor.submit(_fetch_text, ir_url, pool=pool)
+        edinet_future = executor.submit(_fetch_text, edinet_url, pool=pool)
 
         try:
             html_ir = ir_future.result()

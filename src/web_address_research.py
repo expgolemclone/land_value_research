@@ -11,6 +11,7 @@ import urllib.request
 from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import pdfplumber
 
@@ -18,6 +19,9 @@ from src.cache import string_md5
 from src.jp_address import normalize_addr, split_tokyo_municipality
 from src.network import urlopen_with_retry
 from src.utils import validate_url_not_private
+
+if TYPE_CHECKING:
+    from src.stealth import ProxyPool
 
 logger = logging.getLogger(__name__)
 
@@ -33,16 +37,23 @@ class AddressCandidate:
 
 
 class WebAddressResearcher:
-    def __init__(self, cache_dir: str, timeout_sec: int = 15):
-        self.cache_dir = cache_dir
-        self.timeout_sec = timeout_sec
+    def __init__(
+        self,
+        cache_dir: str,
+        timeout_sec: int = 15,
+        *,
+        pool: ProxyPool | None = None,
+    ) -> None:
+        self.cache_dir: str = cache_dir
+        self.timeout_sec: int = timeout_sec
+        self._pool: ProxyPool | None = pool
         os.makedirs(self.cache_dir, exist_ok=True)
         self._text_cache: dict[str, str] = {}
         self._addr_cache: dict[str, list[str]] = {}
-        self._resolve_cache_path = os.path.join(self.cache_dir, "resolve_cache.json")
+        self._resolve_cache_path: str = os.path.join(self.cache_dir, "resolve_cache.json")
         self._resolve_cache: dict[str, dict[str, object]] = {}
-        self._resolve_cache_dirty = False
-        self._lock = threading.Lock()
+        self._resolve_cache_dirty: bool = False
+        self._lock: threading.Lock = threading.Lock()
         if os.path.exists(self._resolve_cache_path):
             try:
                 with open(self._resolve_cache_path, encoding="utf-8") as f:
@@ -70,17 +81,17 @@ class WebAddressResearcher:
         return os.path.join(self.cache_dir, f"{key}.analysis.json")
 
     def _fetch_bytes(self, url: str) -> bytes:
-        cache_path = self._cache_path(url)
+        cache_path: str = self._cache_path(url)
         if os.path.exists(cache_path):
             with open(cache_path, "rb") as f:
                 return f.read()
 
         validate_url_not_private(url)
-        req = urllib.request.Request(
+        req: urllib.request.Request = urllib.request.Request(
             url,
             headers={"User-Agent": "Mozilla/5.0 (compatible; land_value_research/1.0)"},
         )
-        body = urlopen_with_retry(req, timeout_sec=self.timeout_sec)
+        body: bytes = urlopen_with_retry(req, timeout_sec=self.timeout_sec, pool=self._pool)
         with open(cache_path, "wb") as f:
             f.write(body)
         return body

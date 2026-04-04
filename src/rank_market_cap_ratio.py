@@ -1,13 +1,19 @@
+from __future__ import annotations
+
 import argparse
+import functools
 import logging
 import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING
 
 from src.company_config import load_company_master, save_company_master
 from src.company_metadata_fallback import fetch_from_irbank
+
+if TYPE_CHECKING:
+    from src.stealth import ProxyPool
 from src.config import (
     COMPANY_MASTER_PATH,
     DEFAULT_OUTPUT_DIR,
@@ -497,21 +503,27 @@ def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
         f.write("</body>\n</html>\n")
 
 
-def _resolve_missing_names(rank_rows: list[dict[str, Any]], company_master: dict[str, dict[str, Any]]) -> None:
+def _resolve_missing_names(
+    rank_rows: list[dict[str, str]],
+    company_master: dict[str, dict[str, str]],
+    *,
+    pool: ProxyPool | None = None,
+) -> None:
     """企業名がtickerコードのままの行をIRBankから名前解決し、company_masterに保存する."""
     from concurrent.futures import ThreadPoolExecutor
 
-    unresolved = [
+    unresolved: list[tuple[int, dict[str, str]]] = [
         (i, row) for i, row in enumerate(rank_rows) if row[COL_COMPANY_NAME].replace(" ", "") == row[COL_CODE]
     ]
     if not unresolved:
         return
 
-    codes = [row[COL_CODE] for _, row in unresolved]
+    codes: list[str] = [row[COL_CODE] for _, row in unresolved]
     print(f"IRBankから企業名を取得中... ({len(codes)} 社)")
 
     with ThreadPoolExecutor(max_workers=8) as executor:
-        results = list(executor.map(fetch_from_irbank, codes))
+        fetch_fn = functools.partial(fetch_from_irbank, pool=pool)
+        results = list(executor.map(fetch_fn, codes))
 
     updated = 0
     for (idx, row), meta in zip(unresolved, results):
@@ -533,16 +545,17 @@ def generate_ranking(
     output_path: Path | str | None = None,
     *,
     open_files: bool = True,
+    pool: ProxyPool | None = None,
 ) -> None:
     """Generate ranking HTML and optionally request the OS to open it."""
-    resolved_input_dir = Path(input_dir) if input_dir else DEFAULT_INPUT_DIR
-    resolved_output_path = Path(output_path) if output_path else DEFAULT_OUTPUT_PATH
+    resolved_input_dir: Path = Path(input_dir) if input_dir else DEFAULT_INPUT_DIR
+    resolved_output_path: Path = Path(output_path) if output_path else DEFAULT_OUTPUT_PATH
     if not resolved_output_path.is_absolute():
         resolved_output_path = BASE_DIR / resolved_output_path
 
     company_master = load_company_master(str(DEFAULT_COMPANY_MASTER_PATH))
     rank_rows = collect_rank_rows(resolved_input_dir, company_master)
-    _resolve_missing_names(rank_rows, company_master)
+    _resolve_missing_names(rank_rows, company_master, pool=pool)
     write_rank_html(rank_rows, resolved_output_path)
     print(f"written: {resolved_output_path} ({len(rank_rows)} rows)")
 

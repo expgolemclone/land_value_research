@@ -32,6 +32,11 @@
         env = {
           # maturin が正しい Python を使うように
           PYO3_PYTHON = "${python}/bin/python3";
+          # curl_cffi 等の C 拡張が必要とするシステムライブラリ
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
+            pkgs.stdenv.cc.cc.lib
+            pkgs.zlib
+          ];
         };
 
         shellHook = ''
