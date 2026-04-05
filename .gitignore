@@ -45,6 +45,7 @@ test_camelot/
 
 # Agent/Claude config
 .agents/
+.codex
 .claude/*
 !.claude/hooks/
 !.claude/settings.json
