@@ -27,6 +27,9 @@
           pkgs.maturin
           pkgs.uv
           pkgs.ruff
+
+          # Node.js (browser_service)
+          pkgs.nodejs_24
         ];
 
         env = {

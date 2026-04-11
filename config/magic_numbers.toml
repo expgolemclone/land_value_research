@@ -1,11 +1,16 @@
 [proxy]
-target_count = 30
-check_workers = 200
-check_timeout = 5
-anon_timeout = 3
-batch_size = 200
 max_failures = 2
 
 [scrape]
 delay_min = 1.0
 delay_max = 5.0
+
+[browser]
+pool_size = 10
+page_timeout = 30000
+idle_timeout = 300
+startup_timeout = 30
+headless = false
+disable_xvfb = false
+challenge_poll_interval_ms = 250
+challenge_clear_stable_ms = 1000

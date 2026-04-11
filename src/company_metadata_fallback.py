@@ -3,20 +3,19 @@ from __future__ import annotations
 import logging
 import re
 import threading
-import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from src.network import urlopen_with_retry
 from src.utils import validate_url_not_private
 
 if TYPE_CHECKING:
+    from src.browser import BrowserService
     from src.stealth import ProxyPool
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_TIMEOUT_SEC = 20
+DEFAULT_TIMEOUT_MS = 30000
 
 
 @dataclass(frozen=True)
@@ -31,14 +30,18 @@ _METADATA_CACHE: dict[str, CompanyMetadata] = {}
 _METADATA_CACHE_LOCK: threading.Lock = threading.Lock()
 
 
-def _fetch_text(url: str, *, pool: ProxyPool | None = None) -> str:
+def _fetch_text(
+    url: str,
+    *,
+    browser: BrowserService,
+    pool: ProxyPool | None = None,
+) -> str:
     validate_url_not_private(url)
-    req: urllib.request.Request = urllib.request.Request(
-        url,
-        headers={"User-Agent": "Mozilla/5.0 (compatible; land_value_research/1.0)"},
-    )
-    body: bytes = urlopen_with_retry(req, timeout_sec=DEFAULT_TIMEOUT_SEC, pool=pool)
-    return body.decode("utf-8", errors="ignore")
+    proxy_url: str | None = pool.get() if pool is not None else None
+    resp = browser.fetch(url, proxy=proxy_url, timeout=DEFAULT_TIMEOUT_MS)
+    if resp.html is None:
+        raise RuntimeError(f"browser fetch failed for {url}: status={resp.status} error={resp.error}")
+    return resp.html
 
 
 def _parse_yen_text(text: str) -> int | None:
@@ -62,6 +65,7 @@ def _parse_yen_text(text: str) -> int | None:
 def fetch_from_irbank(
     code: str,
     *,
+    browser: BrowserService,
     pool: ProxyPool | None = None,
 ) -> CompanyMetadata:
     code = str(code).strip()
@@ -82,8 +86,8 @@ def fetch_from_irbank(
     edinet_ok: bool = False
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        ir_future = executor.submit(_fetch_text, ir_url, pool=pool)
-        edinet_future = executor.submit(_fetch_text, edinet_url, pool=pool)
+        ir_future = executor.submit(_fetch_text, ir_url, browser=browser, pool=pool)
+        edinet_future = executor.submit(_fetch_text, edinet_url, browser=browser, pool=pool)
 
         try:
             html_ir = ir_future.result()

@@ -7,7 +7,6 @@ import logging
 import os
 import re
 import threading
-import urllib.request
 from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
@@ -17,10 +16,10 @@ import pdfplumber
 
 from src.cache import string_md5
 from src.jp_address import normalize_addr, split_tokyo_municipality
-from src.network import urlopen_with_retry
 from src.utils import validate_url_not_private
 
 if TYPE_CHECKING:
+    from src.browser import BrowserService
     from src.stealth import ProxyPool
 
 logger = logging.getLogger(__name__)
@@ -40,12 +39,14 @@ class WebAddressResearcher:
     def __init__(
         self,
         cache_dir: str,
-        timeout_sec: int = 15,
+        timeout_sec: int = 30,
         *,
+        browser: BrowserService,
         pool: ProxyPool | None = None,
     ) -> None:
         self.cache_dir: str = cache_dir
         self.timeout_sec: int = timeout_sec
+        self._browser: BrowserService = browser
         self._pool: ProxyPool | None = pool
         os.makedirs(self.cache_dir, exist_ok=True)
         self._text_cache: dict[str, str] = {}
@@ -87,11 +88,25 @@ class WebAddressResearcher:
                 return f.read()
 
         validate_url_not_private(url)
-        req: urllib.request.Request = urllib.request.Request(
-            url,
-            headers={"User-Agent": "Mozilla/5.0 (compatible; land_value_research/1.0)"},
-        )
-        body: bytes = urlopen_with_retry(req, timeout_sec=self.timeout_sec, pool=self._pool)
+        proxy_url: str | None = self._pool.get() if self._pool is not None else None
+        timeout_ms: int = self.timeout_sec * 1000
+
+        if url.lower().endswith(".pdf"):
+            downloaded_path: str = self._browser.download(
+                url,
+                download_dir=self.cache_dir,
+                proxy=proxy_url,
+                timeout=timeout_ms,
+            )
+            if downloaded_path != cache_path:
+                os.replace(downloaded_path, cache_path)
+            with open(cache_path, "rb") as f:
+                return f.read()
+
+        resp = self._browser.fetch(url, proxy=proxy_url, timeout=timeout_ms)
+        if resp.html is None:
+            raise RuntimeError(f"browser fetch failed for {url}: status={resp.status} error={resp.error}")
+        body: bytes = resp.html.encode("utf-8")
         with open(cache_path, "wb") as f:
             f.write(body)
         return body

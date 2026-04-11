@@ -126,16 +126,17 @@ def main() -> None:
     parser.add_argument("--delay", type=float, default=0.3, help="Delay in seconds between requests (default: 0.3)")
     parser.add_argument("--dry-run", action="store_true", help="Preview without writing")
     parser.add_argument("--limit", type=int, default=0, help="Limit number of codes to process (0=all)")
-    parser.add_argument("--proxy", default=None, help="HTTP proxy URL (e.g. http://host:port)")
-    parser.add_argument("--no-proxy", action="store_true", default=False, help="Disable auto-proxy")
+    parser.add_argument(
+        "--proxy",
+        default=None,
+        help="HTTP proxy URL (e.g. http://host:port). デフォルトは direct connection",
+    )
     args: argparse.Namespace = parser.parse_args()
 
     if args.proxy:
         pool: ProxyPool = ProxyPool.from_url(args.proxy)
-    elif args.no_proxy:
-        pool = ProxyPool.direct()
     else:
-        pool = ProxyPool.from_auto()
+        pool = ProxyPool.direct()
 
     input_codes = load_input_codes(INPUT_FULL_PATH)
     master = load_company_master(COMPANY_MASTER_PATH)

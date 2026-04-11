@@ -1,10 +1,14 @@
+from __future__ import annotations
+
 import tempfile
+import types
 import unittest
 import urllib.error
 import urllib.request
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from src import company_metadata_fallback
+from src.browser import BrowserResponse, BrowserService
 from src.network import urlopen_with_retry
 from src.web_address_research import WebAddressResearcher
 
@@ -13,30 +17,43 @@ class _FakeResponse:
     def __init__(self, data: bytes) -> None:
         self._data = data
 
-    def __enter__(self) -> "_FakeResponse":
+    def __enter__(self) -> _FakeResponse:
         return self
 
-    def __exit__(self, exc_type, exc, tb) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: types.TracebackType | None,
+    ) -> None:
         return None
 
     def read(self) -> bytes:
         return self._data
 
 
+def _make_browser_response(html: str) -> BrowserResponse:
+    return BrowserResponse(html=html, status=200, error=None)
+
+
+def _make_browser_error(error_msg: str) -> BrowserResponse:
+    return BrowserResponse(html=None, status=502, error=error_msg)
+
+
 class TestNetworkRetry(unittest.TestCase):
     def test_urlopen_with_retry_recovers(self) -> None:
-        req = urllib.request.Request("https://example.com")
+        req: urllib.request.Request = urllib.request.Request("https://example.com")
         with patch(
             "urllib.request.urlopen",
             side_effect=[urllib.error.URLError(OSError("temp down")), _FakeResponse(b"ok")],
         ) as mocked:
-            body = urlopen_with_retry(req, timeout_sec=1, retries=2, backoff_sec=0.0)
+            body: bytes = urlopen_with_retry(req, timeout_sec=1, retries=2, backoff_sec=0.0)
         self.assertEqual(body, b"ok")
         self.assertEqual(mocked.call_count, 2)
 
     def test_urlopen_with_retry_non_transient_http_error(self) -> None:
-        req = urllib.request.Request("https://example.com")
-        err = urllib.error.HTTPError(
+        req: urllib.request.Request = urllib.request.Request("https://example.com")
+        err: urllib.error.HTTPError = urllib.error.HTTPError(
             url="https://example.com",
             code=404,
             msg="not found",
@@ -55,19 +72,20 @@ class TestMetadataCache(unittest.TestCase):
 
     def test_fetch_from_irbank_does_not_cache_transient_failure(self) -> None:
         company_metadata_fallback._METADATA_CACHE.clear()
-        ir_html = "<h1>テスト株式会社（1234）のIR情報・決算資料</h1><dt>時価</dt><dd>100億円</dd>".encode()
-        edinet_html = 'title="有価証券報告書 第1期" href="notes?f=S100ABCD"'.encode()
-        with patch(
-            "src.company_metadata_fallback.urlopen_with_retry",
-            side_effect=[
-                urllib.error.URLError(OSError("down")),
-                urllib.error.URLError(OSError("down")),
-                ir_html,
-                edinet_html,
-            ],
-        ):
-            first = company_metadata_fallback.fetch_from_irbank("1234")
-            second = company_metadata_fallback.fetch_from_irbank("1234")
+        ir_html: str = "<h1>テスト株式会社（1234）のIR情報・決算資料</h1><dt>時価</dt><dd>100億円</dd>"
+        edinet_html: str = 'title="有価証券報告書 第1期" href="notes?f=S100ABCD"'
+
+        browser: MagicMock = MagicMock(spec=BrowserService)
+        browser.fetch.side_effect = [
+            _make_browser_error("down"),
+            _make_browser_error("down"),
+            _make_browser_response(ir_html),
+            _make_browser_response(edinet_html),
+        ]
+
+        first = company_metadata_fallback.fetch_from_irbank("1234", browser=browser)
+        second = company_metadata_fallback.fetch_from_irbank("1234", browser=browser)
+
         self.assertEqual(first.company_name, "")
         self.assertEqual(second.company_name, "テスト株式会社")
         self.assertTrue(second.securities_report_pdf_url.endswith("/S100ABCD.pdf"))
@@ -75,13 +93,17 @@ class TestMetadataCache(unittest.TestCase):
     def test_fetch_from_irbank_accepts_alpha_suffix_code(self) -> None:
         """英字サフィックス付きコード(xxxA形式)がバリデーションを通過し、IRBank URLが正しく構築される."""
         company_metadata_fallback._METADATA_CACHE.clear()
-        ir_html = "<h1>トライアル HD（141A）のIR情報・決算資料</h1><dt>時価</dt><dd>4933億円</dd>".encode()
-        edinet_html = 'title="有価証券報告書 第11期" href="notes?f=S100WRQT"'.encode()
-        with patch(
-            "src.company_metadata_fallback.urlopen_with_retry",
-            side_effect=[ir_html, edinet_html],
-        ):
-            result = company_metadata_fallback.fetch_from_irbank("141A")
+        ir_html: str = "<h1>トライアル HD（141A）のIR情報・決算資料</h1><dt>時価</dt><dd>4933億円</dd>"
+        edinet_html: str = 'title="有価証券報告書 第11期" href="notes?f=S100WRQT"'
+
+        browser: MagicMock = MagicMock(spec=BrowserService)
+        browser.fetch.side_effect = [
+            _make_browser_response(ir_html),
+            _make_browser_response(edinet_html),
+        ]
+
+        result = company_metadata_fallback.fetch_from_irbank("141A", browser=browser)
+
         self.assertEqual(result.company_name, "トライアル HD")
         self.assertTrue(result.securities_report_pdf_url.endswith("/S100WRQT.pdf"))
 
@@ -89,8 +111,9 @@ class TestMetadataCache(unittest.TestCase):
 class TestWebFetchFailureCache(unittest.TestCase):
     def test_web_address_fetch_failure_is_not_pinned(self) -> None:
         with tempfile.TemporaryDirectory() as d:
-            r = WebAddressResearcher(cache_dir=d, timeout_sec=1)
-            body = "<html><body>東京都中央区日本橋1-2-3</body></html>".encode()
+            browser: MagicMock = MagicMock(spec=BrowserService)
+            r: WebAddressResearcher = WebAddressResearcher(cache_dir=d, timeout_sec=1, browser=browser)
+            body: bytes = "<html><body>東京都中央区日本橋1-2-3</body></html>".encode()
             with patch.object(
                 r,
                 "_fetch_bytes",
