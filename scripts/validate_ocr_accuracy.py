@@ -10,6 +10,7 @@ from rapidocr_onnxruntime import RapidOCR
 from src.config import INPUT_CSV
 from src.config import PDF_CACHE_DIR as _PDF_CACHE_DIR
 from src.pdf_extract import extract_major_facilities_land
+from src.utils import open_csv
 
 # 補助スクリプト: OCR検証専用. 本体処理(run.py)には必須ではない.
 
@@ -50,24 +51,12 @@ def location_hint(location_short: str) -> tuple[str, str]:
 
 
 def read_codes(path: Path) -> list[str]:
-    codes: list[str] = []
-    last_error: UnicodeDecodeError | None = None
-    for enc in ("utf-8-sig", "cp932"):
-        try:
-            with path.open("r", encoding=enc, newline="") as f:
-                for row in csv.reader(f):
-                    if not row:
-                        continue
-                    code = (row[0] or "").strip()
-                    if code and code != "code":
-                        codes.append(code)
-                return codes
-        except UnicodeDecodeError as e:
-            last_error = e
-            codes = []
-    if last_error is not None:
-        raise last_error
-    return codes
+    with open_csv(path) as f:
+        return [
+            code
+            for row in csv.reader(f)
+            if row and (code := (row[0] or "").strip()) and code != "code"
+        ]
 
 
 def resolve_pdf_path(code: str) -> Path:

@@ -14,6 +14,9 @@ from typing import TYPE_CHECKING
 
 import pdfplumber
 
+from pdfminer.pdfexceptions import PDFException
+
+from src.browser import BrowserServiceError
 from src.cache import string_md5
 from src.jp_address import normalize_addr, split_tokyo_municipality
 from src.utils import validate_url_not_private
@@ -61,7 +64,7 @@ class WebAddressResearcher:
                     d = json.load(f)
                 if isinstance(d, dict):
                     self._resolve_cache = d
-            except Exception:
+            except (json.JSONDecodeError, OSError):
                 logger.debug("resolve cache load failed: %s", self._resolve_cache_path, exc_info=True)
                 self._resolve_cache = {}
 
@@ -205,19 +208,19 @@ class WebAddressResearcher:
                         self._text_cache[url] = text
                         self._addr_cache[url] = addrs
                         return addrs
-                except Exception:
+                except (json.JSONDecodeError, OSError):
                     logger.debug("analysis cache load failed: %s", url, exc_info=True)
 
             try:
                 raw = self._fetch_bytes(url)
-            except Exception:
+            except (BrowserServiceError, ValueError, OSError, TimeoutError):
                 logger.debug("fetch failed: %s", url, exc_info=True)
                 return []
 
             if url.lower().endswith(".pdf") or raw[:5] == b"%PDF-":
                 try:
                     text = self._pdf_to_text(raw)
-                except Exception:
+                except (PDFException, OSError):
                     logger.debug("pdf to text failed: %s", url, exc_info=True)
                     self._addr_cache[url] = []
                     return []
@@ -242,7 +245,7 @@ class WebAddressResearcher:
                     ensure_ascii=False,
                     separators=(",", ":"),
                 )
-        except Exception:
+        except OSError:
             logger.debug("analysis cache write failed: %s", url, exc_info=True)
         return addrs
 
@@ -350,5 +353,5 @@ class WebAddressResearcher:
                 with open(self._resolve_cache_path, "w", encoding="utf-8") as f:
                     json.dump(self._resolve_cache, f, ensure_ascii=False, separators=(",", ":"))
                 self._resolve_cache_dirty = False
-            except Exception:
+            except OSError:
                 logger.debug("resolve cache flush failed: %s", self._resolve_cache_path, exc_info=True)

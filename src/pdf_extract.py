@@ -7,6 +7,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
 
 import pdfplumber
+from pdfminer.pdfexceptions import PDFException
 
 logger = logging.getLogger(__name__)
 
@@ -392,7 +393,7 @@ def extract_major_facilities_land(pdf_path: str) -> list[FacilityLand]:
 
     try:
         pdf_file = pdfplumber.open(pdf_path)
-    except Exception as e:
+    except (PDFException, OSError) as e:
         logger.warning("PDF解析失敗(破損の可能性): %s: %s: %s", pdf_path, type(e).__name__, e)
         return []
 
@@ -436,7 +437,7 @@ def extract_facilities_section_text(pdf_path: str) -> str:
 
     try:
         pdf_file = pdfplumber.open(pdf_path)
-    except Exception as e:
+    except (PDFException, OSError) as e:
         logger.warning("PDF解析失敗(破損の可能性): %s: %s: %s", pdf_path, type(e).__name__, e)
         return ""
 
@@ -477,7 +478,7 @@ def _extract_one(args: tuple[str, str]) -> tuple[str, list[FacilityLand]]:
     code, pdf_path = args
     try:
         return code, extract_major_facilities_land(pdf_path)
-    except Exception as e:
+    except (PDFException, OSError) as e:
         logger.warning("PDF並列抽出失敗: %s: %s: %s", pdf_path, type(e).__name__, e)
         return code, []
 

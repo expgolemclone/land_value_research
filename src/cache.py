@@ -41,11 +41,11 @@ def _atomic_json_write(path: str, obj: object) -> None:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(obj, f, ensure_ascii=False, separators=(",", ":"))
         os.replace(tmp_path, path)
-    except BaseException:
+    except (OSError, TypeError, ValueError):
         try:
             os.unlink(tmp_path)
         except OSError:
-            pass
+            logger.debug("Failed to clean up temp file: %s", tmp_path)
         raise
 
 
@@ -57,7 +57,7 @@ def load_json_dict(path: str) -> JsonDict:
             d = json.load(f)
         if isinstance(d, dict):
             return d
-    except Exception:
+    except (json.JSONDecodeError, OSError):
         logger.debug("json dict load failed: %s", path, exc_info=True)
     return {}
 
@@ -92,7 +92,7 @@ def load_sites_cache(cache_path: str, pdf_path: str) -> list[FacilityLand] | Non
                 )
             )
         return out
-    except Exception:
+    except (json.JSONDecodeError, KeyError, TypeError, OSError):
         logger.debug("sites cache load failed: %s", cache_path, exc_info=True)
         return None
 

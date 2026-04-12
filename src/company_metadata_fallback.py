@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from src.browser import BrowserServiceError
 from src.utils import validate_url_not_private
 
 if TYPE_CHECKING:
@@ -40,7 +41,7 @@ def _fetch_text(
     proxy_url: str | None = pool.get() if pool is not None else None
     resp = browser.fetch(url, proxy=proxy_url, timeout=DEFAULT_TIMEOUT_MS)
     if resp.html is None:
-        raise RuntimeError(f"browser fetch failed for {url}: status={resp.status} error={resp.error}")
+        raise BrowserServiceError(f"browser fetch failed for {url}: status={resp.status} error={resp.error}")
     return resp.html
 
 
@@ -98,7 +99,7 @@ def fetch_from_irbank(
             m_cap = re.search(r"<dt>時価</dt><dd>([^<]+)</dd>", html_ir)
             if m_cap:
                 market_cap_yen = _parse_yen_text(m_cap.group(1))
-        except Exception:
+        except BrowserServiceError:
             logger.debug("IRBank IR page fetch failed: %s", ir_url, exc_info=True)
 
         try:
@@ -118,7 +119,7 @@ def fetch_from_irbank(
                 securities_report_pdf_url = (
                     f"https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/{doc_ids[0]}.pdf"
                 )
-        except Exception:
+        except BrowserServiceError:
             logger.debug("IRBank EDINET page fetch failed: %s", edinet_url, exc_info=True)
 
     meta = CompanyMetadata(

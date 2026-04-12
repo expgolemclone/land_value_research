@@ -10,6 +10,8 @@ import sys
 import threading
 import time
 import urllib.error
+
+import yaml
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import date, datetime
@@ -27,7 +29,7 @@ from src.anomaly import (
     detect_duplicate_address_large_area,
     should_accept_web_address,
 )
-from src.browser import BrowserService
+from src.browser import BrowserService, BrowserServiceError
 from src.cache import combined_md5, load_json_dict, load_sites_cache, save_json_dict, save_sites_cache, string_md5
 from src.company_config import (
     SiteSplitEntry,
@@ -108,7 +110,7 @@ from src.schema import (
     OutputRow,
 )
 from src.stealth import ProxyPool
-from src.utils import ensure_dir
+from src.utils import ensure_dir, open_csv
 from src.web_address_research import WebAddressResearcher
 from src.web_cache import download_file, is_pdf_file
 
@@ -208,17 +210,8 @@ def resolve_path(base_dir: str, path_value: str) -> str:
 
 
 def load_csv_rows(input_path: str) -> list[list[str]]:
-    encodings = ["utf-8-sig", "cp932"]
-    last_error: Exception | None = None
-    for enc in encodings:
-        try:
-            with open(input_path, encoding=enc, newline="") as f:
-                return [row for row in csv.reader(f) if any((c or "").strip() for c in row)]
-        except UnicodeDecodeError as e:
-            last_error = e
-    if last_error is not None:
-        raise last_error
-    return []  # pragma: no cover – encodings list is never empty
+    with open_csv(input_path) as f:
+        return [row for row in csv.reader(f) if any((c or "").strip() for c in row)]
 
 
 def parse_market_cap(raw: str) -> int | None:
@@ -1014,7 +1007,7 @@ def process_company(
         _tprint(f"[{company_index}/{total_companies}][{site_index}/{total_tokyo_sites}] 解析中: {code} {s.site_name}")
         try:
             sr = _process_site(code, company_name, s, mcap, cm.address_source_urls, ctx)
-        except Exception as e:
+        except (BrowserServiceError, ValueError, KeyError, OSError, TimeoutError) as e:
             logger.warning("サイト処理スキップ: %s %s %s: %s", code, s.site_name, type(e).__name__, e)
             continue
         out_rows.append(sr.out_row)
@@ -1119,7 +1112,7 @@ def _memory_watchdog(ctx: RunContext, limit_percent: float, check_interval: floa
             logger.critical("メモリ使用率 %.1f%% (閾値 %.0f%%) — キャッシュ保存して終了します", usage, limit_percent)
             try:
                 save_caches(ctx)
-            except Exception:
+            except (OSError, TypeError, ValueError, yaml.YAMLError):
                 logger.exception("キャッシュ保存に失敗しました")
             os._exit(EXIT_CODE_MEMORY_LIMIT)
 
@@ -1147,7 +1140,7 @@ def _pre_download_pdf(t: dict[str, str], ctx: RunContext) -> None:
         return
     try:
         download_file(pdf_url, pdf_path, browser=ctx.browser, pool=ctx.pool)
-    except Exception as e:
+    except (BrowserServiceError, ValueError, OSError) as e:
         logger.warning("PDF事前ダウンロード失敗(後で再試行): %s: %s", code, e)
 
 
@@ -1172,7 +1165,9 @@ def _pre_download_pdfs(
         for future in as_completed(futures):
             try:
                 future.result()
-            except Exception:
+            except (BrowserServiceError, ValueError, OSError) as e:
+                t = futures[future]
+                logger.warning("PDF事前ダウンロード失敗: %s: %s", t["code"], e)
                 failed += 1
         if failed:
             logger.warning("PDF事前ダウンロード完了: %d/%d件失敗", failed, len(need_download))
@@ -1208,7 +1203,7 @@ def _process_company_with_retry(
                 e,
             )
             time.sleep(delay_sec)
-        except Exception as e:
+        except (BrowserServiceError, ValueError, KeyError, OSError, TimeoutError) as e:
             msg = f"{type(e).__name__}: {e}"
             logger.error("企業処理スキップ: %s %s %s", code, company_name, msg)
             return None, msg
@@ -1384,7 +1379,7 @@ def _post_pipeline_cleanup(base_dir: str, keep_logs: int = 5) -> None:
         )
         if merged:
             logger.info("アドレスパッチをマージ: %d件", merged)
-    except Exception:
+    except (OSError, yaml.YAMLError):
         logger.warning("アドレスパッチのマージに失敗", exc_info=True)
 
     # 2. Prune old log files (keep latest N)
@@ -1395,7 +1390,7 @@ def _post_pipeline_cleanup(base_dir: str, keep_logs: int = 5) -> None:
             for lf in log_files[:-keep_logs]:
                 os.remove(os.path.join(log_dir, lf))
                 logger.info("古いログを削除: %s", lf)
-    except Exception:
+    except OSError:
         logger.warning("ログファイルの整理に失敗", exc_info=True)
 
     # 3. Delete .bak files
@@ -1405,7 +1400,7 @@ def _post_pipeline_cleanup(base_dir: str, keep_logs: int = 5) -> None:
             if bf.endswith(".bak"):
                 os.remove(os.path.join(config_dir, bf))
                 logger.info("バックアップを削除: %s", bf)
-    except Exception:
+    except OSError:
         logger.warning(".bakファイルの削除に失敗", exc_info=True)
 
     logger.info("クリーンアップ完了")

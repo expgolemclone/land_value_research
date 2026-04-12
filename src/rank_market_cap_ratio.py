@@ -22,6 +22,7 @@ from src.config import (
     PDF_CACHE_DIR,
     PROJECT_ROOT,
 )
+from src.utils import open_csv
 from src.schema import (
     COL_ANOMALY_WARNING,
     COL_BOOK_VALUE,
@@ -83,14 +84,8 @@ def _open_file(path: Path) -> bool:
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
     import csv
 
-    encodings = ["utf-8-sig", "cp932"]
-    for enc in encodings:
-        try:
-            with path.open("r", encoding=enc, newline="") as f:
-                return list(csv.DictReader(f))
-        except UnicodeDecodeError:
-            continue
-    raise UnicodeDecodeError("unknown", b"", 0, 1, f"CSVを読めませんでした: {path}")
+    with open_csv(path) as f:
+        return list(csv.DictReader(f))
 
 
 def to_float(raw: str) -> float | None:
@@ -100,6 +95,7 @@ def to_float(raw: str) -> float | None:
     try:
         return float(s)
     except ValueError:
+        logger.debug("float conversion failed: %r", s)
         return None
 
 
@@ -293,7 +289,7 @@ def collect_rank_rows(input_dir: Path, company_master: CompanyMaster) -> list[di
             try:
                 docs_content = docs_path.read_text(encoding="utf-8")
             except OSError:
-                pass
+                logger.debug("Failed to read docs file: %s", docs_path)
 
         rank_rows.append(
             {
