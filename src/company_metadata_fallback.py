@@ -3,11 +3,14 @@ from __future__ import annotations
 import logging
 import re
 import threading
+import time
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from src.browser import BrowserServiceError
+from src.config import MAGIC
 from src.utils import validate_url_not_private
 
 if TYPE_CHECKING:
@@ -17,6 +20,16 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 DEFAULT_TIMEOUT_MS = 30000
+_KABUTAN_URL_TEMPLATE = "https://kabutan.jp/stock/?code={code}"
+_KABUTAN_TIMEOUT_SEC = 20.0
+_KABUTAN_MAX_RETRIES = 3
+_KABUTAN_USER_AGENT = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+)
+_KABUTAN_MARKET_CAP_PATTERN = re.compile(
+    r"<th[^>]*>\s*時価総額\s*</th>\s*\n?\s*<td[^>]*>([\d,]+)<span>([^<]+)</span>",
+)
 
 
 @dataclass(frozen=True)
@@ -60,6 +73,59 @@ def _parse_yen_text(text: str) -> int | None:
     m_num = re.search(r"([0-9]+(?:\.[0-9]+)?)", raw)
     if m_num:
         return int(float(m_num.group(1)))
+    return None
+
+
+def fetch_market_cap_from_kabutan(
+    code: str,
+    pool: ProxyPool | None = None,
+) -> int | None:
+    """kabutanの個別株ページから時価総額(円)を取得する。Cloudflare不要のplain HTTPS。"""
+    code = str(code).strip()
+    if not code or not re.fullmatch(r"\d{3,4}[A-Z]?", code):
+        return None
+    url: str = _KABUTAN_URL_TEMPLATE.format(code=code)
+    delay: float = float(MAGIC["scrape"]["delay_min"])
+
+    for attempt in range(_KABUTAN_MAX_RETRIES):
+        if attempt > 0:
+            time.sleep(delay)
+        req: urllib.request.Request = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": _KABUTAN_USER_AGENT,
+                "Accept-Language": "ja,en;q=0.9",
+            },
+        )
+        proxy_addr: str | None = pool.get() if pool is not None and not pool.direct else None
+        if proxy_addr is not None:
+            req.set_proxy(proxy_addr, "https")
+        try:
+            with urllib.request.urlopen(req, timeout=_KABUTAN_TIMEOUT_SEC) as resp:
+                raw: bytes = resp.read()
+                encoding: str = resp.headers.get_content_charset() or "utf-8"
+                html: str = raw.decode(encoding, errors="replace")
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                logger.info("kabutan: 銘柄ページなし: %s", code)
+                return None
+            logger.warning("kabutan: HTTP %d for %s (attempt %d)", exc.code, code, attempt + 1)
+            continue
+        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+            logger.warning("kabutan: fetch error for %s (attempt %d): %s", code, attempt + 1, exc)
+            continue
+
+        m: re.Match[str] | None = _KABUTAN_MARKET_CAP_PATTERN.search(html)
+        if m is None:
+            logger.debug("kabutan: 時価総額パターン不一致: %s", code)
+            return None
+        value_str: str = m.group(1).replace(",", "") + m.group(2)
+        result: int | None = _parse_yen_text(value_str)
+        if result is not None:
+            logger.info("kabutan: %s 時価総額=%s円", code, f"{result:,}")
+        return result
+
+    logger.warning("kabutan: %s 全リトライ失敗", code)
     return None
 
 

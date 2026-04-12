@@ -39,7 +39,7 @@ from src.company_config import (
     load_price_overrides,
     save_company_master,
 )
-from src.company_metadata_fallback import fetch_from_irbank
+from src.company_metadata_fallback import fetch_from_irbank, fetch_market_cap_from_kabutan
 from src.config import (
     ADDRESS_OVERRIDES_PATH,
     CACHE_DIR,
@@ -706,6 +706,9 @@ def _resolve_company_metadata(
                 fallback = fetch_from_irbank(code, browser=ctx.browser, pool=ctx.pool)
             if fallback.market_cap_yen is not None:
                 mcap = fallback.market_cap_yen
+            if mcap is None:
+                mcap = fetch_market_cap_from_kabutan(code, pool=ctx.pool)
+            if mcap is not None:
                 with ctx.cache_lock:
                     ctx.market_cap_cache[code] = {"market_cap_yen": mcap, "fetched_date": today}
     if mcap is None:
@@ -1203,6 +1206,10 @@ def _process_company_with_retry(
                 e,
             )
             time.sleep(delay_sec)
+        except CompanySkipError as e:
+            msg = f"{type(e).__name__}: {e}"
+            logger.error("企業処理スキップ: %s %s %s", code, company_name, msg)
+            return None, msg
         except (BrowserServiceError, ValueError, KeyError, OSError, TimeoutError) as e:
             msg = f"{type(e).__name__}: {e}"
             logger.error("企業処理スキップ: %s %s %s", code, company_name, msg)

@@ -1,6 +1,6 @@
 # TREE
 
-run.py [1410L] -> src.rank_market_cap_ratio, scripts.merge_address_patches, src.*, src.browser, src.stealth
+run.py [1417L] -> src.rank_market_cap_ratio, scripts.merge_address_patches, src.*, src.browser, src.stealth
 browser_service/
   server.js (Node.js Express + puppeteer-real-browser: /fetch, /download, /shutdown)
   package.json, package-lock.json
@@ -20,7 +20,7 @@ src/
   pdf_extract.py [523L] (FacilityLand, extract_major_facilities_land, extract_facilities_section_text, batch_extract_facilities)
   anomaly.py [141L] -> src.landprice_tokyo, src.schema
   company_config.py [240L] -> src.pdf_extract
-  company_metadata_fallback.py [136L] -> src.browser, src.utils
+  company_metadata_fallback.py [202L] -> src.browser, src.config, src.utils
   web_address_research.py [357L] -> src.browser, src.cache, src.jp_address, src.utils
 rust_src/ (PyO3 module: land_value_core)
   lib.rs [42L] registers {PriceResult, LandPriceTokyo, TokyoGeocoder, normalize_addr, split_tokyo_municipality, parse_town_chome_block, num_to_kanji, build_oaza_chome_name, kanji_to_int}
@@ -81,7 +81,8 @@ fn load_address_overrides @src/company_config.py:40 <-run.py
 fn load_price_overrides @src/company_config.py:216 <-run.py
 fn expand_site_splits @src/company_config.py:105 <-run.py
 fn random_delay @src/stealth.py:22 <-src/stealth.py
-fn fetch_from_irbank @src/company_metadata_fallback.py:66 <-run.py, src/rank_market_cap_ratio.py
+fn fetch_market_cap_from_kabutan @src/company_metadata_fallback.py:79 <-run.py
+fn fetch_from_irbank @src/company_metadata_fallback.py:132 <-run.py, src/rank_market_cap_ratio.py
 fn file_md5 @src/cache.py:15 <-run.py
 fn combined_md5 @src/cache.py:24 <-run.py
 fn string_md5 @src/cache.py:32 <-run.py, src/web_address_research.py
@@ -102,7 +103,7 @@ fn download_file @src/web_cache.py:25 <-run.py
 fn is_pdf_file @src/web_cache.py:16 <-run.py
 const OUTPUT_COLUMNS @src/schema.py:17 <-run.py
 const RANKING_COLUMNS @src/schema.py:56 <-src/rank_market_cap_ratio.py
-const MAGIC @src/config.py:60 <-src/stealth.py
+const MAGIC @src/config.py:60 <-src/stealth.py, src/company_metadata_fallback.py
 
 # GRAPH
 
@@ -112,7 +113,7 @@ src.anomaly -> {src.landprice_tokyo, src.schema}
 src.browser -> {src.config} (subprocess: browser_service/server.js via pty)
 src.cache -> {src.pdf_extract}
 src.company_config -> {src.pdf_extract}
-src.company_metadata_fallback -> {src.browser, src.utils}
+src.company_metadata_fallback -> {src.browser, src.config, src.utils}
 src.stealth -> {src.config}
 src.network -> {} (standalone)
 src.web_address_research -> {src.browser, src.cache, src.jp_address, src.utils}
@@ -138,4 +139,4 @@ market_cap_cache.json: external API, daily refresh (no auto-invalidation)
 company_master.yaml: IRBank fallback cache, auto-populated on pipeline run (no auto-invalidation)
 web_address/: external web results, volatile (no auto-invalidation)
 
-<!-- verified: 2026-04-12 -->
+<!-- verified: 2026-04-13 -->
