@@ -139,6 +139,7 @@ class BrowserService:
                     try:
                         raw_line = stream.readline()
                     except OSError:
+                        logger.debug("PTY stream closed")
                         return
                     if raw_line == "":
                         return
@@ -271,7 +272,7 @@ class BrowserService:
         try:
             requests.post(f"{self._base_url}/shutdown", timeout=5)
         except requests.RequestException:
-            pass
+            logger.debug("Shutdown request failed", exc_info=True)
 
         self._kill()
         logger.info("Browser service stopped")
@@ -291,7 +292,7 @@ class BrowserService:
             try:
                 os.close(self._pty_master_fd)
             except OSError:
-                pass
+                logger.debug("PTY fd close failed", exc_info=True)
             self._pty_master_fd = None
 
     def __enter__(self) -> Self:

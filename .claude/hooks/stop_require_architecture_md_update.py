@@ -69,7 +69,7 @@ def main() -> None:
             with open(state_file) as f:
                 prev = json.load(f)
         except (json.JSONDecodeError, OSError):
-            pass
+            print(f"Warning: state file corrupted: {state_file}", file=sys.stderr)
 
     # Compute current hashes
     code_files = _find_code_files(project_dir)

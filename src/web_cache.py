@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import logging
 import os
 from typing import TYPE_CHECKING
+
+logger = logging.getLogger(__name__)
 
 from src.utils import validate_url_not_private
 
@@ -18,6 +21,7 @@ def is_pdf_file(path: str) -> bool:
             head: bytes = f.read(5)
         return head == b"%PDF-"
     except OSError:
+        logger.debug("Failed to check PDF header: %s", path)
         return False
 
 
@@ -43,7 +47,7 @@ def download_file(
         try:
             os.remove(downloaded_path)
         except OSError:
-            pass
+            logger.debug("Failed to remove invalid download: %s", downloaded_path)
         raise ValueError(f"PDF取得に失敗しました. URLがPDF直リンクではない可能性があります: {url}")
 
     if downloaded_path != out_path:
