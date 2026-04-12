@@ -232,7 +232,7 @@ class TestProxyPoolSize:
 
 class TestRandomDelay:
     def test_sleeps_within_range(self) -> None:
-        with patch("src.stealth.time.sleep") as mock_sleep:
+        with patch("stock_db.stealth.time.sleep") as mock_sleep:
             from src.stealth import random_delay
 
             random_delay(1.0, 2.0)

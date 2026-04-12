@@ -26,6 +26,9 @@ GEOJSON_PATH = DATA_DIR / "landprice" / "merged" / "L01_L02_merged_13.geojson"
 OAZA_CSV = DATA_DIR / "geocoding" / "geocode_ref_oaza_chome_tokyo_2024" / "13_2024.csv"
 GAIKU_CSV = DATA_DIR / "geocoding" / "geocode_ref_gaiku_tokyo_2024" / "13_2024.csv"
 
+# land.db
+LAND_DB_PATH = DATA_DIR / "land.db"
+
 # cache (under data/)
 CACHE_DIR = DATA_DIR / "cache"
 COMPANY_MASTER_PATH = CACHE_DIR / "company_master.yaml"
