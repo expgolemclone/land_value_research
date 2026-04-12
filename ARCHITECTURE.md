@@ -137,3 +137,5 @@ price_overrides_hash.json invalidated by MD5(price_overrides.yaml per-company); 
 market_cap_cache.json: external API, daily refresh (no auto-invalidation)
 company_master.yaml: IRBank fallback cache, auto-populated on pipeline run (no auto-invalidation)
 web_address/: external web results, volatile (no auto-invalidation)
+
+<!-- verified: 2026-04-12 -->
