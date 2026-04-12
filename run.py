@@ -411,8 +411,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--workers",
         type=int,
-        default=4,
-        help="企業レベル並列処理のワーカー数(default: 4, 1で逐次処理)",
+        default=1,
+        help="企業レベル並列処理のワーカー数(default: 1, 1で逐次処理)",
     )
     parser.add_argument(
         "--memory-limit",
