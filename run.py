@@ -13,7 +13,9 @@ import urllib.error
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from typing import Any
+from pathlib import Path
+from src.cache import JsonDict
+from src.company_config import CompanyMaster
 
 import shtab
 
@@ -140,18 +142,18 @@ class RunContext:
     price_cache_path: str
     geocode_cache_path: str
     company_master_path: str
-    company_master: dict[str, dict[str, Any]]
+    company_master: CompanyMaster
     addr_overrides: dict[str, dict[str, str | list[SiteSplitEntry]]]
     price_overrides: dict[str, dict[str, int]]
     market_cap_cache_path: str
-    market_cap_cache: dict[str, Any]
+    market_cap_cache: JsonDict
     geocoder: TokyoGeocoder
     web_addr: WebAddressResearcher
     landprice: LandPriceTokyo
     pool: ProxyPool
     browser: BrowserService
-    price_cache_disk: dict[str, Any]
-    geocode_cache_disk: dict[str, Any]
+    price_cache_disk: JsonDict
+    geocode_cache_disk: JsonDict
     cache_lock: threading.Lock = field(default_factory=threading.Lock)
 
 
@@ -230,14 +232,14 @@ def parse_address_urls(raw: str) -> list[str]:
     return [x.strip() for x in (raw or "").split("|") if x.strip()]
 
 
-def load_targets(input_path: str) -> list[dict[str, Any]]:
+def load_targets(input_path: str) -> list[dict[str, str]]:
     rows = load_csv_rows(input_path)
     if not rows:
         return []
 
     header_map = {h.strip().lower(): i for i, h in enumerate(rows[0])}
     has_header = any(k in header_map for k in ["code", "証券コード", "コード"])
-    targets: list[dict[str, Any]] = []
+    targets: list[dict[str, str]] = []
 
     if has_header:
         if "code" in header_map:
@@ -440,7 +442,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--proxy",
         default=None,
-        help="HTTP proxy URL. デフォルトは direct connection",
+        help="Proxy URL (http://host:port, socks5://host:port). デフォルトは direct connection",
+    )
+    parser.add_argument(
+        "--proxy-file",
+        default=None,
+        help="host:port:user:pass 形式のプロキシリストファイル",
     )
     return parser.parse_args()
 
@@ -468,10 +475,12 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         oaza_csv=str(OAZA_CSV),
         gaiku_csv=str(GAIKU_CSV),
     )
-    if getattr(args, "proxy", None):
-        pool: ProxyPool = ProxyPool.from_url(args.proxy)
+    if getattr(args, "proxy_file", None):
+        pool: ProxyPool = ProxyPool.from_file(Path(args.proxy_file))
+    elif getattr(args, "proxy", None):
+        pool = ProxyPool.from_url(args.proxy)
     else:
-        pool = ProxyPool.direct()
+        pool = ProxyPool.make_direct()
 
     browser = BrowserService()
     browser.start()
@@ -540,7 +549,7 @@ def _invalidate_stale_override_csvs(ctx: RunContext) -> list[str]:
     invalidated: list[str] = []
 
     def _check_overrides(
-        overrides_dict: dict[str, Any],
+        overrides_dict: dict[str, object],
         hash_filename: str,
         label: str,
     ) -> None:
@@ -582,10 +591,10 @@ def _invalidate_stale_override_csvs(ctx: RunContext) -> list[str]:
 
 
 def _filter_targets(
-    targets: list[dict[str, Any]],
+    targets: list[dict[str, str]],
     ctx: RunContext,
-) -> tuple[list[dict[str, Any]], list[tuple[str, str, str]]]:
-    targets_to_process: list[dict[str, Any]] = []
+) -> tuple[list[dict[str, str]], list[tuple[str, str, str]]]:
+    targets_to_process: list[dict[str, str]] = []
     skipped: list[tuple[str, str, str]] = []
     for t in targets:
         code = t["code"]
@@ -605,7 +614,7 @@ def _filter_targets(
 
 
 def _resolve_company_metadata(
-    t: dict[str, Any],
+    t: dict[str, str],
     company_index: int,
     total_companies: int,
     ctx: RunContext,
@@ -742,7 +751,7 @@ def _geocode_address(full_addr: str, ctx: RunContext) -> tuple[float, float, str
     return geo
 
 
-def _deserialize_price_result(dp: dict[str, Any]) -> PriceResult:
+def _deserialize_price_result(dp: dict[str, object]) -> PriceResult:
     return PriceResult(
         unit_price=int(dp["unit_price"]),
         nearest_id=str(dp["nearest_id"]),
@@ -986,7 +995,7 @@ def _postprocess_duplicate_anomalies(
 
 
 def process_company(
-    t: dict[str, Any],
+    t: dict[str, str],
     company_index: int,
     total_companies: int,
     ctx: RunContext,
@@ -1124,7 +1133,7 @@ def save_caches(ctx: RunContext) -> None:
     ctx.web_addr.flush()
 
 
-def _pre_download_pdf(t: dict[str, Any], ctx: RunContext) -> None:
+def _pre_download_pdf(t: dict[str, str], ctx: RunContext) -> None:
     """Phase 1: PDF URLが既知のターゲットのPDFを事前ダウンロード."""
     code = t["code"]
     pdf_path = get_pdf_path(ctx.cache_dir, code)
@@ -1143,7 +1152,7 @@ def _pre_download_pdf(t: dict[str, Any], ctx: RunContext) -> None:
 
 
 def _pre_download_pdfs(
-    targets: list[dict[str, Any]],
+    targets: list[dict[str, str]],
     max_workers: int,
     ctx: RunContext,
 ) -> None:
@@ -1172,7 +1181,7 @@ def _pre_download_pdfs(
 
 
 def _process_company_with_retry(
-    t: dict[str, Any],
+    t: dict[str, str],
     company_index: int,
     total_companies: int,
     ctx: RunContext,

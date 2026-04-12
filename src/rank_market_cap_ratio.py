@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from src.company_config import load_company_master, save_company_master
+from src.company_config import CompanyMaster, load_company_master, save_company_master
 from src.company_metadata_fallback import fetch_from_irbank
 
 if TYPE_CHECKING:
@@ -110,7 +110,7 @@ def yen_to_oku_display(raw: str) -> str:
     return f"{value / 100_000_000:,.2f}"
 
 
-def normalize_company_name(code: str, raw_name: str, company_master: dict[str, dict[str, Any]]) -> str:
+def normalize_company_name(code: str, raw_name: str, company_master: CompanyMaster) -> str:
     name = (raw_name or "").strip()
     normalized_code = (code or "").strip()
     if not normalized_code:
@@ -270,8 +270,8 @@ def _md_to_html(text: str) -> str:
     return "\n".join(out)
 
 
-def collect_rank_rows(input_dir: Path, company_master: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
-    rank_rows: list[dict[str, Any]] = []
+def collect_rank_rows(input_dir: Path, company_master: CompanyMaster) -> list[dict[str, str]]:
+    rank_rows: list[dict[str, str]] = []
     for csv_path in sorted(input_dir.glob("*_output.csv")):
         rows = read_csv_rows(csv_path)
         company_row = pick_company_row(rows)
@@ -432,7 +432,7 @@ _HTML_MODAL_SCRIPT = """\
 """
 
 
-def write_rank_html(rows: list[dict[str, Any]], output_path: Path) -> None:
+def write_rank_html(rows: list[dict[str, str]], output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     headers = list(RANKING_COLUMNS)
     right_cols = {

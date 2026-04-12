@@ -9,16 +9,15 @@ and merges results into the YAML.
 from __future__ import annotations
 
 import argparse
+import logging
 import os
 import re
 import sys
 import tempfile
 import threading
 import time
-import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any
 
 _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
@@ -26,22 +25,26 @@ if str(_ROOT) not in sys.path:
 
 import yaml
 
+from src.browser import BrowserService, BrowserServiceError
 from src.company_config import load_company_master
-from src.network import urlopen_with_retry
 from src.config import COMPANY_MASTER_PATH as _COMPANY_MASTER_PATH
 from src.config import INPUT_FULL_CSV
 from src.stealth import ProxyPool
 from src.utils import validate_url_not_private
 
+logger = logging.getLogger(__name__)
+
+CompanyEntry = dict[str, str | list[str]]
+CompanyMaster = dict[str, CompanyEntry]
+
 COMPANY_MASTER_PATH = str(_COMPANY_MASTER_PATH)
 INPUT_FULL_PATH = str(INPUT_FULL_CSV)
 
-DEFAULT_TIMEOUT_SEC = 20
+DEFAULT_TIMEOUT_MS = 30000
 SAVE_INTERVAL = 100
 
 
-def _atomic_save_company_master(path: str, data: dict[str, dict[str, Any]]) -> None:
-    """Write company_master.yaml atomically via temp file + rename."""
+def _atomic_save_company_master(path: str, data: CompanyMaster) -> None:
     sorted_data = dict(sorted(data.items(), key=lambda x: x[0]))
     dir_path = os.path.dirname(os.path.abspath(path))
     fd, tmp_path = tempfile.mkstemp(suffix=".yaml", dir=dir_path)
@@ -54,22 +57,28 @@ def _atomic_save_company_master(path: str, data: dict[str, dict[str, Any]]) -> N
         raise
 
 
-def _fetch_text(url: str, *, pool: ProxyPool | None = None) -> str:
+def _fetch_text(
+    url: str,
+    *,
+    browser: BrowserService,
+    pool: ProxyPool | None = None,
+) -> str:
     validate_url_not_private(url)
-    req: urllib.request.Request = urllib.request.Request(
-        url,
-        headers={"User-Agent": "Mozilla/5.0 (compatible; land_value_research/1.0)"},
-    )
-    body: bytes = urlopen_with_retry(req, timeout_sec=DEFAULT_TIMEOUT_SEC, pool=pool)
-    return body.decode("utf-8", errors="ignore")
+    proxy_url: str | None = pool.get() if pool is not None else None
+    resp = browser.fetch(url, proxy=proxy_url, timeout=DEFAULT_TIMEOUT_MS)
+    if resp.html is None:
+        raise BrowserServiceError(
+            f"browser fetch failed for {url}: status={resp.status} error={resp.error}"
+        )
+    return resp.html
 
 
 def fetch_metadata(
     code: str,
     *,
+    browser: BrowserService,
     pool: ProxyPool | None = None,
-) -> dict[str, str | list[str]] | None:
-    """Fetch EDINET PDF URL and IR page URL for a single company code."""
+) -> CompanyEntry | None:
     ir_url: str = f"https://irbank.net/{code}/ir"
     edinet_url: str = f"https://irbank.net/{code}/edinet"
 
@@ -77,14 +86,14 @@ def fetch_metadata(
     ir_ok: bool = False
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        ir_future = executor.submit(_fetch_text, ir_url, pool=pool)
-        edinet_future = executor.submit(_fetch_text, edinet_url, pool=pool)
+        ir_future = executor.submit(_fetch_text, ir_url, browser=browser, pool=pool)
+        edinet_future = executor.submit(_fetch_text, edinet_url, browser=browser, pool=pool)
 
         try:
             ir_future.result()
             ir_ok = True
-        except Exception:
-            pass
+        except BrowserServiceError:
+            logger.debug("IRBank IR page fetch failed: %s", ir_url, exc_info=True)
 
         try:
             html_edinet = edinet_future.result()
@@ -92,17 +101,22 @@ def fetch_metadata(
                 r'title="有価証券報告書[^"]*" href="notes\?f=(S100[0-9A-Z]+)"',
                 html_edinet,
             )
+            if not doc_ids:
+                doc_ids = re.findall(
+                    r'href="notes\?f=(S100[0-9A-Z]+)" title="有価証券報告書[^"]*"',
+                    html_edinet,
+                )
             if doc_ids:
                 securities_report_pdf_url = (
                     f"https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/{doc_ids[0]}.pdf"
                 )
-        except Exception:
-            pass
+        except BrowserServiceError:
+            logger.debug("IRBank EDINET page fetch failed: %s", edinet_url, exc_info=True)
 
     if not ir_ok and not securities_report_pdf_url:
         return None
 
-    entry: dict[str, str | list[str]] = {}
+    entry: CompanyEntry = {}
     if securities_report_pdf_url:
         entry["securities_report_pdf_url"] = securities_report_pdf_url
     if ir_ok:
@@ -129,14 +143,21 @@ def main() -> None:
     parser.add_argument(
         "--proxy",
         default=None,
-        help="HTTP proxy URL (e.g. http://host:port). デフォルトは direct connection",
+        help="Proxy URL (http://host:port, socks5://host:port). デフォルトは direct connection",
+    )
+    parser.add_argument(
+        "--proxy-file",
+        default=None,
+        help="host:port:user:pass 形式のプロキシリストファイル",
     )
     args: argparse.Namespace = parser.parse_args()
 
-    if args.proxy:
-        pool: ProxyPool = ProxyPool.from_url(args.proxy)
+    if args.proxy_file:
+        pool: ProxyPool = ProxyPool.from_file(Path(args.proxy_file))
+    elif args.proxy:
+        pool = ProxyPool.from_url(args.proxy)
     else:
-        pool = ProxyPool.direct()
+        pool = ProxyPool.make_direct()
 
     input_codes = load_input_codes(INPUT_FULL_PATH)
     master = load_company_master(COMPANY_MASTER_PATH)
@@ -152,49 +173,55 @@ def main() -> None:
         missing = missing[: args.limit]
         print(f"Limited to {len(missing)} codes")
 
-    succeeded = 0
-    failed_codes: list[str] = []
-    lock = threading.Lock()
-    processed = 0
+    browser = BrowserService()
+    browser.start()
 
-    def process_code(code: str) -> tuple[str, dict[str, str | list[str]] | None]:
-        time.sleep(args.delay)
-        try:
-            return code, fetch_metadata(code, pool=pool)
-        except Exception as e:
-            print(f"  ERROR {code}: {e}")
-            return code, None
+    try:
+        succeeded = 0
+        failed_codes: list[str] = []
+        lock = threading.Lock()
+        processed = 0
 
-    with ThreadPoolExecutor(max_workers=args.workers) as executor:
-        futures = {executor.submit(process_code, code): code for code in missing}
+        def process_code(code: str) -> tuple[str, CompanyEntry | None]:
+            time.sleep(args.delay)
+            try:
+                return code, fetch_metadata(code, browser=browser, pool=pool)
+            except BrowserServiceError as e:
+                print(f"  ERROR {code}: {e}")
+                return code, None
 
-        for future in as_completed(futures):
-            code, entry = future.result()
-            with lock:
-                processed += 1
-                if entry:
-                    succeeded += 1
-                    master[code] = entry
-                else:
-                    failed_codes.append(code)
+        with ThreadPoolExecutor(max_workers=args.workers) as executor:
+            futures = {executor.submit(process_code, code): code for code in missing}
 
-                if processed % 50 == 0:
-                    n_fail = len(failed_codes)
-                    print(f"  Progress: {processed}/{len(missing)} (succeeded: {succeeded}, failed: {n_fail})")
+            for future in as_completed(futures):
+                code, entry = future.result()
+                with lock:
+                    processed += 1
+                    if entry:
+                        succeeded += 1
+                        master[code] = entry
+                    else:
+                        failed_codes.append(code)
 
-                if not args.dry_run and processed % SAVE_INTERVAL == 0:
-                    _atomic_save_company_master(COMPANY_MASTER_PATH, master)
-                    print(f"  Saved (interim) — {len(master)} entries")
+                    if processed % 50 == 0:
+                        n_fail = len(failed_codes)
+                        print(f"  Progress: {processed}/{len(missing)} (succeeded: {succeeded}, failed: {n_fail})")
 
-    if not args.dry_run:
-        _atomic_save_company_master(COMPANY_MASTER_PATH, master)
-        print(f"Saved final — {len(master)} entries in company_master.yaml")
-    else:
-        print(f"[DRY RUN] Would have {len(master)} entries total")
+                    if not args.dry_run and processed % SAVE_INTERVAL == 0:
+                        _atomic_save_company_master(COMPANY_MASTER_PATH, master)
+                        print(f"  Saved (interim) — {len(master)} entries")
 
-    print(f"\nDone: {succeeded} succeeded, {len(failed_codes)} failed out of {len(missing)}")
-    if failed_codes:
-        print(f"Failed codes: {', '.join(sorted(failed_codes))}")
+        if not args.dry_run:
+            _atomic_save_company_master(COMPANY_MASTER_PATH, master)
+            print(f"Saved final — {len(master)} entries in company_master.yaml")
+        else:
+            print(f"[DRY RUN] Would have {len(master)} entries total")
+
+        print(f"\nDone: {succeeded} succeeded, {len(failed_codes)} failed out of {len(missing)}")
+        if failed_codes:
+            print(f"Failed codes: {', '.join(sorted(failed_codes))}")
+    finally:
+        browser.shutdown()
 
 
 if __name__ == "__main__":

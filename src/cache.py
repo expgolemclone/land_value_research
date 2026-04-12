@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import tempfile
-from typing import Any
+JsonDict = dict[str, object]
 
 from src.pdf_extract import FacilityLand
 
@@ -49,7 +49,7 @@ def _atomic_json_write(path: str, obj: object) -> None:
         raise
 
 
-def load_json_dict(path: str) -> dict[str, Any]:
+def load_json_dict(path: str) -> JsonDict:
     if not os.path.exists(path):
         return {}
     try:
@@ -62,7 +62,7 @@ def load_json_dict(path: str) -> dict[str, Any]:
     return {}
 
 
-def save_json_dict(path: str, d: dict[str, Any]) -> None:
+def save_json_dict(path: str, d: JsonDict) -> None:
     _atomic_json_write(path, d)
 
 

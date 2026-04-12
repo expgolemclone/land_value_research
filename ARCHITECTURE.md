@@ -1,18 +1,18 @@
 # TREE
 
-run.py [1400L] -> src.rank_market_cap_ratio, scripts.merge_address_patches, src.*, src.browser, src.stealth
+run.py [1415L] -> src.rank_market_cap_ratio, scripts.merge_address_patches, src.*, src.browser, src.stealth
 browser_service/
   server.js (Node.js Express + puppeteer-real-browser: /fetch, /download, /shutdown)
   package.json, package-lock.json
 src/
-  rank_market_cap_ratio.py [590L] -> src.company_config, src.company_metadata_fallback, src.schema, src.browser
+  rank_market_cap_ratio.py [592L] -> src.company_config, src.company_metadata_fallback, src.schema, src.browser
   config.py [60L] (SSOT: PROJECT_ROOT, CONFIG_DIR, DATA_DIR, CACHE_DIR, 全パス定数, MAGIC)
   schema.py [121L] (SSOT: OUTPUT_COLUMNS, RANKING_COLUMNS, COL_* constants)
   utils.py [23L] (ensure_dir, validate_url_not_private)
   cache.py [118L] -> src.pdf_extract (file_md5, combined_md5, string_md5)
   browser.py [300L] -> src.config (BrowserService: Node.js puppeteer-real-browser クライアント, pty 起動)
-  stealth.py [200L] -> src.config (ProxyPool, create_session, random_ua, random_delay)
-  network.py [101L] -> src.stealth (is_transient_network_error, urlopen_with_retry, _fetch_via_proxy)
+  stealth.py [157L] -> src.config (ProxyPool, random_delay)
+  network.py [47L] (is_transient_network_error, urlopen_with_retry)
   web_cache.py [50L] -> src.browser, src.utils
   jp_address.py [17L] re-export land_value_core{normalize_addr, split_tokyo_municipality, parse_town_chome_block, num_to_kanji, build_oaza_chome_name, kanji_to_int}
   landprice_tokyo.py [3L] re-export land_value_core{LandPriceTokyo, PriceResult}
@@ -33,7 +33,7 @@ scripts/
   parallel_research.py [1072L] -> scripts._codex_precheck, scripts.codex_lockdown
   merge_address_patches.py [241L] (merge_patches_safe; マージ時に影響企業のoutput CSVを削除)
   merge_landprice.py [98L] standalone GeoJSON merge
-  populate_company_master.py [200L] -> src.company_config, src.network, src.stealth
+  populate_company_master.py [228L] -> src.browser, src.company_config, src.stealth, src.utils
   populate_company_names.py [110L] -> src.company_config
   codex_lockdown.py [256L] standalone permission lockdown
   validate_ocr_accuracy.py [185L] -> src.pdf_extract
@@ -64,7 +64,7 @@ struct PriceResult @rust_src/types.rs:6 <-src/landprice_tokyo.py, src/anomaly.py
 class FacilityLand @src/pdf_extract.py:13 <-src/cache.py, src/company_config.py, run.py
 class SiteSplitEntry @src/company_config.py:16 <-run.py
 class BrowserService @src/browser.py:83 <-run.py, src/web_address_research.py, src/web_cache.py, src/company_metadata_fallback.py, src/rank_market_cap_ratio.py
-class ProxyPool @src/stealth.py:113 <-run.py, src/network.py, scripts/populate_company_master.py
+class ProxyPool @src/stealth.py:35 <-run.py, scripts/populate_company_master.py
 class WebAddressResearcher @src/web_address_research.py:39 <-run.py
 class CompanyMetadata @src/company_metadata_fallback.py:23 <-run.py, src/rank_market_cap_ratio.py
 class OutputRow @src/schema.py:51 <-src/anomaly.py, run.py
@@ -79,9 +79,7 @@ fn save_company_master @src/company_config.py:236 <-run.py, src/rank_market_cap_
 fn load_address_overrides @src/company_config.py:40 <-run.py
 fn load_price_overrides @src/company_config.py:216 <-run.py
 fn expand_site_splits @src/company_config.py:105 <-run.py
-fn create_session @src/stealth.py:100 <-src/network.py
-fn random_ua @src/stealth.py:96 <-src/stealth.py
-fn random_delay @src/stealth.py:119 <-src/stealth.py
+fn random_delay @src/stealth.py:22 <-src/stealth.py
 fn fetch_from_irbank @src/company_metadata_fallback.py:71 <-run.py, src/rank_market_cap_ratio.py
 fn file_md5 @src/cache.py:15 <-run.py
 fn combined_md5 @src/cache.py:24 <-run.py
@@ -90,9 +88,8 @@ fn load_json_dict @src/cache.py:52 <-run.py
 fn save_json_dict @src/cache.py:65 <-run.py
 fn load_sites_cache @src/cache.py:69 <-run.py
 fn save_sites_cache @src/cache.py:100 <-run.py
-fn is_transient_network_error @src/network.py:18 <-run.py, src/network.py
-fn _fetch_via_proxy @src/network.py:41 <-src/network.py(urlopen_with_retry)
-fn urlopen_with_retry @src/network.py:72 <-scripts/populate_company_master.py
+fn is_transient_network_error @src/network.py:14 <-run.py
+fn urlopen_with_retry @src/network.py:28
 fn validate_url_not_private @src/utils.py:10 <-src/company_metadata_fallback.py, src/web_address_research.py, src/web_cache.py
 fn normalize_addr @rust_src/jp_address.rs:127 <-src/jp_address.py(re-export), src/web_address_research.py
 fn split_tokyo_municipality @rust_src/jp_address.rs:144 <-src/jp_address.py(re-export), src/web_address_research.py
@@ -115,7 +112,7 @@ src.cache -> {src.pdf_extract}
 src.company_config -> {src.pdf_extract}
 src.company_metadata_fallback -> {src.browser, src.utils}
 src.stealth -> {src.config}
-src.network -> {src.stealth}
+src.network -> {} (standalone)
 src.web_address_research -> {src.browser, src.cache, src.jp_address, src.utils}
 src.web_cache -> {src.browser, src.utils}
 src.jp_address -> land_value_core (Rust)
@@ -123,7 +120,7 @@ src.landprice_tokyo -> land_value_core (Rust)
 src.geocode_tokyo -> land_value_core (Rust)
 land_value_core: landprice_tokyo -> {coord, types}; geocode_tokyo -> {jp_address}; jp_address (PyO3 direct)
 scripts.parallel_research -> {scripts._codex_precheck, scripts.codex_lockdown}
-scripts.populate_company_master -> {src.company_config, src.network, src.stealth}
+scripts.populate_company_master -> {src.browser, src.company_config, src.stealth, src.utils}
 scripts.populate_company_names -> {src.company_config}
 scripts.validate_ocr_accuracy -> {src.pdf_extract}
 scripts._codex_geocode_check -> {src.geocode_tokyo}
