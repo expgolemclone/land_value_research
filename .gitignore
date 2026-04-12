@@ -52,3 +52,4 @@ test_camelot/
 !.claude/settings.local.json
 !.claude/skills/
 .playwright-mcp/
+.cache/
