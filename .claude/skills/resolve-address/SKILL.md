@@ -136,8 +136,8 @@ python rank_market_cap_ratio.py
 
 #### ステップ4: 有報「設備の状況」の確認
 
-有報PDFから抽出した全拠点データが `_sites.json` としてプロンプトに注入済み。
-また、有報「設備の状況」セクションのページテキスト全文（注記・面積内訳を含む）が `_facilities_text.txt` として注入済み。
+有報PDFから抽出した全拠点データが `land.db` の拠点抽出データとしてプロンプトに注入済み。
+また、有報「設備の状況」セクションのページテキスト全文（注記・面積内訳を含む）が `land.db` の設備状況テキストとして注入済み。
 各事業所の `location_short` と出力CSVの住所を照合し、不一致があれば他のステップで番地を特定する。
 
 ### 3.3 住所の検証
@@ -249,9 +249,8 @@ print(f"{addr} → {level} ({lat}, {lon})")
 # 対象企業の出力CSVを削除（例: 証券コード 4116）
 Remove-Item data/output/4116_output.csv -ErrorAction SilentlyContinue
 
-# ジオコードキャッシュから該当住所を消す必要がある場合は
-# data/cache/geocode_result_cache.json を編集するか、全削除
-# （通常はオーバーライドが優先されるため不要）
+# ジオコードの再評価が必要でも、通常は override が優先されるため
+# land.db を手動で消す必要はない
 
 # 再実行
 python run.py
@@ -289,7 +288,7 @@ git commit -m "Add address overrides for improved geocoding accuracy
 
 - **集約名の事業所**（「本社他」「本社・○○」「○○等」）は、複数の土地が1行に集約されている。代表的な住所（通常は本社住所）を設定する。ただしこの場合、集約されている他の土地とは異なる場所の地価が適用される点に留意する。
 - **移転情報に注意** — 検索で見つかる住所が最新でない場合がある。有報の事業年度末時点の住所であることを確認する。
-- **Web自動取得のスコアが低かった理由** — `住所取得元` が `securities_report` の場合、Web自動取得（`web_address_research.py`）が試行されたがスコア40未満で不採用になった可能性がある。`data/cache/web_address/resolve_cache.json` で該当キーを検索すれば、試行結果を確認できる。
+- **Web自動取得のスコアが低かった理由** — `住所取得元` が `securities_report` の場合、Web自動取得（`web_address_research.py`）が試行されたがスコア40未満で不採用になった可能性がある。必要なら `land.db` の `web_address_resolve` を確認する。
 - **ジオコーディング参照データの範囲** — `data/geocoding/` の参照CSVは東京都2024年版。参照データに存在しない新しい街区番号の場合、番地付きでも `oaza_chome` にフォールバックする。この場合は改善の余地がない。
 
 ## 7. 一括調査のワークフロー例

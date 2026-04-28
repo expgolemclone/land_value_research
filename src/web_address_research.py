@@ -6,10 +6,12 @@ import json
 import logging
 import os
 import re
+import sqlite3
 import threading
 from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pdfplumber
@@ -19,6 +21,12 @@ from pdfminer.pdfexceptions import PDFException
 from src.browser import BrowserServiceError
 from src.cache import string_md5
 from src.jp_address import normalize_addr, split_tokyo_municipality
+from src.land_db.repo import (
+    load_resolve_cache_record,
+    save_resolve_cache,
+    save_resolve_miss,
+)
+from src.land_db.schema import init_land_db
 from src.utils import validate_url_not_private
 
 if TYPE_CHECKING:
@@ -46,6 +54,7 @@ class WebAddressResearcher:
         *,
         browser: BrowserService,
         pool: ProxyPool | None = None,
+        db_path: str | Path | None = None,
     ) -> None:
         self.cache_dir: str = cache_dir
         self.timeout_sec: int = timeout_sec
@@ -54,19 +63,14 @@ class WebAddressResearcher:
         os.makedirs(self.cache_dir, exist_ok=True)
         self._text_cache: dict[str, str] = {}
         self._addr_cache: dict[str, list[str]] = {}
-        self._resolve_cache_path: str = os.path.join(self.cache_dir, "resolve_cache.json")
-        self._resolve_cache: dict[str, dict[str, object]] = {}
-        self._resolve_cache_dirty: bool = False
         self._lock: threading.Lock = threading.Lock()
-        if os.path.exists(self._resolve_cache_path):
-            try:
-                with open(self._resolve_cache_path, encoding="utf-8") as f:
-                    d = json.load(f)
-                if isinstance(d, dict):
-                    self._resolve_cache = d
-            except (json.JSONDecodeError, OSError):
-                logger.debug("resolve cache load failed: %s", self._resolve_cache_path, exc_info=True)
-                self._resolve_cache = {}
+        db_file = Path(db_path) if db_path is not None else Path(self.cache_dir) / "land.db"
+        db_file.parent.mkdir(parents=True, exist_ok=True)
+        self._conn: sqlite3.Connection = sqlite3.connect(str(db_file), check_same_thread=False)
+        self._conn.execute("PRAGMA journal_mode=WAL")
+        self._conn.execute("PRAGMA foreign_keys=ON")
+        self._conn.row_factory = sqlite3.Row
+        init_land_db(self._conn)
 
     def seed_cache(self, url: str, local_path: str) -> None:
         """Register an already-downloaded file to avoid re-downloading."""
@@ -293,16 +297,15 @@ class WebAddressResearcher:
         urls = [u.strip() for u in source_urls if (u or "").strip()]
         key = "|".join([normalize_addr(site_name), normalize_addr(location_short), "||".join(urls)])
         with self._lock:
-            cached = self._resolve_cache.get(key)
-        if isinstance(cached, dict):
-            if "address" in cached and "score" in cached and "source_url" in cached:
+            cached = load_resolve_cache_record(self._conn, key)
+        if cached is not None:
+            if cached["resolved"]:
                 return AddressCandidate(
                     address=str(cached["address"]),
                     score=int(cached["score"]),
                     source_url=str(cached["source_url"]),
                 )
-            if cached.get("none") is True:
-                return None
+            return None
 
         # Fetch all URLs concurrently (I/O-bound), then score using cached results
         valid_urls = [u for u in urls if u]
@@ -326,32 +329,33 @@ class WebAddressResearcher:
 
         with self._lock:
             if best is None:
-                self._resolve_cache[key] = {"none": True}
+                save_resolve_miss(self._conn, key)
             else:
-                self._resolve_cache[key] = {
-                    "address": best.address,
-                    "score": int(best.score),
-                    "source_url": best.source_url,
-                }
-            self._resolve_cache_dirty = True
+                save_resolve_cache(
+                    self._conn,
+                    key,
+                    {
+                        "address": best.address,
+                        "score": int(best.score),
+                        "source_url": best.source_url,
+                    },
+                )
+            self._conn.commit()
         return best
 
     def clear_transient_caches(self) -> None:
-        """Flush resolve cache to disk, then free all in-memory caches."""
+        """Flush DB state, then free all in-memory caches."""
         self.flush()
         with self._lock:
             self._text_cache.clear()
             self._addr_cache.clear()
-            self._resolve_cache.clear()
 
     def flush(self) -> None:
-        """Write resolve cache to disk if it has been modified."""
+        """Commit any pending DB writes."""
         with self._lock:
-            if not self._resolve_cache_dirty:
-                return
-            try:
-                with open(self._resolve_cache_path, "w", encoding="utf-8") as f:
-                    json.dump(self._resolve_cache, f, ensure_ascii=False, separators=(",", ":"))
-                self._resolve_cache_dirty = False
-            except OSError:
-                logger.debug("resolve cache flush failed: %s", self._resolve_cache_path, exc_info=True)
+            self._conn.commit()
+
+    def close(self) -> None:
+        with self._lock:
+            self._conn.commit()
+            self._conn.close()

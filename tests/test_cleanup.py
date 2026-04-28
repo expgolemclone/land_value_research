@@ -169,7 +169,7 @@ class TestPostPipelineCleanup(unittest.TestCase):
             config_dir = Path(tmpdir) / "config"
             config_dir.mkdir()
 
-            bak = config_dir / "company_master.yaml.bak"
+            bak = config_dir / "metadata_store.bak"
             bak.write_text("backup", encoding="utf-8")
 
             _post_pipeline_cleanup(tmpdir, keep_logs=5)

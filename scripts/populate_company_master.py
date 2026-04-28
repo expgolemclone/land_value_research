@@ -1,19 +1,12 @@
-"""Batch-populate company_master.yaml with IRBank/EDINET metadata.
-
-Reads input_full.csv, identifies codes missing from company_master.yaml,
-fetches securities_report_pdf_url and address_source_urls from IRBank,
-and merges results into the YAML.
-"""
+"""Batch-populate stocks.db company metadata from IRBank/EDINET."""
 
 # ruff: noqa: E402
 from __future__ import annotations
 
 import argparse
 import logging
-import os
 import re
 import sys
-import tempfile
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -23,11 +16,8 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-import yaml
-
 from src.browser import BrowserService, BrowserServiceError
-from src.company_config import load_company_master
-from src.config import COMPANY_MASTER_PATH as _COMPANY_MASTER_PATH
+from src.company_store import connect_stocks_db, load_company_directory, merge_company_record
 from src.config import INPUT_FULL_CSV
 from src.stealth import ProxyPool
 from src.utils import validate_url_not_private
@@ -35,26 +25,10 @@ from src.utils import validate_url_not_private
 logger = logging.getLogger(__name__)
 
 CompanyEntry = dict[str, str | list[str]]
-CompanyMaster = dict[str, CompanyEntry]
-
-COMPANY_MASTER_PATH = str(_COMPANY_MASTER_PATH)
 INPUT_FULL_PATH = str(INPUT_FULL_CSV)
 
 DEFAULT_TIMEOUT_MS = 30000
 SAVE_INTERVAL = 100
-
-
-def _atomic_save_company_master(path: str, data: CompanyMaster) -> None:
-    sorted_data = dict(sorted(data.items(), key=lambda x: x[0]))
-    dir_path = os.path.dirname(os.path.abspath(path))
-    fd, tmp_path = tempfile.mkstemp(suffix=".yaml", dir=dir_path)
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            yaml.dump(sorted_data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
-        os.replace(tmp_path, path)
-    except BaseException:
-        os.unlink(tmp_path)
-        raise
 
 
 def _fetch_text(
@@ -125,17 +99,12 @@ def fetch_metadata(
 
 
 def load_input_codes(path: str) -> list[str]:
-    codes = []
     with open(path, encoding="utf-8") as f:
-        for line in f:
-            code = line.strip()
-            if code:
-                codes.append(code)
-    return codes
+        return [line.strip() for line in f if line.strip()]
 
 
 def main() -> None:
-    parser: argparse.ArgumentParser = argparse.ArgumentParser(description="Populate company_master.yaml from IRBank")
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(description="Populate stocks.db metadata from IRBank")
     parser.add_argument("--workers", type=int, default=1, help="Number of concurrent workers (default: 1)")
     parser.add_argument("--delay", type=float, default=1.0, help="Delay in seconds between requests (default: 1.0)")
     parser.add_argument("--dry-run", action="store_true", help="Preview without writing")
@@ -160,13 +129,20 @@ def main() -> None:
         pool = ProxyPool.make_direct()
 
     input_codes = load_input_codes(INPUT_FULL_PATH)
-    master = load_company_master(COMPANY_MASTER_PATH)
+    conn = connect_stocks_db()
+    master = load_company_directory(conn)
 
-    missing = [c for c in input_codes if c not in master]
-    print(f"Total codes: {len(input_codes)}, Already in master: {len(master)}, Missing: {len(missing)}")
+    missing = [
+        code
+        for code in input_codes
+        if not master.get(code, {}).get("securities_report_pdf_url")
+        or not master.get(code, {}).get("address_source_urls")
+    ]
+    print(f"Total codes: {len(input_codes)}, Already stored: {len(master)}, Missing metadata: {len(missing)}")
 
     if not missing:
         print("Nothing to do.")
+        conn.close()
         return
 
     if args.limit > 0:
@@ -186,8 +162,8 @@ def main() -> None:
             time.sleep(args.delay)
             try:
                 return code, fetch_metadata(code, browser=browser, pool=pool)
-            except BrowserServiceError as e:
-                print(f"  ERROR {code}: {e}")
+            except BrowserServiceError as exc:
+                print(f"  ERROR {code}: {exc}")
                 return code, None
 
         with ThreadPoolExecutor(max_workers=args.workers) as executor:
@@ -199,7 +175,15 @@ def main() -> None:
                     processed += 1
                     if entry:
                         succeeded += 1
-                        master[code] = entry
+                        if not args.dry_run:
+                            master[code] = merge_company_record(
+                                conn,
+                                code,
+                                securities_report_pdf_url=str(entry.get("securities_report_pdf_url", "")),
+                                address_source_urls=list(entry.get("address_source_urls", []) or []),
+                            )
+                        else:
+                            master[code] = dict(entry)
                     else:
                         failed_codes.append(code)
 
@@ -208,12 +192,12 @@ def main() -> None:
                         print(f"  Progress: {processed}/{len(missing)} (succeeded: {succeeded}, failed: {n_fail})")
 
                     if not args.dry_run and processed % SAVE_INTERVAL == 0:
-                        _atomic_save_company_master(COMPANY_MASTER_PATH, master)
+                        conn.commit()
                         print(f"  Saved (interim) — {len(master)} entries")
 
         if not args.dry_run:
-            _atomic_save_company_master(COMPANY_MASTER_PATH, master)
-            print(f"Saved final — {len(master)} entries in company_master.yaml")
+            conn.commit()
+            print(f"Saved final — {len(master)} entries in stocks.db")
         else:
             print(f"[DRY RUN] Would have {len(master)} entries total")
 
@@ -221,6 +205,7 @@ def main() -> None:
         if failed_codes:
             print(f"Failed codes: {', '.join(sorted(failed_codes))}")
     finally:
+        conn.close()
         browser.shutdown()
 
 

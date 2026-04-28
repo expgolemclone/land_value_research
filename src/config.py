@@ -5,10 +5,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib
+import tomllib
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -31,15 +28,8 @@ LAND_DB_PATH = DATA_DIR / "land.db"
 
 # cache (under data/)
 CACHE_DIR = DATA_DIR / "cache"
-COMPANY_MASTER_PATH = CACHE_DIR / "company_master.yaml"
-PRICE_CACHE_PATH = CACHE_DIR / "price_result_cache.json"
-GEOCODE_CACHE_PATH = CACHE_DIR / "geocode_result_cache.json"
-MARKET_CAP_CACHE_PATH = CACHE_DIR / "market_cap_cache.json"
 PDF_CACHE_DIR = CACHE_DIR / "pdf"
-FACILITIES_CACHE_DIR = CACHE_DIR / "facilities_land"
 WEB_ADDRESS_CACHE_DIR = CACHE_DIR / "web_address"
-ADDR_OVERRIDES_HASH = "addr_overrides_hash.json"
-PRICE_OVERRIDES_HASH = "price_overrides_hash.json"
 
 # output
 DEFAULT_OUTPUT_DIR = DATA_DIR / "output"

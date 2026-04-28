@@ -8,62 +8,8 @@ from src.company_config import (
     _allocate_book_values,
     _parse_split_entries,
     load_address_overrides,
-    load_company_master,
 )
 from src.pdf_extract import FacilityLand
-
-
-class TestLoadCompanyMaster(unittest.TestCase):
-    def test_load_valid_yaml(self) -> None:
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False, encoding="utf-8") as f:
-            f.write(
-                '"1234":\n  company_name: "テスト株式会社"\n  securities_report_pdf_url: "https://example.com/test.pdf"\n'
-            )
-            path = f.name
-        try:
-            result = load_company_master(path)
-            self.assertIn("1234", result)
-            self.assertEqual(result["1234"]["company_name"], "テスト株式会社")
-        finally:
-            os.unlink(path)
-
-    def test_load_missing_file(self) -> None:
-        result = load_company_master("/nonexistent/path.yaml")
-        self.assertEqual(result, {})
-
-    def test_load_empty_yaml(self) -> None:
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False, encoding="utf-8") as f:
-            f.write("")
-            path = f.name
-        try:
-            result = load_company_master(path)
-            self.assertEqual(result, {})
-        finally:
-            os.unlink(path)
-
-
-class TestLoadCompanyMasterMalformed(unittest.TestCase):
-    def test_list_yaml_returns_empty(self) -> None:
-        """Top-level YAML is a list, not a dict."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False, encoding="utf-8") as f:
-            f.write("- item1\n- item2\n")
-            path = f.name
-        try:
-            result = load_company_master(path)
-            self.assertEqual(result, {})
-        finally:
-            os.unlink(path)
-
-    def test_scalar_yaml_returns_empty(self) -> None:
-        """Top-level YAML is a scalar string."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False, encoding="utf-8") as f:
-            f.write("just a string\n")
-            path = f.name
-        try:
-            result = load_company_master(path)
-            self.assertEqual(result, {})
-        finally:
-            os.unlink(path)
 
 
 class TestLoadAddressOverrides(unittest.TestCase):

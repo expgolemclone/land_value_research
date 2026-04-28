@@ -3,8 +3,6 @@ from __future__ import annotations
 import logging
 import os
 from dataclasses import dataclass
-CompanyMasterEntry = dict[str, str | list[str]]
-CompanyMaster = dict[str, CompanyMasterEntry]
 
 import yaml
 
@@ -25,17 +23,6 @@ class SiteSplitEntry:
     area_m2_source: str | None = None
     area_m2_source_url: str | None = None
     area_m2_note: str | None = None
-
-
-def load_company_master(path: str) -> CompanyMaster:
-    if not os.path.exists(path):
-        return {}
-    with open(path, encoding="utf-8") as f:
-        data = yaml.safe_load(f) or {}
-    if not isinstance(data, dict):
-        return {}
-    # key: str code
-    return {str(k): v for k, v in data.items()}
 
 
 def load_address_overrides(path: str) -> dict[str, dict[str, str | list[SiteSplitEntry]]]:
@@ -232,10 +219,3 @@ def load_price_overrides(path: str) -> dict[str, dict[str, int]]:
             continue
         out[str(code)] = {str(k): int(v) for k, v in mapping.items()}
     return out
-
-
-def save_company_master(path: str, data: CompanyMaster) -> None:
-    """company_master.yaml に証券コード昇順で保存する."""
-    sorted_data = dict(sorted(data.items(), key=lambda x: x[0]))
-    with open(path, "w", encoding="utf-8") as f:
-        yaml.dump(sorted_data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)

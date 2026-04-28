@@ -1,7 +1,7 @@
 [project]
 name = "land-value-research"
 version = "0.1.0"
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 dependencies = [
     "pdfplumber>=0.10,<1",
     "pyyaml>=6.0.3,<7",
@@ -36,7 +36,7 @@ features = ["pyo3/extension-module"]
 pythonpath = ["src"]
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py313"
 line-length = 120
 exclude = ["data/", "scripts/validate_ocr_accuracy.py"]
 

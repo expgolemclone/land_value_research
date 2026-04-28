@@ -1,8 +1,7 @@
-"""JPX東証上場銘柄一覧から企業名を取得し company_master.yaml に一括登録する."""
+"""JPX東証上場銘柄一覧から企業名を取得し stocks.db に一括登録する."""
 
 from __future__ import annotations
 
-import importlib
 import sys
 import tempfile
 import urllib.request
@@ -14,13 +13,8 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-company_config = importlib.import_module("src.company_config")
-load_company_master = company_config.load_company_master
-save_company_master = company_config.save_company_master
+from src.company_store import connect_stocks_db, load_company_directory, merge_company_record
 
-from src.config import COMPANY_MASTER_PATH as _COMPANY_MASTER_PATH
-
-COMPANY_MASTER_PATH = str(_COMPANY_MASTER_PATH)
 JPX_URL = "https://www.jpx.co.jp/markets/statistics-equities/misc/tvdivq0000001vg2-att/data_j.xls"
 
 
@@ -42,7 +36,6 @@ def parse_jpx_xls(data: bytes) -> dict[str, str]:
     wb = xlrd.open_workbook(tmp_path)
     sheet = wb.sheet_by_index(0)
 
-    # Find header row and column indices
     code_col = None
     name_col = None
     header_row = 0
@@ -61,7 +54,6 @@ def parse_jpx_xls(data: bytes) -> dict[str, str]:
     result: dict[str, str] = {}
     for row_idx in range(header_row + 1, sheet.nrows):
         raw_code = sheet.cell_value(row_idx, code_col)
-        # xlrd may read numeric codes as float
         if isinstance(raw_code, float):
             code = str(int(raw_code))
         else:
@@ -82,28 +74,31 @@ def main() -> None:
     jpx_names = parse_jpx_xls(data)
     print(f"JPX銘柄数: {len(jpx_names)}")
 
-    master = load_company_master(COMPANY_MASTER_PATH)
+    conn = connect_stocks_db()
+    records = load_company_directory(conn)
     updated = 0
     already = 0
-    not_in_master = 0
+    new_entries = 0
 
-    for code, name in jpx_names.items():
-        if code in master:
-            if "company_name" not in master[code]:
-                master[code]["company_name"] = name
-                updated += 1
-            else:
+    try:
+        for code, name in jpx_names.items():
+            existed_before = code in records
+            current_name = records.get(code, {}).get("company_name", "")
+            if current_name:
                 already += 1
-        else:
-            # company_master にエントリ自体がないコードも追加
-            master[code] = {"company_name": name}
+                continue
+            records[code] = merge_company_record(conn, code, company_name=name)
             updated += 1
-            not_in_master += 1
+            if not existed_before:
+                new_entries += 1
 
-    save_company_master(COMPANY_MASTER_PATH, master)
-    print(f"更新: {updated} 件 (うち新規エントリ: {not_in_master} 件)")
-    print(f"既存company_name: {already} 件 (スキップ)")
-    print(f"company_master.yaml 合計: {len(master)} エントリ")
+        conn.commit()
+    finally:
+        conn.close()
+
+    print(f"更新: {updated} 件 (うち新規エントリ: {new_entries} 件)")
+    print(f"既存 company_name: {already} 件 (スキップ)")
+    print(f"stocks.db 合計: {len(records)} エントリ")
 
 
 if __name__ == "__main__":

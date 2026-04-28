@@ -16,6 +16,7 @@ import argparse
 import json
 import os
 import re
+import sqlite3
 import subprocess
 import sys
 from datetime import datetime
@@ -30,7 +31,7 @@ from scripts.codex_lockdown import codex_lockdown
 from src.config import (
     DEFAULT_OUTPUT_DIR,
     DEFAULT_RANKING_PATH,
-    FACILITIES_CACHE_DIR,
+    LAND_DB_PATH,
 )
 from src.config import PATCH_DIR as _PATCH_DIR
 
@@ -343,6 +344,33 @@ def run_resolve_address(args: argparse.Namespace) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _load_facility_context(code: str) -> tuple[str | None, str | None]:
+    if not LAND_DB_PATH.exists():
+        return None, None
+
+    conn = sqlite3.connect(LAND_DB_PATH)
+    conn.row_factory = sqlite3.Row
+    try:
+        row = conn.execute(
+            "SELECT sites_json, section_text FROM facilities_land WHERE code = ?",
+            (code,),
+        ).fetchone()
+    except sqlite3.Error:
+        return None, None
+    finally:
+        conn.close()
+
+    if row is None:
+        return None, None
+
+    sites_json = row["sites_json"]
+    section_text = row["section_text"]
+    return (
+        str(sites_json) if sites_json is not None else None,
+        str(section_text) if section_text is not None else None,
+    )
+
+
 def _build_injected_prompt(
     code: str,
     mode: str,
@@ -369,18 +397,14 @@ def _build_injected_prompt(
             pcheck_content = pcheck.read_text(encoding="utf-8")
             parts.append(f'<context path="config/address_patches/{code}.precheck.json">\n{pcheck_content}\n</context>')
 
-    # facilities_land (有報 設備の状況) 注入 — 両モード共通
-    sites_path = FACILITIES_CACHE_DIR / f"{code}_sites.json"
-    if sites_path.exists():
-        sites_content = sites_path.read_text(encoding="utf-8")
-        parts.append(f'<context path="data/cache/facilities_land/{code}_sites.json">\n{sites_content}\n</context>')
+    # land.db 内の有報由来データ注入 — 両モード共通
+    sites_content, text_content = _load_facility_context(code)
+    if sites_content:
+        parts.append(f'<context path="land.db:facility_records:{code}">\n{sites_content}\n</context>')
 
-    # facilities_text (有報 設備の状況 ページテキスト) 注入
-    text_path = FACILITIES_CACHE_DIR / f"{code}_facilities_text.txt"
-    if text_path.exists():
-        text_content = text_path.read_text(encoding="utf-8")
+    if text_content:
         parts.append(
-            f'<context path="data/cache/facilities_land/{code}_facilities_text.txt" '
+            f'<context path="land.db:facility_section:{code}" '
             'description="有報「設備の状況」セクション全文（注記含む）">\n'
             f"{text_content}\n"
             "</context>"

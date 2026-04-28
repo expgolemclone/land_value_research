@@ -1,11 +1,11 @@
 import argparse
-import atexit
 import csv
 import gc
 import logging
 import math
 import os
 import re
+import sqlite3
 import sys
 import threading
 import time
@@ -16,10 +16,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
-from src.cache import JsonDict
-from src.company_config import CompanyMaster
 
 import shtab
+from stock_db.paths import STOCKS_DB_PATH
 
 from scripts.merge_address_patches import merge_patches_safe
 from src.anomaly import (
@@ -30,39 +29,59 @@ from src.anomaly import (
     should_accept_web_address,
 )
 from src.browser import BrowserService, BrowserServiceError
-from src.cache import combined_md5, load_json_dict, load_sites_cache, save_json_dict, save_sites_cache, string_md5
+from src.cache import combined_md5, string_md5
 from src.company_config import (
     SiteSplitEntry,
     expand_site_splits,
     load_address_overrides,
-    load_company_master,
     load_price_overrides,
-    save_company_master,
+)
+from src.company_store import (
+    CompanyDirectory,
+    init_db as init_stocks_db,
+    load_company_directory,
+    load_market_cap_snapshot,
+    merge_company_record,
+    save_market_cap_snapshot,
 )
 from src.company_metadata_fallback import fetch_from_irbank, fetch_market_cap_from_kabutan
 from src.config import (
     ADDRESS_OVERRIDES_PATH,
     CACHE_DIR,
-    COMPANY_MASTER_PATH,
     DEFAULT_OUTPUT_DIR,
-    FACILITIES_CACHE_DIR,
     GAIKU_CSV,
-    GEOCODE_CACHE_PATH,
     GEOCODE_RS,
     GEOJSON_PATH,
     INPUT_CSV,
+    LAND_DB_PATH,
     LANDPRICE_RS,
-    MARKET_CAP_CACHE_PATH,
     OAZA_CSV,
     PATCH_DIR,
     PDF_CACHE_DIR,
-    PRICE_CACHE_PATH,
     PRICE_OVERRIDES_PATH,
     PROJECT_ROOT,
     RUN_LOGS_DIR,
     WEB_ADDRESS_CACHE_DIR,
 )
 from src.geocode_tokyo import TokyoGeocoder
+from src.land_db.repo import (
+    delete_invalidation_hash,
+    get_geocode_deps_hash,
+    get_land_price_deps_hash,
+    list_invalidation_hashes,
+    load_facilities_cache,
+    load_geocode_cache,
+    load_invalidation_hash,
+    load_land_price_cache,
+    save_facilities_section_text,
+    save_geocode_cache,
+    save_invalidation_hash,
+    save_land_price_cache,
+    save_sites_cache,
+    set_geocode_deps_hash,
+    set_land_price_deps_hash,
+)
+from src.land_db.schema import init_land_db
 from src.landprice_tokyo import LandPriceTokyo, PriceResult
 from src.network import is_transient_network_error
 from src.pdf_extract import (
@@ -138,24 +157,18 @@ class RunContext:
     args: argparse.Namespace
     base_dir: str
     cache_dir: str
-    facilities_cache_dir: str
     output_dir: str
     processed_lookup_dir: str
-    price_cache_path: str
-    geocode_cache_path: str
-    company_master_path: str
-    company_master: CompanyMaster
+    land_conn: sqlite3.Connection
+    stocks_conn: sqlite3.Connection
+    company_records: CompanyDirectory
     addr_overrides: dict[str, dict[str, str | list[SiteSplitEntry]]]
     price_overrides: dict[str, dict[str, int]]
-    market_cap_cache_path: str
-    market_cap_cache: JsonDict
     geocoder: TokyoGeocoder
     web_addr: WebAddressResearcher
     landprice: LandPriceTokyo
     pool: ProxyPool
     browser: BrowserService
-    price_cache_disk: JsonDict
-    geocode_cache_disk: JsonDict
     cache_lock: threading.Lock = field(default_factory=threading.Lock)
 
 
@@ -207,6 +220,40 @@ def resolve_path(base_dir: str, path_value: str) -> str:
     if os.path.isabs(path_value):
         return path_value
     return os.path.join(base_dir, path_value)
+
+
+def _open_shared_connection(db_path: Path) -> sqlite3.Connection:
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(db_path), check_same_thread=False)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA foreign_keys=ON")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def _facility_to_site_entry(site: FacilityLand) -> dict[str, object]:
+    return {
+        "site_name": site.site_name,
+        "location_short": site.location_short,
+        "land_area_m2": float(site.land_area_m2),
+        "land_book_value_yen": float(site.land_book_value_yen),
+        "location_has_hoka": bool(site.location_has_hoka),
+        "equipment_type": site.equipment_type,
+    }
+
+
+def _site_entries_to_facilities(entries: list[dict[str, object]]) -> list[FacilityLand]:
+    return [
+        FacilityLand(
+            site_name=str(entry.get("site_name", "")),
+            location_short=str(entry.get("location_short", "")),
+            land_area_m2=float(entry.get("land_area_m2", 0.0)),
+            land_book_value_yen=float(entry.get("land_book_value_yen", 0.0)),
+            location_has_hoka=bool(entry.get("location_has_hoka", False)),
+            equipment_type=str(entry.get("equipment_type", "")),
+        )
+        for entry in entries
+    ]
 
 
 def load_csv_rows(input_path: str) -> list[list[str]]:
@@ -448,21 +495,20 @@ def parse_args() -> argparse.Namespace:
 def setup_environment(args: argparse.Namespace) -> RunContext:
     base_dir = str(PROJECT_ROOT)
     cache_dir = str(CACHE_DIR)
-    facilities_cache_dir = str(FACILITIES_CACHE_DIR)
-    price_cache_path = str(PRICE_CACHE_PATH)
-    geocode_cache_path = str(GEOCODE_CACHE_PATH)
-    company_master_path = str(COMPANY_MASTER_PATH)
-    market_cap_cache_path = str(MARKET_CAP_CACHE_PATH)
 
     ensure_dir(cache_dir)
     ensure_dir(str(PDF_CACHE_DIR))
     migrate_legacy_pdf_cache(cache_dir)
-    ensure_dir(facilities_cache_dir)
 
-    company_master = load_company_master(company_master_path)
     addr_overrides = load_address_overrides(str(ADDRESS_OVERRIDES_PATH))
     price_overrides = load_price_overrides(str(PRICE_OVERRIDES_PATH))
-    market_cap_cache = load_json_dict(market_cap_cache_path)
+
+    land_conn = _open_shared_connection(LAND_DB_PATH)
+    init_land_db(land_conn)
+
+    stocks_conn = _open_shared_connection(STOCKS_DB_PATH)
+    init_stocks_db(stocks_conn)
+    company_records = load_company_directory(stocks_conn)
 
     geocoder = TokyoGeocoder(
         oaza_csv=str(OAZA_CSV),
@@ -482,6 +528,7 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         cache_dir=str(WEB_ADDRESS_CACHE_DIR),
         browser=browser,
         pool=pool,
+        db_path=LAND_DB_PATH,
     )
     geojson_path = str(GEOJSON_PATH)
     landprice = LandPriceTokyo(geojson_path=geojson_path)
@@ -490,64 +537,57 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
     ensure_dir(output_dir)
     processed_lookup_dir = output_dir
 
-    price_cache_disk = load_json_dict(price_cache_path)
     price_deps_hash = combined_md5(
         geojson_path,
         str(LANDPRICE_RS),
     )
-    if price_cache_disk.get("_deps_hash") != price_deps_hash:
-        logger.info("地価推定の依存変更を検出: price_result_cache をクリア")
-        price_cache_disk = {"_deps_hash": price_deps_hash}
+    if get_land_price_deps_hash(land_conn) != price_deps_hash:
+        logger.info("地価推定の依存変更を検出: land.db の地価キャッシュを削除")
+        land_conn.execute("DELETE FROM land_price_cache")
+        set_land_price_deps_hash(land_conn, price_deps_hash)
 
-    geocode_cache_disk = load_json_dict(geocode_cache_path)
     geocode_deps_hash = combined_md5(
         str(GAIKU_CSV),
         str(GEOCODE_RS),
     )
-    if geocode_cache_disk.get("_deps_hash") != geocode_deps_hash:
-        logger.info("ジオコード依存変更を検出: geocode_result_cache をクリア")
-        geocode_cache_disk = {"_deps_hash": geocode_deps_hash}
+    if get_geocode_deps_hash(land_conn) != geocode_deps_hash:
+        logger.info("ジオコード依存変更を検出: land.db のジオコードキャッシュを削除")
+        land_conn.execute("DELETE FROM geocode_cache")
+        set_geocode_deps_hash(land_conn, geocode_deps_hash)
+    land_conn.commit()
 
     ctx = RunContext(
         args=args,
         base_dir=base_dir,
         cache_dir=cache_dir,
-        facilities_cache_dir=facilities_cache_dir,
         output_dir=output_dir,
         processed_lookup_dir=processed_lookup_dir,
-        price_cache_path=price_cache_path,
-        geocode_cache_path=geocode_cache_path,
-        company_master_path=company_master_path,
-        company_master=company_master,
+        land_conn=land_conn,
+        stocks_conn=stocks_conn,
+        company_records=company_records,
         addr_overrides=addr_overrides,
         price_overrides=price_overrides,
-        market_cap_cache_path=market_cap_cache_path,
-        market_cap_cache=market_cap_cache,
         geocoder=geocoder,
         web_addr=web_addr,
         landprice=landprice,
         pool=pool,
         browser=browser,
-        price_cache_disk=price_cache_disk,
-        geocode_cache_disk=geocode_cache_disk,
     )
-    atexit.register(save_caches, ctx)
     return ctx
 
 
 def _invalidate_stale_override_csvs(ctx: RunContext) -> list[str]:
-    """Delete output CSVs for companies whose addr/price overrides changed since last run."""
+    """Delete output CSVs for companies whose overrides changed since last run."""
     import json
 
     invalidated: list[str] = []
 
     def _check_overrides(
         overrides_dict: dict[str, object],
-        hash_filename: str,
+        hash_type: str,
         label: str,
     ) -> None:
-        hash_path = os.path.join(ctx.cache_dir, hash_filename)
-        old_hashes = load_json_dict(hash_path)
+        old_hashes = list_invalidation_hashes(ctx.land_conn, hash_type)
         new_hashes: dict[str, str] = {}
 
         for code, overrides in overrides_dict.items():
@@ -564,6 +604,7 @@ def _invalidate_stale_override_csvs(ctx: RunContext) -> list[str]:
                     os.remove(csv_path)
                     invalidated.append(code)
                     logger.info("%s変更: %s のCSVを削除", label, code)
+            save_invalidation_hash(ctx.land_conn, hash_type, code, h)
 
         for code in old_hashes:
             if code not in new_hashes:
@@ -575,11 +616,12 @@ def _invalidate_stale_override_csvs(ctx: RunContext) -> list[str]:
                     os.remove(csv_path)
                     invalidated.append(code)
                     logger.info("%s削除: %s のCSVを削除", label, code)
+                delete_invalidation_hash(ctx.land_conn, hash_type, code)
 
-        save_json_dict(hash_path, new_hashes)
+        ctx.land_conn.commit()
 
-    _check_overrides(ctx.addr_overrides, "addr_overrides_hash.json", "住所オーバーライド")
-    _check_overrides(ctx.price_overrides, "price_overrides_hash.json", "地価オーバーライド")
+    _check_overrides(ctx.addr_overrides, "address_override", "住所オーバーライド")
+    _check_overrides(ctx.price_overrides, "price_override", "地価オーバーライド")
     return invalidated
 
 
@@ -591,7 +633,7 @@ def _filter_targets(
     skipped: list[tuple[str, str, str]] = []
     for t in targets:
         code = t["code"]
-        meta = ctx.company_master.get(code, {})
+        meta = ctx.company_records.get(code, {})
         company_name = t["company_name"] or meta.get("company_name", code)
         output_filename = f"{sanitize_filename_component(code)}_output.csv"
         out_path = os.path.join(ctx.output_dir, output_filename)
@@ -613,7 +655,7 @@ def _resolve_company_metadata(
     ctx: RunContext,
 ) -> _CompanyMeta:
     code = t["code"]
-    meta = ctx.company_master.get(code, {})
+    meta = ctx.company_records.get(code, {})
     company_name = t["_resolved_company_name"] or meta.get("company_name", "")
     _tprint(f"[{company_index}/{total_companies}] 開始: {code} {company_name}")
     pdf_url = t["pdf_url"] or meta.get("securities_report_pdf_url", "")
@@ -627,10 +669,10 @@ def _resolve_company_metadata(
             pdf_url = fallback.securities_report_pdf_url
         if fallback.address_source_url and fallback.address_source_url not in address_source_urls:
             address_source_urls.append(fallback.address_source_url)
-        # IRBankから取得した情報をcompany_masterに追記（後続処理・永続化用）
+        # IRBankから取得した情報を stocks.db に追記（後続処理・永続化用）
         if fallback.company_name or fallback.securities_report_pdf_url:
             with ctx.cache_lock:
-                existing = ctx.company_master.get(code, {})
+                existing = ctx.company_records.get(code, {})
                 updated = dict(existing)
                 if fallback.company_name and not existing.get("company_name"):
                     updated["company_name"] = fallback.company_name
@@ -642,12 +684,19 @@ def _resolve_company_metadata(
                         existing_urls.append(fallback.address_source_url)
                         updated["address_source_urls"] = existing_urls
                 if updated != existing:
-                    ctx.company_master[code] = updated
+                    ctx.company_records[code] = merge_company_record(
+                        ctx.stocks_conn,
+                        code,
+                        company_name=str(updated.get("company_name", "")),
+                        securities_report_pdf_url=str(updated.get("securities_report_pdf_url", "")),
+                        address_source_urls=list(updated.get("address_source_urls", []) or []),
+                    )
+                    ctx.stocks_conn.commit()
     if not company_name or not pdf_url:
         raise CompanySkipError(
             f"証券コード{code}の会社情報が不足しています."
             " config/input.csvに company_name,securities_report_pdf_url を追加するか,"
-            " company_master.yamlへ登録してください."
+            " stocks.db の企業メタデータへ登録してください."
         )
     if pdf_url and pdf_url not in address_source_urls:
         address_source_urls.append(pdf_url)
@@ -671,19 +720,45 @@ def _resolve_company_metadata(
     if os.path.exists(pdf_path) and pdf_url:
         ctx.web_addr.seed_cache(pdf_url, pdf_path)
 
-    sites_cache_path = os.path.join(ctx.facilities_cache_dir, f"{code}_sites.json")
-    sites = load_sites_cache(sites_cache_path, pdf_path)
-    if sites is None:
+    pdf_stat = os.stat(pdf_path)
+    with ctx.cache_lock:
+        cached_facilities = load_facilities_cache(
+            ctx.land_conn,
+            code,
+            pdf_size=int(pdf_stat.st_size),
+            pdf_mtime=float(pdf_stat.st_mtime),
+        )
+    facilities_text: str | None = None
+    if cached_facilities is None:
         sites = extract_major_facilities_land(pdf_path)
-        save_sites_cache(sites_cache_path, pdf_path, sites)
-
-    # 設備の状況テキストキャッシュ
-    text_cache_path = os.path.join(ctx.facilities_cache_dir, f"{code}_facilities_text.txt")
-    if not os.path.exists(text_cache_path):
         facilities_text = extract_facilities_section_text(pdf_path)
-        if facilities_text:
-            with open(text_cache_path, "w", encoding="utf-8") as f:
-                f.write(facilities_text)
+        with ctx.cache_lock:
+            save_sites_cache(
+                ctx.land_conn,
+                code,
+                [_facility_to_site_entry(site) for site in sites],
+                cache_version=5,
+                pdf_size=int(pdf_stat.st_size),
+                pdf_mtime=float(pdf_stat.st_mtime),
+                section_text=facilities_text,
+            )
+            ctx.land_conn.commit()
+    else:
+        site_entries, facilities_text = cached_facilities
+        sites = _site_entries_to_facilities(site_entries)
+        if facilities_text is None:
+            facilities_text = extract_facilities_section_text(pdf_path)
+            if facilities_text:
+                with ctx.cache_lock:
+                    save_facilities_section_text(
+                        ctx.land_conn,
+                        code,
+                        facilities_text,
+                        cache_version=5,
+                        pdf_size=int(pdf_stat.st_size),
+                        pdf_mtime=float(pdf_stat.st_mtime),
+                    )
+                    ctx.land_conn.commit()
 
     # サイト分割展開（tokyoフィルタ前に実施: 分割先が他県になるケースに対応）
     company_overrides = ctx.addr_overrides.get(code, {})
@@ -698,8 +773,8 @@ def _resolve_company_metadata(
     if mcap is None:
         today = date.today().isoformat()
         with ctx.cache_lock:
-            cached = ctx.market_cap_cache.get(code)
-        if cached and cached.get("fetched_date") == today:
+            cached = load_market_cap_snapshot(ctx.stocks_conn, code)
+        if cached and cached["fetched_date"] == today:
             mcap = cached["market_cap_yen"]
         elif ctx.args.allow_auto_metadata:
             if fallback is None:
@@ -710,7 +785,8 @@ def _resolve_company_metadata(
                 mcap = fetch_market_cap_from_kabutan(code, pool=ctx.pool)
             if mcap is not None:
                 with ctx.cache_lock:
-                    ctx.market_cap_cache[code] = {"market_cap_yen": mcap, "fetched_date": today}
+                    save_market_cap_snapshot(ctx.stocks_conn, code, int(mcap), today)
+                    ctx.stocks_conn.commit()
     if mcap is None:
         raise CompanySkipError(
             f"証券コード{code}の時価総額が不足しています. config/input.csvに market_cap を追加してください."
@@ -726,24 +802,25 @@ def _resolve_company_metadata(
 
 
 def _geocode_address(full_addr: str, ctx: RunContext) -> tuple[float, float, str]:
-    """Geocode an address using disk cache or geocoder.
+    """Geocode an address using land.db or the geocoder.
 
     Uses double-checked locking so that the heavy geocoder.geocode() call
     runs outside the lock, allowing other threads to proceed concurrently.
     """
     with ctx.cache_lock:
-        dg = ctx.geocode_cache_disk.get(full_addr)
-        if isinstance(dg, list) and len(dg) == 3:
-            return (float(dg[0]), float(dg[1]), str(dg[2]))
+        cached = load_geocode_cache(ctx.land_conn, full_addr)
+        if cached is not None:
+            return cached
 
     # Compute outside lock — geocoder is thread-safe (Rust &self, no interior mutation)
     geo = ctx.geocoder.geocode(full_addr)
 
     with ctx.cache_lock:
-        existing = ctx.geocode_cache_disk.get(full_addr)
-        if isinstance(existing, list) and len(existing) == 3:
-            return (float(existing[0]), float(existing[1]), str(existing[2]))
-        ctx.geocode_cache_disk[full_addr] = [float(geo[0]), float(geo[1]), str(geo[2])]
+        existing = load_geocode_cache(ctx.land_conn, full_addr)
+        if existing is not None:
+            return existing
+        save_geocode_cache(ctx.land_conn, full_addr, float(geo[0]), float(geo[1]), str(geo[2]))
+        ctx.land_conn.commit()
     return geo
 
 
@@ -785,7 +862,7 @@ def _infer_landuse_family(equipment_type: str) -> str | None:
 
 
 def _estimate_price(lat: float, lon: float, target_landuse_kind: str, ctx: RunContext) -> PriceResult:
-    """Estimate land price using disk cache or landprice engine.
+    """Estimate land price using land.db or the landprice engine.
 
     Uses double-checked locking so that the heavy landprice computation
     runs outside the lock, allowing other threads to proceed concurrently.
@@ -795,8 +872,8 @@ def _estimate_price(lat: float, lon: float, target_landuse_kind: str, ctx: RunCo
         f"{float(ctx.args.eps):.15f}|{target_landuse_kind}"
     )
     with ctx.cache_lock:
-        dp = ctx.price_cache_disk.get(disk_key)
-        if isinstance(dp, dict) and "unit_price" in dp:
+        dp = load_land_price_cache(ctx.land_conn, disk_key)
+        if dp is not None and "unit_price" in dp:
             return _deserialize_price_result(dp)
 
     # Compute outside lock — landprice engine is thread-safe (Rust &self, no interior mutation)
@@ -817,18 +894,23 @@ def _estimate_price(lat: float, lon: float, target_landuse_kind: str, ctx: RunCo
         )
 
     with ctx.cache_lock:
-        dp = ctx.price_cache_disk.get(disk_key)
-        if isinstance(dp, dict) and "unit_price" in dp:
+        dp = load_land_price_cache(ctx.land_conn, disk_key)
+        if dp is not None and "unit_price" in dp:
             return _deserialize_price_result(dp)
-        ctx.price_cache_disk[disk_key] = {
-            "unit_price": int(pr.unit_price),
-            "nearest_id": str(pr.nearest_id),
-            "nearest_dist_m": float(pr.nearest_dist_m),
-            "knn_ids": [str(x) for x in pr.knn_ids],
-            "knn_dist_m": [float(x) for x in pr.knn_dist_m],
-            "knn_prices": [int(x) for x in pr.knn_prices],
-            "landuse_kind": target_landuse_kind,
-        }
+        save_land_price_cache(
+            ctx.land_conn,
+            disk_key,
+            {
+                "unit_price": int(pr.unit_price),
+                "nearest_id": str(pr.nearest_id),
+                "nearest_dist_m": float(pr.nearest_dist_m),
+                "knn_ids": [str(x) for x in pr.knn_ids],
+                "knn_dist_m": [float(x) for x in pr.knn_dist_m],
+                "knn_prices": [int(x) for x in pr.knn_prices],
+                "landuse_kind": target_landuse_kind,
+            },
+        )
+        ctx.land_conn.commit()
     return pr
 
 
@@ -1122,10 +1204,8 @@ def _memory_watchdog(ctx: RunContext, limit_percent: float, check_interval: floa
 
 def save_caches(ctx: RunContext) -> None:
     with ctx.cache_lock:
-        save_json_dict(ctx.price_cache_path, ctx.price_cache_disk)
-        save_json_dict(ctx.geocode_cache_path, ctx.geocode_cache_disk)
-        save_json_dict(ctx.market_cap_cache_path, ctx.market_cap_cache)
-        save_company_master(ctx.company_master_path, ctx.company_master)
+        ctx.land_conn.commit()
+        ctx.stocks_conn.commit()
     ctx.web_addr.flush()
 
 
@@ -1137,7 +1217,7 @@ def _pre_download_pdf(t: dict[str, str], ctx: RunContext) -> None:
         return
     if os.path.exists(pdf_path):
         os.remove(pdf_path)
-    meta = ctx.company_master.get(code, {})
+    meta = ctx.company_records.get(code, {})
     pdf_url = t["pdf_url"] or meta.get("securities_report_pdf_url", "")
     if not pdf_url or not ctx.args.allow_download:
         return
@@ -1274,6 +1354,11 @@ def _main_worker(args: argparse.Namespace) -> None:
     try:
         _run_pipeline(args, ctx)
     finally:
+        save_caches(ctx)
+        ctx.web_addr.close()
+        with ctx.cache_lock:
+            ctx.land_conn.close()
+            ctx.stocks_conn.close()
         ctx.browser.shutdown()
 
 
@@ -1314,8 +1399,15 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
             pdf_path = get_pdf_path(ctx.cache_dir, code)
             if not os.path.exists(pdf_path):
                 continue
-            sites_cache_path = os.path.join(ctx.facilities_cache_dir, f"{code}_sites.json")
-            if load_sites_cache(sites_cache_path, pdf_path) is None:
+            pdf_stat = os.stat(pdf_path)
+            with ctx.cache_lock:
+                facilities = load_facilities_cache(
+                    ctx.land_conn,
+                    code,
+                    pdf_size=int(pdf_stat.st_size),
+                    pdf_mtime=float(pdf_stat.st_mtime),
+                )
+            if facilities is None:
                 uncached_pdfs[code] = pdf_path
 
         if uncached_pdfs:
@@ -1323,9 +1415,18 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
             logger.info("PDF並列抽出開始: %d件 (workers=%d)", len(uncached_pdfs), pdf_workers)
             batch_results = batch_extract_facilities(uncached_pdfs, max_workers=pdf_workers)
             for code, sites in batch_results.items():
-                sites_cache_path = os.path.join(ctx.facilities_cache_dir, f"{code}_sites.json")
                 pdf_path = uncached_pdfs[code]
-                save_sites_cache(sites_cache_path, pdf_path, sites)
+                pdf_stat = os.stat(pdf_path)
+                with ctx.cache_lock:
+                    save_sites_cache(
+                        ctx.land_conn,
+                        code,
+                        [_facility_to_site_entry(site) for site in sites],
+                        cache_version=5,
+                        pdf_size=int(pdf_stat.st_size),
+                        pdf_mtime=float(pdf_stat.st_mtime),
+                    )
+                    ctx.land_conn.commit()
             logger.info("PDF並列抽出完了: %d件", len(batch_results))
 
         failed_companies: list[tuple[str, str, str]] = []

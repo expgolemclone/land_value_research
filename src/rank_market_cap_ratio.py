@@ -4,19 +4,19 @@ import argparse
 import functools
 import logging
 import os
+import sqlite3
 import subprocess
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from src.company_config import CompanyMaster, load_company_master, save_company_master
+from src.company_store import CompanyDirectory, connect_stocks_db, load_company_directory, merge_company_record
 from src.company_metadata_fallback import fetch_from_irbank
 
 if TYPE_CHECKING:
     from src.browser import BrowserService
     from src.stealth import ProxyPool
 from src.config import (
-    COMPANY_MASTER_PATH,
     DEFAULT_OUTPUT_DIR,
     DEFAULT_RANKING_PATH,
     PDF_CACHE_DIR,
@@ -52,7 +52,6 @@ from src.schema import (
 BASE_DIR = PROJECT_ROOT
 DEFAULT_INPUT_DIR = DEFAULT_OUTPUT_DIR
 DEFAULT_OUTPUT_PATH = DEFAULT_RANKING_PATH
-DEFAULT_COMPANY_MASTER_PATH = COMPANY_MASTER_PATH
 DOCS_DIR = PROJECT_ROOT / "split-address"
 
 logger = logging.getLogger(__name__)
@@ -106,18 +105,18 @@ def yen_to_oku_display(raw: str) -> str:
     return f"{value / 100_000_000:,.2f}"
 
 
-def normalize_company_name(code: str, raw_name: str, company_master: CompanyMaster) -> str:
+def normalize_company_name(code: str, raw_name: str, company_records: CompanyDirectory) -> str:
     name = (raw_name or "").strip()
     normalized_code = (code or "").strip()
     if not normalized_code:
         return name
 
     if not name:
-        return company_master.get(normalized_code, {}).get("company_name", "")
+        return company_records.get(normalized_code, {}).get("company_name", "")
 
     compact_name = name.replace(" ", "")
     if compact_name == normalized_code:
-        return company_master.get(normalized_code, {}).get("company_name", name)
+        return company_records.get(normalized_code, {}).get("company_name", name)
 
     return name
 
@@ -266,7 +265,7 @@ def _md_to_html(text: str) -> str:
     return "\n".join(out)
 
 
-def collect_rank_rows(input_dir: Path, company_master: CompanyMaster) -> list[dict[str, str]]:
+def collect_rank_rows(input_dir: Path, company_records: CompanyDirectory) -> list[dict[str, str]]:
     rank_rows: list[dict[str, str]] = []
     for csv_path in sorted(input_dir.glob("*_output.csv")):
         rows = read_csv_rows(csv_path)
@@ -281,7 +280,7 @@ def collect_rank_rows(input_dir: Path, company_master: CompanyMaster) -> list[di
             continue
 
         code = (company_row.get(COL_CODE) or "").strip()
-        company_name = normalize_company_name(code, company_row.get(COL_COMPANY_NAME, ""), company_master)
+        company_name = normalize_company_name(code, company_row.get(COL_COMPANY_NAME, ""), company_records)
 
         docs_path = DOCS_DIR / f"{code}.md"
         docs_content = ""
@@ -295,7 +294,7 @@ def collect_rank_rows(input_dir: Path, company_master: CompanyMaster) -> list[di
             {
                 COL_CODE: code,
                 COL_COMPANY_NAME: company_name,
-                "有報PDF_URL": company_master.get(code, {}).get("securities_report_pdf_url", "").strip(),
+                "有報PDF_URL": company_records.get(code, {}).get("securities_report_pdf_url", "").strip(),
                 COL_RATIO: ratio,
                 COL_ESTIMATED_VALUE: (company_row.get(COL_ESTIMATED_VALUE) or "").strip(),
                 COL_MARKET_CAP: (company_row.get(COL_MARKET_CAP) or "").strip(),
@@ -502,12 +501,13 @@ def write_rank_html(rows: list[dict[str, str]], output_path: Path) -> None:
 
 def _resolve_missing_names(
     rank_rows: list[dict[str, str]],
-    company_master: dict[str, dict[str, str]],
+    company_records: CompanyDirectory,
     *,
+    stocks_conn: sqlite3.Connection,
     browser: BrowserService,
     pool: ProxyPool | None = None,
 ) -> None:
-    """企業名がtickerコードのままの行をIRBankから名前解決し、company_masterに保存する."""
+    """企業名がtickerコードのままの行をIRBankから名前解決し、stocks.db に保存する."""
     from concurrent.futures import ThreadPoolExecutor
 
     unresolved: list[tuple[int, dict[str, str]]] = [
@@ -528,14 +528,12 @@ def _resolve_missing_names(
         if meta.company_name:
             rank_rows[idx][COL_COMPANY_NAME] = meta.company_name
             code = row[COL_CODE]
-            if code not in company_master:
-                company_master[code] = {}
-            company_master[code]["company_name"] = meta.company_name
+            company_records[code] = merge_company_record(stocks_conn, code, company_name=meta.company_name)
             updated += 1
 
     if updated:
-        save_company_master(str(DEFAULT_COMPANY_MASTER_PATH), company_master)
-        print(f"企業名を {updated} 件取得し company_master.yaml に保存しました")
+        stocks_conn.commit()
+        print(f"企業名を {updated} 件取得し stocks.db に保存しました")
 
 
 def generate_ranking(
@@ -552,12 +550,16 @@ def generate_ranking(
     if not resolved_output_path.is_absolute():
         resolved_output_path = BASE_DIR / resolved_output_path
 
-    company_master = load_company_master(str(DEFAULT_COMPANY_MASTER_PATH))
-    rank_rows = collect_rank_rows(resolved_input_dir, company_master)
-    if browser is not None:
-        _resolve_missing_names(rank_rows, company_master, browser=browser, pool=pool)
-    write_rank_html(rank_rows, resolved_output_path)
-    print(f"written: {resolved_output_path} ({len(rank_rows)} rows)")
+    stocks_conn = connect_stocks_db()
+    try:
+        company_records = load_company_directory(stocks_conn)
+        rank_rows = collect_rank_rows(resolved_input_dir, company_records)
+        if browser is not None:
+            _resolve_missing_names(rank_rows, company_records, stocks_conn=stocks_conn, browser=browser, pool=pool)
+        write_rank_html(rank_rows, resolved_output_path)
+        print(f"written: {resolved_output_path} ({len(rank_rows)} rows)")
+    finally:
+        stocks_conn.close()
 
     if open_files:
         _open_file(resolved_output_path)
