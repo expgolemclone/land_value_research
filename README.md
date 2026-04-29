@@ -1,6 +1,6 @@
 ## ランキング
 
-- [時価総額対比ランキング（スマホ対応）](https://htmlpreview.github.io/?expgolemclone/land_value_research/master/data/ranking/ranking_market_cap_ratio.html)
+- [時価総額対比ランキング（スマホ対応）](https://htmlpreview.github.io/?https://github.com/expgolemclone/land_value_research/blob/master/data/ranking/ranking_market_cap_ratio.html)
 
 ## rules
 
