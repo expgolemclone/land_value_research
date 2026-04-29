@@ -224,6 +224,106 @@ def test_migration_can_read_project_metadata_from_stocks_input_only(tmp_path: Pa
         company_conn.close()
 
 
+def test_migration_merges_legacy_and_stocks_input_sources(tmp_path: Path) -> None:
+    paths = _make_paths(tmp_path)
+    _write_json(
+        paths.market_cap_cache,
+        {
+            "1111": {"market_cap_yen": 111, "fetched_date": "2026-04-28"},
+        },
+    )
+    _write_yaml(
+        paths.company_meta,
+        {
+            "1111": {
+                "company_name": "Legacy Co",
+                "securities_report_pdf_url": "https://legacy.example/report.pdf",
+                "address_source_urls": ["https://legacy.example/company"],
+            }
+        },
+    )
+
+    stocks_input_conn = get_connection(paths.stocks_db_path)
+    init_stock_input_db(stocks_input_conn)
+    upsert_stock(stocks_input_conn, "1111", "Stocks Co", "", "")
+    upsert_company_metadata(
+        stocks_input_conn,
+        "1111",
+        securities_report_url="https://stocks.example/report.pdf",
+        address_source_urls='["https://stocks.example/company"]',
+    )
+    upsert_market_cap(stocks_input_conn, "1111", "kabutan", 222, "2026-04-29")
+    upsert_stock(stocks_input_conn, "2222", "Stocks Only", "", "")
+    upsert_company_metadata(
+        stocks_input_conn,
+        "2222",
+        securities_report_url="https://stocks.example/2222.pdf",
+        address_source_urls='["https://stocks.example/2222"]',
+    )
+    upsert_market_cap(stocks_input_conn, "2222", "kabutan", 333, "2026-04-27")
+    stocks_input_conn.commit()
+    stocks_input_conn.close()
+
+    rc = execute(paths, cleanup=False, dry_run=False)
+    assert rc == 0
+
+    company_conn = connect_company_db(paths.land_db_path)
+    try:
+        assert load_company_record(company_conn, "1111") == {
+            "company_name": "Legacy Co",
+            "securities_report_pdf_url": "https://legacy.example/report.pdf",
+            "address_source_urls": [
+                "https://stocks.example/company",
+                "https://legacy.example/company",
+            ],
+        }
+        assert load_market_cap_snapshot(company_conn, "1111") == {
+            "market_cap_yen": 222,
+            "fetched_date": "2026-04-29",
+        }
+        assert load_company_record(company_conn, "2222") == {
+            "company_name": "Stocks Only",
+            "securities_report_pdf_url": "https://stocks.example/2222.pdf",
+            "address_source_urls": ["https://stocks.example/2222"],
+        }
+        assert load_market_cap_snapshot(company_conn, "2222") == {
+            "market_cap_yen": 333,
+            "fetched_date": "2026-04-27",
+        }
+    finally:
+        company_conn.close()
+
+
+def test_migration_ignores_invalid_address_source_urls_in_stocks_input(tmp_path: Path) -> None:
+    paths = _make_paths(tmp_path)
+    stocks_input_conn = get_connection(paths.stocks_db_path)
+    init_stock_input_db(stocks_input_conn)
+    upsert_stock(stocks_input_conn, "3333", "Broken Co", "", "")
+    stocks_input_conn.execute(
+        """
+        UPDATE stocks
+        SET securities_report_url = ?, address_source_urls = ?
+        WHERE ticker = ?
+        """,
+        ("https://example.com/broken.pdf", "not-json", "3333"),
+    )
+    stocks_input_conn.commit()
+    stocks_input_conn.close()
+
+    rc = execute(paths, cleanup=False, dry_run=False)
+    assert rc == 0
+
+    company_conn = connect_company_db(paths.land_db_path)
+    try:
+        assert load_company_record(company_conn, "3333") == {
+            "company_name": "Broken Co",
+            "securities_report_pdf_url": "https://example.com/broken.pdf",
+            "address_source_urls": [],
+        }
+    finally:
+        company_conn.close()
+
+
 def test_dry_run_is_non_destructive_and_reports_cleanup_targets(tmp_path: Path, capsys) -> None:
     paths = _make_paths(tmp_path)
     _write_json(paths.price_cache, {"_deps_hash": "price-deps", "k": {"unit_price": 1}})

@@ -147,6 +147,24 @@ def _load_yaml_mapping(path: Path) -> dict[object, object]:
     return data
 
 
+def _decode_urls(raw: object) -> list[str]:
+    if raw is None:
+        return []
+    if not isinstance(raw, str):
+        return []
+    try:
+        loaded = json.loads(raw)
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(loaded, list):
+        return []
+    return [str(url) for url in loaded if str(url).strip()]
+
+
+def _normalize_fetched_date(raw: object) -> str:
+    return str(raw or "")[:10]
+
+
 def _copy_db_if_exists(src: Path, dst: Path) -> None:
     if src.exists():
         dst.parent.mkdir(parents=True, exist_ok=True)
@@ -306,6 +324,38 @@ def _table_exists(conn: sqlite3.Connection, table: str) -> bool:
     return row is not None
 
 
+def _save_market_cap_if_newer(
+    land_conn: sqlite3.Connection,
+    code: str,
+    source: str,
+    market_cap_yen: int,
+    fetched_date: object,
+) -> bool:
+    normalized_fetched_date = _normalize_fetched_date(fetched_date)
+    row = land_conn.execute(
+        """
+        SELECT fetched_date
+        FROM market_cap_cache
+        WHERE code = ? AND source = ?
+        """,
+        (code, source),
+    ).fetchone()
+    if row is not None:
+        existing_fetched_date = _normalize_fetched_date(row["fetched_date"])
+        if existing_fetched_date and normalized_fetched_date and normalized_fetched_date < existing_fetched_date:
+            return False
+        if existing_fetched_date and not normalized_fetched_date:
+            return False
+    save_market_cap_snapshot(
+        land_conn,
+        code,
+        market_cap_yen,
+        normalized_fetched_date,
+        source=source,
+    )
+    return True
+
+
 def _migrate_market_cap_from_legacy(land_conn: sqlite3.Connection, path: Path) -> int:
     data = _load_json_file(path)
     if not isinstance(data, dict):
@@ -317,9 +367,8 @@ def _migrate_market_cap_from_legacy(land_conn: sqlite3.Connection, path: Path) -
         value_yen = entry.get("market_cap_yen")
         if value_yen is None:
             continue
-        fetched_date = str(entry.get("fetched_date", ""))
-        save_market_cap_snapshot(land_conn, str(code), int(value_yen), fetched_date)
-        count += 1
+        if _save_market_cap_if_newer(land_conn, str(code), "kabutan", int(value_yen), entry.get("fetched_date", "")):
+            count += 1
     land_conn.commit()
     return count
 
@@ -339,24 +388,28 @@ def _migrate_market_cap_from_stocks_input(land_conn: sqlite3.Connection, stocks_
             ORDER BY ticker, source
             """
         ).fetchall()
+        count = 0
         for row in rows:
-            save_market_cap_snapshot(
+            if _save_market_cap_if_newer(
                 land_conn,
                 str(row["ticker"]),
+                str(row["source"]),
                 int(row["value_yen"]),
-                str(row["fetched_at"])[:10],
-                source=str(row["source"]),
-            )
+                row["fetched_at"],
+            ):
+                count += 1
         land_conn.commit()
-        return len(rows)
+        return count
     finally:
         stocks_conn.close()
 
 
 def _migrate_market_cap(land_conn: sqlite3.Connection, paths: LegacyPaths) -> int:
-    if paths.market_cap_cache.exists():
-        return _migrate_market_cap_from_legacy(land_conn, paths.market_cap_cache)
-    return _migrate_market_cap_from_stocks_input(land_conn, paths.stocks_db_path)
+    count = _migrate_market_cap_from_stocks_input(land_conn, paths.stocks_db_path)
+    if not paths.market_cap_cache.exists():
+        print("  legacy market-cap cache not found, skipping")
+        return count
+    return count + _migrate_market_cap_from_legacy(land_conn, paths.market_cap_cache)
 
 
 def _migrate_company_metadata_from_legacy(land_conn: sqlite3.Connection, path: Path) -> int:
@@ -397,17 +450,12 @@ def _migrate_company_metadata_from_stocks_input(land_conn: sqlite3.Connection, s
             """
         ).fetchall()
         for row in rows:
-            source_urls_raw = row["address_source_urls"]
             merge_company_record(
                 land_conn,
                 str(row["ticker"]),
                 company_name=str(row["name"] or ""),
                 securities_report_pdf_url=str(row["securities_report_url"] or ""),
-                address_source_urls=(
-                    json.loads(source_urls_raw)
-                    if isinstance(source_urls_raw, str) and source_urls_raw
-                    else []
-                ),
+                address_source_urls=_decode_urls(row["address_source_urls"]),
             )
         land_conn.commit()
         return len(rows)
@@ -416,9 +464,11 @@ def _migrate_company_metadata_from_stocks_input(land_conn: sqlite3.Connection, s
 
 
 def _migrate_company_metadata(land_conn: sqlite3.Connection, paths: LegacyPaths) -> int:
-    if paths.company_meta.exists():
-        return _migrate_company_metadata_from_legacy(land_conn, paths.company_meta)
-    return _migrate_company_metadata_from_stocks_input(land_conn, paths.stocks_db_path)
+    count = _migrate_company_metadata_from_stocks_input(land_conn, paths.stocks_db_path)
+    if not paths.company_meta.exists():
+        print("  legacy company metadata YAML not found, skipping")
+        return count
+    return count + _migrate_company_metadata_from_legacy(land_conn, paths.company_meta)
 
 
 def _run_migration(paths: LegacyPaths) -> MigrationStats:

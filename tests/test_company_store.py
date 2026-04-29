@@ -38,6 +38,19 @@ class TestCompanyStore(unittest.TestCase):
                 directory = load_company_directory(conn)
                 self.assertEqual(directory["1234"]["company_name"], "テスト株式会社")
                 self.assertEqual(load_company_name_map(conn), {"1234": "テスト株式会社"})
+
+                updated = merge_company_record(
+                    conn,
+                    "1234",
+                    address_source_urls=[
+                        "https://example.com/company",
+                        "https://example.com/report",
+                    ],
+                )
+                self.assertEqual(
+                    updated["address_source_urls"],
+                    ["https://example.com/company", "https://example.com/report"],
+                )
             finally:
                 conn.close()
 

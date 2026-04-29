@@ -52,6 +52,18 @@ def _decode_urls(raw: object) -> list[str]:
     return []
 
 
+def _merge_urls(current_urls: list[str], incoming_urls: list[str] | None) -> list[str]:
+    merged: list[str] = []
+    seen: set[str] = set()
+    for raw_url in [*current_urls, *(incoming_urls or [])]:
+        url = str(raw_url).strip()
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        merged.append(url)
+    return merged
+
+
 def load_company_directory(conn: sqlite3.Connection) -> CompanyDirectory:
     rows = conn.execute(
         """
@@ -103,7 +115,7 @@ def merge_company_record(
         if securities_report_pdf_url is not None
         else current.get("securities_report_pdf_url", "")
     )
-    next_urls = address_source_urls if address_source_urls is not None else current.get("address_source_urls", [])
+    next_urls = _merge_urls(list(current.get("address_source_urls", [])), address_source_urls)
     serialized_urls = json.dumps(next_urls, ensure_ascii=False) if next_urls else None
 
     conn.execute(
