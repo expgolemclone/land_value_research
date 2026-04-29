@@ -30,6 +30,7 @@
 
 - `src/browser.py`
   - `stock_db.browser_client.client` の薄い互換ラッパー
+  - browser service 実体は `stock_db/services/browser/` を使用（ローカルコピーは廃止）
 - `src/stealth.py`
   - `stock_db.proxy_pool` の再公開
 - `src/company_store.py`
@@ -82,4 +83,4 @@
 - 構造化キャッシュ・PDF キャッシュは現行配置のみを扱う
 - 旧 JSON/YAML キャッシュや旧 PDF 配置の自動移行は行わない
 
-<!-- verified: 2026-04-28 -->
+<!-- verified: 2026-04-29 -->
