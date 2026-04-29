@@ -7,7 +7,7 @@ import pytest
 
 from stock_db.storage.connection import get_connection
 
-from land_db.repo import (
+from src.land_db.repo import (
     delete_invalidation_hash,
     get_geocode_deps_hash,
     get_land_price_deps_hash,
@@ -29,7 +29,7 @@ from land_db.repo import (
     set_geocode_deps_hash,
     set_land_price_deps_hash,
 )
-from land_db.schema import init_land_db
+from src.land_db.schema import init_land_db
 
 
 @pytest.fixture()
