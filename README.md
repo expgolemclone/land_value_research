@@ -1,3 +1,7 @@
+## ランキング
+
+- [時価総額対比ランキング（スマホ対応）](https://htmlpreview.github.io/?expgolemclone/land_value_research/master/data/ranking/ranking_market_cap_ratio.html)
+
 ## rules
 
 1. スクレイピングの並列実行は禁止である.

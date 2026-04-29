@@ -9,6 +9,7 @@
 - `src/rank_market_cap_ratio.py`
   - `data/output/*.csv` を集計し、ランキング HTML を生成する
   - 企業名の欠損補完は stock.db を優先し、残る不足分を `land.db` 更新付きで IRBank から行う
+  - Linux環境では `google-chrome-stable` でランキングHTMLを開く
 - `scripts/parallel_research.py`
   - ランキング上位の住所調査を並列実行する
   - 調査プロンプトには `land.db` 内の拠点抽出データと設備状況テキストを注入する
@@ -93,7 +94,8 @@
 - 許可拡張子: `.py`, `.rs`, `.ps1`, `.toml`, `.yaml`, `.yml`, `.json`, `.nix`, `.lock`, `.md`, `.csv`, `.xml`, `.geojson`, `.dbf`, `.prj`, `.shp`, `.shx`, `.zip`
 - 許可ルートファイル: `.gitattributes`, `.gitignore`, `bin/land-value-run`
 - `data/geocoding/**/*.html` のみ HTML を許可
-- `data/` は `geocoding/` と `landprice/` 以外を再無視
+- `data/ranking/` も追跡許可（ランキングHTMLをGitHubで閲覧可能にするため）
+- `data/` は `geocoding/` と `landprice/` と `ranking/` 以外を再無視
 - `.claude/` は `hooks/`, `skills/`, `settings*.json` 以外を再無視
 
 ## Compatibility

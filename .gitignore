@@ -100,6 +100,7 @@ a.out
 data/*
 !data/geocoding/
 !data/landprice/
+!data/ranking/
 
 # 生成物（中身が許可拡張に一致しても管理しない）
 input_enriched.csv
