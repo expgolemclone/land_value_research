@@ -12,7 +12,6 @@ import time
 import urllib.error
 
 import yaml
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
@@ -136,14 +135,6 @@ CACHE_SAVE_INTERVAL = 10
 COMPANY_RETRY_COUNT = 3
 EXIT_CODE_MEMORY_LIMIT = 75
 COMPANY_RETRY_BASE_DELAY_SEC = 2.0
-
-_print_lock = threading.Lock()
-
-
-def _tprint(*args: object, **kwargs: object) -> None:
-    """Thread-safe print wrapper."""
-    with _print_lock:
-        print(*args, **kwargs)
 
 
 OUTPUT_FIELDNAMES = list(OUTPUT_COLUMNS)
@@ -434,12 +425,6 @@ def parse_args() -> argparse.Namespace:
         help="用途ファミリーツリーの最近傍がこの距離(m)を超えたら全用途ツリーにフォールバック(default: 1500.0)",
     )
     parser.add_argument(
-        "--workers",
-        type=int,
-        default=1,
-        help="企業レベル並列処理のワーカー数(default: 1, 1で逐次処理)",
-    )
-    parser.add_argument(
         "--memory-limit",
         type=float,
         default=90,
@@ -614,7 +599,7 @@ def _resolve_company_metadata(
     code = t["code"]
     meta = ctx.company_records.get(code, {})
     company_name = t["_resolved_company_name"] or meta.get("company_name", "")
-    _tprint(f"[{company_index}/{total_companies}] 開始: {code} {company_name}")
+    print(f"[{company_index}/{total_companies}] 開始: {code} {company_name}")
     pdf_url = t["pdf_url"] or meta.get("securities_report_pdf_url", "")
     address_source_urls = t["address_source_urls"] or list(meta.get("address_source_urls", []) or [])
     need_name = not company_name or company_name == code
@@ -727,7 +712,7 @@ def _resolve_company_metadata(
         with ctx.cache_lock:
             ctx.addr_overrides[code] = flat_overrides
     tokyo_sites = [s for s in sites if s.location_short.startswith("東京都")]
-    _tprint(f"[{company_index}/{total_companies}] 拠点: 全{len(sites)}件, 東京都対象{len(tokyo_sites)}件")
+    print(f"[{company_index}/{total_companies}] 拠点: 全{len(sites)}件, 東京都対象{len(tokyo_sites)}件")
 
     mcap = t["market_cap"]
     if mcap is None:
@@ -969,7 +954,7 @@ def _process_site(
         anomaly_warnings.append("評価倍率閾値超過")
     anomaly_text = " | ".join(anomaly_warnings)
     if anomaly_warnings:
-        _tprint(
+        print(
             f"Warn(anomaly): {code} {s.site_name} {geocode_level} "
             f"area={float(s.land_area_m2):.2f} warnings={anomaly_text}"
         )
@@ -1025,7 +1010,7 @@ def _postprocess_duplicate_anomalies(
     duplicate_warnings = detect_duplicate_address_large_area(out_rows)
 
     for hit in duplicate_warnings:
-        _tprint(f"Warn(anomaly): {code} duplicate_address {hit.detail}")
+        print(f"Warn(anomaly): {code} duplicate_address {hit.detail}")
         for row in hit.rows:
             warning_label = "同一住所かつ大面積の複数拠点"
             old = str(row.get(COL_ANOMALY_WARNING, "") or "").strip()
@@ -1049,7 +1034,7 @@ def process_company(
 
     total_tokyo_sites = len(tokyo_sites)
     for site_index, s in enumerate(tokyo_sites, start=1):
-        _tprint(f"[{company_index}/{total_companies}][{site_index}/{total_tokyo_sites}] 解析中: {code} {s.site_name}")
+        print(f"[{company_index}/{total_companies}][{site_index}/{total_tokyo_sites}] 解析中: {code} {s.site_name}")
         try:
             sr = _process_site(code, company_name, s, mcap, cm.address_source_urls, ctx)
         except (BrowserServiceError, ValueError, KeyError, OSError, TimeoutError) as e:
@@ -1088,7 +1073,7 @@ def process_company(
         }
     )
     out_rows.append(total_row)
-    _tprint(
+    print(
         f"[{company_index}/{total_companies}] 完了: {code} 東京都拠点{len(tokyo_sites)}件, 推定時価合計{sum_est:,}円"
     )
 
@@ -1171,7 +1156,7 @@ def save_caches(ctx: RunContext) -> None:
 
 
 def _pre_download_pdf(t: dict[str, str], ctx: RunContext) -> None:
-    """Phase 1: PDF URLが既知のターゲットのPDFを事前ダウンロード."""
+    """PDF URLが既知のターゲットのPDFをダウンロード."""
     code = t["code"]
     pdf_path = get_pdf_path(ctx.cache_dir, code)
     if os.path.exists(pdf_path) and is_pdf_file(pdf_path):
@@ -1183,40 +1168,35 @@ def _pre_download_pdf(t: dict[str, str], ctx: RunContext) -> None:
     if not pdf_url or not ctx.args.allow_download:
         return
     try:
-        download_file(pdf_url, pdf_path, browser=ctx.browser, pool=ctx.pool)
+        download_file(pdf_url, pdf_path, browser=ctx.browser)
     except (BrowserServiceError, ValueError, OSError) as e:
         logger.warning("PDF事前ダウンロード失敗(後で再試行): %s: %s", code, e)
 
 
 def _pre_download_pdfs(
     targets: list[dict[str, str]],
-    max_workers: int,
     ctx: RunContext,
 ) -> None:
-    """ThreadPoolExecutorでPDFを事前ダウンロード (I/O bound)."""
-    need_download = []
-    for t in targets:
-        p = get_pdf_path(ctx.cache_dir, t["code"])
-        if not os.path.exists(p) or not is_pdf_file(p):
-            need_download.append(t)
+    """未ダウンロードのPDFを逐次ダウンロード."""
+    need_download = [
+        t for t in targets
+        if not os.path.exists(get_pdf_path(ctx.cache_dir, t["code"]))
+        or not is_pdf_file(get_pdf_path(ctx.cache_dir, t["code"]))
+    ]
     if not need_download:
         return
-    dl_workers = max(1, min(max_workers, len(need_download)))
-    logger.info("PDF事前ダウンロード開始: %d件 (workers=%d)", len(need_download), dl_workers)
-    with ThreadPoolExecutor(max_workers=dl_workers) as executor:
-        futures = {executor.submit(_pre_download_pdf, t, ctx): t for t in need_download}
-        failed = 0
-        for future in as_completed(futures):
-            try:
-                future.result()
-            except (BrowserServiceError, ValueError, OSError) as e:
-                t = futures[future]
-                logger.warning("PDF事前ダウンロード失敗: %s: %s", t["code"], e)
-                failed += 1
-        if failed:
-            logger.warning("PDF事前ダウンロード完了: %d/%d件失敗", failed, len(need_download))
-        else:
-            logger.info("PDF事前ダウンロード完了: %d件", len(need_download))
+    logger.info("PDF事前ダウンロード開始: %d件", len(need_download))
+    failed = 0
+    for t in need_download:
+        try:
+            _pre_download_pdf(t, ctx)
+        except (BrowserServiceError, ValueError, OSError) as e:
+            logger.warning("PDF事前ダウンロード失敗: %s: %s", t["code"], e)
+            failed += 1
+    if failed:
+        logger.warning("PDF事前ダウンロード完了: %d/%d件失敗", failed, len(need_download))
+    else:
+        logger.info("PDF事前ダウンロード完了: %d件", len(need_download))
 
 
 def _process_company_with_retry(
@@ -1360,11 +1340,10 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
 
     if targets_to_process:
         total_companies = len(targets_to_process)
-        max_workers = max(1, min(args.workers, total_companies))
-        logger.info("処理開始: %d社 (workers=%d)", total_companies, max_workers)
+        logger.info("処理開始: %d社", total_companies)
 
-        # --- Phase 1: PDF事前ダウンロード (I/O bound → ThreadPoolExecutor) ---
-        _pre_download_pdfs(targets_to_process, max_workers, ctx)
+        # --- Phase 1: PDF事前ダウンロード (逐次) ---
+        _pre_download_pdfs(targets_to_process, ctx)
 
         # --- Phase 2: バッチPDF並列抽出 (CPU bound → ProcessPoolExecutor) ---
         uncached_pdfs: dict[str, str] = {}
@@ -1385,7 +1364,7 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
                 uncached_pdfs[code] = pdf_path
 
         if uncached_pdfs:
-            pdf_workers = max(1, min(max_workers, len(uncached_pdfs), os.cpu_count() or 4))
+            pdf_workers = max(1, min(len(uncached_pdfs), os.cpu_count() or 4))
             logger.info("PDF並列抽出開始: %d件 (workers=%d)", len(uncached_pdfs), pdf_workers)
             batch_results = batch_extract_facilities(uncached_pdfs, max_workers=pdf_workers)
             for code, sites in batch_results.items():
@@ -1406,33 +1385,21 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
         failed_companies: list[tuple[str, str, str]] = []
         written_count = 0
 
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            future_to_target = {}
-            for company_index, t in enumerate(targets_to_process, start=1):
-                future = executor.submit(_process_company_with_retry, t, company_index, total_companies, ctx)
-                future_to_target[future] = t
-
-            completed_count = 0
-            for future in as_completed(future_to_target):
-                t = future_to_target[future]
+        for company_index, t in enumerate(targets_to_process, start=1):
+            result, error = _process_company_with_retry(t, company_index, total_companies, ctx)
+            if result is not None:
+                _write_single_result(result, t["_output_path"])
+                written_count += 1
+                print(f"[{written_count}/{total_companies}] Wrote: {t['_output_path']}")
+            elif error:
                 code = t["code"]
                 company_name = t.get("_resolved_company_name", code)
-                completed_count += 1
+                failed_companies.append((code, company_name, error))
 
-                result, error = future.result()
-                if result is not None:
-                    _write_single_result(result, t["_output_path"])
-                    written_count += 1
-                    print(f"[{written_count}/{total_companies}] Wrote: {t['_output_path']}")
-                elif error:
-                    failed_companies.append((code, company_name, error))
-
-                del future_to_target[future]
-
-                if completed_count % CACHE_SAVE_INTERVAL == 0:
-                    save_caches(ctx)
-                    ctx.web_addr.clear_transient_caches()
-                    gc.collect()
+            if company_index % CACHE_SAVE_INTERVAL == 0:
+                save_caches(ctx)
+                ctx.web_addr.clear_transient_caches()
+                gc.collect()
 
         save_caches(ctx)
 
