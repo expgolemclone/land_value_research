@@ -14,6 +14,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from src.company_store import connect_company_db, load_company_directory, merge_company_record
+from src.stock_db_sync import load_stock_db_company_metadata
 
 JPX_URL = "https://www.jpx.co.jp/markets/statistics-equities/misc/tvdivq0000001vg2-att/data_j.xls"
 
@@ -79,6 +80,31 @@ def main() -> None:
     updated = 0
     already = 0
     new_entries = 0
+
+    # stock.db から企業名を事前補完
+    stock_meta = load_stock_db_company_metadata(jpx_names.keys())
+    stock_synced = 0
+    for code in list(jpx_names.keys()):
+        meta = stock_meta.get(code)
+        if meta and meta.company_name:
+            current_name = records.get(code, {}).get("company_name", "")
+            if not current_name:
+                records[code] = merge_company_record(conn, code, company_name=meta.company_name)
+                stock_synced += 1
+                del jpx_names[code]
+                new_entries += 1
+            else:
+                del jpx_names[code]
+                already += 1
+    if stock_synced:
+        conn.commit()
+        print(f"stock.db 同期: {stock_synced} 件の企業名を補完")
+
+    if not jpx_names:
+        print("stock.db で全件補完済み。JPX登録をスキップ")
+        print(f"land.db 合計: {len(records)} エントリ")
+        conn.close()
+        return
 
     try:
         for code, name in jpx_names.items():

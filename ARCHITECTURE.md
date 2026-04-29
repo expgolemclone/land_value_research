@@ -5,9 +5,10 @@
 - `run.py`
   - メインの推定パイプライン
   - `land.db` に地価・ジオコード・有報拠点抽出・Web住所解決・override無効化ハッシュ・企業メタデータ・時価総額を保存する
+  - メタデータ解決順: 入力CSV > land.db > stock.db > スクレイプ（IRBank/Kabutan）
 - `src/rank_market_cap_ratio.py`
   - `data/output/*.csv` を集計し、ランキング HTML を生成する
-  - 企業名の欠損補完は `land.db` を更新しながら行う
+  - 企業名の欠損補完は stock.db を優先し、残る不足分を `land.db` 更新付きで IRBank から行う
 - `scripts/parallel_research.py`
   - ランキング上位の住所調査を並列実行する
   - 調査プロンプトには `land.db` 内の拠点抽出データと設備状況テキストを注入する
@@ -42,6 +43,9 @@
   - `land.db` の CRUD ヘルパー
 - `src/web_address_research.py`
   - Web 調査結果を `land.db` の `web_address_resolve` に保存する
+- `src/stock_db_sync.py`
+  - `stock.db` を read-only 上流として企業名・PDF URL を補完する
+  - stock.db に無い項目は既存スクレイプフォールバックに委ねる
 
 ## Persistent Files
 

@@ -638,16 +638,19 @@ def _resolve_company_metadata(
     _tprint(f"[{company_index}/{total_companies}] 開始: {code} {company_name}")
     pdf_url = t["pdf_url"] or meta.get("securities_report_pdf_url", "")
     address_source_urls = t["address_source_urls"] or list(meta.get("address_source_urls", []) or [])
+    need_name = not company_name or company_name == code
+    need_pdf = not pdf_url
+    need_mcap = t["market_cap"] is None
     fallback = None
-    if ctx.args.allow_auto_metadata and (not company_name or company_name == code or not pdf_url):
+    if ctx.args.allow_auto_metadata and (need_name or need_pdf or need_mcap):
         fallback = fetch_from_irbank(code, browser=ctx.browser, pool=ctx.pool)
-        if (not company_name or company_name == code) and fallback.company_name:
+        if need_name and fallback.company_name:
             company_name = fallback.company_name
-        if not pdf_url and fallback.securities_report_pdf_url:
+        if need_pdf and fallback.securities_report_pdf_url:
             pdf_url = fallback.securities_report_pdf_url
         if fallback.address_source_url and fallback.address_source_url not in address_source_urls:
             address_source_urls.append(fallback.address_source_url)
-        # IRBankから取得した情報を land.db に追記（後続処理・永続化用）
+        # スクレイプ結果を land.db に追記（後続処理・永続化用）
         if fallback.company_name or fallback.securities_report_pdf_url:
             with ctx.cache_lock:
                 existing = ctx.company_records.get(code, {})
@@ -1355,6 +1358,18 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
     targets = load_targets(input_path)
     if not targets:
         raise SystemExit(f"証券コードがありません: {input_path}")
+
+    # stock.db から company_name / pdf_url を事前同期
+    from src.stock_db_sync import sync_company_records_from_stock_db
+
+    synced = sync_company_records_from_stock_db(
+        ctx.company_records,
+        [t["code"] for t in targets],
+        conn=ctx.company_conn,
+    )
+    if synced:
+        ctx.company_conn.commit()
+        logger.info("stock.db 同期: %d社のメタデータを補完", synced)
 
     targets_to_process, skipped = _filter_targets(targets, ctx)
 

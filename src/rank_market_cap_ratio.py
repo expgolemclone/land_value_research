@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from src.company_store import CompanyDirectory, connect_company_db, load_company_directory, merge_company_record
+from src.stock_db_sync import sync_company_records_from_stock_db
 from src.company_metadata_fallback import fetch_from_irbank
 
 if TYPE_CHECKING:
@@ -553,6 +554,18 @@ def generate_ranking(
     company_conn = connect_company_db()
     try:
         company_records = load_company_directory(company_conn)
+
+        # 未解決の企業名のみ stock.db から補完
+        codes_to_sync = [
+            code
+            for code, rec in company_records.items()
+            if not rec.get("company_name") or rec.get("company_name", "").replace(" ", "") == code
+        ]
+        if codes_to_sync:
+            synced = sync_company_records_from_stock_db(company_records, codes_to_sync, conn=company_conn)
+            if synced:
+                company_conn.commit()
+
         rank_rows = collect_rank_rows(resolved_input_dir, company_records)
         if browser is not None:
             _resolve_missing_names(rank_rows, company_records, company_conn=company_conn, browser=browser, pool=pool)

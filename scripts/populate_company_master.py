@@ -20,6 +20,7 @@ from src.browser import BrowserService, BrowserServiceError
 from src.company_store import connect_company_db, load_company_directory, merge_company_record
 from src.config import INPUT_FULL_CSV
 from src.stealth import ProxyPool
+from src.stock_db_sync import sync_company_records_from_stock_db
 from src.utils import validate_url_not_private
 
 logger = logging.getLogger(__name__)
@@ -131,6 +132,11 @@ def main() -> None:
     input_codes = load_input_codes(INPUT_FULL_PATH)
     conn = connect_company_db()
     master = load_company_directory(conn)
+
+    synced = sync_company_records_from_stock_db(master, input_codes, conn=conn)
+    if synced:
+        conn.commit()
+        print(f"stock.db 同期: {synced} 件のメタデータを補完")
 
     missing = [
         code
