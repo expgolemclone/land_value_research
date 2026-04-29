@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from src.company_store import CompanyDirectory, connect_stocks_db, load_company_directory, merge_company_record
+from src.company_store import CompanyDirectory, connect_company_db, load_company_directory, merge_company_record
 from src.company_metadata_fallback import fetch_from_irbank
 
 if TYPE_CHECKING:
@@ -503,7 +503,7 @@ def _resolve_missing_names(
     rank_rows: list[dict[str, str]],
     company_records: CompanyDirectory,
     *,
-    stocks_conn: sqlite3.Connection,
+    company_conn: sqlite3.Connection,
     browser: BrowserService,
     pool: ProxyPool | None = None,
 ) -> None:
@@ -528,11 +528,11 @@ def _resolve_missing_names(
         if meta.company_name:
             rank_rows[idx][COL_COMPANY_NAME] = meta.company_name
             code = row[COL_CODE]
-            company_records[code] = merge_company_record(stocks_conn, code, company_name=meta.company_name)
+            company_records[code] = merge_company_record(company_conn, code, company_name=meta.company_name)
             updated += 1
 
     if updated:
-        stocks_conn.commit()
+        company_conn.commit()
         print(f"企業名を {updated} 件取得し land.db に保存しました")
 
 
@@ -550,16 +550,16 @@ def generate_ranking(
     if not resolved_output_path.is_absolute():
         resolved_output_path = BASE_DIR / resolved_output_path
 
-    stocks_conn = connect_stocks_db()
+    company_conn = connect_company_db()
     try:
-        company_records = load_company_directory(stocks_conn)
+        company_records = load_company_directory(company_conn)
         rank_rows = collect_rank_rows(resolved_input_dir, company_records)
         if browser is not None:
-            _resolve_missing_names(rank_rows, company_records, stocks_conn=stocks_conn, browser=browser, pool=pool)
+            _resolve_missing_names(rank_rows, company_records, company_conn=company_conn, browser=browser, pool=pool)
         write_rank_html(rank_rows, resolved_output_path)
         print(f"written: {resolved_output_path} ({len(rank_rows)} rows)")
     finally:
-        stocks_conn.close()
+        company_conn.close()
 
     if open_files:
         _open_file(resolved_output_path)

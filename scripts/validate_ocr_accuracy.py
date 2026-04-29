@@ -61,11 +61,7 @@ def read_codes(path: Path) -> list[str]:
 
 def resolve_pdf_path(code: str) -> Path:
     PDF_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    new_path = PDF_CACHE_DIR / f"{code}_securities_report.pdf"
-    legacy_path = PDF_CACHE_DIR.parent / f"{code}_securities_report.pdf"
-    if (not new_path.exists()) and legacy_path.exists():
-        legacy_path.replace(new_path)
-    return new_path
+    return PDF_CACHE_DIR / f"{code}_securities_report.pdf"
 
 
 @dataclass

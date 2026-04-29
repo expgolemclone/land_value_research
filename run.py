@@ -158,7 +158,7 @@ class RunContext:
     output_dir: str
     processed_lookup_dir: str
     land_conn: sqlite3.Connection
-    stocks_conn: sqlite3.Connection
+    company_conn: sqlite3.Connection
     company_records: CompanyDirectory
     addr_overrides: dict[str, dict[str, str | list[SiteSplitEntry]]]
     price_overrides: dict[str, dict[str, int]]
@@ -332,28 +332,10 @@ def resolve_default_input(base_dir: str) -> str:
     return str(INPUT_CSV)
 
 
-def migrate_legacy_pdf_cache(cache_dir: str) -> None:
-    pdf_dir = os.path.join(cache_dir, "pdf")
-    ensure_dir(pdf_dir)
-    for name in os.listdir(cache_dir):
-        if not name.endswith("_securities_report.pdf"):
-            continue
-        legacy_path = os.path.join(cache_dir, name)
-        if not os.path.isfile(legacy_path):
-            continue
-        new_path = os.path.join(pdf_dir, name)
-        if not os.path.exists(new_path):
-            os.replace(legacy_path, new_path)
-
-
 def get_pdf_path(cache_dir: str, code: str) -> str:
     pdf_dir = os.path.join(cache_dir, "pdf")
     ensure_dir(pdf_dir)
-    new_pdf_path = os.path.join(pdf_dir, f"{code}_securities_report.pdf")
-    legacy_pdf_path = os.path.join(cache_dir, f"{code}_securities_report.pdf")
-    if not os.path.exists(new_pdf_path) and os.path.exists(legacy_pdf_path):
-        os.replace(legacy_pdf_path, new_pdf_path)
-    return new_pdf_path
+    return os.path.join(pdf_dir, f"{code}_securities_report.pdf")
 
 
 def get_geocode_adjustment_factor(level: str, args: argparse.Namespace) -> float:
@@ -496,7 +478,6 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
 
     ensure_dir(cache_dir)
     ensure_dir(str(PDF_CACHE_DIR))
-    migrate_legacy_pdf_cache(cache_dir)
 
     addr_overrides = load_address_overrides(str(ADDRESS_OVERRIDES_PATH))
     price_overrides = load_price_overrides(str(PRICE_OVERRIDES_PATH))
@@ -504,8 +485,8 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
     land_conn = _open_shared_connection(LAND_DB_PATH)
     init_land_db(land_conn)
 
-    stocks_conn = land_conn
-    company_records = load_company_directory(land_conn)
+    company_conn = land_conn
+    company_records = load_company_directory(company_conn)
 
     geocoder = TokyoGeocoder(
         oaza_csv=str(OAZA_CSV),
@@ -560,7 +541,7 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         output_dir=output_dir,
         processed_lookup_dir=processed_lookup_dir,
         land_conn=land_conn,
-        stocks_conn=stocks_conn,
+        company_conn=company_conn,
         company_records=company_records,
         addr_overrides=addr_overrides,
         price_overrides=price_overrides,
@@ -682,13 +663,13 @@ def _resolve_company_metadata(
                         updated["address_source_urls"] = existing_urls
                 if updated != existing:
                     ctx.company_records[code] = merge_company_record(
-                        ctx.stocks_conn,
+                        ctx.company_conn,
                         code,
                         company_name=str(updated.get("company_name", "")),
                         securities_report_pdf_url=str(updated.get("securities_report_pdf_url", "")),
                         address_source_urls=list(updated.get("address_source_urls", []) or []),
                     )
-                    ctx.stocks_conn.commit()
+                    ctx.company_conn.commit()
     if not company_name or not pdf_url:
         raise CompanySkipError(
             f"証券コード{code}の会社情報が不足しています."
@@ -770,7 +751,7 @@ def _resolve_company_metadata(
     if mcap is None:
         today = date.today().isoformat()
         with ctx.cache_lock:
-            cached = load_market_cap_snapshot(ctx.stocks_conn, code)
+            cached = load_market_cap_snapshot(ctx.company_conn, code)
         if cached and cached["fetched_date"] == today:
             mcap = cached["market_cap_yen"]
         elif ctx.args.allow_auto_metadata:
@@ -782,8 +763,8 @@ def _resolve_company_metadata(
                 mcap = fetch_market_cap_from_kabutan(code, pool=ctx.pool)
             if mcap is not None:
                 with ctx.cache_lock:
-                    save_market_cap_snapshot(ctx.stocks_conn, code, int(mcap), today)
-                    ctx.stocks_conn.commit()
+                    save_market_cap_snapshot(ctx.company_conn, code, int(mcap), today)
+                    ctx.company_conn.commit()
     if mcap is None:
         raise CompanySkipError(
             f"証券コード{code}の時価総額が不足しています. config/input.csvに market_cap を追加してください."
@@ -1202,8 +1183,8 @@ def _memory_watchdog(ctx: RunContext, limit_percent: float, check_interval: floa
 def save_caches(ctx: RunContext) -> None:
     with ctx.cache_lock:
         ctx.land_conn.commit()
-        if ctx.stocks_conn is not ctx.land_conn:
-            ctx.stocks_conn.commit()
+        if ctx.company_conn is not ctx.land_conn:
+            ctx.company_conn.commit()
     ctx.web_addr.flush()
 
 
@@ -1356,8 +1337,8 @@ def _main_worker(args: argparse.Namespace) -> None:
         ctx.web_addr.close()
         with ctx.cache_lock:
             ctx.land_conn.close()
-            if ctx.stocks_conn is not ctx.land_conn:
-                ctx.stocks_conn.close()
+            if ctx.company_conn is not ctx.land_conn:
+                ctx.company_conn.close()
         ctx.browser.shutdown()
 
 

@@ -24,9 +24,6 @@
   - `invalidation_hashes`
   - `company_metadata`
   - `market_cap_cache`
-- `stocks.db`
-  - 外部入力用 DB
-  - 本プロジェクトは read-only で参照する
 
 ## Source Layout
 
@@ -76,13 +73,9 @@
   - `address_overrides.yaml` と `price_overrides.yaml` の企業別 MD5
   - 差分が出た企業の `data/output/{code}_output.csv` を削除する
 
-## Migration
+## Compatibility
 
-- 旧構造化キャッシュからの移行は `scripts/migrate_to_land_db.py` を明示実行する
-- `scripts/migrate_to_land_db.py` は `land.db` 側の旧構造化キャッシュだけを扱い、`stocks.db` には write しない
-- `scripts/migrate_to_land_db.py --cleanup` は移行後に検証済みの project-owned 旧キャッシュだけを削除する
-- `scripts/migrate_to_land_db.py --dry-run --cleanup` は一時DB上で移行と検証だけを行い、削除予定と保留理由を表示する
-- cleanup 対象は `price_result_cache.json` / `geocode_result_cache.json` / `market_cap_cache.json` / `company_master.yaml` / `addr_overrides_hash.json` / `price_overrides_hash.json` / `web_address/resolve_cache.json` / `facilities_land/*` に限り、`data/cache/pdf/` と `data/cache/web_address/*.analysis.json` は残す
-- 実行後の通常運用は `land.db` / `stocks.db` のみを正とし、旧 JSON/YAML キャッシュには戻さない
+- 構造化キャッシュ・PDF キャッシュは現行配置のみを扱う
+- 旧 JSON/YAML キャッシュや旧 PDF 配置の自動移行は行わない
 
 <!-- verified: 2026-04-28 -->

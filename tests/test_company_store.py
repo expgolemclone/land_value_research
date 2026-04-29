@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 from src.company_store import (
-    connect_stocks_db,
+    connect_company_db,
     load_company_directory,
     load_company_name_map,
     load_company_record,
@@ -16,8 +16,8 @@ from src.company_store import (
 class TestCompanyStore(unittest.TestCase):
     def test_merge_company_record_persists_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "stocks.db"
-            conn = connect_stocks_db(db_path)
+            db_path = Path(tmpdir) / "land.db"
+            conn = connect_company_db(db_path)
             try:
                 record = merge_company_record(
                     conn,
@@ -56,8 +56,8 @@ class TestCompanyStore(unittest.TestCase):
 
     def test_market_cap_snapshot_roundtrip(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "stocks.db"
-            conn = connect_stocks_db(db_path)
+            db_path = Path(tmpdir) / "land.db"
+            conn = connect_company_db(db_path)
             try:
                 save_market_cap_snapshot(conn, "5678", 123_456_789, "2026-04-28")
                 conn.commit()
@@ -72,8 +72,8 @@ class TestCompanyStore(unittest.TestCase):
 
     def test_empty_directory(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "stocks.db"
-            conn = connect_stocks_db(db_path)
+            db_path = Path(tmpdir) / "land.db"
+            conn = connect_company_db(db_path)
             try:
                 self.assertEqual(load_company_directory(conn), {})
                 self.assertEqual(load_company_name_map(conn), {})

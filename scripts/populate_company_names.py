@@ -13,7 +13,7 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from src.company_store import connect_stocks_db, load_company_directory, merge_company_record
+from src.company_store import connect_company_db, load_company_directory, merge_company_record
 
 JPX_URL = "https://www.jpx.co.jp/markets/statistics-equities/misc/tvdivq0000001vg2-att/data_j.xls"
 
@@ -74,7 +74,7 @@ def main() -> None:
     jpx_names = parse_jpx_xls(data)
     print(f"JPX銘柄数: {len(jpx_names)}")
 
-    conn = connect_stocks_db()
+    conn = connect_company_db()
     records = load_company_directory(conn)
     updated = 0
     already = 0

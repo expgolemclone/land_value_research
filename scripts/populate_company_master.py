@@ -17,7 +17,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from src.browser import BrowserService, BrowserServiceError
-from src.company_store import connect_stocks_db, load_company_directory, merge_company_record
+from src.company_store import connect_company_db, load_company_directory, merge_company_record
 from src.config import INPUT_FULL_CSV
 from src.stealth import ProxyPool
 from src.utils import validate_url_not_private
@@ -129,7 +129,7 @@ def main() -> None:
         pool = ProxyPool.make_direct()
 
     input_codes = load_input_codes(INPUT_FULL_PATH)
-    conn = connect_stocks_db()
+    conn = connect_company_db()
     master = load_company_directory(conn)
 
     missing = [

@@ -31,10 +31,6 @@ def connect_company_db(db_path: Path | None = None) -> sqlite3.Connection:
     return conn
 
 
-def connect_stocks_db(db_path: Path | None = None) -> sqlite3.Connection:
-    return connect_company_db(db_path)
-
-
 def init_db(conn: sqlite3.Connection) -> None:
     init_land_db(conn)
 
