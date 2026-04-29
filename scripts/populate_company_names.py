@@ -1,4 +1,4 @@
-"""JPX東証上場銘柄一覧から企業名を取得し stocks.db に一括登録する."""
+"""JPX東証上場銘柄一覧から企業名を取得し land.db に一括登録する."""
 
 from __future__ import annotations
 
@@ -98,7 +98,7 @@ def main() -> None:
 
     print(f"更新: {updated} 件 (うち新規エントリ: {new_entries} 件)")
     print(f"既存 company_name: {already} 件 (スキップ)")
-    print(f"stocks.db 合計: {len(records)} エントリ")
+    print(f"land.db 合計: {len(records)} エントリ")
 
 
 if __name__ == "__main__":

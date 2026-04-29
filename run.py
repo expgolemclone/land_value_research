@@ -18,7 +18,6 @@ from datetime import date, datetime
 from pathlib import Path
 
 import shtab
-from stock_db.paths import STOCKS_DB_PATH
 
 from scripts.merge_address_patches import merge_patches_safe
 from src.anomaly import (
@@ -38,7 +37,6 @@ from src.company_config import (
 )
 from src.company_store import (
     CompanyDirectory,
-    init_db as init_stocks_db,
     load_company_directory,
     load_market_cap_snapshot,
     merge_company_record,
@@ -506,9 +504,8 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
     land_conn = _open_shared_connection(LAND_DB_PATH)
     init_land_db(land_conn)
 
-    stocks_conn = _open_shared_connection(STOCKS_DB_PATH)
-    init_stocks_db(stocks_conn)
-    company_records = load_company_directory(stocks_conn)
+    stocks_conn = land_conn
+    company_records = load_company_directory(land_conn)
 
     geocoder = TokyoGeocoder(
         oaza_csv=str(OAZA_CSV),
@@ -669,7 +666,7 @@ def _resolve_company_metadata(
             pdf_url = fallback.securities_report_pdf_url
         if fallback.address_source_url and fallback.address_source_url not in address_source_urls:
             address_source_urls.append(fallback.address_source_url)
-        # IRBankから取得した情報を stocks.db に追記（後続処理・永続化用）
+        # IRBankから取得した情報を land.db に追記（後続処理・永続化用）
         if fallback.company_name or fallback.securities_report_pdf_url:
             with ctx.cache_lock:
                 existing = ctx.company_records.get(code, {})
@@ -696,7 +693,7 @@ def _resolve_company_metadata(
         raise CompanySkipError(
             f"証券コード{code}の会社情報が不足しています."
             " config/input.csvに company_name,securities_report_pdf_url を追加するか,"
-            " stocks.db の企業メタデータへ登録してください."
+            " land.db の企業メタデータへ登録してください."
         )
     if pdf_url and pdf_url not in address_source_urls:
         address_source_urls.append(pdf_url)
@@ -1205,7 +1202,8 @@ def _memory_watchdog(ctx: RunContext, limit_percent: float, check_interval: floa
 def save_caches(ctx: RunContext) -> None:
     with ctx.cache_lock:
         ctx.land_conn.commit()
-        ctx.stocks_conn.commit()
+        if ctx.stocks_conn is not ctx.land_conn:
+            ctx.stocks_conn.commit()
     ctx.web_addr.flush()
 
 
@@ -1358,7 +1356,8 @@ def _main_worker(args: argparse.Namespace) -> None:
         ctx.web_addr.close()
         with ctx.cache_lock:
             ctx.land_conn.close()
-            ctx.stocks_conn.close()
+            if ctx.stocks_conn is not ctx.land_conn:
+                ctx.stocks_conn.close()
         ctx.browser.shutdown()
 
 

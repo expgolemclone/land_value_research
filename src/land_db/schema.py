@@ -49,6 +49,23 @@ CREATE TABLE IF NOT EXISTS invalidation_hashes (
     hash_value TEXT NOT NULL,
     PRIMARY KEY (hash_type, code)
 );
+
+CREATE TABLE IF NOT EXISTS company_metadata (
+    code                       TEXT PRIMARY KEY,
+    company_name               TEXT NOT NULL DEFAULT '',
+    securities_report_pdf_url  TEXT NOT NULL DEFAULT '',
+    address_source_urls        TEXT,
+    updated_at                 TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS market_cap_cache (
+    code           TEXT NOT NULL,
+    source         TEXT NOT NULL,
+    market_cap_yen INTEGER NOT NULL,
+    fetched_date   TEXT NOT NULL,
+    updated_at     TEXT NOT NULL,
+    PRIMARY KEY (code, source)
+);
 """
 
 

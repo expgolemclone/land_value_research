@@ -4,11 +4,10 @@
 
 - `run.py`
   - メインの推定パイプライン
-  - `land.db` に地価・ジオコード・有報拠点抽出・Web住所解決・override無効化ハッシュを保存する
-  - `stocks.db` に企業名・有報PDF URL・住所探索元 URL・時価総額を保存する
+  - `land.db` に地価・ジオコード・有報拠点抽出・Web住所解決・override無効化ハッシュ・企業メタデータ・時価総額を保存する
 - `src/rank_market_cap_ratio.py`
   - `data/output/*.csv` を集計し、ランキング HTML を生成する
-  - 企業名の欠損補完は `stocks.db` を更新しながら行う
+  - 企業名の欠損補完は `land.db` を更新しながら行う
 - `scripts/parallel_research.py`
   - ランキング上位の住所調査を並列実行する
   - 調査プロンプトには `land.db` 内の拠点抽出データと設備状況テキストを注入する
@@ -23,10 +22,11 @@
   - `facilities_land`
   - `web_address_resolve`
   - `invalidation_hashes`
+  - `company_metadata`
+  - `market_cap_cache`
 - `stocks.db`
-  - `stocks`
-  - `market_caps`
-  - 企業メタデータ関連テーブル
+  - 外部入力用 DB
+  - 本プロジェクトは read-only で参照する
 
 ## Source Layout
 
@@ -35,7 +35,7 @@
 - `src/stealth.py`
   - `stock_db.proxy_pool` の再公開
 - `src/company_store.py`
-  - `stocks.db` の入出力集約
+  - `land.db` 上の企業メタデータ・時価総額の入出力集約
 - `src/company_config.py`
   - `address_overrides.yaml` と `price_overrides.yaml` の読込
   - 分割住所ルールの展開
@@ -79,6 +79,10 @@
 ## Migration
 
 - 旧構造化キャッシュからの移行は `scripts/migrate_to_land_db.py` を明示実行する
+- `scripts/migrate_to_land_db.py` は `land.db` 側の旧構造化キャッシュだけを扱い、`stocks.db` には write しない
+- `scripts/migrate_to_land_db.py --cleanup` は移行後に検証済みの project-owned 旧キャッシュだけを削除する
+- `scripts/migrate_to_land_db.py --dry-run --cleanup` は一時DB上で移行と検証だけを行い、削除予定と保留理由を表示する
+- cleanup 対象は `price_result_cache.json` / `geocode_result_cache.json` / `market_cap_cache.json` / `company_master.yaml` / `addr_overrides_hash.json` / `price_overrides_hash.json` / `web_address/resolve_cache.json` / `facilities_land/*` に限り、`data/cache/pdf/` と `data/cache/web_address/*.analysis.json` は残す
 - 実行後の通常運用は `land.db` / `stocks.db` のみを正とし、旧 JSON/YAML キャッシュには戻さない
 
 <!-- verified: 2026-04-28 -->

@@ -1,4 +1,4 @@
-"""Batch-populate stocks.db company metadata from IRBank/EDINET."""
+"""Batch-populate land.db company metadata from IRBank/EDINET."""
 
 # ruff: noqa: E402
 from __future__ import annotations
@@ -104,7 +104,7 @@ def load_input_codes(path: str) -> list[str]:
 
 
 def main() -> None:
-    parser: argparse.ArgumentParser = argparse.ArgumentParser(description="Populate stocks.db metadata from IRBank")
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(description="Populate land.db metadata from IRBank")
     parser.add_argument("--workers", type=int, default=1, help="Number of concurrent workers (default: 1)")
     parser.add_argument("--delay", type=float, default=1.0, help="Delay in seconds between requests (default: 1.0)")
     parser.add_argument("--dry-run", action="store_true", help="Preview without writing")
@@ -197,7 +197,7 @@ def main() -> None:
 
         if not args.dry_run:
             conn.commit()
-            print(f"Saved final — {len(master)} entries in stocks.db")
+            print(f"Saved final — {len(master)} entries in land.db")
         else:
             print(f"[DRY RUN] Would have {len(master)} entries total")
 

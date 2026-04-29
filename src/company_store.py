@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import TypedDict
 
-from stock_db.paths import STOCKS_DB_PATH
 from stock_db.storage.connection import get_connection
-from stock_db.storage.market_caps import get_market_cap, upsert_market_cap
-from stock_db.storage.schema import init_db as init_stocks_db
-from stock_db.storage.stocks import upsert_company_metadata, upsert_stock
+
+from src.config import LAND_DB_PATH
+from src.land_db.schema import init_land_db
 
 
 class CompanyRecord(TypedDict, total=False):
@@ -21,14 +21,22 @@ class CompanyRecord(TypedDict, total=False):
 CompanyDirectory = dict[str, CompanyRecord]
 
 
-def connect_stocks_db(db_path: Path | None = None) -> sqlite3.Connection:
-    conn = get_connection(db_path or STOCKS_DB_PATH)
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def connect_company_db(db_path: Path | None = None) -> sqlite3.Connection:
+    conn = get_connection(db_path or LAND_DB_PATH)
     init_db(conn)
     return conn
 
 
+def connect_stocks_db(db_path: Path | None = None) -> sqlite3.Connection:
+    return connect_company_db(db_path)
+
+
 def init_db(conn: sqlite3.Connection) -> None:
-    init_stocks_db(conn)
+    init_land_db(conn)
 
 
 def _decode_urls(raw: object) -> list[str]:
@@ -47,16 +55,16 @@ def _decode_urls(raw: object) -> list[str]:
 def load_company_directory(conn: sqlite3.Connection) -> CompanyDirectory:
     rows = conn.execute(
         """
-        SELECT ticker, name, securities_report_url, address_source_urls
-        FROM stocks
-        ORDER BY ticker
+        SELECT code, company_name, securities_report_pdf_url, address_source_urls
+        FROM company_metadata
+        ORDER BY code
         """
     ).fetchall()
     result: CompanyDirectory = {}
     for row in rows:
-        result[str(row["ticker"])] = CompanyRecord(
-            company_name=str(row["name"] or ""),
-            securities_report_pdf_url=str(row["securities_report_url"] or ""),
+        result[str(row["code"])] = CompanyRecord(
+            company_name=str(row["company_name"] or ""),
+            securities_report_pdf_url=str(row["securities_report_pdf_url"] or ""),
             address_source_urls=_decode_urls(row["address_source_urls"]),
         )
     return result
@@ -65,17 +73,17 @@ def load_company_directory(conn: sqlite3.Connection) -> CompanyDirectory:
 def load_company_record(conn: sqlite3.Connection, code: str) -> CompanyRecord:
     row = conn.execute(
         """
-        SELECT ticker, name, securities_report_url, address_source_urls
-        FROM stocks
-        WHERE ticker = ?
+        SELECT code, company_name, securities_report_pdf_url, address_source_urls
+        FROM company_metadata
+        WHERE code = ?
         """,
         (code,),
     ).fetchone()
     if row is None:
         return CompanyRecord()
     return CompanyRecord(
-        company_name=str(row["name"] or ""),
-        securities_report_pdf_url=str(row["securities_report_url"] or ""),
+        company_name=str(row["company_name"] or ""),
+        securities_report_pdf_url=str(row["securities_report_pdf_url"] or ""),
         address_source_urls=_decode_urls(row["address_source_urls"]),
     )
 
@@ -96,13 +104,31 @@ def merge_company_record(
         else current.get("securities_report_pdf_url", "")
     )
     next_urls = address_source_urls if address_source_urls is not None else current.get("address_source_urls", [])
+    serialized_urls = json.dumps(next_urls, ensure_ascii=False) if next_urls else None
 
-    upsert_stock(conn, code, str(next_name or ""), "", "")
-    upsert_company_metadata(
-        conn,
-        code,
-        securities_report_url=(str(next_pdf) if next_pdf else None),
-        address_source_urls=(json.dumps(next_urls, ensure_ascii=False) if next_urls else None),
+    conn.execute(
+        """
+        INSERT INTO company_metadata (
+            code,
+            company_name,
+            securities_report_pdf_url,
+            address_source_urls,
+            updated_at
+        )
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(code) DO UPDATE SET
+            company_name = CASE
+                WHEN excluded.company_name = '' THEN company_metadata.company_name
+                ELSE excluded.company_name
+            END,
+            securities_report_pdf_url = CASE
+                WHEN excluded.securities_report_pdf_url = '' THEN company_metadata.securities_report_pdf_url
+                ELSE excluded.securities_report_pdf_url
+            END,
+            address_source_urls = COALESCE(excluded.address_source_urls, company_metadata.address_source_urls),
+            updated_at = excluded.updated_at
+        """,
+        (code, str(next_name or ""), str(next_pdf or ""), serialized_urls, _now()),
     )
     return load_company_record(conn, code)
 
@@ -118,13 +144,21 @@ class MarketCapSnapshot(TypedDict):
 
 
 def load_market_cap_snapshot(conn: sqlite3.Connection, code: str) -> MarketCapSnapshot | None:
-    row = get_market_cap(conn, code)
+    row = conn.execute(
+        """
+        SELECT market_cap_yen, fetched_date
+        FROM market_cap_cache
+        WHERE code = ?
+        ORDER BY fetched_date DESC, updated_at DESC
+        LIMIT 1
+        """,
+        (code,),
+    ).fetchone()
     if row is None:
         return None
-    fetched_at = str(row["fetched_at"])
     return MarketCapSnapshot(
-        market_cap_yen=int(row["value_yen"]),
-        fetched_date=fetched_at[:10],
+        market_cap_yen=int(row["market_cap_yen"]),
+        fetched_date=str(row["fetched_date"]),
     )
 
 
@@ -136,4 +170,20 @@ def save_market_cap_snapshot(
     *,
     source: str = "kabutan",
 ) -> None:
-    upsert_market_cap(conn, code, source, int(market_cap_yen), str(fetched_date))
+    conn.execute(
+        """
+        INSERT INTO market_cap_cache (
+            code,
+            source,
+            market_cap_yen,
+            fetched_date,
+            updated_at
+        )
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(code, source) DO UPDATE SET
+            market_cap_yen = excluded.market_cap_yen,
+            fetched_date = excluded.fetched_date,
+            updated_at = excluded.updated_at
+        """,
+        (code, source, int(market_cap_yen), str(fetched_date), _now()),
+    )

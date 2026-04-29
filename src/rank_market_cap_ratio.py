@@ -507,7 +507,7 @@ def _resolve_missing_names(
     browser: BrowserService,
     pool: ProxyPool | None = None,
 ) -> None:
-    """企業名がtickerコードのままの行をIRBankから名前解決し、stocks.db に保存する."""
+    """企業名がtickerコードのままの行をIRBankから名前解決し、land.db に保存する."""
     from concurrent.futures import ThreadPoolExecutor
 
     unresolved: list[tuple[int, dict[str, str]]] = [
@@ -533,7 +533,7 @@ def _resolve_missing_names(
 
     if updated:
         stocks_conn.commit()
-        print(f"企業名を {updated} 件取得し stocks.db に保存しました")
+        print(f"企業名を {updated} 件取得し land.db に保存しました")
 
 
 def generate_ranking(
