@@ -73,7 +73,7 @@ def _open_file(path: Path) -> bool:
         if sys.platform == "darwin":
             subprocess.Popen(["open", str(resolved_path)])
             return True
-        subprocess.Popen(["qutebrowser", str(resolved_path)])
+        subprocess.Popen(["google-chrome-stable", str(resolved_path)])
         return True
     except OSError as exc:
         logger.warning("ファイルを開けませんでした: %s (%s)", resolved_path, exc)
