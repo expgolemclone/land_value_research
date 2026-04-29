@@ -15,8 +15,8 @@ class TestResolveMarketCap(unittest.TestCase):
             _resolve_market_cap("1234", None, {})
 
         message = str(excinfo.exception)
-        self.assertIn("scrape-stooq-prices", message)
-        self.assertIn("7日以内", message)
+        self.assertIn("時価総額が不足", message)
+        self.assertIn("market_cap", message)
 
 
 if __name__ == "__main__":

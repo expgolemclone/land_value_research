@@ -123,7 +123,7 @@ from src.schema import (
     OUTPUT_COLUMNS,
     OutputRow,
 )
-from src.stock_db_sync import load_market_cap_from_stock_db, sync_company_records_from_stock_db
+from src.stock_db_sync import load_market_cap_from_stock_db, run_stooq_scrape, sync_company_records_from_stock_db
 from src.utils import ensure_dir, open_csv
 from src.web_address_research import WebAddressResearcher
 from src.web_cache import download_file, is_pdf_file
@@ -272,8 +272,9 @@ def _resolve_market_cap(
         return int(stock_db_market_cap)
 
     raise CompanySkipError(
-        f"証券コード{code}の時価総額が不足しています. config/input.csv に market_cap を追加するか, "
-        "../stock_db で uv run scrape-stooq-prices を実行して prices.date が直近7日以内の株価を更新してください."
+        f"証券コード{code}の時価総額が不足しています. "
+        "config/input.csv に market_cap を追加するか, "
+        "stock.db に該当銘柄の株価・発行済株式数が登録されているか確認してください."
     )
 
 
@@ -1327,6 +1328,18 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
             len(ctx.stock_db_market_caps),
             len(set(stock_db_market_cap_codes)),
         )
+
+        missing_codes = [c for c in stock_db_market_cap_codes if c not in ctx.stock_db_market_caps]
+        if missing_codes:
+            logger.info("株価が古いか不足: %d社 — stooq スクレイプを実行", len(missing_codes))
+            if run_stooq_scrape():
+                refreshed = load_market_cap_from_stock_db(missing_codes)
+                ctx.stock_db_market_caps.update(refreshed)
+                logger.info(
+                    "スクレイプ後の時価総額再取得: %d/%d社",
+                    len(refreshed),
+                    len(set(missing_codes)),
+                )
 
     targets_to_process, skipped = _filter_targets(targets, ctx)
 

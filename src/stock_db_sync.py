@@ -3,11 +3,13 @@ from __future__ import annotations
 import logging
 import re
 import sqlite3
+import subprocess
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path
 
+from stock_db.paths import PROJECT_ROOT as STOCK_DB_PROJECT_ROOT
 from stock_db.paths import STOCKS_DB_PATH
 from stock_db.sources.edinet.api_client import build_pdf_url
 
@@ -199,6 +201,38 @@ def load_market_cap_from_stock_db(
         conn.close()
 
     return result
+
+
+def run_stooq_scrape(
+    *,
+    cwd: Path | None = None,
+    timeout: int = 300,
+) -> bool:
+    """stock_db で scrape-stooq-prices を実行して最新株価を取得する."""
+    work_dir = cwd or STOCK_DB_PROJECT_ROOT
+    logger.info("stooq 株価スクレイプ開始: cwd=%s", work_dir)
+    try:
+        proc = subprocess.run(
+            ["uv", "run", "scrape-stooq-prices"],
+            cwd=str(work_dir),
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError) as exc:
+        logger.warning("stooq 株価スクレイプ失敗: %s: %s", type(exc).__name__, exc)
+        return False
+
+    if proc.returncode != 0:
+        logger.warning(
+            "stooq 株価スクレイプ失敗 (exit=%d): %s",
+            proc.returncode,
+            (proc.stderr or "").strip(),
+        )
+        return False
+
+    logger.info("stooq 株価スクレイプ完了: %s", (proc.stderr or "").strip())
+    return True
 
 
 def sync_company_records_from_stock_db(

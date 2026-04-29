@@ -55,6 +55,7 @@
 - `src/stock_db_sync.py`
   - `stock.db` を read-only 上流として企業名・PDF URL を補完する
   - stock.db に無い項目は既存スクレイプフォールバックに委ねる
+  - `run_stooq_scrape()`: 株価が古い場合に stock_db 側で `scrape-stooq-prices` を自動実行する
 
 ## Persistent Files
 
@@ -100,4 +101,4 @@
 - 構造化キャッシュ・PDF キャッシュは現行配置のみを扱う
 - 旧 JSON/YAML キャッシュや旧 PDF 配置の自動移行は行わない
 
-<!-- verified: 2026-04-29c -->
+<!-- verified: 2026-04-30a -->

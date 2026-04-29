@@ -3,8 +3,9 @@ import tempfile
 import unittest
 from datetime import date, timedelta
 from pathlib import Path
+from unittest.mock import patch
 
-from src.stock_db_sync import load_market_cap_from_stock_db
+from src.stock_db_sync import load_market_cap_from_stock_db, run_stooq_scrape
 
 
 def _create_stock_db(path: Path) -> sqlite3.Connection:
@@ -104,6 +105,54 @@ class TestLoadMarketCapFromStockDb(unittest.TestCase):
                 self.assertEqual(result, {"1111": 20_000_000})
             finally:
                 conn.close()
+
+
+class TestRunStooqScrape(unittest.TestCase):
+    def test_returns_true_on_success(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with patch("src.stock_db_sync.subprocess.run") as mock_run:
+                import subprocess as sp
+
+                mock_run.return_value = sp.CompletedProcess(
+                    args=["uv", "run", "scrape-stooq-prices"],
+                    returncode=0,
+                    stdout="",
+                    stderr="Imported 500 JP prices for 2026-04-30",
+                )
+
+                result = run_stooq_scrape(cwd=Path(tmpdir))
+
+                self.assertTrue(result)
+                mock_run.assert_called_once()
+                call_kwargs = mock_run.call_args
+                self.assertEqual(call_kwargs[1]["cwd"], tmpdir)
+
+    def test_returns_false_on_nonzero_exit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with patch("src.stock_db_sync.subprocess.run") as mock_run:
+                import subprocess as sp
+
+                mock_run.return_value = sp.CompletedProcess(
+                    args=["uv", "run", "scrape-stooq-prices"],
+                    returncode=1,
+                    stdout="",
+                    stderr="Captcha error",
+                )
+
+                result = run_stooq_scrape(cwd=Path(tmpdir))
+
+                self.assertFalse(result)
+
+    def test_returns_false_on_timeout(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with patch("src.stock_db_sync.subprocess.run") as mock_run:
+                import subprocess as sp
+
+                mock_run.side_effect = sp.TimeoutExpired(cmd="uv", timeout=300)
+
+                result = run_stooq_scrape(cwd=Path(tmpdir))
+
+                self.assertFalse(result)
 
 
 if __name__ == "__main__":
