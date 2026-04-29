@@ -3,7 +3,7 @@
 ## Runtime
 
 - `run.py`
-  - メインの推定パイプライン
+  - メインの推定パイプライン（スクレイピング・企業処理は逐次実行、PDF抽出のみ並列）
   - `land.db` に地価・ジオコード・有報拠点抽出・Web住所解決・override無効化ハッシュ・企業メタデータ・時価総額を保存する
   - メタデータ解決順: 入力CSV > land.db > stock.db > スクレイプ（IRBank/Kabutan）
 - `src/rank_market_cap_ratio.py`
@@ -100,4 +100,4 @@
 - 構造化キャッシュ・PDF キャッシュは現行配置のみを扱う
 - 旧 JSON/YAML キャッシュや旧 PDF 配置の自動移行は行わない
 
-<!-- verified: 2026-04-29b -->
+<!-- verified: 2026-04-29c -->
