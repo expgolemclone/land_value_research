@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,6 +11,8 @@ from stock_db.storage.connection import get_connection
 
 from src.config import LAND_DB_PATH
 from src.land_db.schema import init_land_db
+
+_log = logging.getLogger(__name__)
 
 
 class CompanyRecord(TypedDict, total=False):
@@ -42,6 +45,7 @@ def _decode_urls(raw: object) -> list[str]:
         try:
             loaded = json.loads(raw)
         except json.JSONDecodeError:
+            _log.debug("URL JSONのパースに失敗、空リストを返却", exc_info=True)
             return []
         if isinstance(loaded, list):
             return [str(x) for x in loaded if str(x).strip()]

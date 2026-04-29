@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import re
 import sqlite3
@@ -23,6 +24,8 @@ from datetime import datetime
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+_log = logging.getLogger(__name__)
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -174,7 +177,7 @@ def _run_precheck(selected: list[dict[str, str]]) -> dict[str, dict | None]:
                 print(f" リスクあり ({risk_count}拠点)")
             else:
                 print(" リスクなし (全gaiku)")
-        except Exception as e:
+        except (OSError, ValueError, KeyError, RuntimeError) as e:
             print(f" エラー: {e}")
             results[code] = None
     print()
@@ -756,11 +759,11 @@ def _extract_session_id(log_file: Path) -> str | None:
                     if sid:
                         return sid
                 except _json.JSONDecodeError:
-                    pass
+                    _log.debug("セッションID抽出でJSONパース失敗: %s", line[:80])
             if "session id: " in line:
                 return line.split("session id: ")[1].split()[0]
     except OSError:
-        pass
+        _log.debug("ログファイルの読み込みに失敗", exc_info=True)
     return None
 
 

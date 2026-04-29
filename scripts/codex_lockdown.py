@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import atexit
 import json
+import logging
 import signal
 import stat
 import sys
@@ -16,6 +17,8 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.config import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR, DEFAULT_RANKING_PATH
+
+_log = logging.getLogger(__name__)
 
 # import に必要なため除外
 _SRC_ALLOW = {"geocode_tokyo.py", "__init__.py", "pdf_extract.py"}
@@ -135,7 +138,7 @@ def _delete_lockdown_state() -> None:
     try:
         _LOCKDOWN_STATE_FILE.unlink(missing_ok=True)
     except OSError:
-        pass
+        _log.debug("ロック状態ファイルの削除に失敗", exc_info=True)
 
 
 def recover_stale_lockdown() -> bool:
@@ -163,7 +166,7 @@ def recover_stale_lockdown() -> bool:
             p.chmod(orig_mode)
             restored += 1
         except OSError:
-            pass
+            _log.debug("パーミッション復旧に失敗: %s", p, exc_info=True)
 
     _delete_lockdown_state()
     print(f"[lockdown] {restored} items restored (前回ロック時刻: {state.get('locked_at', '不明')})")
@@ -193,7 +196,7 @@ def codex_lockdown(
             try:
                 p.chmod(orig)
             except OSError:
-                pass
+                _log.debug("緊急復旧でchmodに失敗: %s", p, exc_info=True)
         _delete_lockdown_state()
         print(f"\n[lockdown] {len(locked)} items restored (signal)")
         sys.exit(1)
@@ -227,7 +230,7 @@ def codex_lockdown(
             try:
                 prev_handlers[sig] = signal.signal(sig, _emergency_restore)
             except (OSError, ValueError):
-                pass
+                _log.debug("シグナルハンドラ登録に失敗: %s", sig, exc_info=True)
 
         # atexit 登録
         atexit.register(_emergency_restore)
@@ -240,7 +243,7 @@ def codex_lockdown(
             try:
                 p.chmod(orig)
             except OSError:
-                pass
+                _log.debug("パーミッション復旧に失敗: %s", p, exc_info=True)
         _delete_lockdown_state()
 
         # シグナルハンドラ復元
@@ -248,7 +251,7 @@ def codex_lockdown(
             try:
                 signal.signal(sig, handler)
             except (OSError, ValueError):
-                pass
+                _log.debug("シグナルハンドラ復元に失敗: %s", sig, exc_info=True)
 
         # atexit 解除
         atexit.unregister(_emergency_restore)

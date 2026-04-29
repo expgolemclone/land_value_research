@@ -13,11 +13,14 @@ from __future__ import annotations
 
 import csv
 import json
+import logging
 import re
 import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+_log = logging.getLogger(__name__)
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -125,6 +128,7 @@ def precheck(code: str) -> dict:
             try:
                 area_m2 = float(row.get(COL_LAND_AREA, "0"))
             except (ValueError, TypeError):
+                _log.debug("土地面積のパースに失敗、0.0 にフォールバック: %s", row.get("土地面積"))
                 area_m2 = 0.0
 
             is_hoka = _has_multi_location_signal(site_name)
