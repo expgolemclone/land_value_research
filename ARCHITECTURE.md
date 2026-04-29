@@ -93,8 +93,7 @@
 - `*` で全ファイル無視 + `!*/` でディレクトリ traversal のみ許可
 - 許可拡張子: `.py`, `.rs`, `.ps1`, `.toml`, `.yaml`, `.yml`, `.json`, `.nix`, `.lock`, `.md`, `.csv`, `.xml`, `.geojson`, `.dbf`, `.prj`, `.shp`, `.shx`, `.zip`
 - 許可ルートファイル: `.gitattributes`, `.gitignore`, `bin/land-value-run`
-- `data/geocoding/**/*.html` のみ HTML を許可
-- `data/ranking/` も追跡許可（ランキングHTMLをGitHubで閲覧可能にするため）
+- `data/geocoding/**/*.html` と `data/ranking/**/*.html` のみ HTML を許可
 - `data/` は `geocoding/` と `landprice/` と `ranking/` 以外を再無視
 - `.claude/` は `hooks/`, `skills/`, `settings*.json` 以外を再無視
 
