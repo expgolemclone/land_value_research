@@ -54,17 +54,7 @@ CREATE TABLE IF NOT EXISTS company_metadata (
     code                       TEXT PRIMARY KEY,
     company_name               TEXT NOT NULL DEFAULT '',
     securities_report_pdf_url  TEXT NOT NULL DEFAULT '',
-    address_source_urls        TEXT,
     updated_at                 TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS market_cap_cache (
-    code           TEXT NOT NULL,
-    source         TEXT NOT NULL,
-    market_cap_yen INTEGER NOT NULL,
-    fetched_date   TEXT NOT NULL,
-    updated_at     TEXT NOT NULL,
-    PRIMARY KEY (code, source)
 );
 """
 
@@ -72,6 +62,35 @@ CREATE TABLE IF NOT EXISTS market_cap_cache (
 def _table_columns(conn: sqlite3.Connection, table: str) -> set[str]:
     rows = conn.execute(f"PRAGMA table_info({table})").fetchall()  # noqa: S608
     return {str(row[1]) for row in rows}
+
+
+def _rebuild_company_metadata_without_address_source_urls(conn: sqlite3.Connection) -> None:
+    conn.executescript(
+        """
+        CREATE TABLE company_metadata__new (
+            code                      TEXT PRIMARY KEY,
+            company_name              TEXT NOT NULL DEFAULT '',
+            securities_report_pdf_url TEXT NOT NULL DEFAULT '',
+            updated_at                TEXT NOT NULL
+        );
+
+        INSERT INTO company_metadata__new (
+            code,
+            company_name,
+            securities_report_pdf_url,
+            updated_at
+        )
+        SELECT
+            code,
+            company_name,
+            securities_report_pdf_url,
+            updated_at
+        FROM company_metadata;
+
+        DROP TABLE company_metadata;
+        ALTER TABLE company_metadata__new RENAME TO company_metadata;
+        """
+    )
 
 
 def _migrate(conn: sqlite3.Connection) -> None:
@@ -83,6 +102,16 @@ def _migrate(conn: sqlite3.Connection) -> None:
     resolve_cols = _table_columns(conn, "web_address_resolve")
     if resolve_cols and "resolved" not in resolve_cols:
         conn.execute("ALTER TABLE web_address_resolve ADD COLUMN resolved INTEGER NOT NULL DEFAULT 1")
+        conn.commit()
+
+    company_cols = _table_columns(conn, "company_metadata")
+    if company_cols and "address_source_urls" in company_cols:
+        _rebuild_company_metadata_without_address_source_urls(conn)
+        conn.commit()
+
+    market_cap_cols = _table_columns(conn, "market_cap_cache")
+    if market_cap_cols:
+        conn.execute("DROP TABLE market_cap_cache")
         conn.commit()
 
 

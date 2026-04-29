@@ -156,3 +156,91 @@ class TestInvalidationHashes:
         delete_invalidation_hash(land_conn, "address_override", "1234")
         land_conn.commit()
         assert load_invalidation_hash(land_conn, "address_override", "1234") is None
+
+
+class TestSchemaMigration:
+    def test_removes_legacy_company_metadata_columns_and_market_cap_cache(self, tmp_path: Path) -> None:
+        conn = get_connection(tmp_path / "legacy_land.db")
+        try:
+            conn.executescript(
+                """
+                CREATE TABLE company_metadata (
+                    code TEXT PRIMARY KEY,
+                    company_name TEXT NOT NULL DEFAULT '',
+                    securities_report_pdf_url TEXT NOT NULL DEFAULT '',
+                    address_source_urls TEXT,
+                    updated_at TEXT NOT NULL
+                );
+
+                INSERT INTO company_metadata (
+                    code,
+                    company_name,
+                    securities_report_pdf_url,
+                    address_source_urls,
+                    updated_at
+                )
+                VALUES (
+                    '1234',
+                    'テスト株式会社',
+                    'https://example.com/report.pdf',
+                    '["https://example.com/company"]',
+                    '2026-04-29T00:00:00+00:00'
+                );
+
+                CREATE TABLE market_cap_cache (
+                    code TEXT NOT NULL,
+                    source TEXT NOT NULL,
+                    market_cap_yen INTEGER NOT NULL,
+                    fetched_date TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (code, source)
+                );
+
+                INSERT INTO market_cap_cache (
+                    code,
+                    source,
+                    market_cap_yen,
+                    fetched_date,
+                    updated_at
+                )
+                VALUES (
+                    '1234',
+                    'kabutan',
+                    100000000,
+                    '2026-04-29',
+                    '2026-04-29T00:00:00+00:00'
+                );
+                """
+            )
+            conn.commit()
+
+            init_land_db(conn)
+
+            company_columns = {
+                str(row[1])
+                for row in conn.execute("PRAGMA table_info(company_metadata)").fetchall()
+            }
+            assert "address_source_urls" not in company_columns
+
+            row = conn.execute(
+                """
+                SELECT code, company_name, securities_report_pdf_url, updated_at
+                FROM company_metadata
+                WHERE code = ?
+                """,
+                ("1234",),
+            ).fetchone()
+            assert row is not None
+            assert row["company_name"] == "テスト株式会社"
+            assert row["securities_report_pdf_url"] == "https://example.com/report.pdf"
+
+            market_cap_table = conn.execute(
+                """
+                SELECT name
+                FROM sqlite_master
+                WHERE type = 'table' AND name = 'market_cap_cache'
+                """
+            ).fetchone()
+            assert market_cap_table is None
+        finally:
+            conn.close()

@@ -519,7 +519,7 @@ def _resolve_missing_names(
     print(f"IRBankから企業名を取得中... ({len(codes)} 社)")
 
     with ThreadPoolExecutor(max_workers=8) as executor:
-        fetch_fn = functools.partial(fetch_from_irbank, browser=browser)
+        fetch_fn = functools.partial(fetch_from_irbank, browser=browser, need_pdf=False)
         results = list(executor.map(fetch_fn, codes))
 
     updated = 0

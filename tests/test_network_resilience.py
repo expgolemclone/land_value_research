@@ -107,6 +107,21 @@ class TestMetadataCache(unittest.TestCase):
         self.assertEqual(result.company_name, "トライアル HD")
         self.assertTrue(result.securities_report_pdf_url.endswith("/S100WRQT.pdf"))
 
+    def test_fetch_from_irbank_can_skip_edinet_when_pdf_not_needed(self) -> None:
+        company_metadata_fallback._METADATA_CACHE.clear()
+        ir_html: str = "<h1>テスト株式会社（1234）のIR情報・決算資料</h1>"
+
+        browser: MagicMock = MagicMock(spec=BrowserService)
+        browser.fetch.side_effect = [
+            _make_browser_response(ir_html),
+        ]
+
+        result = company_metadata_fallback.fetch_from_irbank("1234", browser=browser, need_pdf=False)
+
+        self.assertEqual(result.company_name, "テスト株式会社")
+        self.assertEqual(result.securities_report_pdf_url, "")
+        self.assertEqual(browser.fetch.call_count, 1)
+
 
 class TestWebFetchFailureCache(unittest.TestCase):
     def test_web_address_fetch_failure_is_not_pinned(self) -> None:

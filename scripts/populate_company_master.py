@@ -4,8 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import logging
-import re
 import sys
 import threading
 import time
@@ -17,32 +15,15 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from src.browser import BrowserService, BrowserServiceError
+from src.company_metadata_fallback import fetch_from_irbank
 from src.company_store import connect_company_db, load_company_directory, merge_company_record
 from src.config import INPUT_FULL_CSV
 from src.stock_db_sync import sync_company_records_from_stock_db
-from src.utils import validate_url_not_private
 
-logger = logging.getLogger(__name__)
-
-CompanyEntry = dict[str, str | list[str]]
+CompanyEntry = dict[str, str]
 INPUT_FULL_PATH = str(INPUT_FULL_CSV)
 
-DEFAULT_TIMEOUT_MS = 30000
 SAVE_INTERVAL = 100
-
-
-def _fetch_text(
-    url: str,
-    *,
-    browser: BrowserService,
-) -> str:
-    validate_url_not_private(url)
-    resp = browser.fetch(url, timeout=DEFAULT_TIMEOUT_MS)
-    if resp.html is None:
-        raise BrowserServiceError(
-            f"browser fetch failed for {url}: status={resp.status} error={resp.error}"
-        )
-    return resp.html
 
 
 def fetch_metadata(
@@ -50,54 +31,26 @@ def fetch_metadata(
     *,
     browser: BrowserService,
 ) -> CompanyEntry | None:
-    ir_url: str = f"https://irbank.net/{code}/ir"
-    edinet_url: str = f"https://irbank.net/{code}/edinet"
-
-    securities_report_pdf_url: str = ""
-    ir_ok: bool = False
-
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        ir_future = executor.submit(_fetch_text, ir_url, browser=browser)
-        edinet_future = executor.submit(_fetch_text, edinet_url, browser=browser)
-
-        try:
-            ir_future.result()
-            ir_ok = True
-        except BrowserServiceError:
-            logger.debug("IRBank IR page fetch failed: %s", ir_url, exc_info=True)
-
-        try:
-            html_edinet = edinet_future.result()
-            doc_ids = re.findall(
-                r'title="有価証券報告書[^"]*" href="notes\?f=(S100[0-9A-Z]+)"',
-                html_edinet,
-            )
-            if not doc_ids:
-                doc_ids = re.findall(
-                    r'href="notes\?f=(S100[0-9A-Z]+)" title="有価証券報告書[^"]*"',
-                    html_edinet,
-                )
-            if doc_ids:
-                securities_report_pdf_url = (
-                    f"https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/{doc_ids[0]}.pdf"
-                )
-        except BrowserServiceError:
-            logger.debug("IRBank EDINET page fetch failed: %s", edinet_url, exc_info=True)
-
-    if not ir_ok and not securities_report_pdf_url:
+    meta = fetch_from_irbank(code, browser=browser, need_name=True, need_pdf=True)
+    if not meta.company_name and not meta.securities_report_pdf_url:
         return None
 
     entry: CompanyEntry = {}
-    if securities_report_pdf_url:
-        entry["securities_report_pdf_url"] = securities_report_pdf_url
-    if ir_ok:
-        entry["address_source_urls"] = [ir_url]
+    if meta.company_name:
+        entry["company_name"] = meta.company_name
+    if meta.securities_report_pdf_url:
+        entry["securities_report_pdf_url"] = meta.securities_report_pdf_url
     return entry
 
 
 def load_input_codes(path: str) -> list[str]:
     with open(path, encoding="utf-8") as f:
         return [line.strip() for line in f if line.strip()]
+
+
+def _needs_company_name(entry: CompanyEntry, code: str) -> bool:
+    company_name = str(entry.get("company_name", "") or "").strip()
+    return not company_name or company_name == code
 
 
 def main() -> None:
@@ -121,7 +74,7 @@ def main() -> None:
         code
         for code in input_codes
         if not master.get(code, {}).get("securities_report_pdf_url")
-        or not master.get(code, {}).get("address_source_urls")
+        or _needs_company_name(master.get(code, {}), code)
     ]
     print(f"Total codes: {len(input_codes)}, Already stored: {len(master)}, Missing metadata: {len(missing)}")
 
@@ -164,8 +117,8 @@ def main() -> None:
                             master[code] = merge_company_record(
                                 conn,
                                 code,
+                                company_name=str(entry.get("company_name", "")),
                                 securities_report_pdf_url=str(entry.get("securities_report_pdf_url", "")),
-                                address_source_urls=list(entry.get("address_source_urls", []) or []),
                             )
                         else:
                             master[code] = dict(entry)

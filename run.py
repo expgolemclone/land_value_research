@@ -13,7 +13,7 @@ import urllib.error
 
 import yaml
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 
 import shtab
@@ -37,11 +37,9 @@ from src.company_config import (
 from src.company_store import (
     CompanyDirectory,
     load_company_directory,
-    load_market_cap_snapshot,
     merge_company_record,
-    save_market_cap_snapshot,
 )
-from src.company_metadata_fallback import fetch_from_irbank, fetch_market_cap_from_kabutan
+from src.company_metadata_fallback import fetch_from_irbank
 from src.config import (
     ADDRESS_OVERRIDES_PATH,
     CACHE_DIR,
@@ -125,6 +123,7 @@ from src.schema import (
     OUTPUT_COLUMNS,
     OutputRow,
 )
+from src.stock_db_sync import load_market_cap_from_stock_db, sync_company_records_from_stock_db
 from src.utils import ensure_dir, open_csv
 from src.web_address_research import WebAddressResearcher
 from src.web_cache import download_file, is_pdf_file
@@ -156,6 +155,7 @@ class RunContext:
     web_addr: WebAddressResearcher
     landprice: LandPriceTokyo
     browser: BrowserService
+    stock_db_market_caps: dict[str, int] = field(default_factory=dict)
     cache_lock: threading.Lock = field(default_factory=threading.Lock)
 
 
@@ -257,6 +257,31 @@ def parse_market_cap(raw: str) -> int | None:
 
 def parse_address_urls(raw: str) -> list[str]:
     return [x.strip() for x in (raw or "").split("|") if x.strip()]
+
+
+def _resolve_market_cap(
+    code: str,
+    input_market_cap: int | None,
+    stock_db_market_caps: dict[str, int],
+) -> int:
+    if input_market_cap is not None:
+        return int(input_market_cap)
+
+    stock_db_market_cap = stock_db_market_caps.get(code)
+    if stock_db_market_cap is not None:
+        return int(stock_db_market_cap)
+
+    raise CompanySkipError(
+        f"証券コード{code}の時価総額が不足しています. config/input.csv に market_cap を追加するか, "
+        "../stock_db で uv run scrape-stooq-prices を実行して prices.date が直近7日以内の株価を更新してください."
+    )
+
+
+def _build_address_source_urls(t: dict[str, object], pdf_url: str) -> list[str]:
+    source_urls = [str(url).strip() for url in t.get("address_source_urls", []) if str(url).strip()]
+    if pdf_url and pdf_url not in source_urls:
+        source_urls.append(pdf_url)
+    return source_urls
 
 
 def load_targets(input_path: str) -> list[dict[str, str]]:
@@ -591,29 +616,25 @@ def _filter_targets(
 
 
 def _resolve_company_metadata(
-    t: dict[str, str],
+    t: dict[str, object],
     company_index: int,
     total_companies: int,
     ctx: RunContext,
 ) -> _CompanyMeta:
-    code = t["code"]
+    code = str(t["code"])
     meta = ctx.company_records.get(code, {})
-    company_name = t["_resolved_company_name"] or meta.get("company_name", "")
+    company_name = str(t["_resolved_company_name"] or meta.get("company_name", ""))
     print(f"[{company_index}/{total_companies}] 開始: {code} {company_name}")
-    pdf_url = t["pdf_url"] or meta.get("securities_report_pdf_url", "")
-    address_source_urls = t["address_source_urls"] or list(meta.get("address_source_urls", []) or [])
+    pdf_url = str(t["pdf_url"] or meta.get("securities_report_pdf_url", ""))
     need_name = not company_name or company_name == code
     need_pdf = not pdf_url
-    need_mcap = t["market_cap"] is None
     fallback = None
-    if ctx.args.allow_auto_metadata and (need_name or need_pdf or need_mcap):
-        fallback = fetch_from_irbank(code, browser=ctx.browser)
+    if ctx.args.allow_auto_metadata and (need_name or need_pdf):
+        fallback = fetch_from_irbank(code, browser=ctx.browser, need_name=need_name, need_pdf=need_pdf)
         if need_name and fallback.company_name:
             company_name = fallback.company_name
         if need_pdf and fallback.securities_report_pdf_url:
             pdf_url = fallback.securities_report_pdf_url
-        if fallback.address_source_url and fallback.address_source_url not in address_source_urls:
-            address_source_urls.append(fallback.address_source_url)
         # スクレイプ結果を land.db に追記（後続処理・永続化用）
         if fallback.company_name or fallback.securities_report_pdf_url:
             with ctx.cache_lock:
@@ -623,18 +644,12 @@ def _resolve_company_metadata(
                     updated["company_name"] = fallback.company_name
                 if fallback.securities_report_pdf_url and not existing.get("securities_report_pdf_url"):
                     updated["securities_report_pdf_url"] = fallback.securities_report_pdf_url
-                if fallback.address_source_url:
-                    existing_urls = list(existing.get("address_source_urls") or [])
-                    if fallback.address_source_url not in existing_urls:
-                        existing_urls.append(fallback.address_source_url)
-                        updated["address_source_urls"] = existing_urls
                 if updated != existing:
                     ctx.company_records[code] = merge_company_record(
                         ctx.company_conn,
                         code,
                         company_name=str(updated.get("company_name", "")),
                         securities_report_pdf_url=str(updated.get("securities_report_pdf_url", "")),
-                        address_source_urls=list(updated.get("address_source_urls", []) or []),
                     )
                     ctx.company_conn.commit()
     if not company_name or not pdf_url:
@@ -643,8 +658,8 @@ def _resolve_company_metadata(
             " config/input.csvに company_name,securities_report_pdf_url を追加するか,"
             " land.db の企業メタデータへ登録してください."
         )
-    if pdf_url and pdf_url not in address_source_urls:
-        address_source_urls.append(pdf_url)
+    mcap = _resolve_market_cap(code, t["market_cap"], ctx.stock_db_market_caps)
+    address_source_urls = _build_address_source_urls(t, pdf_url)
     pdf_path = get_pdf_path(ctx.cache_dir, code)
     if os.path.exists(pdf_path) and not is_pdf_file(pdf_path):
         os.remove(pdf_path)
@@ -713,29 +728,6 @@ def _resolve_company_metadata(
             ctx.addr_overrides[code] = flat_overrides
     tokyo_sites = [s for s in sites if s.location_short.startswith("東京都")]
     print(f"[{company_index}/{total_companies}] 拠点: 全{len(sites)}件, 東京都対象{len(tokyo_sites)}件")
-
-    mcap = t["market_cap"]
-    if mcap is None:
-        today = date.today().isoformat()
-        with ctx.cache_lock:
-            cached = load_market_cap_snapshot(ctx.company_conn, code)
-        if cached and cached["fetched_date"] == today:
-            mcap = cached["market_cap_yen"]
-        elif ctx.args.allow_auto_metadata:
-            if fallback is None:
-                fallback = fetch_from_irbank(code, browser=ctx.browser)
-            if fallback.market_cap_yen is not None:
-                mcap = fallback.market_cap_yen
-            if mcap is None:
-                mcap = fetch_market_cap_from_kabutan(code)
-            if mcap is not None:
-                with ctx.cache_lock:
-                    save_market_cap_snapshot(ctx.company_conn, code, int(mcap), today)
-                    ctx.company_conn.commit()
-    if mcap is None:
-        raise CompanySkipError(
-            f"証券コード{code}の時価総額が不足しています. config/input.csvに market_cap を追加してください."
-        )
     return _CompanyMeta(
         code=code,
         company_name=company_name,
@@ -1318,9 +1310,6 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
     if not targets:
         raise SystemExit(f"証券コードがありません: {input_path}")
 
-    # stock.db から company_name / pdf_url を事前同期
-    from src.stock_db_sync import sync_company_records_from_stock_db
-
     synced = sync_company_records_from_stock_db(
         ctx.company_records,
         [t["code"] for t in targets],
@@ -1329,6 +1318,15 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
     if synced:
         ctx.company_conn.commit()
         logger.info("stock.db 同期: %d社のメタデータを補完", synced)
+
+    stock_db_market_cap_codes = [str(t["code"]) for t in targets if t["market_cap"] is None]
+    if stock_db_market_cap_codes:
+        ctx.stock_db_market_caps = load_market_cap_from_stock_db(stock_db_market_cap_codes)
+        logger.info(
+            "stock.db 時価総額同期: %d/%d社",
+            len(ctx.stock_db_market_caps),
+            len(set(stock_db_market_cap_codes)),
+        )
 
     targets_to_process, skipped = _filter_targets(targets, ctx)
 

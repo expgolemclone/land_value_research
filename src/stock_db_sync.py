@@ -5,6 +5,7 @@ import re
 import sqlite3
 from collections.abc import Iterable
 from dataclasses import dataclass
+from datetime import date, timedelta
 from pathlib import Path
 
 from stock_db.paths import STOCKS_DB_PATH
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 _SQLITE_BATCH_SIZE = 500
 _WHITESPACE_RE = re.compile(r"\s+")
+_DEFAULT_MARKET_CAP_MAX_AGE_DAYS = 7
 
 
 @dataclass(frozen=True)
@@ -124,6 +126,75 @@ def load_stock_db_company_metadata(
                     result[ticker] = StockDbCompanyMetadata(
                         securities_report_pdf_url=build_pdf_url(doc_id),
                     )
+    finally:
+        conn.close()
+
+    return result
+
+
+def load_market_cap_from_stock_db(
+    codes: Iterable[str],
+    *,
+    db_path: Path | None = None,
+    max_age_days: int = _DEFAULT_MARKET_CAP_MAX_AGE_DAYS,
+) -> dict[str, int]:
+    normalized_codes = _normalize_codes(codes)
+    if not normalized_codes:
+        return {}
+    if max_age_days < 0:
+        raise ValueError("max_age_days must be >= 0")
+
+    conn = _open_stock_db_readonly(db_path or STOCKS_DB_PATH)
+    if conn is None:
+        return {}
+
+    cutoff_date = date.today() - timedelta(days=max_age_days)
+    result: dict[str, int] = {}
+    try:
+        for batch in _code_batches(normalized_codes):
+            placeholders = ",".join("?" for _ in batch)
+            rows = conn.execute(
+                f"""
+                WITH latest_prices AS (
+                    SELECT
+                        ticker,
+                        date,
+                        close,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY ticker
+                            ORDER BY date DESC
+                        ) AS rn
+                    FROM prices
+                    WHERE ticker IN ({placeholders})
+                )
+                SELECT
+                    s.ticker,
+                    s.shares_outstanding,
+                    lp.close,
+                    lp.date
+                FROM stocks AS s
+                JOIN latest_prices AS lp
+                  ON lp.ticker = s.ticker
+                 AND lp.rn = 1
+                WHERE s.shares_outstanding IS NOT NULL
+                  AND lp.close IS NOT NULL
+                """,
+                batch,
+            ).fetchall()
+
+            for row in rows:
+                price_date_raw = str(row["date"] or "")
+                try:
+                    price_date = date.fromisoformat(price_date_raw)
+                except ValueError:
+                    logger.debug("stock.db price date parse failed: ticker=%s date=%r", row["ticker"], price_date_raw)
+                    continue
+                if price_date < cutoff_date:
+                    continue
+
+                shares_outstanding = int(row["shares_outstanding"])
+                close = float(row["close"])
+                result[str(row["ticker"])] = int(round(shares_outstanding * close))
     finally:
         conn.close()
 
