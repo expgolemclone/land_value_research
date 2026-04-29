@@ -26,6 +26,15 @@
   - `company_metadata`
   - `market_cap_cache`
 
+## Scripts
+
+- `scripts/_codex_precheck.py`
+  - split-address 実行前の出力 CSV リスク検証
+  - パース失敗時は `logging.debug` で通知しデフォルト値にフォールバック
+- `scripts/codex_lockdown.py`
+  - Codex 起動時のソースコード読み取り権限剥奪コンテキストマネージャー
+  - chmod・シグナルハンドラ操作の失敗は `logging.debug` で通知する
+
 ## Source Layout
 
 - `src/browser.py`
@@ -33,6 +42,7 @@
   - browser service 実体は `stock_db/services/browser/` を使用（ローカルコピーは廃止）
 - `src/company_store.py`
   - `land.db` 上の企業メタデータ・時価総額の入出力集約
+  - JSON パース失敗時は `logging.debug` で通知し空リストを返却
 - `src/company_config.py`
   - `address_overrides.yaml` と `price_overrides.yaml` の読込
   - 分割住所ルールの展開
@@ -90,4 +100,4 @@
 - 構造化キャッシュ・PDF キャッシュは現行配置のみを扱う
 - 旧 JSON/YAML キャッシュや旧 PDF 配置の自動移行は行わない
 
-<!-- verified: 2026-04-29 -->
+<!-- verified: 2026-04-29b -->
