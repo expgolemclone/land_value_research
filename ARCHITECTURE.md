@@ -76,6 +76,15 @@
   - `address_overrides.yaml` と `price_overrides.yaml` の企業別 MD5
   - 差分が出た企業の `data/output/{code}_output.csv` を削除する
 
+## Gitignore (Whitelist)
+
+- `*` で全ファイル無視 + `!*/` でディレクトリ traversal のみ許可
+- 許可拡張子: `.py`, `.rs`, `.ps1`, `.toml`, `.yaml`, `.yml`, `.json`, `.nix`, `.lock`, `.md`, `.csv`, `.xml`, `.geojson`, `.dbf`, `.prj`, `.shp`, `.shx`, `.zip`
+- 許可ルートファイル: `.gitattributes`, `.gitignore`, `bin/land-value-run`
+- `data/geocoding/**/*.html` のみ HTML を許可
+- `data/` は `geocoding/` と `landprice/` 以外を再無視
+- `.claude/` は `hooks/`, `skills/`, `settings*.json` 以外を再無視
+
 ## Compatibility
 
 - 構造化キャッシュ・PDF キャッシュは現行配置のみを扱う
