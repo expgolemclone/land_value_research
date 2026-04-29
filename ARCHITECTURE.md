@@ -31,8 +31,6 @@
 - `src/browser.py`
   - `stock_db.browser_client.client` の薄い互換ラッパー
   - browser service 実体は `stock_db/services/browser/` を使用（ローカルコピーは廃止）
-- `src/stealth.py`
-  - `stock_db.proxy_pool` の再公開
 - `src/company_store.py`
   - `land.db` 上の企業メタデータ・時価総額の入出力集約
 - `src/company_config.py`
