@@ -9,7 +9,6 @@ from stock_db.browser_client.client import (
     BrowserResponse,
     BrowserServiceClient,
     BrowserServiceError,
-    build_proxy_fields,
 )
 
 from src.config import MAGIC

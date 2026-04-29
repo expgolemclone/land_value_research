@@ -15,7 +15,6 @@ from src.utils import validate_url_not_private
 
 if TYPE_CHECKING:
     from src.browser import BrowserService
-    from src.stealth import ProxyPool
 
 logger = logging.getLogger(__name__)
 
@@ -48,11 +47,9 @@ def _fetch_text(
     url: str,
     *,
     browser: BrowserService,
-    pool: ProxyPool | None = None,
 ) -> str:
     validate_url_not_private(url)
-    proxy_url: str | None = pool.get() if pool is not None else None
-    resp = browser.fetch(url, proxy=proxy_url, timeout=DEFAULT_TIMEOUT_MS)
+    resp = browser.fetch(url, timeout=DEFAULT_TIMEOUT_MS)
     if resp.html is None:
         raise BrowserServiceError(f"browser fetch failed for {url}: status={resp.status} error={resp.error}")
     return resp.html
@@ -78,7 +75,6 @@ def _parse_yen_text(text: str) -> int | None:
 
 def fetch_market_cap_from_kabutan(
     code: str,
-    pool: ProxyPool | None = None,
 ) -> int | None:
     """kabutanの個別株ページから時価総額(円)を取得する。Cloudflare不要のplain HTTPS。"""
     code = str(code).strip()
@@ -97,9 +93,6 @@ def fetch_market_cap_from_kabutan(
                 "Accept-Language": "ja,en;q=0.9",
             },
         )
-        proxy_addr: str | None = pool.get() if pool is not None and not pool.direct else None
-        if proxy_addr is not None:
-            req.set_proxy(proxy_addr, "https")
         try:
             with urllib.request.urlopen(req, timeout=_KABUTAN_TIMEOUT_SEC) as resp:
                 raw: bytes = resp.read()
@@ -133,7 +126,6 @@ def fetch_from_irbank(
     code: str,
     *,
     browser: BrowserService,
-    pool: ProxyPool | None = None,
 ) -> CompanyMetadata:
     code = str(code).strip()
     if not code or not re.fullmatch(r"\d{3,4}[A-Z]?", code):
@@ -153,8 +145,8 @@ def fetch_from_irbank(
     edinet_ok: bool = False
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        ir_future = executor.submit(_fetch_text, ir_url, browser=browser, pool=pool)
-        edinet_future = executor.submit(_fetch_text, edinet_url, browser=browser, pool=pool)
+        ir_future = executor.submit(_fetch_text, ir_url, browser=browser)
+        edinet_future = executor.submit(_fetch_text, edinet_url, browser=browser)
 
         try:
             html_ir = ir_future.result()

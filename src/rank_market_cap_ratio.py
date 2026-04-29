@@ -16,7 +16,6 @@ from src.company_metadata_fallback import fetch_from_irbank
 
 if TYPE_CHECKING:
     from src.browser import BrowserService
-    from src.stealth import ProxyPool
 from src.config import (
     DEFAULT_OUTPUT_DIR,
     DEFAULT_RANKING_PATH,
@@ -506,7 +505,6 @@ def _resolve_missing_names(
     *,
     company_conn: sqlite3.Connection,
     browser: BrowserService,
-    pool: ProxyPool | None = None,
 ) -> None:
     """企業名がtickerコードのままの行をIRBankから名前解決し、land.db に保存する."""
     from concurrent.futures import ThreadPoolExecutor
@@ -521,7 +519,7 @@ def _resolve_missing_names(
     print(f"IRBankから企業名を取得中... ({len(codes)} 社)")
 
     with ThreadPoolExecutor(max_workers=8) as executor:
-        fetch_fn = functools.partial(fetch_from_irbank, browser=browser, pool=pool)
+        fetch_fn = functools.partial(fetch_from_irbank, browser=browser)
         results = list(executor.map(fetch_fn, codes))
 
     updated = 0
@@ -543,7 +541,6 @@ def generate_ranking(
     *,
     open_files: bool = True,
     browser: BrowserService | None = None,
-    pool: ProxyPool | None = None,
 ) -> None:
     """Generate ranking HTML and optionally request the OS to open it."""
     resolved_input_dir: Path = Path(input_dir) if input_dir else DEFAULT_INPUT_DIR
@@ -568,7 +565,7 @@ def generate_ranking(
 
         rank_rows = collect_rank_rows(resolved_input_dir, company_records)
         if browser is not None:
-            _resolve_missing_names(rank_rows, company_records, company_conn=company_conn, browser=browser, pool=pool)
+            _resolve_missing_names(rank_rows, company_records, company_conn=company_conn, browser=browser)
         write_rank_html(rank_rows, resolved_output_path)
         print(f"written: {resolved_output_path} ({len(rank_rows)} rows)")
     finally:

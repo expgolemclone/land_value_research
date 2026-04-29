@@ -126,7 +126,6 @@ from src.schema import (
     OUTPUT_COLUMNS,
     OutputRow,
 )
-from src.stealth import ProxyPool
 from src.utils import ensure_dir, open_csv
 from src.web_address_research import WebAddressResearcher
 from src.web_cache import download_file, is_pdf_file
@@ -165,7 +164,6 @@ class RunContext:
     geocoder: TokyoGeocoder
     web_addr: WebAddressResearcher
     landprice: LandPriceTokyo
-    pool: ProxyPool
     browser: BrowserService
     cache_lock: threading.Lock = field(default_factory=threading.Lock)
 
@@ -459,16 +457,6 @@ def parse_args() -> argparse.Namespace:
         default=False,
         help="メモリ制限終了時の自動再起動を無効化する",
     )
-    parser.add_argument(
-        "--proxy",
-        default=None,
-        help="Proxy URL (http://host:port, socks5://host:port). デフォルトは direct connection",
-    )
-    parser.add_argument(
-        "--proxy-file",
-        default=None,
-        help="host:port:user:pass 形式のプロキシリストファイル",
-    )
     return parser.parse_args()
 
 
@@ -492,20 +480,12 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         oaza_csv=str(OAZA_CSV),
         gaiku_csv=str(GAIKU_CSV),
     )
-    if getattr(args, "proxy_file", None):
-        pool: ProxyPool = ProxyPool.from_file(Path(args.proxy_file))
-    elif getattr(args, "proxy", None):
-        pool = ProxyPool.from_url(args.proxy)
-    else:
-        pool = ProxyPool.make_direct()
-
     browser = BrowserService()
     browser.start()
 
     web_addr = WebAddressResearcher(
         cache_dir=str(WEB_ADDRESS_CACHE_DIR),
         browser=browser,
-        pool=pool,
         db_path=LAND_DB_PATH,
     )
     geojson_path = str(GEOJSON_PATH)
@@ -548,7 +528,6 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         geocoder=geocoder,
         web_addr=web_addr,
         landprice=landprice,
-        pool=pool,
         browser=browser,
     )
     return ctx
@@ -643,7 +622,7 @@ def _resolve_company_metadata(
     need_mcap = t["market_cap"] is None
     fallback = None
     if ctx.args.allow_auto_metadata and (need_name or need_pdf or need_mcap):
-        fallback = fetch_from_irbank(code, browser=ctx.browser, pool=ctx.pool)
+        fallback = fetch_from_irbank(code, browser=ctx.browser)
         if need_name and fallback.company_name:
             company_name = fallback.company_name
         if need_pdf and fallback.securities_report_pdf_url:
@@ -691,7 +670,7 @@ def _resolve_company_metadata(
                 f"PDFが見つかりません: {pdf_path} ネットワーク無し環境では, 事前にdata/cache/pdfへ配置してください."
             )
         try:
-            download_file(pdf_url, pdf_path, browser=ctx.browser, pool=ctx.pool)
+            download_file(pdf_url, pdf_path, browser=ctx.browser)
         except (ValueError, urllib.error.URLError, OSError) as e:
             if is_transient_network_error(e):
                 raise TransientNetworkError(f"証券コード{code}の有報PDF取得で一時通信エラー: {e}") from e
@@ -759,11 +738,11 @@ def _resolve_company_metadata(
             mcap = cached["market_cap_yen"]
         elif ctx.args.allow_auto_metadata:
             if fallback is None:
-                fallback = fetch_from_irbank(code, browser=ctx.browser, pool=ctx.pool)
+                fallback = fetch_from_irbank(code, browser=ctx.browser)
             if fallback.market_cap_yen is not None:
                 mcap = fallback.market_cap_yen
             if mcap is None:
-                mcap = fetch_market_cap_from_kabutan(code, pool=ctx.pool)
+                mcap = fetch_market_cap_from_kabutan(code)
             if mcap is not None:
                 with ctx.cache_lock:
                     save_market_cap_snapshot(ctx.company_conn, code, int(mcap), today)
@@ -1465,7 +1444,7 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
         logger.info("処理対象がありません. すべて調査済みとしてスキップしました.")
 
     logger.info("ランキング生成開始")
-    generate_ranking(input_dir=ctx.output_dir, browser=ctx.browser, pool=ctx.pool)
+    generate_ranking(input_dir=ctx.output_dir, browser=ctx.browser)
 
     _post_pipeline_cleanup(ctx.base_dir)
 

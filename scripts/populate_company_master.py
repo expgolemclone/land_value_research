@@ -19,7 +19,6 @@ if str(_ROOT) not in sys.path:
 from src.browser import BrowserService, BrowserServiceError
 from src.company_store import connect_company_db, load_company_directory, merge_company_record
 from src.config import INPUT_FULL_CSV
-from src.stealth import ProxyPool
 from src.stock_db_sync import sync_company_records_from_stock_db
 from src.utils import validate_url_not_private
 
@@ -36,11 +35,9 @@ def _fetch_text(
     url: str,
     *,
     browser: BrowserService,
-    pool: ProxyPool | None = None,
 ) -> str:
     validate_url_not_private(url)
-    proxy_url: str | None = pool.get() if pool is not None else None
-    resp = browser.fetch(url, proxy=proxy_url, timeout=DEFAULT_TIMEOUT_MS)
+    resp = browser.fetch(url, timeout=DEFAULT_TIMEOUT_MS)
     if resp.html is None:
         raise BrowserServiceError(
             f"browser fetch failed for {url}: status={resp.status} error={resp.error}"
@@ -52,7 +49,6 @@ def fetch_metadata(
     code: str,
     *,
     browser: BrowserService,
-    pool: ProxyPool | None = None,
 ) -> CompanyEntry | None:
     ir_url: str = f"https://irbank.net/{code}/ir"
     edinet_url: str = f"https://irbank.net/{code}/edinet"
@@ -61,8 +57,8 @@ def fetch_metadata(
     ir_ok: bool = False
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        ir_future = executor.submit(_fetch_text, ir_url, browser=browser, pool=pool)
-        edinet_future = executor.submit(_fetch_text, edinet_url, browser=browser, pool=pool)
+        ir_future = executor.submit(_fetch_text, ir_url, browser=browser)
+        edinet_future = executor.submit(_fetch_text, edinet_url, browser=browser)
 
         try:
             ir_future.result()
@@ -110,24 +106,7 @@ def main() -> None:
     parser.add_argument("--delay", type=float, default=1.0, help="Delay in seconds between requests (default: 1.0)")
     parser.add_argument("--dry-run", action="store_true", help="Preview without writing")
     parser.add_argument("--limit", type=int, default=0, help="Limit number of codes to process (0=all)")
-    parser.add_argument(
-        "--proxy",
-        default=None,
-        help="Proxy URL (http://host:port, socks5://host:port). デフォルトは direct connection",
-    )
-    parser.add_argument(
-        "--proxy-file",
-        default=None,
-        help="host:port:user:pass 形式のプロキシリストファイル",
-    )
     args: argparse.Namespace = parser.parse_args()
-
-    if args.proxy_file:
-        pool: ProxyPool = ProxyPool.from_file(Path(args.proxy_file))
-    elif args.proxy:
-        pool = ProxyPool.from_url(args.proxy)
-    else:
-        pool = ProxyPool.make_direct()
 
     input_codes = load_input_codes(INPUT_FULL_PATH)
     conn = connect_company_db()
@@ -167,7 +146,7 @@ def main() -> None:
         def process_code(code: str) -> tuple[str, CompanyEntry | None]:
             time.sleep(args.delay)
             try:
-                return code, fetch_metadata(code, browser=browser, pool=pool)
+                return code, fetch_metadata(code, browser=browser)
             except BrowserServiceError as exc:
                 print(f"  ERROR {code}: {exc}")
                 return code, None

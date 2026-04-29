@@ -31,7 +31,6 @@ from src.utils import validate_url_not_private
 
 if TYPE_CHECKING:
     from src.browser import BrowserService
-    from src.stealth import ProxyPool
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +52,11 @@ class WebAddressResearcher:
         timeout_sec: int = 30,
         *,
         browser: BrowserService,
-        pool: ProxyPool | None = None,
         db_path: str | Path | None = None,
     ) -> None:
         self.cache_dir: str = cache_dir
         self.timeout_sec: int = timeout_sec
         self._browser: BrowserService = browser
-        self._pool: ProxyPool | None = pool
         os.makedirs(self.cache_dir, exist_ok=True)
         self._text_cache: dict[str, str] = {}
         self._addr_cache: dict[str, list[str]] = {}
@@ -95,14 +92,12 @@ class WebAddressResearcher:
                 return f.read()
 
         validate_url_not_private(url)
-        proxy_url: str | None = self._pool.get() if self._pool is not None else None
         timeout_ms: int = self.timeout_sec * 1000
 
         if url.lower().endswith(".pdf"):
             downloaded_path: str = self._browser.download(
                 url,
                 download_dir=self.cache_dir,
-                proxy=proxy_url,
                 timeout=timeout_ms,
             )
             if downloaded_path != cache_path:
@@ -110,7 +105,7 @@ class WebAddressResearcher:
             with open(cache_path, "rb") as f:
                 return f.read()
 
-        resp = self._browser.fetch(url, proxy=proxy_url, timeout=timeout_ms)
+        resp = self._browser.fetch(url, timeout=timeout_ms)
         if resp.html is None:
             raise RuntimeError(f"browser fetch failed for {url}: status={resp.status} error={resp.error}")
         body: bytes = resp.html.encode("utf-8")
