@@ -9,4 +9,4 @@ https://expgolemclone.github.io/land_value_research/data/ranking/ranking_market_
 ---
 
 > [!INFO]
-> 仕様は`ARCHITECTURE.md`を参照
+> 仕様は[ARCHITECTURE.md](ARCHITECTURE.md)を参照
