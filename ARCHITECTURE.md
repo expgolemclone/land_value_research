@@ -1,6 +1,6 @@
 # ARCHITECTURE
 
-> [!ATTENTION]
+> [!IMPORTANT]
 > 私の手元環境でしか動作確認していません.
 > Linuxかつ, Nixのdevshellを使用することが前提です.
 > お気づきの点がありましたら, PR/issue を作成して頂けるとありがたいです.
