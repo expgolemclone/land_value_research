@@ -90,6 +90,12 @@ uv run python scripts/merge_landprice.py
 uv run python -m src.rank_market_cap_ratio --input-dir data/output --output data/ranking/ranking_market_cap_ratio.html
 ```
 
+このHTMLはGitHub Pagesで以下から閲覧できます。
+
+https://expgolemclone.github.io/land_value_research/data/ranking/ranking_market_cap_ratio.html
+
+Pagesの配信元は `master` ブランチのリポジトリ直下です。公開用コピーは作らず、`data/ranking/ranking_market_cap_ratio.html` をそのまま配信します。
+
 ### 住所精度改善の補助調査
 
 ランキング結果をもとに、合算住所の分割や低解像度住所の解決を並行実行できます。まずは `--dry-run` で対象を確認します。
