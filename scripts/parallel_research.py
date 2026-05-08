@@ -37,6 +37,7 @@ from src.config import (
     LAND_DB_PATH,
 )
 from src.config import PATCH_DIR as _PATCH_DIR
+from src.land_db.asset import ensure_land_db_exists
 
 RANKING_FILE = DEFAULT_RANKING_PATH
 PATCH_DIR = _PATCH_DIR
@@ -348,8 +349,7 @@ def run_resolve_address(args: argparse.Namespace) -> None:
 
 
 def _load_facility_context(code: str) -> tuple[str | None, str | None]:
-    if not LAND_DB_PATH.exists():
-        return None, None
+    ensure_land_db_exists(LAND_DB_PATH)
 
     conn = sqlite3.connect(LAND_DB_PATH)
     conn.row_factory = sqlite3.Row

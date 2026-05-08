@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
+import os
 import tomllib
+from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -25,6 +24,19 @@ GAIKU_CSV = DATA_DIR / "geocoding" / "geocode_ref_gaiku_tokyo_2024" / "13_2024.c
 
 # land.db
 LAND_DB_PATH = DATA_DIR / "land.db"
+LAND_DB_ASSET_NAME = "land.db"
+LAND_DB_RELEASE_REPO = os.environ.get("LAND_DB_RELEASE_REPO", "expgolemclone/land_value_research")
+LAND_DB_RELEASE_TAG = os.environ.get("LAND_DB_RELEASE_TAG", "latest")
+
+
+def _default_land_db_asset_url() -> str:
+    if LAND_DB_RELEASE_TAG == "latest":
+        return f"https://github.com/{LAND_DB_RELEASE_REPO}/releases/latest/download/{LAND_DB_ASSET_NAME}"
+    return f"https://github.com/{LAND_DB_RELEASE_REPO}/releases/download/{LAND_DB_RELEASE_TAG}/{LAND_DB_ASSET_NAME}"
+
+
+LAND_DB_ASSET_URL = os.environ.get("LAND_DB_ASSET_URL", _default_land_db_asset_url())
+LAND_DB_ASSET_SHA256 = os.environ.get("LAND_DB_ASSET_SHA256", "")
 
 # cache (under data/)
 CACHE_DIR = DATA_DIR / "cache"

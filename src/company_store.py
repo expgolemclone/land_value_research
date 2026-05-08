@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import sqlite3
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypedDict
 
 from stock_db.storage.connection import get_connection
 
 from src.config import LAND_DB_PATH
+from src.land_db.asset import ensure_land_db_exists
 from src.land_db.schema import init_land_db
 
 
@@ -20,11 +21,14 @@ CompanyDirectory = dict[str, CompanyRecord]
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def connect_company_db(db_path: Path | None = None) -> sqlite3.Connection:
-    conn = get_connection(db_path or LAND_DB_PATH)
+    resolved_path = db_path or LAND_DB_PATH
+    if db_path is None:
+        ensure_land_db_exists(resolved_path)
+    conn = get_connection(resolved_path)
     init_db(conn)
     return conn
 

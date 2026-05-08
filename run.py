@@ -10,13 +10,12 @@ import sys
 import threading
 import time
 import urllib.error
-
-import yaml
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
 import shtab
+import yaml
 
 from scripts.merge_address_patches import merge_patches_safe
 from src.anomaly import (
@@ -34,12 +33,12 @@ from src.company_config import (
     load_address_overrides,
     load_price_overrides,
 )
+from src.company_metadata_fallback import fetch_from_irbank
 from src.company_store import (
     CompanyDirectory,
     load_company_directory,
     merge_company_record,
 )
-from src.company_metadata_fallback import fetch_from_irbank
 from src.config import (
     ADDRESS_OVERRIDES_PATH,
     CACHE_DIR,
@@ -59,6 +58,7 @@ from src.config import (
     WEB_ADDRESS_CACHE_DIR,
 )
 from src.geocode_tokyo import TokyoGeocoder
+from src.land_db.asset import ensure_land_db_exists
 from src.land_db.repo import (
     delete_invalidation_hash,
     get_geocode_deps_hash,
@@ -66,7 +66,6 @@ from src.land_db.repo import (
     list_invalidation_hashes,
     load_facilities_cache,
     load_geocode_cache,
-    load_invalidation_hash,
     load_land_price_cache,
     save_facilities_section_text,
     save_geocode_cache,
@@ -210,6 +209,8 @@ def resolve_path(base_dir: str, path_value: str) -> str:
 
 
 def _open_shared_connection(db_path: Path) -> sqlite3.Connection:
+    if not db_path.exists() or db_path.stat().st_size == 0:
+        raise FileNotFoundError(f"{db_path} が存在しません。GitHub Release asset からの取得に失敗しています。")
     db_path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(db_path), check_same_thread=False)
     conn.execute("PRAGMA journal_mode=WAL")
@@ -481,6 +482,7 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
     addr_overrides = load_address_overrides(str(ADDRESS_OVERRIDES_PATH))
     price_overrides = load_price_overrides(str(PRICE_OVERRIDES_PATH))
 
+    ensure_land_db_exists(LAND_DB_PATH)
     land_conn = _open_shared_connection(LAND_DB_PATH)
     init_land_db(land_conn)
 
