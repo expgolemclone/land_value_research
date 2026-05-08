@@ -24,7 +24,7 @@ dev shell には Python 3.13、Rust、uv、maturin、ruff、Node.js が含まれ
 
 通常の入力ファイルは `config/input.csv` です。全銘柄向けには `config/input_full.csv` もあります。
 
-ヘッダーなしの場合は、1行1銘柄で1列目に証券コードを書きます。
+1行1銘柄で1列目に証券コードを書きます。
 
 ```csv
 1301
@@ -34,13 +34,13 @@ dev shell には Python 3.13、Rust、uv、maturin、ruff、Node.js が含まれ
 
 ヘッダー付きCSVも使えます。利用できる主な列は以下です。
 
-| 列名 | 内容 |
-| --- | --- |
-| `code` / `証券コード` / `コード` | 証券コード |
-| `company_name` / `銘柄名` | 企業名 |
-| `securities_report_pdf_url` | 有価証券報告書PDF URL |
-| `market_cap` | 時価総額（円） |
-| `address_source_urls` | 住所補完に使うURL。複数指定は `|` 区切り |
+| 列名                             | 内容                            |
+| -------------------------------- | ------------------------------- | -------- |
+| `code` / `証券コード` / `コード` | 証券コード                      |
+| `company_name` / `銘柄名`        | 企業名                          |
+| `securities_report_pdf_url`      | 有価証券報告書PDF URL           |
+| `market_cap`                     | 時価総額（円）                  |
+| `address_source_urls`            | 住所補完に使うURL。複数指定は ` | ` 区切り |
 
 企業名、有報PDF URL、時価総額が入力にない場合、`land.db` や sibling の `stock_db` から補完します。時価総額が補完できない銘柄はスキップされます。
 
@@ -58,19 +58,19 @@ land-value-run --input config/input.csv
 
 よく使うオプション:
 
-| オプション | 既定値 | 内容 |
-| --- | --- | --- |
-| `--output` | `data/output` | 企業別CSVの出力先 |
-| `--price-method` | `idw` | 地価推定方法。`idw` または `nearest` |
-| `--k` | `3` | IDWで使う近傍点数 |
-| `--p` | `3` | IDWの距離減衰指数 |
-| `--allow-download` / `--no-allow-download` | on | PDF未取得時にダウンロードするか |
-| `--allow-web-address` / `--no-allow-web-address` | on | Web公開情報で住所補完するか |
-| `--skip-processed` / `--no-skip-processed` | on | 既存の `*_output.csv` がある銘柄をスキップするか |
-| `--allow-auto-metadata` / `--no-allow-auto-metadata` | on | 不足メタデータをIRBANK等から補完するか |
-| `--landuse-match` / `--no-landuse-match` | on | 用途区分を合わせて地価推定するか |
-| `--memory-limit` | `90` | メモリ使用率がこの値を超えたら保存して終了する。`0` で無効 |
-| `--no-auto-restart` | off | メモリ制限終了時の自動再起動を無効化する |
+| オプション                                           | 既定値        | 内容                                                       |
+| ---------------------------------------------------- | ------------- | ---------------------------------------------------------- |
+| `--output`                                           | `data/output` | 企業別CSVの出力先                                          |
+| `--price-method`                                     | `idw`         | 地価推定方法。`idw` または `nearest`                       |
+| `--k`                                                | `3`           | IDWで使う近傍点数                                          |
+| `--p`                                                | `3`           | IDWの距離減衰指数                                          |
+| `--allow-download` / `--no-allow-download`           | on            | PDF未取得時にダウンロードするか                            |
+| `--allow-web-address` / `--no-allow-web-address`     | on            | Web公開情報で住所補完するか                                |
+| `--skip-processed` / `--no-skip-processed`           | on            | 既存の `*_output.csv` がある銘柄をスキップするか           |
+| `--allow-auto-metadata` / `--no-allow-auto-metadata` | on            | 不足メタデータをIRBANK等から補完するか                     |
+| `--landuse-match` / `--no-landuse-match`             | on            | 用途区分を合わせて地価推定するか                           |
+| `--memory-limit`                                     | `90`          | メモリ使用率がこの値を超えたら保存して終了する。`0` で無効 |
+| `--no-auto-restart`                                  | off           | メモリ制限終了時の自動再起動を無効化する                   |
 
 ### 地価データのマージ
 
@@ -103,26 +103,26 @@ uv run python scripts/parallel_research.py resolve-address --n 2 --dry-run
 
 ## 出力
 
-| パス | 内容 |
-| --- | --- |
-| `data/output/*_output.csv` | 銘柄別の土地評価結果 |
-| `data/ranking/ranking_market_cap_ratio.html` | 時価総額比ランキング |
-| `data/output/run_logs/` | 実行ログ |
-| `data/cache/pdf/` | ダウンロード済み有報PDF |
-| `data/cache/web_address/` | Web住所調査のキャッシュ |
-| `data/land.db` | 企業メタデータ、PDF抽出、ジオコード、地価推定などのSQLiteキャッシュ |
+| パス                                         | 内容                                                                |
+| -------------------------------------------- | ------------------------------------------------------------------- |
+| `data/output/*_output.csv`                   | 銘柄別の土地評価結果                                                |
+| `data/ranking/ranking_market_cap_ratio.html` | 時価総額比ランキング                                                |
+| `data/output/run_logs/`                      | 実行ログ                                                            |
+| `data/cache/pdf/`                            | ダウンロード済み有報PDF                                             |
+| `data/cache/web_address/`                    | Web住所調査のキャッシュ                                             |
+| `data/land.db`                               | 企業メタデータ、PDF抽出、ジオコード、地価推定などのSQLiteキャッシュ |
 
 企業別CSVの列定義は `src/schema.py` の `OUTPUT_COLUMNS` が正です。ランキングHTMLの列定義も同じファイルの `RANKING_COLUMNS` に集約されています。
 
 ## 設定ファイル
 
-| パス | 内容 |
-| --- | --- |
-| `config/input.csv` | 通常実行の対象銘柄 |
-| `config/input_full.csv` | 全体実行向けの対象銘柄 |
+| パス                            | 内容                                         |
+| ------------------------------- | -------------------------------------------- |
+| `config/input.csv`              | 通常実行の対象銘柄                           |
+| `config/input_full.csv`         | 全体実行向けの対象銘柄                       |
 | `config/address_overrides.yaml` | 住所の手動補正、合算事業所の分割、面積の補正 |
-| `config/price_overrides.yaml` | 地価単価の手動補正 |
-| `config/magic_numbers.toml` | ブラウザサービス等の実行パラメータ |
+| `config/price_overrides.yaml`   | 地価単価の手動補正                           |
+| `config/magic_numbers.toml`     | ブラウザサービス等の実行パラメータ           |
 
 ## 開発・検証
 
