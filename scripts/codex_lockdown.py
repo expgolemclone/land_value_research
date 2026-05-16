@@ -16,7 +16,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.config import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR, DEFAULT_RANKING_PATH
+from src.config import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR  # noqa: E402
 
 _log = logging.getLogger(__name__)
 
@@ -104,11 +104,6 @@ def _find_targets(
     output_dir = DEFAULT_OUTPUT_DIR
     if output_dir.exists():
         dirs_to_restrict.append(output_dir)
-
-    # --- 追加: data/ranking/ ファイルロック ---
-    ranking_html = DEFAULT_RANKING_PATH
-    if ranking_html.is_file():
-        targets.append(ranking_html)
 
     # --- 追加: address_overrides.yaml ロック ---
     overrides_yaml = ADDRESS_OVERRIDES_PATH

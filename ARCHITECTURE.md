@@ -17,25 +17,24 @@
 3. 東京都内の所在地だけを対象に、街区レベルまたは町丁目レベルへジオコーディングする。
 4. 公示地価・基準地価のGeoJSONを用いて、地点ごとの土地単価を推定する。
 5. 土地面積と推定単価から推定土地時価、含み益、評価倍率、時価総額比を計算する。
-6. 企業別CSVとランキングHTMLを生成する。
+6. 企業別CSVを生成し、Web UIでランキングを表示する。
 7. 住所/地価 をCodex Skillsで 精度向上/合算拠点の分割 をする。根拠は調査メモとして保存する。
-8. Web UIでランキングを表示し、`formula_screening` の指標 (NCR, PER, equity ratio, FCF yield, CROIC, PEG) を併記する。
 
 住所補完、地価推定はいずれも推定を含むため、出力には住所解決レベル、信頼度、異常値警告、近傍点情報などの監査用タグを含めている。
 
 ### 1.2 主要な設計方針
 
 - **パイプライン制御はPython、重い空間検索はRust**  
-  `run.py` と `src/` はI/O、PDF解析、DBキャッシュ、Web取得、CSV/HTML生成を担当する。住所正規化、東京都ジオコーダ、地価近傍検索は PyO3 拡張 `land_value_core` に寄せる。
+  `run.py` と `src/` はI/O、PDF解析、DBキャッシュ、Web取得、CSV出力、Web UI用データ生成を担当する。住所正規化、東京都ジオコーダ、地価近傍検索は PyO3 拡張 `land_value_core` に寄せる。
 
 - **列定義とDBスキーマは単一の正に集約する**  
-  CSV/HTML列は `src/schema.py`、SQLiteスキーマは `src/land_db/schema.py` を正とする。列名を各所に散らさない。
+  企業別CSV列は `src/schema.py`、SQLiteスキーマは `src/land_db/schema.py` を正とする。列名を各所に散らさない。
 
 - **処理途中で落ちても再起動する**  
   PDF、PDF抽出結果、ジオコード結果、地価推定結果、Web住所解決結果をキャッシュする。メモリ制限で途中終了しても保存済みキャッシュと既存CSVから再開できる。
 
 - **推定の根拠を出力に残す**  
-  近傍地価点ID、距離、用途区分、k近傍単価、信頼度、住所取得元、異常値警告をCSVへ出す。ランキングHTMLにも住所解決タグ、信頼度、警告、調査メモを載せる。
+  近傍地価点ID、距離、用途区分、k近傍単価、信頼度、住所取得元、異常値警告をCSVへ出す。Web UIにも住所解決タグ、信頼度、警告、調査メモを載せる。
 
 - **手動補正を最優先で扱う**  
   エッジケースは `config/address_overrides.yaml` と `config/price_overrides.yaml` で上書きすることができる。
@@ -50,9 +49,9 @@
 
 | パス                 | 役割                                                                                                                                 |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `run.py`             | メインパイプライン。CLI解析、環境初期化、企業単位処理、キャッシュ、CSV出力、ランキング生成までを制御する。                           |
+| `run.py`             | メインパイプライン。CLI解析、環境初期化、企業単位処理、キャッシュ、CSV出力、Web UI起動までを制御する。                               |
 | `bin/land-value-run` | 推奨実行入口。Rust toolchain の有無を確認し、必要なら `nix develop` 経由で再実行し、Rustソース変更時に `uv` キャッシュをクリアする。 |
-| `src/`               | Python側のライブラリ群。PDF抽出、Web住所調査、DBアクセス、会社メタデータ、ランキング生成、異常検知、Web UI統合など。                 |
+| `src/`               | Python側のライブラリ群。PDF抽出、Web住所調査、DBアクセス、会社メタデータ、ランキングデータ集約、異常検知、Web UI統合など。           |
 | `src/land_db/`       | `data/land.db` のスキーマ、リポジトリ関数、Release asset取得処理。                                                                   |
 | `src_ts/`            | フロントエンド TypeScript。`stock_web_ui` の共通ランタイムを使い、ランキング用カラム定義と指標設定を定義する。                        |
 | `rust_src/`          | PyO3で公開するRust実装。東京都ジオコード、住所正規化、地価近傍検索、測地計算。                                                       |
@@ -61,9 +60,8 @@
 | `config/`            | 入力CSV、住所補正、地価補正、ブラウザ等の実行パラメータ。                                                                            |
 | `data/geocoding/`    | 東京都ジオコーディング参照CSV。大字町丁目と街区の2種類を使う。                                                                       |
 | `data/landprice/`    | 公示地価・基準地価の元データおよびマージ済みGeoJSON。                                                                                |
-| `data/ranking/`      | GitHub Pagesでも配信するランキングHTML。                                                                                             |
-| `docs/`              | Web UI用HTMLとコンパイル済みJS。`stock_web_ui` の共通テンプレートを使う。                                                            |
-| `split-address/`     | ランキング上位銘柄などの調査メモ。ランキングHTMLの「調査メモ」モーダルにも使われる。                                                 |
+| `docs/`              | Web UI用HTML、コンパイル済みJS、公開用ランキングJSON。`stock_web_ui` の共通テンプレートを使う。                                      |
+| `split-address/`     | ランキング上位銘柄などの調査メモ。Web UIの「調査メモ」モーダルにも使われる。                                                          |
 | `pyproject.toml`     | Python依存、maturinビルド設定、pytest/ruff設定。                                                                                     |
 | `Cargo.toml`         | Rust crate `land_value_core` の依存とcrate設定。                                                                                     |
 | `flake.nix`          | Nix dev shell。Python 3.13、Rust、uv、maturin、ruff、Node.jsを提供する。                                                             |
@@ -109,22 +107,13 @@ land-value-run --input config/input.csv
 | `--memory-limit`                 | `90`          | メモリ使用率が閾値を超えたらキャッシュ保存後に終了する。             |
 | `--max-restarts`                 | `10`          | メモリ制限終了時の最大再起動回数。                                   |
 | `--no-auto-restart`              | off           | 自動再起動ラッパーを無効化する。                                     |
+| `--serve-ranking`                | on            | 完了後にWeb UIサーバーを起動する。`--no-serve-ranking` で無効化。    |
 
 `main()` は標準出力と標準エラーをUTF-8に設定し、自動再起動が有効なら `_run_with_restart()` を挟む。実処理は `_main_worker()` と `_run_pipeline()` で行う。
 
-### 3.3 ランキングHTML生成
+### 3.3 Web UIサーバー
 
-企業別CSVからランキングHTMLだけを再生成する場合は以下を使う。
-
-```bash
-uv run python -m src.rank_market_cap_ratio --input-dir data/output --output data/ranking/ranking_market_cap_ratio.html
-```
-
-`src/rank_market_cap_ratio.py` は `data/output/*_output.csv` を読み、企業ごとの東京都合計行または最良行を選び、時価総額比降順に並べたHTMLを生成する。会社名が未解決の場合は `land.db`、`stock_db`、必要に応じてIRBank補完を使う。
-
-### 3.4 Web UIサーバー
-
-`stock_web_ui` を使ったインタラクティブなランキング表示は以下で起動する。
+パイプライン完了後、`run.py` は後処理を済ませてから自動的に Web UI サーバーを起動する。単独で起動する場合は以下を使う。
 
 ```bash
 uv run python -m src.web
@@ -132,14 +121,15 @@ uv run python -m src.web
 
 `src/web.py` は以下を行う。
 
-1. `collect_rank_rows()` でCSVからランキングデータを読み込む。
+1. `src.ranking_data.collect_rank_rows()` でCSVからランキングデータを読み込む。
 2. `formula_screening.web.compute_all_stock_metrics()` でNCR, PER, equity ratio, FCF yield, CROIC, PEG等を計算する。
 3. 両者をマージしてJSON API (`/api/ranking`) として供給する。数値列は `_to_float_safe()` で str/float 両対応に変換する。変換失敗時は `logger.debug` で記録し `None` を返す。
 4. `stock_web_ui.serve` でHTTPサーバーを起動し、`docs/index.html` を配信する。
+5. GitHub Pages用には `uv run python -m src.web --export-json docs/assets/ranking.json` で同じJSON形状を書き出す。
 
 フロントエンドは `src_ts/app.ts` でカラム定義を構成し、`stock_web_ui` の共通TypeScriptランタイム (`stock-table.js`) がテーブル描画、ソート、列表示切替、閾値カラー、リンク解決を行う。調査メモは `detailModal: true` で有効になるモーダル機能で表示する。
 
-TypeScriptのコンパイルは `npx tsc` で行い、`docs/assets/app.js` が出力される。
+TypeScriptのコンパイルは `npx tsc` で行い、`docs/assets/app.js` が出力される。公開URLは `https://expgolemclone.github.io/land_value_research/docs/` である。
 
 ### 3.4 補助スクリプト
 
@@ -217,8 +207,8 @@ flowchart TD
     I --> J[LandPriceTokyoで地価推定]
     J --> K[信頼度・異常値警告・含み益・時価総額比計算]
     K --> L[data/output/*_output.csv]
-    L --> M[ranking_market_cap_ratio.html]
-    M --> N[パッチマージ・ログ整理・bak削除]
+    L --> M[パッチマージ・ログ整理・bak削除]
+    M --> N[Web UIサーバー / docs/assets/ranking.json]
 ```
 
 `run.py` 内部では次のフェーズに分かれる。
@@ -247,11 +237,11 @@ flowchart TD
 8. **定期保存とメモリ対策**  
    10社ごとに `save_caches()`、Web住所調査のメモリキャッシュクリア、GCを行う。メモリ監視スレッドは閾値超過時にDBコミット後、専用終了コードで終了する。
 
-9. **ランキング生成**  
-   `generate_ranking()` が企業別CSVを集計し、ランキングHTMLを書き出す。
+9. **後処理**
+   `_post_pipeline_cleanup()` が住所パッチマージ、古いログ削除、`.bak` 削除を行う。
 
-10. **後処理**  
-    `_post_pipeline_cleanup()` が住所パッチマージ、古いログ削除、`.bak` 削除を行う。
+10. **Web UI表示**
+    `--serve-ranking` が有効な場合、`src.web.serve_ranking()` が企業別CSVを集計し、ランキングWeb UIを起動する。
 
 ## 6. ランタイムコンテキスト
 
@@ -428,26 +418,22 @@ CSV列は大きく以下のグループに分かれる。
 
 ### 9.2 東京都合計行
 
-`process_company()` は東京都対象拠点が0件でも、最後に `事業所名 = 東京都合計` の行を必ず追加する。ランキング生成は原則この合計行を企業代表行として使う。合計行には個別住所、近傍点、信頼度などは入らず、企業単位の推定時価、簿価、含み益、評価倍率、時価総額比が入る。
+`process_company()` は東京都対象拠点が0件でも、最後に `事業所名 = 東京都合計` の行を必ず追加する。ランキングデータ集約は原則この合計行を企業代表行として使う。合計行には個別住所、近傍点、信頼度などは入らず、企業単位の推定時価、簿価、含み益、評価倍率、時価総額比が入る。
 
-### 9.3 ランキングHTML列
+### 9.3 Web UI用ランキングJSON
 
-ランキングHTMLの列は `src/schema.py` の `RANKING_COLUMNS` が正である。主な列は以下である。
+Web UI用JSONは `src.ranking_data.RankingRow` と `src.web.build_ranking_payload()` で構成する。主な項目は以下である。
 
-| 列                     | 内容                                                     |
-| ---------------------- | -------------------------------------------------------- |
-| `順位`                 | 時価総額比降順の順位。                                   |
-| `証券コード`, `企業名` | 企業識別情報。                                           |
-| `調査メモ`             | `split-address/{code}.md` がある場合にモーダル表示する。 |
-| `時価総額比`           | CSVの実値を使ってソート可能な数値で出す。                |
-| `住所解決タグ`         | 企業内拠点の住所解決レベルを重複除去して集約する。       |
-| `地価推定信頼度`       | 企業内拠点の信頼度ラベルを集約する。                     |
-| `異常値警告`           | 企業内拠点の警告を集約する。                             |
-| `有報PDF`              | ローカルPDFがあれば `file://` リンク、なければ外部URL。  |
-| 金額列                 | 推定土地時価、時価総額、簿価、含み益を億円表示する。     |
-| `元ファイル`           | 対応する企業別CSVファイル名。                            |
+| 項目                                    | 内容                                                     |
+| --------------------------------------- | -------------------------------------------------------- |
+| `code`, `name`                          | 企業識別情報。                                           |
+| `ratio`                                 | CSVの実値を使ってソート可能な数値で出す。                |
+| `memo_html`                             | `split-address/{code}.md` がある場合にモーダル表示する。 |
+| `geocode_tag`, `confidence`, `anomaly`  | 企業内拠点の住所解決レベル、信頼度、警告を集約する。     |
+| `estimated_value`, `market_cap` など    | 推定土地時価、時価総額、簿価、含み益の円単位数値。       |
+| `metrics`                               | `formula_screening` 由来のNCR, PER, FCF yield等。        |
 
-HTMLにはテーブルソート用JavaScriptと、調査メモモーダル用JavaScriptが埋め込まれる。外部フロントエンドビルドは不要である。
+`docs/index.html` はローカルサーバーでは `/api/ranking`、GitHub Pagesでは `docs/assets/ranking.json` を読み込む。
 
 ## 10. 永続化とキャッシュ
 
@@ -729,9 +715,9 @@ unit_price = sum(w_i * price_i) / sum(w_i)
 
 警告は推定を止めるものではなく、ランキング確認時に優先調査すべき対象を浮かび上がらせるための情報である。
 
-## 16. ランキング生成
+## 16. ランキングデータとWeb UI
 
-`src/rank_market_cap_ratio.py` は、企業別CSVを読み込み、時価総額比ランキングHTMLを生成する。
+`src/ranking_data.py` は、企業別CSVを読み込み、時価総額比ランキング用の行データを生成する。静的HTMLのランキング生成は廃止し、表示は `src/web.py` と `docs/` のWeb UIに一本化する。
 
 ### 16.1 企業代表行の選択
 
@@ -744,17 +730,17 @@ unit_price = sum(w_i * price_i) / sum(w_i)
 
 ### 16.2 会社名補正
 
-CSV内の企業名が空、または証券コードと同じ場合、`company_metadata` の会社名を使う。ランキング生成時にも未解決会社名が残っていれば、`stock_db` 同期やIRBank補完を行う。
+CSV内の企業名が空、または証券コードと同じ場合、`company_metadata` の会社名を使う。会社メタデータの補完はパイプライン側の `stock_db` 同期とIRBank補完で行う。
 
 ### 16.3 調査メモ
 
-`split-address/{code}.md` が存在する場合、ランキング行の `調査メモ` 列にボタンを出す。Markdownは外部ライブラリなしの簡易変換でHTML化され、モーダル内に表示される。
+`split-address/{code}.md` が存在する場合、ランキングJSONの `memo_html` にMarkdownを簡易HTML変換した内容を入れる。Web UIは `detailModal: true` のモーダルで表示する。
 
 この仕組みは、合算拠点分割や住所根拠の調査履歴をランキング閲覧時に確認するためのものである。
 
-### 16.4 HTML配信
+### 16.4 公開用JSON
 
-生成先の既定は `data/ranking/ranking_market_cap_ratio.html` である。このファイルはGitHub Pagesでリポジトリ直下からそのまま配信される想定であり、公開用コピーは作らない。
+GitHub Pages用の静的データは `docs/assets/ranking.json` である。`src/web.py --export-json` はローカルサーバーの `/api/ranking` と同じpayloadを書き出し、`docs/index.html` はGitHub Pages上ではこのJSONを読み込む。
 
 ## 17. 補助調査と住所パッチ
 
@@ -876,7 +862,8 @@ uv run pytest
 | `tests/test_landprice_tokyo.py`                           | 地価推定、nearest、IDW、用途フィルタ。                        |
 | `tests/test_land_db.py`                                   | SQLiteキャッシュと移行。                                      |
 | `tests/test_company_config.py` / `test_site_split.py`     | 住所補正、合算拠点分割、簿価按分。                            |
-| `tests/test_rank_market_cap_ratio.py`                     | ランキング行選択とHTML生成。                                  |
+| `tests/test_ranking_data.py`                              | ランキング行選択とMarkdown変換。                              |
+| `tests/test_web.py`                                       | Web UI用JSON payloadと静的JSON export。                       |
 | `tests/test_schema_consistency.py`                        | 列定義のSSOTが守られているか。                                |
 | `tests/test_network_resilience.py`                        | 一時通信エラー、メタデータキャッシュ、Web取得失敗キャッシュ。 |
 | `tests/test_guardrails.py`                                | Web住所採用ガード。                                           |
@@ -905,10 +892,10 @@ cargo test
 
 ### 22.1 CSV列を変更する場合
 
-1. `src/schema.py` の `OUTPUT_COLUMNS` または `RANKING_COLUMNS` を変更する。
-2. `run.py`、`src/rank_market_cap_ratio.py`、テストが列定数を使っているか確認する。
+1. `src/schema.py` の `OUTPUT_COLUMNS` を変更する。
+2. `run.py`、`src/ranking_data.py`、テストが列定数を使っているか確認する。
 3. `tests/test_schema_consistency.py` を更新する。
-4. 既存 `data/output/*_output.csv` とランキングHTMLの互換性を考える。必要なら再生成する。
+4. 既存 `data/output/*_output.csv` とWeb UI用JSONの互換性を考える。必要なら再生成する。
 
 ### 22.2 DBスキーマを変更する場合
 
@@ -947,19 +934,19 @@ cargo test
 3. `.claude/hooks/posttool_validate_address_overrides_yaml.py` やジオコード検証フックの期待形式を確認する。
 4. `tests/test_company_config.py` と `tests/test_site_split.py` を更新する。
 
-### 22.7 ランキングHTMLを変更する場合
+### 22.7 ランキングデータを変更する場合
 
-1. `src/schema.py` の `RANKING_COLUMNS` と `src/rank_market_cap_ratio.py` の値生成順を合わせる。
-2. `tests/test_rank_market_cap_ratio.py` を更新する。
-3. GitHub Pagesで配信する `data/ranking/ranking_market_cap_ratio.html` を再生成する。
-4. ローカルPDFリンクと外部PDFリンクの挙動を確認する。
+1. `src/ranking_data.py` の `RankingRow` と `src/web.py` のJSON payload生成を合わせる。
+2. `src_ts/app.ts` のアクセサとカラム定義を更新する。
+3. `tests/test_ranking_data.py` と `tests/test_web.py` を更新する。
+4. `uv run python -m src.web --export-json docs/assets/ranking.json` で公開用JSONを再生成する。
 
 ### 22.8 Web UIを変更する場合
 
 1. `src_ts/app.ts` を変更後、`npx tsc` で `docs/assets/app.js` を再生成する。
 2. `src/web.py` の JSON 形状と `app.ts` のアクセサが一致しているか確認する。
 3. `stock_web_ui` 側のランタイム (`stock-table.js`, `columns.js`, `style.css`) を更新した場合は、`../stock_web_ui` で `npx tsc` を実行する。
-4. モーダル機能は `detailModal: true` の場合のみ有効になる。既存 consumer への影響はない。
+4. 公開用データを更新する場合は `docs/assets/ranking.json` も再生成する。
 
 ## 23. フックとエージェント運用
 
@@ -985,8 +972,8 @@ cargo test
 - `stock_db` がない環境では、会社メタデータや時価総額補完が制限される。
 - `data/land.db` はRelease assetから取得できるが、ネットワークやGitHub認証に依存する場合がある。
 - BrowserServiceは外部サイトの応答やチャレンジ画面の影響を受ける。Web取得失敗を即座に恒久的なデータ欠損とみなさない。
-- ランキングHTMLは静的HTMLである。大規模化した場合、クライアントサイドソートやモーダル埋め込みの負荷が増える。
-- Web UIサーバーはローカル開発用である。`formula_screening` の `compute_all_stock_metrics()` は `stock_db` にアクセスするため、DBの事前更新が必要な場合がある。
+- Web UIサーバーはローカル開発用である。公開時は `docs/assets/ranking.json` をGitHub Pagesで配信する。
+- `formula_screening` の `compute_all_stock_metrics()` は `stock_db` にアクセスするため、DBの事前更新が必要な場合がある。
 
 ## 25. 保守時の推奨手順
 
@@ -997,7 +984,7 @@ cargo test
 3. 必要ならキャッシュキー、依存ハッシュ、DB移行、CSV無効化を同時に更新する。
 4. 変更に対応する狭いテストを追加または更新する。
 5. `uv run pytest` を実行する。
-6. CSV/HTML出力に影響する場合は小さい入力でパイプラインまたはランキング生成を確認する。
+6. CSVまたはWeb UI用JSONに影響する場合は小さい入力でパイプラインまたはJSON exportを確認する。
 7. コード変更の意味が設計に影響する場合、この `ARCHITECTURE.md` を更新する。
 
-このプロジェクトで最も壊れやすい接点は、PDF抽出結果、住所補正、ジオコード解決レベル、地価推定キャッシュ、CSV列スキーマの連鎖である。局所変更に見えても、ランキングHTMLや過去CSVスキップに影響することがあるため、変更時はデータフロー全体を確認する。
+このプロジェクトで最も壊れやすい接点は、PDF抽出結果、住所補正、ジオコード解決レベル、地価推定キャッシュ、CSV列スキーマの連鎖である。局所変更に見えても、Web UI用JSONや過去CSVスキップに影響することがあるため、変更時はデータフロー全体を確認する。

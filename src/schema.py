@@ -1,6 +1,6 @@
 """Single source of truth for all column schemas.
 
-Every script that reads or writes CSV/HTML columns MUST import definitions
+Every script that reads or writes CSV columns MUST import definitions
 from this module.  Adding, renaming, or reordering a column here is the
 ONLY change needed — downstream breakage is caught by
 tests/test_schema_consistency.py.
@@ -51,26 +51,6 @@ OUTPUT_COLUMNS: tuple[str, ...] = (
 # TypedDict を SSOT から動的生成 (functional syntax — キーに括弧を含むため)
 OutputRow = TypedDict("OutputRow", {col: object for col in OUTPUT_COLUMNS})
 
-# ── ランキング HTML テーブルヘッダー (15列) ──────────────────
-
-RANKING_COLUMNS: tuple[str, ...] = (
-    "順位",
-    "証券コード",
-    "企業名",
-    "調査メモ",
-    "時価総額比",
-    "住所解決タグ",
-    "地価推定信頼度",
-    "異常値警告",
-    "有報PDF",
-    "推定土地時価(億円)",
-    "時価総額(億円)",
-    "土地簿価(億円)",
-    "含み益(億円)",
-    "タグ件数",
-    "元ファイル",
-)
-
 # ── 出力 CSV カラム名定数 (全33列) ──────────────────────
 
 COL_CODE = "証券コード"
@@ -106,16 +86,3 @@ COL_MULT = "評価倍率"
 COL_MARKET_CAP = "時価総額(円)"
 COL_RATIO_RAW = "時価総額比(実値)"
 COL_RATIO = "時価総額比"
-
-# ── ランキング HTML 固有カラム名 ─────────────────────
-
-RANK_COL_RANK = "順位"
-RANK_COL_MEMO = "調査メモ"
-RANK_COL_GEOCODE_TAG = "住所解決タグ"
-RANK_COL_PDF = "有報PDF"
-RANK_COL_ESTIMATED_VALUE_OKU = "推定土地時価(億円)"
-RANK_COL_MARKET_CAP_OKU = "時価総額(億円)"
-RANK_COL_BOOK_VALUE_OKU = "土地簿価(億円)"
-RANK_COL_UNREALIZED_GAIN_OKU = "含み益(億円)"
-RANK_COL_TAG_COUNT = "タグ件数"
-RANK_COL_SOURCE_FILE = "元ファイル"

@@ -4,7 +4,7 @@
 
 結果は以下のurlから閲覧することができます。
 
-https://expgolemclone.github.io/land_value_research/data/ranking/ranking_market_cap_ratio.html
+https://expgolemclone.github.io/land_value_research/docs/
 
 ---
 

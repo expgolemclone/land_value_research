@@ -1,6 +1,6 @@
 """Cross-platform launcher for parallel address research.
 
-Reads ranking_market_cap_ratio.html, filters target companies, and launches
+Reads ranking data from data/output CSVs, filters target companies, and launches
 parallel Claude Code CLI processes to run address research skills.
 
 Usage:
@@ -31,125 +31,39 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from scripts._codex_precheck import precheck
 from scripts.codex_lockdown import codex_lockdown
-from src.config import (
-    DEFAULT_OUTPUT_DIR,
-    DEFAULT_RANKING_PATH,
-    LAND_DB_PATH,
-)
+from src.company_store import connect_company_db, load_company_directory
+from src.config import DEFAULT_OUTPUT_DIR, LAND_DB_PATH
 from src.config import PATCH_DIR as _PATCH_DIR
 from src.land_db.asset import ensure_land_db_exists
+from src.ranking_data import collect_rank_rows
 
-RANKING_FILE = DEFAULT_RANKING_PATH
 PATCH_DIR = _PATCH_DIR
 LOG_DIR = PROJECT_ROOT / "split-address" / "research_logs"
 
 
 # ---------------------------------------------------------------------------
-# Ranking parser
+# Ranking loader
 # ---------------------------------------------------------------------------
 
 
 def parse_ranking() -> list[dict[str, str]]:
-    """Parse ranking HTML table into list of company dicts.
+    """Load ranking rows from output CSVs into company dicts."""
+    conn = connect_company_db()
+    try:
+        company_records = load_company_directory(conn)
+        rows = collect_rank_rows(DEFAULT_OUTPUT_DIR, company_records)
+    finally:
+        conn.close()
 
-    Reads <th> headers first, then maps each <td> row by header name
-    instead of relying on fragile column indices.
-    """
-    from html.parser import HTMLParser
-
-    from src.schema import COL_CODE, COL_COMPANY_NAME, RANK_COL_GEOCODE_TAG, RANK_COL_RANK, RANKING_COLUMNS
-
-    if not RANKING_FILE.exists():
-        print(f"エラー: ランキングファイルが見つかりません: {RANKING_FILE}", file=sys.stderr)
-        sys.exit(1)
-
-    class _TableParser(HTMLParser):
-        def __init__(self) -> None:
-            super().__init__()
-            self.headers: list[str] = []
-            self.rows: list[list[str]] = []
-            self._in_th = False
-            self._in_td = False
-            self._current_row: list[str] = []
-            self._current_cell = ""
-            self._in_thead = False
-            self._in_tbody = False
-            self._table_depth = 0
-
-        def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-            if tag == "table":
-                self._table_depth += 1
-                return
-            if self._table_depth != 1:
-                return
-            if tag == "thead":
-                self._in_thead = True
-            elif tag == "tbody":
-                self._in_tbody = True
-            elif tag == "th" and self._in_thead:
-                self._in_th = True
-                self._current_cell = ""
-            elif tag == "tr" and self._in_tbody:
-                self._current_row = []
-            elif tag == "td" and self._in_tbody:
-                self._in_td = True
-                self._current_cell = ""
-
-        def handle_endtag(self, tag: str) -> None:
-            if tag == "table":
-                self._table_depth -= 1
-                return
-            if self._table_depth != 1:
-                return
-            if tag == "thead":
-                self._in_thead = False
-            elif tag == "tbody":
-                self._in_tbody = False
-            elif tag == "th" and self._in_th:
-                self.headers.append(self._current_cell.strip())
-                self._in_th = False
-            elif tag == "td" and self._in_td:
-                self._current_row.append(self._current_cell.strip())
-                self._in_td = False
-            elif tag == "tr" and self._in_tbody and self._current_row:
-                self.rows.append(self._current_row)
-
-        def handle_data(self, data: str) -> None:
-            if self._table_depth != 1:
-                return
-            if self._in_th:
-                self._current_cell += data
-            elif self._in_td:
-                self._current_cell += data
-
-    parser = _TableParser()
-    parser.feed(RANKING_FILE.read_text(encoding="utf-8"))
-
-    # Validate headers against schema (先頭列のみ — HTML末尾に調査メモ等の追加列がある)
-    n = len(RANKING_COLUMNS)
-    if tuple(parser.headers[:n]) != RANKING_COLUMNS:
-        print(
-            f"エラー: ランキングHTMLのヘッダーがスキーマと不一致\n"
-            f"  期待: {list(RANKING_COLUMNS)}\n"
-            f"  実際(先頭{n}列): {parser.headers[:n]}",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-    targets: list[dict[str, str]] = []
-    for cols in parser.rows:
-        if len(cols) < n:
-            continue
-        row = dict(zip(RANKING_COLUMNS, cols[:n]))
-        targets.append(
-            {
-                "rank": row[RANK_COL_RANK],
-                "code": row[COL_CODE],
-                "name": row[COL_COMPANY_NAME],
-                "tag": row[RANK_COL_GEOCODE_TAG],
-            }
-        )
-    return targets
+    return [
+        {
+            "rank": str(i),
+            "code": row["code"],
+            "name": row["name"],
+            "tag": row["geocode_tag"],
+        }
+        for i, row in enumerate(rows, start=1)
+    ]
 
 
 # ---------------------------------------------------------------------------

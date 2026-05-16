@@ -468,6 +468,12 @@ def parse_args() -> argparse.Namespace:
         default=False,
         help="メモリ制限終了時の自動再起動を無効化する",
     )
+    parser.add_argument(
+        "--serve-ranking",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="パイプライン完了後にWeb UIサーバーを起動するか(default: on)",
+    )
     return parser.parse_args()
 
 
@@ -1422,11 +1428,13 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
     else:
         logger.info("処理対象がありません. すべて調査済みとしてスキップしました.")
 
-    logger.info("ランキング生成開始")
-    from src.web import serve_ranking
-    serve_ranking(input_dir=ctx.output_dir)
-
     _post_pipeline_cleanup(ctx.base_dir)
+
+    if args.serve_ranking:
+        logger.info("ランキングWeb UI起動")
+        from src.web import serve_ranking
+
+        serve_ranking(input_dir=ctx.output_dir)
 
 
 def _post_pipeline_cleanup(base_dir: str, keep_logs: int = 5) -> None:

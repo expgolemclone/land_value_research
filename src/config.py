@@ -46,7 +46,6 @@ WEB_ADDRESS_CACHE_DIR = CACHE_DIR / "web_address"
 # output
 DEFAULT_OUTPUT_DIR = DATA_DIR / "output"
 RUN_LOGS_DIR = DEFAULT_OUTPUT_DIR / "run_logs"
-DEFAULT_RANKING_PATH = DATA_DIR / "ranking" / "ranking_market_cap_ratio.html"
 
 # rust source (for cache invalidation hashes)
 RUST_SRC_DIR = PROJECT_ROOT / "rust_src"

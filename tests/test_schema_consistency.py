@@ -8,7 +8,7 @@ one of these tests will fail.
 
 import unittest
 
-from src.schema import OUTPUT_COLUMNS, RANKING_COLUMNS, OutputRow
+from src.schema import OUTPUT_COLUMNS, OutputRow
 
 
 class TestOutputColumnsConsistency(unittest.TestCase):
@@ -19,13 +19,6 @@ class TestOutputColumnsConsistency(unittest.TestCase):
 
     def test_no_duplicate_output_columns(self) -> None:
         self.assertEqual(len(OUTPUT_COLUMNS), len(set(OUTPUT_COLUMNS)))
-
-    def test_no_duplicate_ranking_columns(self) -> None:
-        self.assertEqual(len(RANKING_COLUMNS), len(set(RANKING_COLUMNS)))
-
-    def test_ranking_column_count(self) -> None:
-        """RANKING_COLUMNS must have exactly 15 entries."""
-        self.assertEqual(len(RANKING_COLUMNS), 15)
 
     def test_output_column_count(self) -> None:
         """OUTPUT_COLUMNS must have exactly 33 entries."""
@@ -38,57 +31,6 @@ class TestRunModuleUsesSchema(unittest.TestCase):
         from run import OUTPUT_FIELDNAMES
 
         self.assertEqual(tuple(OUTPUT_FIELDNAMES), OUTPUT_COLUMNS)
-
-
-class TestRankModuleUsesSchema(unittest.TestCase):
-    def test_write_rank_html_uses_ranking_columns(self) -> None:
-        """write_rank_html headers should match RANKING_COLUMNS."""
-        import tempfile
-        from pathlib import Path
-
-        from src.rank_market_cap_ratio import write_rank_html
-        from src.schema import (
-            COL_ANOMALY_WARNING,
-            COL_BOOK_VALUE,
-            COL_CODE,
-            COL_COMPANY_NAME,
-            COL_CONFIDENCE,
-            COL_ESTIMATED_VALUE,
-            COL_MARKET_CAP,
-            COL_RATIO,
-            COL_UNREALIZED_GAIN,
-            RANK_COL_GEOCODE_TAG,
-            RANK_COL_MEMO,
-            RANK_COL_SOURCE_FILE,
-            RANK_COL_TAG_COUNT,
-        )
-
-        row = {
-            COL_CODE: "9999",
-            COL_COMPANY_NAME: "テスト",
-            "有報PDF_URL": "",
-            COL_RATIO: 0.1,
-            COL_ESTIMATED_VALUE: "100",
-            COL_MARKET_CAP: "1000",
-            COL_BOOK_VALUE: "50",
-            COL_UNREALIZED_GAIN: "50",
-            RANK_COL_GEOCODE_TAG: "",
-            RANK_COL_MEMO: "",
-            RANK_COL_TAG_COUNT: 0,
-            COL_CONFIDENCE: "",
-            COL_ANOMALY_WARNING: "",
-            RANK_COL_SOURCE_FILE: "test.csv",
-        }
-        with tempfile.TemporaryDirectory() as td:
-            out = Path(td) / "test.html"
-            write_rank_html([row], out)
-            html_text = out.read_text(encoding="utf-8")
-
-        # Extract <th> contents
-        import re
-
-        th_texts = re.findall(r"<th>(.*?)</th>", html_text)
-        self.assertEqual(tuple(th_texts), RANKING_COLUMNS)
 
 
 if __name__ == "__main__":

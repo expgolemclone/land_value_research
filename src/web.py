@@ -11,9 +11,9 @@ from stock_web_ui.handler import ApiHandler, json_route
 from stock_web_ui.page import IndexPage
 from stock_web_ui.serve import serve as _serve
 
-from src.config import DEFAULT_OUTPUT_DIR, PROJECT_ROOT
-from src.rank_market_cap_ratio import _md_to_html, collect_rank_rows, to_float
 from src.company_store import connect_company_db, load_company_directory
+from src.config import DEFAULT_OUTPUT_DIR, PROJECT_ROOT
+from src.ranking_data import collect_rank_rows, markdown_to_html
 
 logger = logging.getLogger(__name__)
 
@@ -54,35 +54,31 @@ def build_ranking_payload(input_dir: Path | None = None) -> list[dict]:
 
     payload: list[dict] = []
     for row in rank_rows:
-        code = (row.get("証券コード") or "")
-        if isinstance(code, str):
-            code = code.strip()
-        else:
-            code = str(code).strip()
+        code = row["code"].strip()
 
-        ratio = _to_float_safe(row.get("時価総額比"))
-        estimated_value = _to_float_safe(row.get("推定土地時価(円)"))
-        market_cap = _to_float_safe(row.get("時価総額(円)"))
-        book_value = _to_float_safe(row.get("土地簿価(円)"))
-        unrealized_gain = _to_float_safe(row.get("含み益(円)"))
+        ratio = _to_float_safe(row.get("ratio"))
+        estimated_value = _to_float_safe(row.get("estimated_value"))
+        market_cap = _to_float_safe(row.get("market_cap"))
+        book_value = _to_float_safe(row.get("book_value"))
+        unrealized_gain = _to_float_safe(row.get("unrealized_gain"))
 
-        memo_content = row.get("調査メモ", "")
-        memo_html = _md_to_html(memo_content) if memo_content and isinstance(memo_content, str) else None
+        memo_content = row.get("memo_markdown", "")
+        memo_html = markdown_to_html(memo_content) if memo_content else None
 
         metrics = screening_metrics.get(code, {})
 
         payload.append({
             "code": code,
-            "name": (row.get("企業名") or "").strip(),
+            "name": row["name"].strip(),
             "price": metrics.get("price"),
             "ratio": ratio,
             "estimated_value": estimated_value,
             "market_cap": market_cap,
             "book_value": book_value,
             "unrealized_gain": unrealized_gain,
-            "geocode_tag": row.get("住所解決タグ", ""),
-            "confidence": row.get("地価推定信頼度", ""),
-            "anomaly": row.get("異常値警告", ""),
+            "geocode_tag": row.get("geocode_tag", ""),
+            "confidence": row.get("confidence", ""),
+            "anomaly": row.get("anomaly", ""),
             "memo_html": memo_html,
             "metrics": {
                 "net_cash_ratio": metrics.get("net_cash_ratio"),
@@ -98,6 +94,14 @@ def build_ranking_payload(input_dir: Path | None = None) -> list[dict]:
         })
 
     return payload
+
+
+def export_ranking_json(output_path: Path, input_dir: Path | None = None) -> None:
+    """Write GitHub Pages compatible ranking payload JSON."""
+    payload = build_ranking_payload(input_dir)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    logger.info("ranking JSON exported: %s (%d rows)", output_path, len(payload))
 
 
 def serve_ranking(
@@ -131,7 +135,16 @@ def main() -> None:
         description="Web UI で時価総額比ランキングを表示する",
     )
     parser.add_argument("--input-dir", default=str(DEFAULT_OUTPUT_DIR), help="企業別CSVがあるフォルダ")
+    parser.add_argument(
+        "--export-json",
+        type=Path,
+        default=None,
+        help="Web UI用ランキングJSONを書き出して終了する",
+    )
     args = parser.parse_args()
+    if args.export_json is not None:
+        export_ranking_json(args.export_json, input_dir=Path(args.input_dir))
+        return
     serve_ranking(input_dir=Path(args.input_dir))
 
 

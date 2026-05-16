@@ -56,11 +56,6 @@
 !data/geocoding/**/*.html
 
 # ============================================================
-# 許可: data/ranking の HTML
-# ============================================================
-!data/ranking/**/*.html
-
-# ============================================================
 # 再無視: 上記パターンで拾う不要ファイル・ディレクトリ
 # ============================================================
 
@@ -111,7 +106,6 @@ node_modules/
 data/*
 !data/geocoding/
 !data/landprice/
-!data/ranking/
 
 # 生成物（中身が許可拡張に一致しても管理しない）
 input_enriched.csv
@@ -121,4 +115,3 @@ split-address/research_logs/*.md
 
 # Precheck JSON
 config/address_patches/*.precheck.json
-
