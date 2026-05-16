@@ -30,7 +30,6 @@
 # ============================================================
 # 許可: ドキュメント・データ
 # ============================================================
-!*.md
 !*.csv
 !*.xml
 
@@ -118,10 +117,8 @@ data/*
 input_enriched.csv
 
 # split-address 調査ログ
-split-address/research_logs/
+split-address/research_logs/*.md
 
 # Precheck JSON
 config/address_patches/*.precheck.json
 
-# テスト用一時ディレクトリ
-test_camelot/
