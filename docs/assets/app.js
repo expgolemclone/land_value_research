@@ -34,10 +34,10 @@ function metricsAccessor(key) {
 function renderPreferredShares(row) {
     const metrics = row.metrics;
     if (metrics?.has_preferred_shares === true) {
-        return "あり";
+        return "yes";
     }
     if (metrics?.has_preferred_shares === false) {
-        return "なし";
+        return "no";
     }
     return "-";
 }

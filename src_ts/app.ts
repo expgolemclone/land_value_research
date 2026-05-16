@@ -68,10 +68,10 @@ function metricsAccessor(key: string): (row: Record<string, unknown>) => number 
 function renderPreferredShares(row: Record<string, unknown>): string {
   const metrics = row.metrics as Record<string, unknown> | undefined;
   if (metrics?.has_preferred_shares === true) {
-    return "あり";
+    return "yes";
   }
   if (metrics?.has_preferred_shares === false) {
-    return "なし";
+    return "no";
   }
   return "-";
 }
