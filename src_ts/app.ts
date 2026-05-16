@@ -100,6 +100,27 @@ const COLUMNS: ColumnDef[] = [
     sortValue: numField("ratio"),
   },
   {
+    key: "memo",
+    header: "memo",
+    type: "text",
+    title: "調査メモ",
+    toggleable: true,
+    render: (): string => "memo",
+    detailContent: (row): string | null => {
+      const v = row.memo_html;
+      return typeof v === "string" && v.length > 0 ? v : null;
+    },
+  },
+  C.buildMetricCol(C.NCR_SPEC, metricsAccessor("net_cash_ratio")),
+  C.buildMetricCol(C.PER_A_SPEC, metricsAccessor("per_actual")),
+  C.buildMetricCol(C.PER_C_SPEC, metricsAccessor("per")),
+  C.buildMetricCol(C.PER_N_SPEC, metricsAccessor("per_next")),
+  C.buildMetricCol(C.EQUITY_SPEC, metricsAccessor("equity_ratio")),
+  C.fcfYCol,
+  C.croicCol,
+  C.peg5yCol,
+  C.peg5y2fCol,
+  {
     key: "estimated_value_oku",
     header: "est_val",
     type: "num",
@@ -136,18 +157,6 @@ const COLUMNS: ColumnDef[] = [
     sortValue: numField("unrealized_gain"),
   },
   {
-    key: "memo",
-    header: "memo",
-    type: "text",
-    title: "調査メモ",
-    toggleable: true,
-    render: (): string => "memo",
-    detailContent: (row): string | null => {
-      const v = row.memo_html;
-      return typeof v === "string" && v.length > 0 ? v : null;
-    },
-  },
-  {
     key: "geocode_tag",
     header: "geo",
     type: "text",
@@ -171,15 +180,6 @@ const COLUMNS: ColumnDef[] = [
     toggleable: true,
     render: (row): string => String(row.anomaly ?? ""),
   },
-  C.buildMetricCol(C.NCR_SPEC, metricsAccessor("net_cash_ratio")),
-  C.buildMetricCol(C.PER_A_SPEC, metricsAccessor("per_actual")),
-  C.buildMetricCol(C.PER_C_SPEC, metricsAccessor("per")),
-  C.buildMetricCol(C.PER_N_SPEC, metricsAccessor("per_next")),
-  C.buildMetricCol(C.EQUITY_SPEC, metricsAccessor("equity_ratio")),
-  C.fcfYCol,
-  C.croicCol,
-  C.peg5yCol,
-  C.peg5y2fCol,
 ];
 
 const METRIC_THRESHOLDS: Record<string, MetricThreshold> = {
