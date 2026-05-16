@@ -90,6 +90,7 @@ def build_ranking_payload(input_dir: Path | str | None = None) -> list[dict]:
                 "croic": metrics.get("croic"),
                 "peg_trailing_5": metrics.get("peg_trailing_5"),
                 "peg_blended_5y_actual_2f": metrics.get("peg_blended_5y_actual_2f"),
+                "has_preferred_shares": metrics.get("has_preferred_shares"),
             },
         })
 

@@ -65,6 +65,28 @@ function metricsAccessor(key: string): (row: Record<string, unknown>) => number 
   };
 }
 
+function renderPreferredShares(row: Record<string, unknown>): string {
+  const metrics = row.metrics as Record<string, unknown> | undefined;
+  if (metrics?.has_preferred_shares === true) {
+    return "あり";
+  }
+  if (metrics?.has_preferred_shares === false) {
+    return "なし";
+  }
+  return "-";
+}
+
+function preferredSharesSortValue(row: Record<string, unknown>): number | null {
+  const metrics = row.metrics as Record<string, unknown> | undefined;
+  if (metrics?.has_preferred_shares === true) {
+    return 1;
+  }
+  if (metrics?.has_preferred_shares === false) {
+    return 0;
+  }
+  return null;
+}
+
 function numField(key: string): (row: Record<string, unknown>) => number | null {
   return (row: Record<string, unknown>): number | null => {
     const v = row[key];
@@ -115,6 +137,15 @@ const COLUMNS: ColumnDef[] = [
   C.buildMetricCol(C.PER_A_SPEC, metricsAccessor("per_actual")),
   C.buildMetricCol(C.PER_C_SPEC, metricsAccessor("per")),
   C.buildMetricCol(C.PER_N_SPEC, metricsAccessor("per_next")),
+  {
+    key: "has_preferred_shares",
+    header: "pref",
+    type: "text",
+    title: "優先株",
+    toggleable: true,
+    render: renderPreferredShares,
+    sortValue: preferredSharesSortValue,
+  },
   C.buildMetricCol(C.EQUITY_SPEC, metricsAccessor("equity_ratio")),
   C.fcfYCol,
   C.croicCol,

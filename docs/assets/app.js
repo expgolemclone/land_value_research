@@ -31,6 +31,26 @@ function metricsAccessor(key) {
         return metrics?.[key] ?? null;
     };
 }
+function renderPreferredShares(row) {
+    const metrics = row.metrics;
+    if (metrics?.has_preferred_shares === true) {
+        return "あり";
+    }
+    if (metrics?.has_preferred_shares === false) {
+        return "なし";
+    }
+    return "-";
+}
+function preferredSharesSortValue(row) {
+    const metrics = row.metrics;
+    if (metrics?.has_preferred_shares === true) {
+        return 1;
+    }
+    if (metrics?.has_preferred_shares === false) {
+        return 0;
+    }
+    return null;
+}
 function numField(key) {
     return (row) => {
         const v = row[key];
@@ -79,6 +99,15 @@ const COLUMNS = [
     C.buildMetricCol(C.PER_A_SPEC, metricsAccessor("per_actual")),
     C.buildMetricCol(C.PER_C_SPEC, metricsAccessor("per")),
     C.buildMetricCol(C.PER_N_SPEC, metricsAccessor("per_next")),
+    {
+        key: "has_preferred_shares",
+        header: "pref",
+        type: "text",
+        title: "優先株",
+        toggleable: true,
+        render: renderPreferredShares,
+        sortValue: preferredSharesSortValue,
+    },
     C.buildMetricCol(C.EQUITY_SPEC, metricsAccessor("equity_ratio")),
     C.fcfYCol,
     C.croicCol,

@@ -53,7 +53,10 @@ class TestWebPayload(unittest.TestCase):
             with (
                 patch("src.web.connect_company_db") as connect_db,
                 patch("src.web.load_company_directory", return_value={}),
-                patch("formula_screening.web.compute_all_stock_metrics", return_value={"9999": {"price": 1234}}),
+                patch(
+                    "formula_screening.web.compute_all_stock_metrics",
+                    return_value={"9999": {"price": 1234, "has_preferred_shares": True}},
+                ),
             ):
                 connect_db.return_value.close.return_value = None
                 payload = build_ranking_payload(base)
@@ -63,6 +66,7 @@ class TestWebPayload(unittest.TestCase):
         self.assertEqual("テスト会社", payload[0]["name"])
         self.assertEqual(0.1, payload[0]["ratio"])
         self.assertEqual(1234, payload[0]["price"])
+        self.assertIs(True, payload[0]["metrics"]["has_preferred_shares"])
 
     def test_build_ranking_payload_accepts_string_input_dir(self) -> None:
         with tempfile.TemporaryDirectory() as td:

@@ -123,7 +123,7 @@ uv run python -m src.web
 `src/web.py` は以下を行う。
 
 1. `src.ranking_data.collect_rank_rows()` でCSVからランキングデータを読み込む。入力ディレクトリは `str` / `Path` のどちらでも受け付ける。
-2. `formula_screening.web.compute_all_stock_metrics()` でNCR, PER, equity ratio, FCF yield, CROIC, PEG等を計算する。
+2. `formula_screening.web.compute_all_stock_metrics()` でNCR, PER, 優先株有無, equity ratio, FCF yield, CROIC, PEG等を計算する。
 3. 両者をマージしてJSON API (`/api/ranking`) として供給する。数値列は `_to_float_safe()` で str/float 両対応に変換する。変換失敗時は `logger.debug` で記録し `None` を返す。
 4. `stock_web_ui.serve` でHTTPサーバーを起動し、`docs/index.html` を配信する。
 5. GitHub Pages用には `uv run python -m src.web --export-json docs/assets/ranking.json` で同じJSON形状を書き出す。
@@ -432,7 +432,7 @@ Web UI用JSONは `src.ranking_data.RankingRow` と `src.web.build_ranking_payloa
 | `memo_html`                             | `split-address/{code}.md` がある場合にモーダル表示する。 |
 | `geocode_tag`, `confidence`, `anomaly`  | 企業内拠点の住所解決レベル、信頼度、警告を集約する。     |
 | `estimated_value`, `market_cap` など    | 推定土地時価、時価総額、簿価、含み益の円単位数値。       |
-| `metrics`                               | `formula_screening` 由来のNCR, PER, FCF yield等。        |
+| `metrics`                               | `formula_screening` 由来のNCR, PER, 優先株有無, FCF yield等。 |
 
 `docs/index.html` はローカルサーバーでは `/api/ranking`、GitHub Pagesでは `docs/assets/ranking.json` を読み込む。GitHub Pages のルート `index.html` は `docs/` に遷移させる。
 
