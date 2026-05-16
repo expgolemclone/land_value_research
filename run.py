@@ -84,7 +84,6 @@ from src.pdf_extract import (
     extract_facilities_section_text,
     extract_major_facilities_land,
 )
-from src.rank_market_cap_ratio import generate_ranking
 from src.schema import (
     COL_ADDRESS,
     COL_ADDRESS_SOURCE,
@@ -1424,7 +1423,8 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
         logger.info("処理対象がありません. すべて調査済みとしてスキップしました.")
 
     logger.info("ランキング生成開始")
-    generate_ranking(input_dir=ctx.output_dir, browser=ctx.browser)
+    from src.web import serve_ranking
+    serve_ranking(input_dir=ctx.output_dir)
 
     _post_pipeline_cleanup(ctx.base_dir)
 
