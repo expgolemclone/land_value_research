@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 
 from stock_web_ui.config import ServerConfig
@@ -14,26 +15,11 @@ from src.config import DEFAULT_OUTPUT_DIR, PROJECT_ROOT
 from src.rank_market_cap_ratio import _md_to_html, collect_rank_rows, to_float
 from src.company_store import connect_company_db, load_company_directory
 
+logger = logging.getLogger(__name__)
+
 _PROJECT_ROOT: Path = PROJECT_ROOT
 _DOCS_DIR: Path = _PROJECT_ROOT / "docs"
 _STATIC_ROOT: Path = _DOCS_DIR / "assets"
-_SPLIT_ADDRESS_DIR: Path = _PROJECT_ROOT / "split-address"
-
-
-def _oku_display(raw: str | float | None) -> str:
-    if raw is None:
-        return ""
-    if isinstance(raw, str):
-        raw = raw.strip()
-        if not raw:
-            return ""
-        try:
-            value = float(raw.replace(",", ""))
-        except ValueError:
-            return ""
-    else:
-        value = raw
-    return f"{value / 100_000_000:,.2f}"
 
 
 def _to_float_safe(raw: str | float | None) -> float | None:
@@ -47,6 +33,7 @@ def _to_float_safe(raw: str | float | None) -> float | None:
     try:
         return float(s)
     except ValueError:
+        logger.debug("float conversion failed: %r", s)
         return None
 
 
