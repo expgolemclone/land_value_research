@@ -22,6 +22,10 @@
 !*.json
 !*.nix
 !*.lock
+!*.ts
+!*.js
+!*.html
+!*.css
 
 # ============================================================
 # 許可: ドキュメント・データ
@@ -88,6 +92,9 @@ a.out
 
 # バックアップ
 *.bak
+
+# Node.js
+node_modules/
 
 # Claude 内部 — hooks/skills/settings 以外は再無視
 .claude/*

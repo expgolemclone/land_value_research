@@ -19,6 +19,7 @@
 5. 土地面積と推定単価から推定土地時価、含み益、評価倍率、時価総額比を計算する。
 6. 企業別CSVとランキングHTMLを生成する。
 7. 住所/地価 をCodex Skillsで 精度向上/合算拠点の分割 をする。根拠は調査メモとして保存する。
+8. Web UIでランキングを表示し、`formula_screening` の指標 (NCR, PER, equity ratio, FCF yield, CROIC, PEG) を併記する。
 
 住所補完、地価推定はいずれも推定を含むため、出力には住所解決レベル、信頼度、異常値警告、近傍点情報などの監査用タグを含めている。
 
@@ -51,8 +52,9 @@
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `run.py`             | メインパイプライン。CLI解析、環境初期化、企業単位処理、キャッシュ、CSV出力、ランキング生成までを制御する。                           |
 | `bin/land-value-run` | 推奨実行入口。Rust toolchain の有無を確認し、必要なら `nix develop` 経由で再実行し、Rustソース変更時に `uv` キャッシュをクリアする。 |
-| `src/`               | Python側のライブラリ群。PDF抽出、Web住所調査、DBアクセス、会社メタデータ、ランキング生成、異常検知など。                             |
+| `src/`               | Python側のライブラリ群。PDF抽出、Web住所調査、DBアクセス、会社メタデータ、ランキング生成、異常検知、Web UI統合など。                 |
 | `src/land_db/`       | `data/land.db` のスキーマ、リポジトリ関数、Release asset取得処理。                                                                   |
+| `src_ts/`            | フロントエンド TypeScript。`stock_web_ui` の共通ランタイムを使い、ランキング用カラム定義と指標設定を定義する。                        |
 | `rust_src/`          | PyO3で公開するRust実装。東京都ジオコード、住所正規化、地価近傍検索、測地計算。                                                       |
 | `scripts/`           | データ整備・補助調査・住所パッチマージ・land.db取得などの補助CLI。                                                                   |
 | `tests/`             | Pythonテスト。PDF抽出、住所正規化、地価推定、DB、ランキング、補正処理、ネットワーク耐性などを確認する。                              |
@@ -60,6 +62,7 @@
 | `data/geocoding/`    | 東京都ジオコーディング参照CSV。大字町丁目と街区の2種類を使う。                                                                       |
 | `data/landprice/`    | 公示地価・基準地価の元データおよびマージ済みGeoJSON。                                                                                |
 | `data/ranking/`      | GitHub Pagesでも配信するランキングHTML。                                                                                             |
+| `docs/`              | Web UI用HTMLとコンパイル済みJS。`stock_web_ui` の共通テンプレートを使う。                                                            |
 | `split-address/`     | ランキング上位銘柄などの調査メモ。ランキングHTMLの「調査メモ」モーダルにも使われる。                                                 |
 | `pyproject.toml`     | Python依存、maturinビルド設定、pytest/ruff設定。                                                                                     |
 | `Cargo.toml`         | Rust crate `land_value_core` の依存とcrate設定。                                                                                     |
@@ -119,6 +122,25 @@ uv run python -m src.rank_market_cap_ratio --input-dir data/output --output data
 
 `src/rank_market_cap_ratio.py` は `data/output/*_output.csv` を読み、企業ごとの東京都合計行または最良行を選び、時価総額比降順に並べたHTMLを生成する。会社名が未解決の場合は `land.db`、`stock_db`、必要に応じてIRBank補完を使う。
 
+### 3.4 Web UIサーバー
+
+`stock_web_ui` を使ったインタラクティブなランキング表示は以下で起動する。
+
+```bash
+uv run python -m src.web
+```
+
+`src/web.py` は以下を行う。
+
+1. `collect_rank_rows()` でCSVからランキングデータを読み込む。
+2. `formula_screening.web.compute_all_stock_metrics()` でNCR, PER, equity ratio, FCF yield, CROIC, PEG等を計算する。
+3. 両者をマージしてJSON API (`/api/ranking`) として供給する。
+4. `stock_web_ui.serve` でHTTPサーバーを起動し、`docs/index.html` を配信する。
+
+フロントエンドは `src_ts/app.ts` でカラム定義を構成し、`stock_web_ui` の共通TypeScriptランタイム (`stock-table.js`) がテーブル描画、ソート、列表示切替、閾値カラー、リンク解決を行う。調査メモは `detailModal: true` で有効になるモーダル機能で表示する。
+
+TypeScriptのコンパイルは `npx tsc` で行い、`docs/assets/app.js` が出力される。
+
 ### 3.4 補助スクリプト
 
 | スクリプト                           | 役割                                                                                          |
@@ -145,6 +167,8 @@ uv run python -m src.rank_market_cap_ratio --input-dir data/output --output data
 - `requests` / `pysocks`: 外部取得系の周辺依存。
 - `shtab`: shell completion対応。
 - `stock-db`: siblingリポジトリ `../stock_db` をeditable依存として参照する。
+- `stock-web-ui`: siblingリポジトリ `../stock_web_ui`。共通Web UIランタイム (TypeScriptテーブル描画、列定義、HTTPサーバー) を提供する。
+- `formula-screening`: siblingリポジトリ `../formula_screening`。`compute_all_stock_metrics()` でNCR, PER, equity ratio, FCF yield, CROIC, PEG等の指標を計算する。
 
 dev依存は `pytest`、`hypothesis`、`maturin`、`ruff` である。
 
@@ -167,6 +191,8 @@ Rust crate名は `land_value_core` で、Pythonモジュール名も同じであ
 | 外部要素                  | 用途                                                | 実装箇所                                                            |
 | ------------------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
 | `../stock_db`             | 会社名、PDF URL、株価、発行済株式数、時価総額補完。 | `src/stock_db_sync.py`, `src/company_store.py`                      |
+| `../stock_web_ui`         | 共通Web UIランタイム、列定義、HTTPサーバー。        | `src/web.py`, `src_ts/app.ts`                                       |
+| `../formula_screening`    | NCR, PER, FCF yield等の指標計算。                   | `src/web.py` → `compute_all_stock_metrics()`                        |
 | BrowserService            | PDF/HTML取得、IRBank取得、Web住所調査。             | `src/browser.py`, `src/web_cache.py`, `src/web_address_research.py` |
 | IRBank                    | 不足した会社名やEDINET PDF URLの補完。              | `src/company_metadata_fallback.py`                                  |
 | EDINET PDF URL            | 有価証券報告書PDF取得。                             | `src/web_cache.py`, `stock_db` 側のURL構築                          |
@@ -427,7 +453,7 @@ HTMLにはテーブルソート用JavaScriptと、調査メモモーダル用Jav
 
 ### 10.1 `data/land.db`
 
-`data/land.db` はSQLiteデータベースである。存在しない場合、`src/land_db/asset.py` がGitHub Release assetから取得を試みる。空のSQLite DBを誤って作らないよう、呼び出し側はSQLite接続前に `ensure_land_db_exists()` を呼ぶ。
+`data/land.db` はSQLiteデータベースである。存在しない場合、`src/land_db/asset.py` がGitHub Release assetから取得を試みる。空のSQLite DBを誤って作らないよう、呼び出し側はSQLite接続前に `ensure_land_db_exists()` を呼ぶ。取得処理中の一時ファイル削除失敗は警告ログとして出力し、処理は継続する。
 
 スキーマは `src/land_db/schema.py` の `_LAND_SCHEMA_SQL` で定義される。
 
@@ -928,6 +954,13 @@ cargo test
 3. GitHub Pagesで配信する `data/ranking/ranking_market_cap_ratio.html` を再生成する。
 4. ローカルPDFリンクと外部PDFリンクの挙動を確認する。
 
+### 22.8 Web UIを変更する場合
+
+1. `src_ts/app.ts` を変更後、`npx tsc` で `docs/assets/app.js` を再生成する。
+2. `src/web.py` の JSON 形状と `app.ts` のアクセサが一致しているか確認する。
+3. `stock_web_ui` 側のランタイム (`stock-table.js`, `columns.js`, `style.css`) を更新した場合は、`../stock_web_ui` で `npx tsc` を実行する。
+4. モーダル機能は `detailModal: true` の場合のみ有効になる。既存 consumer への影響はない。
+
 ## 23. フックとエージェント運用
 
 `.claude/hooks/` には、作業完了時やツール実行後のガードがある。
@@ -953,6 +986,7 @@ cargo test
 - `data/land.db` はRelease assetから取得できるが、ネットワークやGitHub認証に依存する場合がある。
 - BrowserServiceは外部サイトの応答やチャレンジ画面の影響を受ける。Web取得失敗を即座に恒久的なデータ欠損とみなさない。
 - ランキングHTMLは静的HTMLである。大規模化した場合、クライアントサイドソートやモーダル埋め込みの負荷が増える。
+- Web UIサーバーはローカル開発用である。`formula_screening` の `compute_all_stock_metrics()` は `stock_db` にアクセスするため、DBの事前更新が必要な場合がある。
 
 ## 25. 保守時の推奨手順
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import os
 import shutil
 import sqlite3
@@ -9,6 +10,8 @@ import tempfile
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from src.config import (
     LAND_DB_ASSET_NAME,
@@ -173,4 +176,4 @@ def _remove_tmp(path: Path) -> None:
     try:
         path.unlink(missing_ok=True)
     except OSError:
-        pass
+        logger.warning("一時ファイルの削除に失敗しました: %s", path)
