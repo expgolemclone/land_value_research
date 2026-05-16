@@ -64,6 +64,20 @@ class TestWebPayload(unittest.TestCase):
         self.assertEqual(0.1, payload[0]["ratio"])
         self.assertEqual(1234, payload[0]["price"])
 
+    def test_build_ranking_payload_accepts_string_input_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td)
+            write_output_csv(base / "9999_output.csv")
+            with (
+                patch("src.web.connect_company_db") as connect_db,
+                patch("src.web.load_company_directory", return_value={}),
+                patch("formula_screening.web.compute_all_stock_metrics", return_value={}),
+            ):
+                connect_db.return_value.close.return_value = None
+                payload = build_ranking_payload(str(base))
+
+        self.assertEqual("9999", payload[0]["code"])
+
     def test_export_ranking_json_writes_payload(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             out = Path(td) / "ranking.json"

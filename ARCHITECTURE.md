@@ -121,7 +121,7 @@ uv run python -m src.web
 
 `src/web.py` は以下を行う。
 
-1. `src.ranking_data.collect_rank_rows()` でCSVからランキングデータを読み込む。
+1. `src.ranking_data.collect_rank_rows()` でCSVからランキングデータを読み込む。入力ディレクトリは `str` / `Path` のどちらでも受け付ける。
 2. `formula_screening.web.compute_all_stock_metrics()` でNCR, PER, equity ratio, FCF yield, CROIC, PEG等を計算する。
 3. 両者をマージしてJSON API (`/api/ranking`) として供給する。数値列は `_to_float_safe()` で str/float 両対応に変換する。変換失敗時は `logger.debug` で記録し `None` を返す。
 4. `stock_web_ui.serve` でHTTPサーバーを起動し、`docs/index.html` を配信する。

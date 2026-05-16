@@ -37,11 +37,11 @@ def _to_float_safe(raw: str | float | None) -> float | None:
         return None
 
 
-def build_ranking_payload(input_dir: Path | None = None) -> list[dict]:
+def build_ranking_payload(input_dir: Path | str | None = None) -> list[dict]:
     """Build ranking JSON payload merging land value CSV data with screening metrics."""
     from formula_screening.web import compute_all_stock_metrics
 
-    resolved_input_dir: Path = input_dir or DEFAULT_OUTPUT_DIR
+    resolved_input_dir = Path(input_dir) if input_dir is not None else DEFAULT_OUTPUT_DIR
 
     conn = connect_company_db()
     try:
@@ -96,17 +96,21 @@ def build_ranking_payload(input_dir: Path | None = None) -> list[dict]:
     return payload
 
 
-def export_ranking_json(output_path: Path, input_dir: Path | None = None) -> None:
+def export_ranking_json(output_path: Path | str, input_dir: Path | str | None = None) -> None:
     """Write GitHub Pages compatible ranking payload JSON."""
+    resolved_output_path = Path(output_path)
     payload = build_ranking_payload(input_dir)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    logger.info("ranking JSON exported: %s (%d rows)", output_path, len(payload))
+    resolved_output_path.parent.mkdir(parents=True, exist_ok=True)
+    resolved_output_path.write_text(
+        json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+    logger.info("ranking JSON exported: %s (%d rows)", resolved_output_path, len(payload))
 
 
 def serve_ranking(
     *,
-    input_dir: Path | None = None,
+    input_dir: Path | str | None = None,
     server_config: ServerConfig | None = None,
 ) -> None:
     """Start the web UI server with ranking data."""

@@ -207,10 +207,10 @@ def markdown_to_html(text: str) -> str:
 
 
 def collect_rank_rows(
-    input_dir: Path | None = None,
+    input_dir: Path | str | None = None,
     company_records: CompanyDirectory | None = None,
 ) -> list[RankingRow]:
-    resolved_input_dir = input_dir or DEFAULT_INPUT_DIR
+    resolved_input_dir = Path(input_dir) if input_dir is not None else DEFAULT_INPUT_DIR
     resolved_company_records = company_records or {}
 
     rank_rows: list[RankingRow] = []

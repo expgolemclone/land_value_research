@@ -57,6 +57,14 @@ class TestRankingData(unittest.TestCase):
         self.assertEqual(0.1, rows[0]["ratio"])
         self.assertIn("confidence", rows[0])
 
+    def test_collect_rank_rows_accepts_string_input_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td)
+            write_output_csv(base / "9999_output.csv", code="9999", name="テスト会社", ratio="0.1")
+            rows = collect_rank_rows(str(base), {})
+
+        self.assertEqual("9999", rows[0]["code"])
+
     def test_collect_rank_rows_uses_company_directory_for_placeholder_name(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             base = Path(td)
