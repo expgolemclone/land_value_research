@@ -134,7 +134,7 @@ uv run python -m src.web
 
 1. `collect_rank_rows()` でCSVからランキングデータを読み込む。
 2. `formula_screening.web.compute_all_stock_metrics()` でNCR, PER, equity ratio, FCF yield, CROIC, PEG等を計算する。
-3. 両者をマージしてJSON API (`/api/ranking`) として供給する。
+3. 両者をマージしてJSON API (`/api/ranking`) として供給する。数値列は `_to_float_safe()` で str/float 両対応に変換する。変換失敗時は `logger.debug` で記録し `None` を返す。
 4. `stock_web_ui.serve` でHTTPサーバーを起動し、`docs/index.html` を配信する。
 
 フロントエンドは `src_ts/app.ts` でカラム定義を構成し、`stock_web_ui` の共通TypeScriptランタイム (`stock-table.js`) がテーブル描画、ソート、列表示切替、閾値カラー、リンク解決を行う。調査メモは `detailModal: true` で有効になるモーダル機能で表示する。
