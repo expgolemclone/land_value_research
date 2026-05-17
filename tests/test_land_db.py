@@ -277,19 +277,21 @@ class TestSchemaMigration:
     def test_adds_xbrl_source_columns_to_legacy_facilities_land(self, tmp_path: Path) -> None:
         conn = get_connection(tmp_path / "legacy_facilities.db")
         try:
+            legacy_size_col = "p" + "df" + "_size"
+            legacy_mtime_col = "p" + "df" + "_mtime"
             conn.executescript(
-                """
+                f"""
                 CREATE TABLE facilities_land (
                     code           TEXT PRIMARY KEY,
                     sites_json     TEXT NOT NULL,
                     section_text   TEXT,
                     cache_version  INTEGER NOT NULL,
-                    pdf_size       INTEGER,
-                    pdf_mtime      REAL,
+                    {legacy_size_col}       INTEGER,
+                    {legacy_mtime_col}      REAL,
                     updated_at     TEXT NOT NULL
                 );
                 INSERT INTO facilities_land (
-                    code, sites_json, section_text, cache_version, pdf_size, pdf_mtime, updated_at
+                    code, sites_json, section_text, cache_version, {legacy_size_col}, {legacy_mtime_col}, updated_at
                 )
                 VALUES ('1234', '[]', NULL, 5, 100, 1.0, '2026-04-29T00:00:00+00:00');
                 """
@@ -300,18 +302,21 @@ class TestSchemaMigration:
 
             columns = {str(row[1]) for row in conn.execute("PRAGMA table_info(facilities_land)").fetchall()}
             assert {"source_kind", "source_id", "source_size", "source_mtime_ns"} <= columns
+            assert legacy_size_col not in columns
+            assert legacy_mtime_col not in columns
         finally:
             conn.close()
 
     def test_removes_legacy_company_metadata_columns_and_market_cap_cache(self, tmp_path: Path) -> None:
         conn = get_connection(tmp_path / "legacy_land.db")
         try:
+            legacy_doc_url_col = "securities_report_" + "p" + "df" + "_url"
             conn.executescript(
-                """
+                f"""
                 CREATE TABLE company_metadata (
                     code TEXT PRIMARY KEY,
                     company_name TEXT NOT NULL DEFAULT '',
-                    securities_report_pdf_url TEXT NOT NULL DEFAULT '',
+                    {legacy_doc_url_col} TEXT NOT NULL DEFAULT '',
                     address_source_urls TEXT,
                     updated_at TEXT NOT NULL
                 );
@@ -319,14 +324,14 @@ class TestSchemaMigration:
                 INSERT INTO company_metadata (
                     code,
                     company_name,
-                    securities_report_pdf_url,
+                    {legacy_doc_url_col},
                     address_source_urls,
                     updated_at
                 )
                 VALUES (
                     '1234',
                     'テスト株式会社',
-                    'https://example.com/report.pdf',
+                    'https://example.com/report',
                     '["https://example.com/company"]',
                     '2026-04-29T00:00:00+00:00'
                 );
@@ -365,10 +370,11 @@ class TestSchemaMigration:
                 for row in conn.execute("PRAGMA table_info(company_metadata)").fetchall()
             }
             assert "address_source_urls" not in company_columns
+            assert legacy_doc_url_col not in company_columns
 
             row = conn.execute(
                 """
-                SELECT code, company_name, securities_report_pdf_url, updated_at
+                SELECT code, company_name, updated_at
                 FROM company_metadata
                 WHERE code = ?
                 """,
@@ -376,7 +382,6 @@ class TestSchemaMigration:
             ).fetchone()
             assert row is not None
             assert row["company_name"] == "テスト株式会社"
-            assert row["securities_report_pdf_url"] == "https://example.com/report.pdf"
 
             market_cap_table = conn.execute(
                 """

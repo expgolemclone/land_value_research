@@ -40,7 +40,6 @@ LAND_DB_ASSET_SHA256 = os.environ.get("LAND_DB_ASSET_SHA256", "")
 
 # cache (under data/)
 CACHE_DIR = DATA_DIR / "cache"
-PDF_CACHE_DIR = CACHE_DIR / "pdf"
 WEB_ADDRESS_CACHE_DIR = CACHE_DIR / "web_address"
 
 # output

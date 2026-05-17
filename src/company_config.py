@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import yaml
 
-from src.pdf_extract import FacilityLand
+from src.facility_extract import FacilityLand
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +97,7 @@ def expand_site_splits(
     """分割指定されたサイトを展開し、展開後のサイトリストとフラットな override dict を返す.
 
     Args:
-        sites: PDF抽出された FacilityLand リスト
+        sites: 抽出された FacilityLand リスト
         overrides: 該当企業の address_overrides (str or list[SiteSplitEntry])
 
     Returns:

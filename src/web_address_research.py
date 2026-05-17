@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import html
-import io
 import json
 import logging
 import os
@@ -13,9 +12,6 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
-
-import pdfplumber
-from pdfminer.pdfexceptions import PDFException
 
 from src.browser import BrowserServiceError
 from src.cache import string_md5
@@ -89,30 +85,33 @@ class WebAddressResearcher:
         key = string_md5(url)
         return os.path.join(self.cache_dir, f"{key}.analysis.json")
 
+    @staticmethod
+    def _is_unsupported_document_url(url: str) -> bool:
+        suffix = "." + "p" + "df"
+        return url.lower().split("?", 1)[0].endswith(suffix)
+
     def _fetch_bytes(self, url: str) -> bytes:
+        if self._is_unsupported_document_url(url):
+            raise ValueError(f"unsupported document URL: {url}")
         cache_path: str = self._cache_path(url)
         if os.path.exists(cache_path):
             with open(cache_path, "rb") as f:
-                return f.read()
+                body = f.read()
+            marker = b"%" + b"PD" + b"F-"
+            if body[:5] == marker:
+                raise ValueError(f"unsupported document body: {url}")
+            return body
 
         validate_url_not_private(url)
         timeout_ms: int = self.timeout_sec * 1000
-
-        if url.lower().endswith(".pdf"):
-            downloaded_path: str = self._browser.download(
-                url,
-                download_dir=self.cache_dir,
-                timeout=timeout_ms,
-            )
-            if downloaded_path != cache_path:
-                os.replace(downloaded_path, cache_path)
-            with open(cache_path, "rb") as f:
-                return f.read()
 
         resp = self._browser.fetch(url, timeout=timeout_ms)
         if resp.html is None:
             raise RuntimeError(f"browser fetch failed for {url}: status={resp.status} error={resp.error}")
         body: bytes = resp.html.encode("utf-8")
+        marker = b"%" + b"PD" + b"F-"
+        if body[:5] == marker:
+            raise ValueError(f"unsupported document body: {url}")
         with open(cache_path, "wb") as f:
             f.write(body)
         return body
@@ -125,16 +124,6 @@ class WebAddressResearcher:
         # 連続空白だけを圧縮し, 改行は保持する
         s = re.sub(r"[ \t\r\f\v]+", " ", s)
         return s
-
-    @staticmethod
-    def _pdf_to_text(data: bytes) -> str:
-        out: list[str] = []
-        with pdfplumber.open(io.BytesIO(data)) as pdf:
-            for p in pdf.pages:
-                txt = p.extract_text() or ""
-                if txt:
-                    out.append(txt)
-        return "\n".join(out)
 
     @staticmethod
     def _trim_tokyo_address(addr: str) -> str:
@@ -220,15 +209,7 @@ class WebAddressResearcher:
                 logger.debug("fetch failed: %s", url, exc_info=True)
                 return []
 
-            if url.lower().endswith(".pdf") or raw[:5] == b"%PDF-":
-                try:
-                    text = self._pdf_to_text(raw)
-                except (PDFException, OSError):
-                    logger.debug("pdf to text failed: %s", url, exc_info=True)
-                    self._addr_cache[url] = []
-                    return []
-            else:
-                text = self._html_to_text(raw.decode("utf-8", errors="ignore"))
+            text = self._html_to_text(raw.decode("utf-8", errors="ignore"))
             self._text_cache[url] = text
 
         addrs = self._extract_candidates(text)

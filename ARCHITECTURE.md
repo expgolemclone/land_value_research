@@ -51,12 +51,12 @@
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `run.py`             | メインパイプライン。CLI解析、環境初期化、企業単位処理、キャッシュ、CSV出力、Web UI起動までを制御する。                               |
 | `bin/land-value-run` | 推奨実行入口。Rust toolchain の有無を確認し、必要なら `nix develop` 経由で再実行し、Rustソース変更時に `uv` キャッシュをクリアする。 |
-| `src/`               | Python側のライブラリ群。XBRL抽出、PDF表回帰テスト用抽出、Web住所調査、DBアクセス、会社メタデータ、ランキングデータ集約、異常検知、Web UI統合など。 |
+| `src/`               | Python側のライブラリ群。XBRL抽出、共通表パーサ、Web住所調査、DBアクセス、会社メタデータ、ランキングデータ集約、異常検知、Web UI統合など。 |
 | `src/land_db/`       | `data/land.db` のスキーマ、リポジトリ関数、Release asset取得処理。                                                                   |
 | `src_ts/`            | フロントエンド TypeScript。`stock_web_ui` の共通ランタイムを使い、ランキング用カラム定義と指標設定を定義する。                        |
 | `rust_src/`          | PyO3で公開するRust実装。東京都ジオコード、住所正規化、地価近傍検索、測地計算。                                                       |
 | `scripts/`           | データ整備・補助調査・住所パッチマージ・land.db取得などの補助CLI。                                                                   |
-| `tests/`             | Pythonテスト。XBRL抽出、PDF表回帰、住所正規化、地価推定、DB、ランキング、補正処理、ネットワーク耐性などを確認する。                    |
+| `tests/`             | Pythonテスト。XBRL抽出、共通表パーサ、住所正規化、地価推定、DB、ランキング、補正処理、ネットワーク耐性などを確認する。                    |
 | `config/`            | 入力CSV、住所補正、地価補正、ブラウザ等の実行パラメータ。                                                                            |
 | `data/geocoding/`    | 東京都ジオコーディング参照CSV。大字町丁目と街区の2種類を使う。                                                                       |
 | `data/landprice/`    | 公示地価・基準地価の元データおよびマージ済みGeoJSON。                                                                                |
@@ -123,9 +123,9 @@ uv run python -m src.web
 `src/web.py` は以下を行う。
 
 1. `src.ranking_data.collect_rank_rows()` でCSVからランキングデータを読み込む。入力ディレクトリは `str` / `Path` のどちらでも受け付ける。
-2. `formula_screening.web.compute_all_stock_metrics()` でNCR, PER, 優先株有無, equity ratio, FCF yield, CROIC, PEG等を計算する。
+2. Rust-backed な `formula_screening.web.compute_all_stock_metrics()` でNCR, PER, 優先株有無, equity ratio, FCF yield, CROIC, PEG等を計算する。
 3. 両者をマージしてJSON API (`/api/ranking`) として供給する。数値列は `_to_float_safe()` で str/float 両対応に変換する。変換失敗時は `logger.debug` で記録し `None` を返す。
-4. `stock_web_ui.serve` でHTTPサーバーを起動し、`docs/index.html` を配信する。
+4. `stock_web_ui.serve` でHTTPサーバーを起動し、共有テンプレートから生成した index HTML を配信する。
 5. GitHub Pages用には `uv run python -m src.web --export-json docs/assets/ranking.json` で同じJSON形状を書き出す。
 
 フロントエンドは `src_ts/app.ts` でカラム定義を構成し、`stock_web_ui` の共通TypeScriptランタイム (`stock-table.js`) がテーブル描画、ソート、列表示切替、閾値カラー、リンク解決を行う。調査メモは `detailModal: true` で有効になるモーダル機能で表示する。
@@ -142,7 +142,6 @@ TypeScriptのコンパイルは `npx tsc` で行い、`docs/assets/app.js` が�
 | `scripts/download_land_db.py`        | GitHub Release asset から `data/land.db` を取得する。                                         |
 | `scripts/populate_company_master.py` | IRBankなどから `land.db` の企業メタデータを補完する。                                         |
 | `scripts/populate_company_names.py`  | JPX銘柄名データを使って企業名を補完する。                                                     |
-| `scripts/validate_ocr_accuracy.py`   | PDF抽出結果のOCR/表抽出精度を検証する補助。                                                   |
 | `scripts/loop_runner.py`             | 繰り返し実行用の薄いランナー。                                                                |
 | `scripts/_codex_precheck.py`         | 調査前に合算拠点・低解像度住所などを判定する補助。                                            |
 | `scripts/_codex_geocode_check.py`    | 住所がどのジオコードレベルまで解決できるかを確認する補助。                                    |
@@ -153,13 +152,12 @@ TypeScriptのコンパイルは `npx tsc` で行い、`docs/assets/app.js` が�
 
 `pyproject.toml` の主要依存は以下である。
 
-- `pdfplumber`: Web住所調査でPDF URLを渡された場合のテキスト化と、PDF表抽出ヘルパーの回帰テスト。
 - `pyyaml`: 住所補正・地価補正YAMLの読み書き。
 - `requests` / `pysocks`: 外部取得系の周辺依存。
 - `shtab`: shell completion対応。
 - `stock-db`: siblingリポジトリ `../stock_db` をeditable依存として参照する。
 - `stock-web-ui`: siblingリポジトリ `../stock_web_ui`。共通Web UIランタイム (TypeScriptテーブル描画、列定義、HTTPサーバー) を提供する。
-- `formula-screening`: siblingリポジトリ `../formula_screening`。`compute_all_stock_metrics()` でNCR, PER, equity ratio, FCF yield, CROIC, PEG等の指標を計算する。
+- `formula-screening`: siblingリポジトリ `../formula_screening`。Rust-backed な `compute_all_stock_metrics()` でNCR, PER, equity ratio, FCF yield, CROIC, PEG等の指標を計算する。
 
 dev依存は `pytest`、`hypothesis`、`maturin`、`ruff` である。
 
@@ -181,7 +179,7 @@ Rust crate名は `land_value_core` で、Pythonモジュール名も同じであ
 
 | 外部要素                  | 用途                                                | 実装箇所                                                            |
 | ------------------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
-| `../stock_db`             | 会社名、有報XBRL原本、PDF URL、株価、発行済株式数、時価総額補完。 | `src/stock_db_sync.py`, `src/company_store.py`       |
+| `../stock_db`             | 会社名、有報XBRL原本、株価、発行済株式数、時価総額補完。 | `src/stock_db_sync.py`, `src/company_store.py`       |
 | `../stock_web_ui`         | 共通Web UIランタイム、列定義、HTTPサーバー。        | `src/web.py`, `src_ts/app.ts`                                       |
 | `../formula_screening`    | NCR, PER, FCF yield等の指標計算。                   | `src/web.py` → `compute_all_stock_metrics()`                        |
 | BrowserService            | HTML取得、IRBank取得、Web住所調査。                 | `src/browser.py`, `src/web_address_research.py`                    |
@@ -227,7 +225,7 @@ flowchart TD
    未キャッシュXBRLだけを `batch_extract_facilities_from_xbrl()` で `ProcessPoolExecutor` に渡し、設備土地情報と「主要な設備の状況」本文を並列抽出する。
 
 5. **企業単位処理**
-   `_process_company_with_retry()` が一時通信エラーを指数バックオフで再試行しながら `process_company()` を実行する。XBRL原本がない企業はPDFへ戻らずスキップする。
+   `_process_company_with_retry()` が一時通信エラーを指数バックオフで再試行しながら `process_company()` を実行する。XBRL原本がない企業はスキップする。
 
 6. **企業別CSV出力**
    `_write_single_result()` が `OUTPUT_COLUMNS` 順で `*_output.csv` を書く。
@@ -279,7 +277,6 @@ flowchart TD
 | -------------------------------- | ------------------------------------------------------------------ |
 | `code` / `証券コード` / `コード` | 証券コード。必須。                                                 |
 | `company_name` / `銘柄名`        | 会社名。なければ `land.db`、`stock_db`、IRBankで補完される。       |
-| `securities_report_pdf_url`      | 互換用の有報PDF URL。設備抽出には使わない。                        |
 | `market_cap`                     | 時価総額。なければ `stock_db` の株価と発行済株式数から補完される。 |
 | `address_source_urls`            | Web住所調査に使うURL。複数は `\|` 区切り。                         |
 
@@ -368,7 +365,7 @@ Rust側 `TokyoGeocoder` は、CSVをCP932またはUTF-8として読み、次の�
 
 ### 8.1 `FacilityLand`
 
-XBRL抽出結果の中心データ型は `src.pdf_extract.FacilityLand` である。PDF時代の型名を維持し、住所補正や下流処理との互換性を保っている。
+XBRL抽出結果の中心データ型は `src.facility_extract.FacilityLand` である。XBRL抽出と住所補正の共通データ型として使う。
 
 | フィールド            | 内容                                                                 |
 | --------------------- | -------------------------------------------------------------------- |
@@ -432,7 +429,7 @@ Web UI用JSONは `src.ranking_data.RankingRow` と `src.web.build_ranking_payloa
 | `estimated_value`, `market_cap` など    | 推定土地時価、時価総額、簿価、含み益の円単位数値。       |
 | `metrics`                               | `formula_screening` 由来のNCR, PER, 優先株有無, FCF yield等。 |
 
-`docs/index.html` はローカルサーバーでは `/api/ranking`、GitHub Pagesでは `docs/assets/ranking.json` を読み込む。GitHub Pages のルート `index.html` は `docs/` に遷移させる。
+フロントエンドはローカルサーバーでは `/api/ranking`、GitHub Pages では `assets/ranking.json` を読み込む。GitHub Pages のルート `index.html` は `docs/` に遷移させる。
 
 ## 10. 永続化とキャッシュ
 
@@ -451,9 +448,9 @@ Web UI用JSONは `src.ranking_data.RankingRow` と `src.web.build_ranking_payloa
 | `facilities_land`     | `code`              | XBRL抽出された設備土地リスト、セクションテキスト、XBRL source fingerprint、キャッシュバージョン。 |
 | `web_address_resolve` | `resolve_key`       | Web住所調査の成功またはミス。                                                                |
 | `invalidation_hashes` | `(hash_type, code)` | 住所補正・地価補正の企業別ハッシュ。                                                         |
-| `company_metadata`    | `code`              | 会社名、有報PDF URL、更新時刻。                                                              |
+| `company_metadata`    | `code`              | 会社名、更新時刻。                                                              |
 
-`init_land_db()` は `_migrate()` を先に実行し、旧スキーマからの移行を行う。現時点の移行では、`facilities_land.section_text` とXBRL source列追加、`web_address_resolve.resolved` 追加、旧 `web_address_resolve.address/score/source_url` の NOT NULL 制約除去、旧 `company_metadata.address_source_urls` 削除、旧 `market_cap_cache` 削除がある。
+`init_land_db()` は `_migrate()` を先に実行し、旧スキーマからの移行を行う。現時点の移行では、`facilities_land.section_text` とXBRL source列追加、旧原本サイズ列の削除、`web_address_resolve.resolved` 追加、旧 `web_address_resolve.address/score/source_url` の NOT NULL 制約除去、旧 `company_metadata.address_source_urls` と旧有報URL列の削除、旧 `market_cap_cache` 削除がある。
 
 ### 10.2 キャッシュ無効化
 
@@ -470,7 +467,7 @@ Web UI用JSONは `src.ranking_data.RankingRow` と `src.web.build_ranking_payloa
 
 有報XBRL原本は `../stock_db/var/raw/edinet/xbrl/{ticker}/{doc_id}.zip` と展開済みディレクトリを正とする。land側は原本をコピーせず、`facilities_land` に抽出結果と source fingerprint を保存する。
 
-Web住所調査では同じ原本から抽出済みの「主要な設備の状況」本文を `ctx.web_addr.seed_text()` で渡し、EDINET PDFを住所調査のために再取得しない。
+Web住所調査では同じ原本から抽出済みの「主要な設備の状況」本文を `ctx.web_addr.seed_text()` で渡し。
 
 ### 10.4 Web住所調査キャッシュ
 
@@ -485,21 +482,21 @@ Web住所調査では同じ原本から抽出済みの「主要な設備の状�
 
 ## 11. 有報XBRL抽出設計
 
-`src/xbrl_extract.py` は `../stock_db` がEDINET API v2で取得した有報XBRL原本を読み、iXBRLの `MajorFacilitiesTextBlock` から土地情報を抽出する。`src/pdf_extract.py` の表ヘッダー解析と行抽出ロジックは回帰テスト資産として残し、XBRL側のHTML tableを同じ行列形式へ変換して再利用する。
+`src/xbrl_extract.py` は `../stock_db` がEDINET API v2で取得した有報XBRL原本を読み、iXBRLの `MajorFacilitiesTextBlock` から土地情報を抽出する。`src/facility_extract.py` の表ヘッダー解析と行抽出ロジックを共有し、XBRL側のHTML tableを同じ行列形式へ変換して再利用する。
 
 ### 11.1 XBRL原本解決
 
 `src/stock_db_sync.py` の `load_stock_db_xbrl_artifacts()` は `stock_db.sec_reports` から `fiscal_year='latest'` を優先して `doc_id` と `xbrl_path` を取得する。`xbrl_path` ディレクトリ、対応する `{doc_id}.zip`、本文系ファイルが揃っている場合だけ有効な原本として扱う。
 
-抽出キャッシュは `facilities_land.source_kind/source_id/source_size/source_mtime_ns/cache_version` で無効化する。旧PDFキャッシュとは source_kind と cache_version が異なるため再利用されない。
+抽出キャッシュは `facilities_land.source_kind/source_id/source_size/source_mtime_ns/cache_version` で無効化する。旧抽出キャッシュとは source_kind と cache_version が異なるため再利用されない。
 
 ### 11.2 セクション検出
 
-`extract_facilities_from_xbrl()` は `XBRL/PublicDoc` 配下の `.htm` / `.html` / `.xhtml` を読み、`ix:nonNumeric` の `name` が `MajorFacilitiesTextBlock` の要素を抽出対象にする。セクション本文はWeb住所補完用のテキストとして `WebAddressResearcher.seed_text()` に渡し、EDINET PDF URLを住所補完のために再取得しない。
+`extract_facilities_from_xbrl()` は `XBRL/PublicDoc` 配下の `.htm` / `.html` / `.xhtml` を読み、`ix:nonNumeric` の `name` が `MajorFacilitiesTextBlock` の要素を抽出対象にする。セクション本文はWeb住所補完用のテキストとして `WebAddressResearcher.seed_text()` に渡す。
 
 ### 11.3 HTML table正規化
 
-iXBRLのtableは `rowspan` / `colspan` を持つため、`_html_table_to_grid()` がPDF由来テーブルと同じ `list[list[str | None]]` に変換する。注記と実数値が別行に分かれるXBRL表は `_merge_continuation_rows()` で同一データ行に結合する。
+iXBRLのtableは `rowspan` / `colspan` を持つため、`_html_table_to_grid()` が抽出元テーブルと同じ `list[list[str | None]]` に変換する。注記と実数値が別行に分かれるXBRL表は `_merge_continuation_rows()` で同一データ行に結合する。
 
 ### 11.4 ヘッダー解析
 
@@ -540,7 +537,7 @@ iXBRLのtableは `rowspan` / `colspan` を持つため、`_html_table_to_grid()`
 3. sibling `stock_db` の `stocks`
 4. `--allow-auto-metadata` 有効時のIRBank補完
 
-IRBank補完は `src/company_metadata_fallback.py` の `fetch_from_irbank()` が担当する。XBRL移行後の有報設備抽出は `stock_db.sec_reports.xbrl_path` を必須とし、PDF URLだけでは処理しない。通信断などで空になった結果を固定化しないため、完全失敗時の空結果はキャッシュしない。
+IRBank補完は `src/company_metadata_fallback.py` の `fetch_from_irbank()` が担当する。XBRL移行後の有報設備抽出は `stock_db.sec_reports.xbrl_path` を必須とし、URLだけでは処理しない。通信断などで空になった結果を固定化しないため、完全失敗時の空結果はキャッシュしない。
 
 ### 12.2 時価総額
 
@@ -744,7 +741,7 @@ CSV内の企業名が空、または証券コードと同じ場合、`company_me
 
 ### 16.4 公開用JSON
 
-GitHub Pages用の静的データは `docs/assets/ranking.json` である。`src/web.py --export-json` はローカルサーバーの `/api/ranking` と同じpayloadを書き出し、`docs/index.html` はGitHub Pages上ではこのJSONを読み込む。リポジトリルートは `index.html` で `docs/` へ遷移させる。
+GitHub Pages用の静的データは `docs/assets/ranking.json` である。`src/web.py --export-json` はローカルサーバーの `/api/ranking` と同じpayloadを書き出し、`docs/index.html` が読み込む `docs/assets/app.js` は GitHub Pages 上では `assets/ranking.json` を fetch する。リポジトリルートは `index.html` で `docs/` へ遷移させる。
 
 ## 17. 補助調査と住所パッチ
 
@@ -820,7 +817,7 @@ Web住所調査はI/O boundなので、URLが複数ある場合は `ThreadPoolEx
 
 このガードが使われる主な箇所は以下である。
 
-- `src/web_address_research.py` のHTML/PDF取得。
+- `src/web_address_research.py` のHTML取得。
 - `src/company_metadata_fallback.py` のIRBank取得。
 
 `BrowserService` は `stock_db.browser_client` を継承し、`config/magic_numbers.toml` の `[browser]` 設定を使う。`headless`、タイムアウト、プールサイズなどはこの設定で調整する。
@@ -860,7 +857,7 @@ uv run pytest
 | テスト                                                    | 対象                                                          |
 | --------------------------------------------------------- | ------------------------------------------------------------- |
 | `tests/test_xbrl_extract.py`                              | XBRL設備表抽出、rowspan/colspan、所在地・数値パース。          |
-| `tests/test_pdf_extract.py` / `test_pdf_extract_props.py` | PDF時代から継承した表抽出ヘルパーの回帰。                      |
+| `tests/test_facility_extract.py` / `test_facility_extract_props.py` | 共通表パーサの回帰。                      |
 | `tests/test_jp_address.py` / `test_jp_address_props.py`   | 住所正規化、町丁目・街区パース。                              |
 | `tests/test_geocode_tokyo.py`                             | 東京都ジオコーダの解決レベル。                                |
 | `tests/test_landprice_tokyo.py`                           | 地価推定、nearest、IDW、用途フィルタ。                        |
@@ -877,10 +874,10 @@ uv run pytest
 Python lintは以下で実行する。
 
 ```bash
-uv run ruff check .
+nix develop --command ruff check .
 ```
 
-`pyproject.toml` では `data/` と `scripts/validate_ocr_accuracy.py` がruff対象外である。
+`pyproject.toml` では `data/` がruff対象外である。
 
 ### 21.4 Rustテスト
 
@@ -929,7 +926,7 @@ cargo test
 1. `src/xbrl_extract.py` のHTML table正規化、継続行結合、セクション検出の影響を確認する。
 2. `facilities_land.cache_version` を上げる必要があるか判断する。抽出結果の意味が変わる場合は上げる。
 3. `source_size/source_mtime_ns` だけでは無効化できない変更の場合、既存DBキャッシュ削除またはバージョン判定強化を検討する。
-4. `tests/test_xbrl_extract.py`、必要に応じて `tests/test_pdf_extract.py` と property test を更新する。
+4. `tests/test_xbrl_extract.py`、必要に応じて `tests/test_facility_extract.py` と property test を更新する。
 
 ### 22.6 住所補正形式を変更する場合
 

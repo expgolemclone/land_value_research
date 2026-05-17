@@ -38,7 +38,7 @@ def _to_float_safe(raw: str | float | None) -> float | None:
 
 
 def build_ranking_payload(input_dir: Path | str | None = None) -> list[dict]:
-    """Build ranking JSON payload merging land value CSV data with screening metrics."""
+    """Build ranking JSON payload merging land value CSV data with Rust-backed screening metrics."""
     from formula_screening.web import compute_all_stock_metrics
 
     resolved_input_dir = Path(input_dir) if input_dir is not None else DEFAULT_OUTPUT_DIR

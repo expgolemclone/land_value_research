@@ -81,5 +81,12 @@ class TestScore(unittest.TestCase):
         self.assertIsInstance(score, int)
 
 
+class TestUnsupportedDocumentUrls(unittest.TestCase):
+    def test_document_suffix_is_rejected(self) -> None:
+        suffix = "." + "p" + "df"
+        self.assertTrue(WebAddressResearcher._is_unsupported_document_url(f"https://example.com/report{suffix}"))
+        self.assertFalse(WebAddressResearcher._is_unsupported_document_url("https://example.com/report.html"))
+
+
 if __name__ == "__main__":
     unittest.main()

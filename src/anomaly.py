@@ -31,7 +31,11 @@ def calc_uncertainty_metrics(pr: PriceResult) -> tuple[float, float, float, str]
 
     max_component = min(max_dist / UNCERTAINTY_MAX_DIST_REF_M, 1.0)
     var_component = min(dist_var / UNCERTAINTY_DIST_VAR_REF_M2, 1.0)
-    score = max(0.0, min(1.0, 1.0 - (UNCERTAINTY_WEIGHT_MAX_DIST * max_component + UNCERTAINTY_WEIGHT_DIST_VAR * var_component)))
+    uncertainty_penalty = (
+        UNCERTAINTY_WEIGHT_MAX_DIST * max_component
+        + UNCERTAINTY_WEIGHT_DIST_VAR * var_component
+    )
+    score = max(0.0, min(1.0, 1.0 - uncertainty_penalty))
     if score >= CONFIDENCE_THRESHOLD_HIGH:
         label = "high"
     elif score >= CONFIDENCE_THRESHOLD_MEDIUM:

@@ -10,7 +10,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.config import INPUT_FULL_CSV
+from src.config import INPUT_FULL_CSV  # noqa: E402
 
 CMD_RUN = [
     "nix",

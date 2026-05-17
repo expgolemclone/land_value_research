@@ -1,4 +1,4 @@
-"""pdf_extract パース関数の property-based テスト.
+"""facility_extract パース関数の property-based テスト.
 
 検証する性質:
 - _normalize_text: 冪等性
@@ -14,7 +14,7 @@ import unittest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from src.pdf_extract import (
+from src.facility_extract import (
     _area_scale,
     _book_multiplier,
     _extract_site_name,
@@ -25,8 +25,8 @@ from src.pdf_extract import (
 DASH_CHARS = ["-", "－", "ー", "―", "─"]
 
 
-class TestPdfExtractProperties(unittest.TestCase):
-    """pdf_extract パース関数の property-based テスト."""
+class TestFacilityExtractProperties(unittest.TestCase):
+    """facility_extract パース関数の property-based テスト."""
 
     @given(s=st.text(max_size=200))
     def test_normalize_text_idempotent(self, s: str) -> None:

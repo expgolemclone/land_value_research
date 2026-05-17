@@ -32,7 +32,6 @@ DOCS_DIR = PROJECT_ROOT / "split-address"
 class RankingRow(TypedDict):
     code: str
     name: str
-    pdf_url: str
     ratio: float
     estimated_value: str
     market_cap: str
@@ -241,7 +240,6 @@ def collect_rank_rows(
             {
                 "code": code,
                 "name": company_name,
-                "pdf_url": resolved_company_records.get(code, {}).get("securities_report_pdf_url", "").strip(),
                 "ratio": ratio,
                 "estimated_value": (company_row.get(COL_ESTIMATED_VALUE) or "").strip(),
                 "market_cap": (company_row.get(COL_MARKET_CAP) or "").strip(),

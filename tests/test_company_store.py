@@ -21,12 +21,10 @@ class TestCompanyStore(unittest.TestCase):
                     conn,
                     "1234",
                     company_name="テスト株式会社",
-                    securities_report_pdf_url="https://example.com/report.pdf",
                 )
                 conn.commit()
 
                 self.assertEqual(record["company_name"], "テスト株式会社")
-                self.assertEqual(record["securities_report_pdf_url"], "https://example.com/report.pdf")
 
                 loaded = load_company_record(conn, "1234")
                 self.assertEqual(loaded, record)
@@ -39,10 +37,8 @@ class TestCompanyStore(unittest.TestCase):
                     conn,
                     "1234",
                     company_name="",
-                    securities_report_pdf_url="",
                 )
                 self.assertEqual(updated["company_name"], "テスト株式会社")
-                self.assertEqual(updated["securities_report_pdf_url"], "https://example.com/report.pdf")
             finally:
                 conn.close()
 

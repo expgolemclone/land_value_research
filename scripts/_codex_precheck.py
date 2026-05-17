@@ -26,6 +26,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import yaml
 
+from src.config import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR
 from src.schema import (
     COL_ADDRESS,
     COL_ADDRESS_SOURCE,
@@ -34,8 +35,6 @@ from src.schema import (
     COL_LAND_AREA,
     COL_SITE_NAME,
 )
-
-from src.config import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR
 
 OVERRIDES_FILE = ADDRESS_OVERRIDES_PATH
 DOCS_DIR = PROJECT_ROOT / "split-address"

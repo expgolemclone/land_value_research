@@ -172,9 +172,9 @@ def save_sites_cache(
         INSERT INTO facilities_land (
             code, sites_json, section_text, cache_version,
             source_kind, source_id, source_size, source_mtime_ns,
-            pdf_size, pdf_mtime, updated_at
+            updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(code) DO UPDATE SET
             sites_json      = excluded.sites_json,
             section_text    = COALESCE(excluded.section_text, facilities_land.section_text),
@@ -183,8 +183,6 @@ def save_sites_cache(
             source_id       = excluded.source_id,
             source_size     = excluded.source_size,
             source_mtime_ns = excluded.source_mtime_ns,
-            pdf_size        = excluded.pdf_size,
-            pdf_mtime       = excluded.pdf_mtime,
             updated_at      = excluded.updated_at
         """,
         (
@@ -196,8 +194,6 @@ def save_sites_cache(
             source_id,
             source_size,
             source_mtime_ns,
-            source_size,
-            float(source_mtime_ns) / 1_000_000_000,
             _now(),
         ),
     )
@@ -251,9 +247,9 @@ def save_facilities_section_text(
         INSERT INTO facilities_land (
             code, sites_json, section_text, cache_version,
             source_kind, source_id, source_size, source_mtime_ns,
-            pdf_size, pdf_mtime, updated_at
+            updated_at
         )
-        VALUES (?, '[]', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, '[]', ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(code) DO UPDATE SET
             section_text    = excluded.section_text,
             cache_version   = excluded.cache_version,
@@ -261,8 +257,6 @@ def save_facilities_section_text(
             source_id       = excluded.source_id,
             source_size     = excluded.source_size,
             source_mtime_ns = excluded.source_mtime_ns,
-            pdf_size        = excluded.pdf_size,
-            pdf_mtime       = excluded.pdf_mtime,
             updated_at      = excluded.updated_at
         """,
         (
@@ -273,8 +267,6 @@ def save_facilities_section_text(
             source_id,
             source_size,
             source_mtime_ns,
-            source_size,
-            float(source_mtime_ns) / 1_000_000_000,
             _now(),
         ),
     )

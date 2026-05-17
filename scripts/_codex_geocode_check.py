@@ -8,8 +8,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.geocode_tokyo import TokyoGeocoder
 from src.config import GAIKU_CSV, OAZA_CSV
+from src.geocode_tokyo import TokyoGeocoder
 
 
 def main(argv: list[str]) -> int:

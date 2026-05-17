@@ -13,6 +13,8 @@ from stock_db.browser_client.client import (
 
 from src.config import MAGIC
 
+__all__ = ["BrowserResponse", "BrowserService", "BrowserServiceError"]
+
 
 class BrowserService(BrowserServiceClient):
     def __init__(self) -> None:

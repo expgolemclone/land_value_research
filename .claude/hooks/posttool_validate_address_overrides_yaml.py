@@ -27,7 +27,7 @@ def _ensure_project_env() -> None:
 
 _ensure_project_env()
 
-import yaml
+import yaml  # noqa: E402
 
 
 def main() -> None:

@@ -14,7 +14,6 @@ from src.land_db.schema import init_land_db
 
 class CompanyRecord(TypedDict, total=False):
     company_name: str
-    securities_report_pdf_url: str
 
 
 CompanyDirectory = dict[str, CompanyRecord]
@@ -40,7 +39,7 @@ def init_db(conn: sqlite3.Connection) -> None:
 def load_company_directory(conn: sqlite3.Connection) -> CompanyDirectory:
     rows = conn.execute(
         """
-        SELECT code, company_name, securities_report_pdf_url
+        SELECT code, company_name
         FROM company_metadata
         ORDER BY code
         """
@@ -49,7 +48,6 @@ def load_company_directory(conn: sqlite3.Connection) -> CompanyDirectory:
     for row in rows:
         result[str(row["code"])] = CompanyRecord(
             company_name=str(row["company_name"] or ""),
-            securities_report_pdf_url=str(row["securities_report_pdf_url"] or ""),
         )
     return result
 
@@ -57,7 +55,7 @@ def load_company_directory(conn: sqlite3.Connection) -> CompanyDirectory:
 def load_company_record(conn: sqlite3.Connection, code: str) -> CompanyRecord:
     row = conn.execute(
         """
-        SELECT code, company_name, securities_report_pdf_url
+        SELECT code, company_name
         FROM company_metadata
         WHERE code = ?
         """,
@@ -67,7 +65,6 @@ def load_company_record(conn: sqlite3.Connection, code: str) -> CompanyRecord:
         return CompanyRecord()
     return CompanyRecord(
         company_name=str(row["company_name"] or ""),
-        securities_report_pdf_url=str(row["securities_report_pdf_url"] or ""),
     )
 
 
@@ -76,37 +73,26 @@ def merge_company_record(
     code: str,
     *,
     company_name: str | None = None,
-    securities_report_pdf_url: str | None = None,
 ) -> CompanyRecord:
     current = load_company_record(conn, code)
     next_name = company_name if company_name is not None else current.get("company_name", "")
-    next_pdf = (
-        securities_report_pdf_url
-        if securities_report_pdf_url is not None
-        else current.get("securities_report_pdf_url", "")
-    )
 
     conn.execute(
         """
         INSERT INTO company_metadata (
             code,
             company_name,
-            securities_report_pdf_url,
             updated_at
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?)
         ON CONFLICT(code) DO UPDATE SET
             company_name = CASE
                 WHEN excluded.company_name = '' THEN company_metadata.company_name
                 ELSE excluded.company_name
             END,
-            securities_report_pdf_url = CASE
-                WHEN excluded.securities_report_pdf_url = '' THEN company_metadata.securities_report_pdf_url
-                ELSE excluded.securities_report_pdf_url
-            END,
             updated_at = excluded.updated_at
         """,
-        (code, str(next_name or ""), str(next_pdf or ""), _now()),
+        (code, str(next_name or ""), _now()),
     )
     return load_company_record(conn, code)
 

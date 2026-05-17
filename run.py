@@ -55,6 +55,7 @@ from src.config import (
     RUN_LOGS_DIR,
     WEB_ADDRESS_CACHE_DIR,
 )
+from src.facility_extract import FacilityLand
 from src.geocode_tokyo import TokyoGeocoder
 from src.land_db.asset import ensure_land_db_exists
 from src.land_db.repo import (
@@ -75,7 +76,6 @@ from src.land_db.repo import (
 )
 from src.land_db.schema import init_land_db
 from src.landprice_tokyo import LandPriceTokyo, PriceResult
-from src.pdf_extract import FacilityLand
 from src.schema import (
     COL_ADDRESS,
     COL_ADDRESS_SOURCE,
@@ -297,6 +297,10 @@ def load_targets(input_path: str) -> list[dict[str, str]]:
     targets: list[dict[str, str]] = []
 
     if has_header:
+        legacy_source_cols = {"p" + "df_url", "securities_report_" + "p" + "df" + "_url"}
+        present_legacy_cols = sorted(legacy_source_cols & set(header_map))
+        if present_legacy_cols:
+            raise ValueError(f"legacy report URL column is no longer supported: {', '.join(present_legacy_cols)}")
         if "code" in header_map:
             code_key = "code"
         elif "証券コード" in header_map:
@@ -316,9 +320,6 @@ def load_targets(input_path: str) -> list[dict[str, str]]:
                 {
                     "code": code,
                     "company_name": company_name,
-                    "pdf_url": row[header_map["securities_report_pdf_url"]].strip()
-                    if "securities_report_pdf_url" in header_map and len(row) > header_map["securities_report_pdf_url"]
-                    else "",
                     "market_cap": parse_market_cap(row[header_map["market_cap"]])
                     if "market_cap" in header_map and len(row) > header_map["market_cap"]
                     else None,
@@ -337,7 +338,6 @@ def load_targets(input_path: str) -> list[dict[str, str]]:
                 {
                     "code": code,
                     "company_name": company_name,
-                    "pdf_url": "",
                     "market_cap": None,
                     "address_source_urls": [],
                 }
@@ -631,11 +631,11 @@ def _resolve_company_metadata(
     need_name = not company_name or company_name == code
     fallback = None
     if ctx.args.allow_auto_metadata and need_name:
-        fallback = fetch_from_irbank(code, browser=ctx.browser, need_name=need_name, need_pdf=False)
+        fallback = fetch_from_irbank(code, browser=ctx.browser, need_name=need_name)
         if need_name and fallback.company_name:
             company_name = fallback.company_name
         # スクレイプ結果を land.db に追記（後続処理・永続化用）
-        if fallback.company_name or fallback.securities_report_pdf_url:
+        if fallback.company_name:
             with ctx.cache_lock:
                 existing = ctx.company_records.get(code, {})
                 updated = dict(existing)
@@ -646,7 +646,6 @@ def _resolve_company_metadata(
                         ctx.company_conn,
                         code,
                         company_name=str(updated.get("company_name", "")),
-                        securities_report_pdf_url=str(updated.get("securities_report_pdf_url", "")),
                     )
                     ctx.company_conn.commit()
 

@@ -73,14 +73,11 @@ class TestMetadataCache(unittest.TestCase):
     def test_fetch_from_irbank_does_not_cache_transient_failure(self) -> None:
         company_metadata_fallback._METADATA_CACHE.clear()
         ir_html: str = "<h1>テスト株式会社（1234）のIR情報・決算資料</h1><dt>時価</dt><dd>100億円</dd>"
-        edinet_html: str = 'title="有価証券報告書 第1期" href="notes?f=S100ABCD"'
 
         browser: MagicMock = MagicMock(spec=BrowserService)
         browser.fetch.side_effect = [
             _make_browser_error("down"),
-            _make_browser_error("down"),
             _make_browser_response(ir_html),
-            _make_browser_response(edinet_html),
         ]
 
         first = company_metadata_fallback.fetch_from_irbank("1234", browser=browser)
@@ -88,26 +85,22 @@ class TestMetadataCache(unittest.TestCase):
 
         self.assertEqual(first.company_name, "")
         self.assertEqual(second.company_name, "テスト株式会社")
-        self.assertTrue(second.securities_report_pdf_url.endswith("/S100ABCD.pdf"))
 
     def test_fetch_from_irbank_accepts_alpha_suffix_code(self) -> None:
         """英字サフィックス付きコード(xxxA形式)がバリデーションを通過し、IRBank URLが正しく構築される."""
         company_metadata_fallback._METADATA_CACHE.clear()
         ir_html: str = "<h1>トライアル HD（141A）のIR情報・決算資料</h1><dt>時価</dt><dd>4933億円</dd>"
-        edinet_html: str = 'title="有価証券報告書 第11期" href="notes?f=S100WRQT"'
 
         browser: MagicMock = MagicMock(spec=BrowserService)
         browser.fetch.side_effect = [
             _make_browser_response(ir_html),
-            _make_browser_response(edinet_html),
         ]
 
         result = company_metadata_fallback.fetch_from_irbank("141A", browser=browser)
 
         self.assertEqual(result.company_name, "トライアル HD")
-        self.assertTrue(result.securities_report_pdf_url.endswith("/S100WRQT.pdf"))
 
-    def test_fetch_from_irbank_can_skip_edinet_when_pdf_not_needed(self) -> None:
+    def test_fetch_from_irbank_fetches_name_only(self) -> None:
         company_metadata_fallback._METADATA_CACHE.clear()
         ir_html: str = "<h1>テスト株式会社（1234）のIR情報・決算資料</h1>"
 
@@ -116,10 +109,9 @@ class TestMetadataCache(unittest.TestCase):
             _make_browser_response(ir_html),
         ]
 
-        result = company_metadata_fallback.fetch_from_irbank("1234", browser=browser, need_pdf=False)
+        result = company_metadata_fallback.fetch_from_irbank("1234", browser=browser)
 
         self.assertEqual(result.company_name, "テスト株式会社")
-        self.assertEqual(result.securities_report_pdf_url, "")
         self.assertEqual(browser.fetch.call_count, 1)
 
 

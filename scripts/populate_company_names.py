@@ -13,8 +13,8 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from src.company_store import connect_company_db, load_company_directory, merge_company_record
-from src.stock_db_sync import load_stock_db_company_metadata
+from src.company_store import connect_company_db, load_company_directory, merge_company_record  # noqa: E402
+from src.stock_db_sync import load_stock_db_company_metadata  # noqa: E402
 
 JPX_URL = "https://www.jpx.co.jp/markets/statistics-equities/misc/tvdivq0000001vg2-att/data_j.xls"
 

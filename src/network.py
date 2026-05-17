@@ -40,7 +40,7 @@ def urlopen_with_retry(
             if attempt >= attempts or not is_transient_network_error(e):
                 raise
             time.sleep(float(backoff_sec) * (2 ** (attempt - 1)))
-        except (urllib.error.URLError, TimeoutError, socket.timeout, ConnectionError, OSError) as e:
+        except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
             if attempt >= attempts or not is_transient_network_error(e):
                 raise
             time.sleep(float(backoff_sec) * (2 ** (attempt - 1)))

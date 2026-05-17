@@ -1,20 +1,20 @@
-"""Regression tests for PDF extraction helpers."""
+"""Regression tests for facility table parsing helpers."""
 
 from __future__ import annotations
 
 import unittest
 
-from src import pdf_extract
+from src import facility_extract
 
 
 class TestExtractLocation(unittest.TestCase):
     def test_detects_hoka_after_closing_paren(self) -> None:
-        loc, has_hoka = pdf_extract._extract_location("東京支店(東京都千代田区)他60営業所等")
+        loc, has_hoka = facility_extract._extract_location("東京支店(東京都千代田区)他60営業所等")
         self.assertEqual(loc, "東京都千代田区")
         self.assertTrue(has_hoka)
 
     def test_no_false_positive_without_hoka(self) -> None:
-        loc, has_hoka = pdf_extract._extract_location("本社(東京都千代田区丸の内一丁目4番1号)")
+        loc, has_hoka = facility_extract._extract_location("本社(東京都千代田区丸の内一丁目4番1号)")
         self.assertEqual(loc, "東京都千代田区")
         self.assertFalse(has_hoka)
 
@@ -28,7 +28,7 @@ class TestExtractFromTable(unittest.TestCase):
             ["(東京都渋谷区)", "営業拠点", "", ""],
         ]
 
-        rows, errs = pdf_extract._extract_from_table(table)
+        rows, errs = facility_extract._extract_from_table(table)
 
         self.assertEqual(rows, [])
         self.assertEqual(errs, [])
@@ -40,7 +40,7 @@ class TestExtractFromTable(unittest.TestCase):
             ["本社\n(東京都渋谷区)", "事務所用設備", "232,009", "100(8)"],
         ]
 
-        rows, errs = pdf_extract._extract_from_table(table)
+        rows, errs = facility_extract._extract_from_table(table)
 
         self.assertEqual(rows, [])
         self.assertEqual(errs, [])
@@ -52,7 +52,7 @@ class TestExtractFromTable(unittest.TestCase):
             ["本社\n(東京都江東区)", "その他設備", "407(190.1)", "680"],
         ]
 
-        rows, errs = pdf_extract._extract_from_table(table)
+        rows, errs = facility_extract._extract_from_table(table)
 
         self.assertEqual(errs, [])
         self.assertEqual(len(rows), 1)
@@ -72,7 +72,7 @@ class TestExtractFromTable(unittest.TestCase):
             ["新青山ビル", "東京都港区", "地上23階\n地下 4階", "98,971", "7,908", "1978年", "9,903", "25,043", "712", "33,665"],
         ]
 
-        rows, errs = pdf_extract._extract_from_table(table)
+        rows, errs = facility_extract._extract_from_table(table)
 
         self.assertEqual(errs, [])
         self.assertEqual(len(rows), 2)
@@ -92,7 +92,7 @@ class TestExtractFromTable(unittest.TestCase):
             ["東急不動産㈱", "Shibuya Sakura\nStage", "東京都渋谷区", "都市開発", "事務所・店\n舗・ホテル", "16,970", "72,118", "32,636", "2,267", "107,022"],
         ]
 
-        rows, errs = pdf_extract._extract_from_table(table)
+        rows, errs = facility_extract._extract_from_table(table)
 
         self.assertEqual(errs, [])
         self.assertEqual(len(rows), 1)
@@ -111,7 +111,7 @@ class TestExtractFromTable(unittest.TestCase):
             ["三井不動産㈱", "神保町三井ビルディング\n（東京都千代田区）", "オフィス", "鉄骨造", "2003.３", "14,182", "1,292", "3,045", "8,481", "34", "11,561"],
         ]
 
-        rows, errs = pdf_extract._extract_from_table(table)
+        rows, errs = facility_extract._extract_from_table(table)
 
         self.assertEqual(errs, [])
         self.assertEqual(len(rows), 1)
@@ -130,7 +130,7 @@ class TestExtractFromTable(unittest.TestCase):
             ["㈱サンシャインシティ", "サンシャインシティ", "東京都\n豊島区", "地上60階\n地下 5階", "510,042", "60,224", "55,719", "104,007", "3,692", "167,924"],
         ]
 
-        rows, errs = pdf_extract._extract_from_table(table)
+        rows, errs = facility_extract._extract_from_table(table)
 
         self.assertEqual(errs, [])
         self.assertEqual(len(rows), 1)
@@ -149,7 +149,7 @@ class TestExtractFromTable(unittest.TestCase):
             ["住友不動産㈱", "泉ガーデン＊", "5", "東京都\n港区", "地上43階\n地下4階", "184,033", "19,547", "23,269", "90,613", "113,883", "2002/10"],
         ]
 
-        rows, errs = pdf_extract._extract_from_table(table)
+        rows, errs = facility_extract._extract_from_table(table)
 
         self.assertEqual(errs, [])
         self.assertEqual(len(rows), 1)
@@ -169,7 +169,7 @@ class TestExtractFromTable(unittest.TestCase):
             ["三井不動産㈱", "綱町三井倶楽部\n（東京都港区）", "迎賓館", "...", "1913", "5,427", "28,563", "1,099", "23,571", "500", "25,171"],
         ]
 
-        rows, errs = pdf_extract._extract_from_table(table)
+        rows, errs = facility_extract._extract_from_table(table)
 
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0].site_name, "綱町三井倶楽部")
@@ -184,7 +184,7 @@ class TestExtractFromTable(unittest.TestCase):
             ["三井不動産㈱", "日本橋室町三井タワー\n（東京都中央区）", "オフィス", "RC造", "2019.３", "※１\n151,579", "※１※２\n10,255", "72,898", "108,443", "3,041", "184,383"],
         ]
 
-        rows, errs = pdf_extract._extract_from_table(table)
+        rows, errs = facility_extract._extract_from_table(table)
 
         self.assertEqual(len(rows), 1)
         self.assertAlmostEqual(rows[0].land_area_m2, 10_255.0)
@@ -199,7 +199,7 @@ class TestExtractFromTable(unittest.TestCase):
             ["本店", "東京都千代田区", "コマーシャル不動産事業", "1,100"],
         ]
 
-        rows, errs = pdf_extract._extract_from_table(table)
+        rows, errs = facility_extract._extract_from_table(table)
         self.assertEqual(rows, [])
 
     def test_skips_equipment_plan_table(self) -> None:
@@ -210,7 +210,7 @@ class TestExtractFromTable(unittest.TestCase):
             ["当社", "(仮称)赤坂計画", "東京都港区", "地上40階", "未定", "6,135"],
         ]
 
-        rows, errs = pdf_extract._extract_from_table(table)
+        rows, errs = facility_extract._extract_from_table(table)
         self.assertEqual(rows, [])
 
     def test_skips_lease_table(self) -> None:
@@ -220,5 +220,5 @@ class TestExtractFromTable(unittest.TestCase):
             ["東急住宅リース㈱", "アーバンドエル庄内通", "愛知県名古屋市", "14,475"],
         ]
 
-        rows, errs = pdf_extract._extract_from_table(table)
+        rows, errs = facility_extract._extract_from_table(table)
         self.assertEqual(rows, [])

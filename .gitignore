@@ -80,10 +80,6 @@ a.out
 .hypothesis/
 .cache/
 
-# PDF
-*.pdf
-*.PDF
-
 # バックアップ
 *.bak
 

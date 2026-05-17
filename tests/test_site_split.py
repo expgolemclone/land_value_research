@@ -1,7 +1,7 @@
 import unittest
 
 from src.company_config import SiteSplitEntry, expand_site_splits
-from src.pdf_extract import FacilityLand
+from src.facility_extract import FacilityLand
 
 
 class TestExpandSiteSplitsPassthrough(unittest.TestCase):

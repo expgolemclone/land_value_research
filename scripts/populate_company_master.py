@@ -31,15 +31,13 @@ def fetch_metadata(
     *,
     browser: BrowserService,
 ) -> CompanyEntry | None:
-    meta = fetch_from_irbank(code, browser=browser, need_name=True, need_pdf=True)
-    if not meta.company_name and not meta.securities_report_pdf_url:
+    meta = fetch_from_irbank(code, browser=browser, need_name=True)
+    if not meta.company_name:
         return None
 
     entry: CompanyEntry = {}
     if meta.company_name:
         entry["company_name"] = meta.company_name
-    if meta.securities_report_pdf_url:
-        entry["securities_report_pdf_url"] = meta.securities_report_pdf_url
     return entry
 
 
@@ -73,8 +71,7 @@ def main() -> None:
     missing = [
         code
         for code in input_codes
-        if not master.get(code, {}).get("securities_report_pdf_url")
-        or _needs_company_name(master.get(code, {}), code)
+        if _needs_company_name(master.get(code, {}), code)
     ]
     print(f"Total codes: {len(input_codes)}, Already stored: {len(master)}, Missing metadata: {len(missing)}")
 
@@ -118,7 +115,6 @@ def main() -> None:
                                 conn,
                                 code,
                                 company_name=str(entry.get("company_name", "")),
-                                securities_report_pdf_url=str(entry.get("securities_report_pdf_url", "")),
                             )
                         else:
                             master[code] = dict(entry)

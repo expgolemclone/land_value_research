@@ -21,7 +21,7 @@ from src.config import ADDRESS_OVERRIDES_PATH, DEFAULT_OUTPUT_DIR  # noqa: E402
 _log = logging.getLogger(__name__)
 
 # import に必要なため除外
-_SRC_ALLOW = {"geocode_tokyo.py", "__init__.py", "pdf_extract.py"}
+_SRC_ALLOW = {"geocode_tokyo.py", "__init__.py", "facility_extract.py"}
 
 # claude CLI の動作に必要なため除外
 _CLAUDE_ALLOW = {"SKILL.md", "settings.json", "settings.local.json"}

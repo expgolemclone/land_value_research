@@ -17,7 +17,7 @@ _CSV_ENCODINGS: list[str] = ["utf-8-sig", "cp932"]
 
 
 @contextlib.contextmanager
-def open_csv(path: str | os.PathLike[str]) -> Generator[TextIOWrapper, None, None]:
+def open_csv(path: str | os.PathLike[str]) -> Generator[TextIOWrapper]:
     """CSVファイルを utf-8-sig → cp932 の順で開く."""
     last_error: UnicodeDecodeError | None = None
     for enc in _CSV_ENCODINGS:

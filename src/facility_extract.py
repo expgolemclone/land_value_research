@@ -2,12 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
-import sys
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
-
-import pdfplumber
-from pdfminer.pdfexceptions import PDFException
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +133,10 @@ def _book_multiplier(header_text: str) -> int:
         return 1_000_000
     if "(千円)" in header_text or "（千円）" in header_text:
         return 1_000
-    logger.warning("帳簿価額の単位を検出できませんでした。百万円をデフォルトとして使用します。ヘッダー: %s", header_text[:200])
+    logger.warning(
+        "帳簿価額の単位を検出できませんでした。百万円をデフォルトとして使用します。ヘッダー: %s",
+        header_text[:200],
+    )
     return 1_000_000
 
 
@@ -385,78 +383,6 @@ def _extract_from_table(
     return out, missing_area_errors
 
 
-def extract_major_facilities_land(pdf_path: str) -> list[FacilityLand]:
-    out: list[FacilityLand] = []
-    missing_area_errors: list[str] = []
-    in_section = False
-    skip_hq_row = False
-
-    try:
-        pdf_file = pdfplumber.open(pdf_path)
-    except (PDFException, OSError) as e:
-        logger.warning("PDF解析失敗(破損の可能性): %s: %s: %s", pdf_path, type(e).__name__, e)
-        return []
-
-    with pdf_file as pdf:
-        for page in pdf.pages:
-            txt = _normalize_text(page.extract_text() or "")
-            if not txt:
-                continue
-            if (not in_section) and ("主要な設備の状況" in txt) and ("帳簿価額" in txt):
-                in_section = True
-            if not in_section:
-                continue
-            if _should_skip_hq_row(txt):
-                skip_hq_row = True
-            for table in page.extract_tables() or []:
-                rows, errs = _extract_from_table(table, skip_hq_row=skip_hq_row)
-                out.extend(rows)
-                missing_area_errors.extend(errs)
-            if re.search(r"[３3]\s*【\s*設備の新設", txt):
-                break
-
-    if missing_area_errors:
-        detail = " / ".join(missing_area_errors[:5])
-        if len(missing_area_errors) > 5:
-            detail += f" / ...({len(missing_area_errors)}件)"
-        print(f"Warn(missing land area): {pdf_path} {detail}")
-
-    dedup: dict[tuple[str, str], FacilityLand] = {}
-    for x in out:
-        dedup[(x.site_name, x.location_short)] = x
-    values = list(dedup.values())
-    if skip_hq_row:
-        values = [x for x in values if x.site_name != "本社"]
-    return values
-
-
-def extract_facilities_section_text(pdf_path: str) -> str:
-    """有報PDFの「主要な設備の状況」セクションのページテキストを抽出."""
-    pages_text: list[str] = []
-    in_section = False
-
-    try:
-        pdf_file = pdfplumber.open(pdf_path)
-    except (PDFException, OSError) as e:
-        logger.warning("PDF解析失敗(破損の可能性): %s: %s: %s", pdf_path, type(e).__name__, e)
-        return ""
-
-    with pdf_file as pdf:
-        for page in pdf.pages:
-            txt = _normalize_text(page.extract_text() or "")
-            if not txt:
-                continue
-            if (not in_section) and ("主要な設備の状況" in txt) and ("帳簿価額" in txt):
-                in_section = True
-            if not in_section:
-                continue
-            pages_text.append(txt)
-            if re.search(r"[３3]\s*【\s*設備の新設", txt):
-                break
-
-    return "\n\n".join(pages_text)
-
-
 def _should_skip_hq_row(page_text: str) -> bool:
     txt_compact = re.sub(r"\s+", "", _normalize_text(page_text))
     if ("本社欄に記載の土地" in txt_compact) and ("各所に所在" in txt_compact):
@@ -464,60 +390,3 @@ def _should_skip_hq_row(page_text: str) -> bool:
     if ("本社の土地のなかに鉱業用地" in txt_compact) and ("面積千" in txt_compact):
         return True
     return False
-
-
-# ---------------------------------------------------------------------------
-# Batch parallel extraction
-# ---------------------------------------------------------------------------
-
-_MAX_WORKERS_WIN = 61  # Windows ProcessPoolExecutor の上限
-
-
-def _extract_one(args: tuple[str, str]) -> tuple[str, list[FacilityLand]]:
-    """ProcessPoolExecutor 用ワーカー関数. (code, pdf_path) -> (code, sites)."""
-    code, pdf_path = args
-    try:
-        return code, extract_major_facilities_land(pdf_path)
-    except (PDFException, OSError) as e:
-        logger.warning("PDF並列抽出失敗: %s: %s: %s", pdf_path, type(e).__name__, e)
-        return code, []
-
-
-def batch_extract_facilities(
-    pdf_paths: dict[str, str],
-    max_workers: int = 4,
-) -> dict[str, list[FacilityLand]]:
-    """複数PDFを ProcessPoolExecutor で並列抽出.
-
-    Args:
-        pdf_paths: {証券コード: PDFファイルパス} の辞書
-        max_workers: 並列プロセス数
-
-    Returns:
-        {証券コード: FacilityLandリスト} の辞書
-    """
-    if not pdf_paths:
-        return {}
-
-    if sys.platform == "win32":
-        max_workers = min(max_workers, _MAX_WORKERS_WIN)
-    max_workers = max(1, min(max_workers, len(pdf_paths)))
-
-    # 1件だけならプロセス起動オーバーヘッドを避ける
-    if len(pdf_paths) == 1:
-        code, path = next(iter(pdf_paths.items()))
-        return {code: extract_major_facilities_land(path)}
-
-    results: dict[str, list[FacilityLand]] = {}
-    items = list(pdf_paths.items())
-
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        future_to_code = {
-            executor.submit(_extract_one, (code, path)): code
-            for code, path in items
-        }
-        for future in as_completed(future_to_code):
-            code, sites = future.result()
-            results[code] = sites
-
-    return results

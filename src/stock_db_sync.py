@@ -11,7 +11,6 @@ from pathlib import Path
 
 from stock_db.paths import PROJECT_ROOT as STOCK_DB_PROJECT_ROOT
 from stock_db.paths import STOCKS_DB_PATH
-from stock_db.sources.edinet.api_client import build_pdf_url
 
 from src.company_store import CompanyDirectory, merge_company_record
 
@@ -25,14 +24,12 @@ _DEFAULT_MARKET_CAP_MAX_AGE_DAYS = 7
 @dataclass(frozen=True)
 class StockDbCompanyMetadata:
     company_name: str = ""
-    securities_report_pdf_url: str = ""
 
 
 @dataclass(frozen=True)
 class StockDbXbrlArtifact:
     doc_id: str
     xbrl_path: str
-    securities_report_pdf_url: str
     source_size: int
     source_mtime_ns: int
 
@@ -113,52 +110,20 @@ def load_stock_db_company_metadata(
             placeholders = ",".join("?" for _ in batch)
             stock_rows = conn.execute(
                 f"""
-                SELECT ticker, name, securities_report_url
+                SELECT ticker, name
                 FROM stocks
                 WHERE ticker IN ({placeholders})
                 """,
                 batch,
             ).fetchall()
-            sec_report_rows = conn.execute(
-                f"""
-                SELECT ticker, doc_id
-                FROM sec_reports
-                WHERE ticker IN ({placeholders})
-                  AND COALESCE(doc_id, '') <> ''
-                ORDER BY
-                    ticker,
-                    CASE WHEN fiscal_year = 'latest' THEN 0 ELSE 1 END,
-                    updated_at DESC,
-                    doc_id DESC
-                """,
-                batch,
-            ).fetchall()
-
-            doc_id_by_ticker: dict[str, str] = {}
-            for row in sec_report_rows:
-                ticker = str(row["ticker"])
-                if ticker not in doc_id_by_ticker:
-                    doc_id_by_ticker[ticker] = str(row["doc_id"])
 
             for row in stock_rows:
                 ticker = str(row["ticker"])
-                pdf_url = str(row["securities_report_url"] or "")
-                if not pdf_url:
-                    doc_id = doc_id_by_ticker.get(ticker, "")
-                    if doc_id:
-                        pdf_url = build_pdf_url(doc_id)
                 metadata = StockDbCompanyMetadata(
                     company_name=str(row["name"] or ""),
-                    securities_report_pdf_url=pdf_url,
                 )
-                if metadata.company_name or metadata.securities_report_pdf_url:
+                if metadata.company_name:
                     result[ticker] = metadata
-
-            for ticker, doc_id in doc_id_by_ticker.items():
-                if ticker not in result:
-                    result[ticker] = StockDbCompanyMetadata(
-                        securities_report_pdf_url=build_pdf_url(doc_id),
-                    )
     finally:
         conn.close()
 
@@ -212,7 +177,6 @@ def load_stock_db_xbrl_artifacts(
                 result[ticker] = StockDbXbrlArtifact(
                     doc_id=doc_id,
                     xbrl_path=str(xbrl_path.expanduser().resolve()),
-                    securities_report_pdf_url=build_pdf_url(doc_id),
                     source_size=source_size,
                     source_mtime_ns=source_mtime_ns,
                 )
@@ -340,10 +304,6 @@ def sync_company_records_from_stock_db(
         current_name = str(current.get("company_name", "") or "")
         if metadata.company_name and _is_placeholder_company_name(current_name, code):
             next_values["company_name"] = metadata.company_name
-
-        current_pdf_url = str(current.get("securities_report_pdf_url", "") or "")
-        if metadata.securities_report_pdf_url and not current_pdf_url:
-            next_values["securities_report_pdf_url"] = metadata.securities_report_pdf_url
 
         if not next_values:
             continue

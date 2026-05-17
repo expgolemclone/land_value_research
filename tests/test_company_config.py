@@ -9,7 +9,7 @@ from src.company_config import (
     _parse_split_entries,
     load_address_overrides,
 )
-from src.pdf_extract import FacilityLand
+from src.facility_extract import FacilityLand
 
 
 class TestLoadAddressOverrides(unittest.TestCase):

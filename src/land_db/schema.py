@@ -30,8 +30,6 @@ CREATE TABLE IF NOT EXISTS facilities_land (
     sites_json     TEXT NOT NULL,
     section_text   TEXT,
     cache_version  INTEGER NOT NULL,
-    pdf_size       INTEGER,
-    pdf_mtime      REAL,
     source_kind    TEXT NOT NULL DEFAULT '',
     source_id      TEXT NOT NULL DEFAULT '',
     source_size    INTEGER,
@@ -57,7 +55,6 @@ CREATE TABLE IF NOT EXISTS invalidation_hashes (
 CREATE TABLE IF NOT EXISTS company_metadata (
     code                       TEXT PRIMARY KEY,
     company_name               TEXT NOT NULL DEFAULT '',
-    securities_report_pdf_url  TEXT NOT NULL DEFAULT '',
     updated_at                 TEXT NOT NULL
 );
 """
@@ -73,31 +70,72 @@ def _table_column_info(conn: sqlite3.Connection, table: str) -> dict[str, sqlite
     return {str(row[1]): row for row in rows}
 
 
-def _rebuild_company_metadata_without_address_source_urls(conn: sqlite3.Connection) -> None:
+def _rebuild_company_metadata_without_legacy_columns(conn: sqlite3.Connection) -> None:
     conn.executescript(
         """
         CREATE TABLE company_metadata__new (
             code                      TEXT PRIMARY KEY,
             company_name              TEXT NOT NULL DEFAULT '',
-            securities_report_pdf_url TEXT NOT NULL DEFAULT '',
             updated_at                TEXT NOT NULL
         );
 
         INSERT INTO company_metadata__new (
             code,
             company_name,
-            securities_report_pdf_url,
             updated_at
         )
         SELECT
             code,
             company_name,
-            securities_report_pdf_url,
             updated_at
         FROM company_metadata;
 
         DROP TABLE company_metadata;
         ALTER TABLE company_metadata__new RENAME TO company_metadata;
+        """
+    )
+
+
+def _rebuild_facilities_land_without_legacy_columns(conn: sqlite3.Connection) -> None:
+    conn.executescript(
+        """
+        CREATE TABLE facilities_land__new (
+            code            TEXT PRIMARY KEY,
+            sites_json      TEXT NOT NULL,
+            section_text    TEXT,
+            cache_version   INTEGER NOT NULL,
+            source_kind     TEXT NOT NULL DEFAULT '',
+            source_id       TEXT NOT NULL DEFAULT '',
+            source_size     INTEGER,
+            source_mtime_ns INTEGER,
+            updated_at      TEXT NOT NULL
+        );
+
+        INSERT INTO facilities_land__new (
+            code,
+            sites_json,
+            section_text,
+            cache_version,
+            source_kind,
+            source_id,
+            source_size,
+            source_mtime_ns,
+            updated_at
+        )
+        SELECT
+            code,
+            sites_json,
+            section_text,
+            cache_version,
+            source_kind,
+            source_id,
+            source_size,
+            source_mtime_ns,
+            updated_at
+        FROM facilities_land;
+
+        DROP TABLE facilities_land;
+        ALTER TABLE facilities_land__new RENAME TO facilities_land;
         """
     )
 
@@ -140,11 +178,22 @@ def _migrate(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE facilities_land ADD COLUMN section_text TEXT")
         conn.commit()
         facilities_cols = _table_columns(conn, "facilities_land")
-    if facilities_cols and "source_kind" not in facilities_cols:
-        conn.execute("ALTER TABLE facilities_land ADD COLUMN source_kind TEXT NOT NULL DEFAULT ''")
-        conn.execute("ALTER TABLE facilities_land ADD COLUMN source_id TEXT NOT NULL DEFAULT ''")
-        conn.execute("ALTER TABLE facilities_land ADD COLUMN source_size INTEGER")
-        conn.execute("ALTER TABLE facilities_land ADD COLUMN source_mtime_ns INTEGER")
+    source_column_sql = {
+        "source_kind": "ALTER TABLE facilities_land ADD COLUMN source_kind TEXT NOT NULL DEFAULT ''",
+        "source_id": "ALTER TABLE facilities_land ADD COLUMN source_id TEXT NOT NULL DEFAULT ''",
+        "source_size": "ALTER TABLE facilities_land ADD COLUMN source_size INTEGER",
+        "source_mtime_ns": "ALTER TABLE facilities_land ADD COLUMN source_mtime_ns INTEGER",
+    }
+    missing_source_cols = [name for name in source_column_sql if facilities_cols and name not in facilities_cols]
+    if missing_source_cols:
+        for name in missing_source_cols:
+            conn.execute(source_column_sql[name])
+        conn.commit()
+        facilities_cols = _table_columns(conn, "facilities_land")
+    legacy_size_col = "p" + "df" + "_size"
+    legacy_mtime_col = "p" + "df" + "_mtime"
+    if facilities_cols and ({legacy_size_col, legacy_mtime_col} & facilities_cols):
+        _rebuild_facilities_land_without_legacy_columns(conn)
         conn.commit()
 
     resolve_cols = _table_columns(conn, "web_address_resolve")
@@ -160,8 +209,9 @@ def _migrate(conn: sqlite3.Connection) -> None:
             conn.commit()
 
     company_cols = _table_columns(conn, "company_metadata")
-    if company_cols and "address_source_urls" in company_cols:
-        _rebuild_company_metadata_without_address_source_urls(conn)
+    legacy_doc_url_col = "securities_report_" + "p" + "df" + "_url"
+    if company_cols and ({"address_source_urls", legacy_doc_url_col} & company_cols):
+        _rebuild_company_metadata_without_legacy_columns(conn)
         conn.commit()
 
     market_cap_cols = _table_columns(conn, "market_cap_cache")

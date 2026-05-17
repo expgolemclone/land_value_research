@@ -11,8 +11,6 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-logger = logging.getLogger(__name__)
-
 from src.config import (
     LAND_DB_ASSET_NAME,
     LAND_DB_ASSET_SHA256,
@@ -21,6 +19,8 @@ from src.config import (
     LAND_DB_RELEASE_REPO,
     LAND_DB_RELEASE_TAG,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class LandDbDownloadError(RuntimeError):

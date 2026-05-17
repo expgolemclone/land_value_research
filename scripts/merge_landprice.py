@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
 # L02 -> L01 field mapping (only the fields consumed by landprice_tokyo.rs)
