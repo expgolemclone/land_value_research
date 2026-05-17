@@ -1876,6 +1876,30 @@
 '6497':
   府中工場: 東京都府中市西原町1丁目3番
   賃貸不動産: 東京都府中市分梅町1丁目16番15号
+'6508':
+  本社事務所:
+  - address: 東京都品川区大崎2丁目1番1号
+    area_m2: 39000.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報108千㎡のうち、ThinkPark Tower 18,850㎡、E東地区約2.4ha、明電舎地区約3.9haが公開資料で確認できるため、東京側の上限的な面積として3.9haを採用
+    area_m2_source: 品川区「大崎駅西口地区」明電舎地区対象区域 約3.9ha
+    area_m2_source_url: https://www.city.shinagawa.tokyo.jp/PC/kankyo/kankyo-toshiseibi/kankyo-toshiseibi-project/kankyo-toshiseibi-project-oosakinishi/index.html
+    name: 本社事務所(大崎・明電舎地区)
+  - address: 全国各所
+    area_m2: 69000.0
+    area_m2_is_estimated: true
+    area_m2_note: 有報の所在地欄に「支社・支店・営業所等(大阪府大阪市中央区他)」を含むため、非東京・内訳不明の残差を東京評価から除外
+    area_m2_source: 有報の本社事務所・支社支店営業所等土地108,000㎡から大崎明電舎地区39,000㎡を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100W34Y.pdf
+    name: 本社事務所(支社・支店・営業所等・全国合算)
+  本社等:
+  - address: 東京都品川区大崎5丁目5番5号
+    area_m2: 2000.0
+    area_m2_is_estimated: false
+    area_m2_note: 明電興産は沼津・太田にも営業拠点があるが、有報の国内子会社行は2千㎡と小さいため、代表地として公式本社事務所を採用
+    area_m2_source: 有報 国内子会社 明電興産 本社等土地2千㎡、公式本社事務所所在地
+    area_m2_source_url: https://www.meidensha.co.jp/ksn/corporate/
+    name: 本社等(明電興産・大崎)
 '6675':
   本社:
   - address: 東京都港区白金1丁目17番3号
