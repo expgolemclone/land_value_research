@@ -209,6 +209,52 @@ class TestWebAddressResolve:
         assert record == {"resolved": False}
         assert load_resolve_cache(land_conn, "missing-key") is None
 
+    def test_migrates_legacy_not_null_miss_fields(self, tmp_path: Path) -> None:
+        conn = get_connection(tmp_path / "legacy_land.db")
+        conn.executescript(
+            """
+            CREATE TABLE web_address_resolve (
+                resolve_key TEXT PRIMARY KEY,
+                address     TEXT NOT NULL,
+                score       INTEGER NOT NULL,
+                source_url  TEXT NOT NULL
+            );
+
+            INSERT INTO web_address_resolve (
+                resolve_key,
+                address,
+                score,
+                source_url
+            )
+            VALUES (
+                'hit-key',
+                '東京都千代田区丸の内1-4-5',
+                80,
+                'https://example.com'
+            );
+            """
+        )
+        conn.commit()
+
+        try:
+            init_land_db(conn)
+            info = {
+                str(row["name"]): int(row["notnull"])
+                for row in conn.execute("PRAGMA table_info(web_address_resolve)").fetchall()
+            }
+
+            assert info["address"] == 0
+            assert info["score"] == 0
+            assert info["source_url"] == 0
+
+            save_resolve_miss(conn, "missing-key")
+            conn.commit()
+
+            assert load_resolve_cache_record(conn, "missing-key") == {"resolved": False}
+            assert load_resolve_cache(conn, "missing-key") is None
+        finally:
+            conn.close()
+
 
 class TestInvalidationHashes:
     def test_save_list_delete(self, land_conn: sqlite3.Connection) -> None:

@@ -453,7 +453,7 @@ Web UI用JSONは `src.ranking_data.RankingRow` と `src.web.build_ranking_payloa
 | `invalidation_hashes` | `(hash_type, code)` | 住所補正・地価補正の企業別ハッシュ。                                                         |
 | `company_metadata`    | `code`              | 会社名、有報PDF URL、更新時刻。                                                              |
 
-`init_land_db()` は `_migrate()` を先に実行し、旧スキーマからの移行を行う。現時点の移行では、`facilities_land.section_text` とXBRL source列追加、`web_address_resolve.resolved` 追加、旧 `company_metadata.address_source_urls` 削除、旧 `market_cap_cache` 削除がある。
+`init_land_db()` は `_migrate()` を先に実行し、旧スキーマからの移行を行う。現時点の移行では、`facilities_land.section_text` とXBRL source列追加、`web_address_resolve.resolved` 追加、旧 `web_address_resolve.address/score/source_url` の NOT NULL 制約除去、旧 `company_metadata.address_source_urls` 削除、旧 `market_cap_cache` 削除がある。
 
 ### 10.2 キャッシュ無効化
 

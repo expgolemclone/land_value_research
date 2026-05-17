@@ -68,6 +68,11 @@ def _table_columns(conn: sqlite3.Connection, table: str) -> set[str]:
     return {str(row[1]) for row in rows}
 
 
+def _table_column_info(conn: sqlite3.Connection, table: str) -> dict[str, sqlite3.Row]:
+    rows = conn.execute(f"PRAGMA table_info({table})").fetchall()  # noqa: S608
+    return {str(row[1]): row for row in rows}
+
+
 def _rebuild_company_metadata_without_address_source_urls(conn: sqlite3.Connection) -> None:
     conn.executescript(
         """
@@ -97,6 +102,38 @@ def _rebuild_company_metadata_without_address_source_urls(conn: sqlite3.Connecti
     )
 
 
+def _rebuild_web_address_resolve_with_nullable_miss_fields(conn: sqlite3.Connection) -> None:
+    conn.executescript(
+        """
+        CREATE TABLE web_address_resolve__new (
+            resolve_key TEXT PRIMARY KEY,
+            resolved    INTEGER NOT NULL,
+            address     TEXT,
+            score       INTEGER,
+            source_url  TEXT
+        );
+
+        INSERT INTO web_address_resolve__new (
+            resolve_key,
+            resolved,
+            address,
+            score,
+            source_url
+        )
+        SELECT
+            resolve_key,
+            resolved,
+            address,
+            score,
+            source_url
+        FROM web_address_resolve;
+
+        DROP TABLE web_address_resolve;
+        ALTER TABLE web_address_resolve__new RENAME TO web_address_resolve;
+        """
+    )
+
+
 def _migrate(conn: sqlite3.Connection) -> None:
     facilities_cols = _table_columns(conn, "facilities_land")
     if facilities_cols and "section_text" not in facilities_cols:
@@ -114,6 +151,13 @@ def _migrate(conn: sqlite3.Connection) -> None:
     if resolve_cols and "resolved" not in resolve_cols:
         conn.execute("ALTER TABLE web_address_resolve ADD COLUMN resolved INTEGER NOT NULL DEFAULT 1")
         conn.commit()
+        resolve_cols = _table_columns(conn, "web_address_resolve")
+    if resolve_cols:
+        resolve_info = _table_column_info(conn, "web_address_resolve")
+        nullable_miss_fields = ("address", "score", "source_url")
+        if any(int(resolve_info[name][3]) != 0 for name in nullable_miss_fields if name in resolve_info):
+            _rebuild_web_address_resolve_with_nullable_miss_fields(conn)
+            conn.commit()
 
     company_cols = _table_columns(conn, "company_metadata")
     if company_cols and "address_source_urls" in company_cols:
