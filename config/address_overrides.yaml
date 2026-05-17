@@ -3059,6 +3059,21 @@
     name: 本社(全国ホテル等・合算)
 '9731':
   本社他: 東京都大田区下丸子2丁目11番8号
+  首都圏本部他:
+  - address: 東京都大田区下丸子2丁目11番1号
+    area_m2: 2055.0
+    area_m2_is_estimated: true
+    area_m2_note: 近傍標準地「大田-42」(大田区下丸子2-11-11)の地積2,055m²を東京事務所の代理値として採用
+    area_m2_source: 公示地価標準地の地積
+    area_m2_source_url: https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131110042.html
+    name: 首都圏本部他(東京事務所・大田区)
+  - address: 東京都西東京市芝久保町3丁目2番1号
+    area_m2: 46431.93
+    area_m2_is_estimated: true
+    area_m2_note: 48,486.93 - 2,055.0 = 46,431.93。公式拠点一覧の都内クリーニング拠点2件のうち残余を武蔵野事務所に配分
+    area_m2_source: 有報の首都圏本部他面積から東京事務所推定面積を控除
+    area_m2_source_url: https://disclosure2dl.edinet-fsa.go.jp/searchdocument/pdf/S100XT2K.pdf
+    name: 首都圏本部他(武蔵野事務所・西東京市)
   東京支店他:
   - address: 東京都大田区下丸子2丁目11番1号
     area_m2: 2055.0
