@@ -4,7 +4,6 @@ import sqlite3
 from pathlib import Path
 
 import pytest
-
 from stock_db.storage.connection import get_connection
 
 from src.land_db.repo import (
@@ -92,31 +91,101 @@ class TestFacilitiesCache:
             code,
             sites,
             cache_version=5,
-            pdf_size=12345,
-            pdf_mtime=1700000000.0,
+            source_kind="xbrl",
+            source_id="S100TEST",
+            source_size=12345,
+            source_mtime_ns=1_700_000_000_000_000_000,
             section_text="設備の状況テキスト",
         )
         land_conn.commit()
 
-        result = load_facilities_cache(land_conn, code, pdf_size=12345, pdf_mtime=1700000000.0)
+        result = load_facilities_cache(
+            land_conn,
+            code,
+            cache_version=5,
+            source_kind="xbrl",
+            source_id="S100TEST",
+            source_size=12345,
+            source_mtime_ns=1_700_000_000_000_000_000,
+        )
         assert result is not None
         loaded_sites, loaded_text = result
         assert loaded_sites[0]["site_name"] == "本社"
         assert loaded_text == "設備の状況テキスト"
 
+    def test_cache_misses_on_source_or_version_change(self, land_conn: sqlite3.Connection) -> None:
+        save_sites_cache(
+            land_conn,
+            "1234",
+            [],
+            cache_version=5,
+            source_kind="xbrl",
+            source_id="S100OLD",
+            source_size=100,
+            source_mtime_ns=1,
+        )
+        land_conn.commit()
+
+        assert (
+            load_facilities_cache(
+                land_conn,
+                "1234",
+                cache_version=6,
+                source_kind="xbrl",
+                source_id="S100OLD",
+                source_size=100,
+                source_mtime_ns=1,
+            )
+            is None
+        )
+        assert (
+            load_facilities_cache(
+                land_conn,
+                "1234",
+                cache_version=5,
+                source_kind="xbrl",
+                source_id="S100NEW",
+                source_size=100,
+                source_mtime_ns=1,
+            )
+            is None
+        )
+
     def test_section_text_can_be_written_later(self, land_conn: sqlite3.Connection) -> None:
-        save_sites_cache(land_conn, "1234", [], cache_version=5, pdf_size=100, pdf_mtime=1.0)
+        save_sites_cache(
+            land_conn,
+            "1234",
+            [],
+            cache_version=5,
+            source_kind="xbrl",
+            source_id="S100TEST",
+            source_size=100,
+            source_mtime_ns=1,
+        )
         save_facilities_section_text(
             land_conn,
             "1234",
             "追記テキスト",
             cache_version=5,
-            pdf_size=100,
-            pdf_mtime=1.0,
+            source_kind="xbrl",
+            source_id="S100TEST",
+            source_size=100,
+            source_mtime_ns=1,
         )
         land_conn.commit()
 
-        assert load_facilities_section_text(land_conn, "1234", pdf_size=100, pdf_mtime=1.0) == "追記テキスト"
+        assert (
+            load_facilities_section_text(
+                land_conn,
+                "1234",
+                cache_version=5,
+                source_kind="xbrl",
+                source_id="S100TEST",
+                source_size=100,
+                source_mtime_ns=1,
+            )
+            == "追記テキスト"
+        )
 
 
 class TestWebAddressResolve:
@@ -159,6 +228,35 @@ class TestInvalidationHashes:
 
 
 class TestSchemaMigration:
+    def test_adds_xbrl_source_columns_to_legacy_facilities_land(self, tmp_path: Path) -> None:
+        conn = get_connection(tmp_path / "legacy_facilities.db")
+        try:
+            conn.executescript(
+                """
+                CREATE TABLE facilities_land (
+                    code           TEXT PRIMARY KEY,
+                    sites_json     TEXT NOT NULL,
+                    section_text   TEXT,
+                    cache_version  INTEGER NOT NULL,
+                    pdf_size       INTEGER,
+                    pdf_mtime      REAL,
+                    updated_at     TEXT NOT NULL
+                );
+                INSERT INTO facilities_land (
+                    code, sites_json, section_text, cache_version, pdf_size, pdf_mtime, updated_at
+                )
+                VALUES ('1234', '[]', NULL, 5, 100, 1.0, '2026-04-29T00:00:00+00:00');
+                """
+            )
+            conn.commit()
+
+            init_land_db(conn)
+
+            columns = {str(row[1]) for row in conn.execute("PRAGMA table_info(facilities_land)").fetchall()}
+            assert {"source_kind", "source_id", "source_size", "source_mtime_ns"} <= columns
+        finally:
+            conn.close()
+
     def test_removes_legacy_company_metadata_columns_and_market_cap_cache(self, tmp_path: Path) -> None:
         conn = get_connection(tmp_path / "legacy_land.db")
         try:

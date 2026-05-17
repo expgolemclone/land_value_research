@@ -32,6 +32,10 @@ CREATE TABLE IF NOT EXISTS facilities_land (
     cache_version  INTEGER NOT NULL,
     pdf_size       INTEGER,
     pdf_mtime      REAL,
+    source_kind    TEXT NOT NULL DEFAULT '',
+    source_id      TEXT NOT NULL DEFAULT '',
+    source_size    INTEGER,
+    source_mtime_ns INTEGER,
     updated_at     TEXT NOT NULL
 );
 
@@ -97,6 +101,13 @@ def _migrate(conn: sqlite3.Connection) -> None:
     facilities_cols = _table_columns(conn, "facilities_land")
     if facilities_cols and "section_text" not in facilities_cols:
         conn.execute("ALTER TABLE facilities_land ADD COLUMN section_text TEXT")
+        conn.commit()
+        facilities_cols = _table_columns(conn, "facilities_land")
+    if facilities_cols and "source_kind" not in facilities_cols:
+        conn.execute("ALTER TABLE facilities_land ADD COLUMN source_kind TEXT NOT NULL DEFAULT ''")
+        conn.execute("ALTER TABLE facilities_land ADD COLUMN source_id TEXT NOT NULL DEFAULT ''")
+        conn.execute("ALTER TABLE facilities_land ADD COLUMN source_size INTEGER")
+        conn.execute("ALTER TABLE facilities_land ADD COLUMN source_mtime_ns INTEGER")
         conn.commit()
 
     resolve_cols = _table_columns(conn, "web_address_resolve")

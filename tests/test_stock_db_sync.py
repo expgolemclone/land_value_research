@@ -5,7 +5,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from unittest.mock import patch
 
-from src.stock_db_sync import load_market_cap_from_stock_db, run_stooq_scrape
+from src.stock_db_sync import load_market_cap_from_stock_db, load_stock_db_xbrl_artifacts, run_stooq_scrape
 
 
 def _create_stock_db(path: Path) -> sqlite3.Connection:
@@ -26,6 +26,17 @@ def _create_stock_db(path: Path) -> sqlite3.Connection:
             volume INTEGER,
             updated_at TEXT,
             PRIMARY KEY (ticker, date)
+        );
+
+        CREATE TABLE sec_reports (
+            ticker TEXT NOT NULL,
+            fiscal_year TEXT NOT NULL,
+            doc_id TEXT NOT NULL,
+            doc_type TEXT NOT NULL DEFAULT 'annual_report',
+            xbrl_path TEXT,
+            source TEXT NOT NULL DEFAULT 'edinet',
+            updated_at TEXT NOT NULL,
+            PRIMARY KEY (ticker, doc_id)
         );
         """
     )
@@ -103,6 +114,72 @@ class TestLoadMarketCapFromStockDb(unittest.TestCase):
                 )
 
                 self.assertEqual(result, {"1111": 20_000_000})
+            finally:
+                conn.close()
+
+
+class TestLoadStockDbXbrlArtifacts(unittest.TestCase):
+    def test_loads_latest_valid_xbrl_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            db_path = root / "stocks.db"
+            conn = _create_stock_db(db_path)
+            try:
+                old_artifact = root / "raw" / "xbrl" / "1234" / "S100OLD"
+                old_artifact.mkdir(parents=True)
+                (old_artifact / "report.xhtml").write_text("<html>old</html>", encoding="utf-8")
+                (old_artifact.parent / "S100OLD.zip").write_bytes(b"oldzip")
+
+                latest_artifact = root / "raw" / "xbrl" / "1234" / "S100NEW"
+                latest_artifact.mkdir(parents=True)
+                (latest_artifact / "report.xhtml").write_text("<html>new</html>", encoding="utf-8")
+                (latest_artifact.parent / "S100NEW.zip").write_bytes(b"newzip")
+
+                conn.executemany(
+                    """
+                    INSERT INTO sec_reports (
+                        ticker, fiscal_year, doc_id, doc_type, xbrl_path, source, updated_at
+                    )
+                    VALUES (?, ?, ?, 'annual_report', ?, 'edinet', ?)
+                    """,
+                    [
+                        ("1234", "FY2024", "S100OLD", str(old_artifact), "2026-04-01T00:00:00+00:00"),
+                        ("1234", "latest", "S100NEW", str(latest_artifact), "2026-04-02T00:00:00+00:00"),
+                    ],
+                )
+                conn.commit()
+
+                result = load_stock_db_xbrl_artifacts(["1234"], db_path=db_path)
+
+                artifact = result["1234"]
+                self.assertEqual(artifact.doc_id, "S100NEW")
+                self.assertEqual(artifact.xbrl_path, str(latest_artifact.resolve()))
+                self.assertGreater(artifact.source_size, 0)
+                self.assertGreater(artifact.source_mtime_ns, 0)
+            finally:
+                conn.close()
+
+    def test_skips_artifact_without_zip(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            db_path = root / "stocks.db"
+            conn = _create_stock_db(db_path)
+            try:
+                artifact = root / "raw" / "xbrl" / "1234" / "S100NOZIP"
+                artifact.mkdir(parents=True)
+                (artifact / "report.xhtml").write_text("<html>body</html>", encoding="utf-8")
+                conn.execute(
+                    """
+                    INSERT INTO sec_reports (
+                        ticker, fiscal_year, doc_id, doc_type, xbrl_path, source, updated_at
+                    )
+                    VALUES (?, 'latest', ?, 'annual_report', ?, 'edinet', ?)
+                    """,
+                    ("1234", "S100NOZIP", str(artifact), "2026-04-02T00:00:00+00:00"),
+                )
+                conn.commit()
+
+                self.assertEqual(load_stock_db_xbrl_artifacts(["1234"], db_path=db_path), {})
             finally:
                 conn.close()
 

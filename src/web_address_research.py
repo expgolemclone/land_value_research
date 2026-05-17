@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pdfplumber
-
 from pdfminer.pdfexceptions import PDFException
 
 from src.browser import BrowserServiceError
@@ -76,6 +75,11 @@ class WebAddressResearcher:
             import shutil
 
             shutil.copy2(local_path, cache_path)
+
+    def seed_text(self, url: str, text: str) -> None:
+        """Register already-extracted page text for address resolution."""
+        self._text_cache[url] = text
+        self._addr_cache.pop(url, None)
 
     def _cache_path(self, url: str) -> str:
         key = string_md5(url)

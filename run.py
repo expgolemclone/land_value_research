@@ -9,7 +9,6 @@ import sqlite3
 import sys
 import threading
 import time
-import urllib.error
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -51,7 +50,6 @@ from src.config import (
     LANDPRICE_RS,
     OAZA_CSV,
     PATCH_DIR,
-    PDF_CACHE_DIR,
     PRICE_OVERRIDES_PATH,
     PROJECT_ROOT,
     RUN_LOGS_DIR,
@@ -77,13 +75,7 @@ from src.land_db.repo import (
 )
 from src.land_db.schema import init_land_db
 from src.landprice_tokyo import LandPriceTokyo, PriceResult
-from src.network import is_transient_network_error
-from src.pdf_extract import (
-    FacilityLand,
-    batch_extract_facilities,
-    extract_facilities_section_text,
-    extract_major_facilities_land,
-)
+from src.pdf_extract import FacilityLand
 from src.schema import (
     COL_ADDRESS,
     COL_ADDRESS_SOURCE,
@@ -121,10 +113,20 @@ from src.schema import (
     OUTPUT_COLUMNS,
     OutputRow,
 )
-from src.stock_db_sync import load_market_cap_from_stock_db, run_stooq_scrape, sync_company_records_from_stock_db
+from src.stock_db_sync import (
+    StockDbXbrlArtifact,
+    load_market_cap_from_stock_db,
+    load_stock_db_xbrl_artifacts,
+    run_stooq_scrape,
+    sync_company_records_from_stock_db,
+)
 from src.utils import ensure_dir, open_csv
 from src.web_address_research import WebAddressResearcher
-from src.web_cache import download_file, is_pdf_file
+from src.xbrl_extract import (
+    batch_extract_facilities_from_xbrl,
+    extract_facilities_from_xbrl,
+    extract_facilities_section_text_from_xbrl,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +134,8 @@ CACHE_SAVE_INTERVAL = 10
 COMPANY_RETRY_COUNT = 3
 EXIT_CODE_MEMORY_LIMIT = 75
 COMPANY_RETRY_BASE_DELAY_SEC = 2.0
+FACILITIES_CACHE_VERSION = 6
+FACILITIES_SOURCE_KIND = "xbrl"
 
 
 OUTPUT_FIELDNAMES = list(OUTPUT_COLUMNS)
@@ -154,6 +158,7 @@ class RunContext:
     landprice: LandPriceTokyo
     browser: BrowserService
     stock_db_market_caps: dict[str, int] = field(default_factory=dict)
+    stock_db_xbrl_artifacts: dict[str, StockDbXbrlArtifact] = field(default_factory=dict)
     cache_lock: threading.Lock = field(default_factory=threading.Lock)
 
 
@@ -278,11 +283,8 @@ def _resolve_market_cap(
     )
 
 
-def _build_address_source_urls(t: dict[str, object], pdf_url: str) -> list[str]:
-    source_urls = [str(url).strip() for url in t.get("address_source_urls", []) if str(url).strip()]
-    if pdf_url and pdf_url not in source_urls:
-        source_urls.append(pdf_url)
-    return source_urls
+def _build_address_source_urls(t: dict[str, object]) -> list[str]:
+    return [str(url).strip() for url in t.get("address_source_urls", []) if str(url).strip()]
 
 
 def load_targets(input_path: str) -> list[dict[str, str]]:
@@ -345,12 +347,6 @@ def load_targets(input_path: str) -> list[dict[str, str]]:
 
 def resolve_default_input(base_dir: str) -> str:
     return str(INPUT_CSV)
-
-
-def get_pdf_path(cache_dir: str, code: str) -> str:
-    pdf_dir = os.path.join(cache_dir, "pdf")
-    ensure_dir(pdf_dir)
-    return os.path.join(pdf_dir, f"{code}_securities_report.pdf")
 
 
 def get_geocode_adjustment_factor(level: str, args: argparse.Namespace) -> float:
@@ -418,7 +414,7 @@ def parse_args() -> argparse.Namespace:
         "--allow-download",
         action=argparse.BooleanOptionalAction,
         default=True,
-        help="PDF未存在時のダウンロード可否(default: on)",
+        help="互換用オプション。有報XBRLの取得は../stock_dbで事前実行する(default: on)",
     )
     parser.add_argument(
         "--allow-web-address",
@@ -436,7 +432,7 @@ def parse_args() -> argparse.Namespace:
         "--allow-auto-metadata",
         action=argparse.BooleanOptionalAction,
         default=True,
-        help="会社名/PDF URL/時価総額が不足時にIRBANKから自動補完するか(default: on)",
+        help="会社名が不足時にIRBANKから自動補完するか(default: on)",
     )
     parser.add_argument(
         "--landuse-match",
@@ -482,7 +478,6 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
     cache_dir = str(CACHE_DIR)
 
     ensure_dir(cache_dir)
-    ensure_dir(str(PDF_CACHE_DIR))
 
     addr_overrides = load_address_overrides(str(ADDRESS_OVERRIDES_PATH))
     price_overrides = load_price_overrides(str(PRICE_OVERRIDES_PATH))
@@ -633,16 +628,12 @@ def _resolve_company_metadata(
     meta = ctx.company_records.get(code, {})
     company_name = str(t["_resolved_company_name"] or meta.get("company_name", ""))
     print(f"[{company_index}/{total_companies}] 開始: {code} {company_name}")
-    pdf_url = str(t["pdf_url"] or meta.get("securities_report_pdf_url", ""))
     need_name = not company_name or company_name == code
-    need_pdf = not pdf_url
     fallback = None
-    if ctx.args.allow_auto_metadata and (need_name or need_pdf):
-        fallback = fetch_from_irbank(code, browser=ctx.browser, need_name=need_name, need_pdf=need_pdf)
+    if ctx.args.allow_auto_metadata and need_name:
+        fallback = fetch_from_irbank(code, browser=ctx.browser, need_name=need_name, need_pdf=False)
         if need_name and fallback.company_name:
             company_name = fallback.company_name
-        if need_pdf and fallback.securities_report_pdf_url:
-            pdf_url = fallback.securities_report_pdf_url
         # スクレイプ結果を land.db に追記（後続処理・永続化用）
         if fallback.company_name or fallback.securities_report_pdf_url:
             with ctx.cache_lock:
@@ -650,8 +641,6 @@ def _resolve_company_metadata(
                 updated = dict(existing)
                 if fallback.company_name and not existing.get("company_name"):
                     updated["company_name"] = fallback.company_name
-                if fallback.securities_report_pdf_url and not existing.get("securities_report_pdf_url"):
-                    updated["securities_report_pdf_url"] = fallback.securities_report_pdf_url
                 if updated != existing:
                     ctx.company_records[code] = merge_company_record(
                         ctx.company_conn,
@@ -660,54 +649,48 @@ def _resolve_company_metadata(
                         securities_report_pdf_url=str(updated.get("securities_report_pdf_url", "")),
                     )
                     ctx.company_conn.commit()
-    if not company_name or not pdf_url:
+
+    if not company_name:
         raise CompanySkipError(
-            f"証券コード{code}の会社情報が不足しています."
-            " config/input.csvに company_name,securities_report_pdf_url を追加するか,"
+            f"証券コード{code}の会社名が不足しています."
+            " config/input.csvに company_name を追加するか,"
             " land.db の企業メタデータへ登録してください."
         )
+
+    xbrl_artifact = ctx.stock_db_xbrl_artifacts.get(code)
+    if xbrl_artifact is None:
+        raise CompanySkipError(
+            f"証券コード{code}の有報XBRL原本がstock.dbに見つかりません. "
+            f"../stock_db で `uv run scrape-edinet-reports-step2 --ticker {code}` を実行してから再実行してください."
+        )
+
     mcap = _resolve_market_cap(code, t["market_cap"], ctx.stock_db_market_caps)
-    address_source_urls = _build_address_source_urls(t, pdf_url)
-    pdf_path = get_pdf_path(ctx.cache_dir, code)
-    if os.path.exists(pdf_path) and not is_pdf_file(pdf_path):
-        os.remove(pdf_path)
-
-    if not os.path.exists(pdf_path):
-        if not ctx.args.allow_download:
-            raise CompanySkipError(
-                f"PDFが見つかりません: {pdf_path} ネットワーク無し環境では, 事前にdata/cache/pdfへ配置してください."
-            )
-        try:
-            download_file(pdf_url, pdf_path, browser=ctx.browser)
-        except (ValueError, urllib.error.URLError, OSError) as e:
-            if is_transient_network_error(e):
-                raise TransientNetworkError(f"証券コード{code}の有報PDF取得で一時通信エラー: {e}") from e
-            raise CompanySkipError(f"証券コード{code}の有報PDF取得に失敗しました: {e}") from e
-
-    # PDFをWeb住所調査キャッシュにも登録（二重ダウンロード防止）
-    if os.path.exists(pdf_path) and pdf_url:
-        ctx.web_addr.seed_cache(pdf_url, pdf_path)
-
-    pdf_stat = os.stat(pdf_path)
+    address_source_urls = _build_address_source_urls(t)
     with ctx.cache_lock:
         cached_facilities = load_facilities_cache(
             ctx.land_conn,
             code,
-            pdf_size=int(pdf_stat.st_size),
-            pdf_mtime=float(pdf_stat.st_mtime),
+            cache_version=FACILITIES_CACHE_VERSION,
+            source_kind=FACILITIES_SOURCE_KIND,
+            source_id=xbrl_artifact.doc_id,
+            source_size=xbrl_artifact.source_size,
+            source_mtime_ns=xbrl_artifact.source_mtime_ns,
         )
     facilities_text: str | None = None
     if cached_facilities is None:
-        sites = extract_major_facilities_land(pdf_path)
-        facilities_text = extract_facilities_section_text(pdf_path)
+        extracted = extract_facilities_from_xbrl(xbrl_artifact.xbrl_path)
+        sites = extracted.sites
+        facilities_text = extracted.section_text
         with ctx.cache_lock:
             save_sites_cache(
                 ctx.land_conn,
                 code,
                 [_facility_to_site_entry(site) for site in sites],
-                cache_version=5,
-                pdf_size=int(pdf_stat.st_size),
-                pdf_mtime=float(pdf_stat.st_mtime),
+                cache_version=FACILITIES_CACHE_VERSION,
+                source_kind=FACILITIES_SOURCE_KIND,
+                source_id=xbrl_artifact.doc_id,
+                source_size=xbrl_artifact.source_size,
+                source_mtime_ns=xbrl_artifact.source_mtime_ns,
                 section_text=facilities_text,
             )
             ctx.land_conn.commit()
@@ -715,18 +698,26 @@ def _resolve_company_metadata(
         site_entries, facilities_text = cached_facilities
         sites = _site_entries_to_facilities(site_entries)
         if facilities_text is None:
-            facilities_text = extract_facilities_section_text(pdf_path)
+            facilities_text = extract_facilities_section_text_from_xbrl(xbrl_artifact.xbrl_path)
             if facilities_text:
                 with ctx.cache_lock:
                     save_facilities_section_text(
                         ctx.land_conn,
                         code,
                         facilities_text,
-                        cache_version=5,
-                        pdf_size=int(pdf_stat.st_size),
-                        pdf_mtime=float(pdf_stat.st_mtime),
+                        cache_version=FACILITIES_CACHE_VERSION,
+                        source_kind=FACILITIES_SOURCE_KIND,
+                        source_id=xbrl_artifact.doc_id,
+                        source_size=xbrl_artifact.source_size,
+                        source_mtime_ns=xbrl_artifact.source_mtime_ns,
                     )
                     ctx.land_conn.commit()
+
+    if facilities_text:
+        xbrl_source_url = f"stockdb-xbrl://{code}/{xbrl_artifact.doc_id}/major-facilities"
+        ctx.web_addr.seed_text(xbrl_source_url, facilities_text)
+        if xbrl_source_url not in address_source_urls:
+            address_source_urls.append(xbrl_source_url)
 
     # サイト分割展開（tokyoフィルタ前に実施: 分割先が他県になるケースに対応）
     company_overrides = ctx.addr_overrides.get(code, {})
@@ -1155,50 +1146,6 @@ def save_caches(ctx: RunContext) -> None:
     ctx.web_addr.flush()
 
 
-def _pre_download_pdf(t: dict[str, str], ctx: RunContext) -> None:
-    """PDF URLが既知のターゲットのPDFをダウンロード."""
-    code = t["code"]
-    pdf_path = get_pdf_path(ctx.cache_dir, code)
-    if os.path.exists(pdf_path) and is_pdf_file(pdf_path):
-        return
-    if os.path.exists(pdf_path):
-        os.remove(pdf_path)
-    meta = ctx.company_records.get(code, {})
-    pdf_url = t["pdf_url"] or meta.get("securities_report_pdf_url", "")
-    if not pdf_url or not ctx.args.allow_download:
-        return
-    try:
-        download_file(pdf_url, pdf_path, browser=ctx.browser)
-    except (BrowserServiceError, ValueError, OSError) as e:
-        logger.warning("PDF事前ダウンロード失敗(後で再試行): %s: %s", code, e)
-
-
-def _pre_download_pdfs(
-    targets: list[dict[str, str]],
-    ctx: RunContext,
-) -> None:
-    """未ダウンロードのPDFを逐次ダウンロード."""
-    need_download = [
-        t for t in targets
-        if not os.path.exists(get_pdf_path(ctx.cache_dir, t["code"]))
-        or not is_pdf_file(get_pdf_path(ctx.cache_dir, t["code"]))
-    ]
-    if not need_download:
-        return
-    logger.info("PDF事前ダウンロード開始: %d件", len(need_download))
-    failed = 0
-    for t in need_download:
-        try:
-            _pre_download_pdf(t, ctx)
-        except (BrowserServiceError, ValueError, OSError) as e:
-            logger.warning("PDF事前ダウンロード失敗: %s: %s", t["code"], e)
-            failed += 1
-    if failed:
-        logger.warning("PDF事前ダウンロード完了: %d/%d件失敗", failed, len(need_download))
-    else:
-        logger.info("PDF事前ダウンロード完了: %d件", len(need_download))
-
-
 def _process_company_with_retry(
     t: dict[str, str],
     company_index: int,
@@ -1348,6 +1295,13 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
                     len(set(missing_codes)),
                 )
 
+    ctx.stock_db_xbrl_artifacts = load_stock_db_xbrl_artifacts([str(t["code"]) for t in targets])
+    logger.info(
+        "stock.db XBRL原本同期: %d/%d社",
+        len(ctx.stock_db_xbrl_artifacts),
+        len({str(t["code"]) for t in targets}),
+    )
+
     targets_to_process, skipped = _filter_targets(targets, ctx)
 
     for code, company_name, out_path in skipped:
@@ -1360,45 +1314,46 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
         total_companies = len(targets_to_process)
         logger.info("処理開始: %d社", total_companies)
 
-        # --- Phase 1: PDF事前ダウンロード (逐次) ---
-        _pre_download_pdfs(targets_to_process, ctx)
-
-        # --- Phase 2: バッチPDF並列抽出 (CPU bound → ProcessPoolExecutor) ---
-        uncached_pdfs: dict[str, str] = {}
+        # --- Phase 1: バッチXBRL並列抽出 (CPU bound → ProcessPoolExecutor) ---
+        uncached_xbrls: dict[str, str] = {}
         for t in targets_to_process:
             code = t["code"]
-            pdf_path = get_pdf_path(ctx.cache_dir, code)
-            if not os.path.exists(pdf_path):
+            xbrl_artifact = ctx.stock_db_xbrl_artifacts.get(code)
+            if xbrl_artifact is None:
                 continue
-            pdf_stat = os.stat(pdf_path)
             with ctx.cache_lock:
                 facilities = load_facilities_cache(
                     ctx.land_conn,
                     code,
-                    pdf_size=int(pdf_stat.st_size),
-                    pdf_mtime=float(pdf_stat.st_mtime),
+                    cache_version=FACILITIES_CACHE_VERSION,
+                    source_kind=FACILITIES_SOURCE_KIND,
+                    source_id=xbrl_artifact.doc_id,
+                    source_size=xbrl_artifact.source_size,
+                    source_mtime_ns=xbrl_artifact.source_mtime_ns,
                 )
             if facilities is None:
-                uncached_pdfs[code] = pdf_path
+                uncached_xbrls[code] = xbrl_artifact.xbrl_path
 
-        if uncached_pdfs:
-            pdf_workers = max(1, min(len(uncached_pdfs), os.cpu_count() or 4))
-            logger.info("PDF並列抽出開始: %d件 (workers=%d)", len(uncached_pdfs), pdf_workers)
-            batch_results = batch_extract_facilities(uncached_pdfs, max_workers=pdf_workers)
-            for code, sites in batch_results.items():
-                pdf_path = uncached_pdfs[code]
-                pdf_stat = os.stat(pdf_path)
+        if uncached_xbrls:
+            xbrl_workers = max(1, min(len(uncached_xbrls), os.cpu_count() or 4))
+            logger.info("XBRL並列抽出開始: %d件 (workers=%d)", len(uncached_xbrls), xbrl_workers)
+            batch_results = batch_extract_facilities_from_xbrl(uncached_xbrls, max_workers=xbrl_workers)
+            for code, extracted in batch_results.items():
+                xbrl_artifact = ctx.stock_db_xbrl_artifacts[code]
                 with ctx.cache_lock:
                     save_sites_cache(
                         ctx.land_conn,
                         code,
-                        [_facility_to_site_entry(site) for site in sites],
-                        cache_version=5,
-                        pdf_size=int(pdf_stat.st_size),
-                        pdf_mtime=float(pdf_stat.st_mtime),
+                        [_facility_to_site_entry(site) for site in extracted.sites],
+                        cache_version=FACILITIES_CACHE_VERSION,
+                        source_kind=FACILITIES_SOURCE_KIND,
+                        source_id=xbrl_artifact.doc_id,
+                        source_size=xbrl_artifact.source_size,
+                        source_mtime_ns=xbrl_artifact.source_mtime_ns,
+                        section_text=extracted.section_text,
                     )
                     ctx.land_conn.commit()
-            logger.info("PDF並列抽出完了: %d件", len(batch_results))
+            logger.info("XBRL並列抽出完了: %d件", len(batch_results))
 
         failed_companies: list[tuple[str, str, str]] = []
         written_count = 0

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TypedDict
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 # ---------------------------------------------------------------------------
@@ -161,23 +161,45 @@ def save_sites_cache(
     sites: list[SiteEntry],
     *,
     cache_version: int,
-    pdf_size: int,
-    pdf_mtime: float,
+    source_kind: str,
+    source_id: str,
+    source_size: int,
+    source_mtime_ns: int,
     section_text: str | None = None,
 ) -> None:
     conn.execute(
         """
-        INSERT INTO facilities_land (code, sites_json, section_text, cache_version, pdf_size, pdf_mtime, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO facilities_land (
+            code, sites_json, section_text, cache_version,
+            source_kind, source_id, source_size, source_mtime_ns,
+            pdf_size, pdf_mtime, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(code) DO UPDATE SET
-            sites_json    = excluded.sites_json,
-            section_text  = COALESCE(excluded.section_text, facilities_land.section_text),
-            cache_version = excluded.cache_version,
-            pdf_size      = excluded.pdf_size,
-            pdf_mtime     = excluded.pdf_mtime,
-            updated_at    = excluded.updated_at
+            sites_json      = excluded.sites_json,
+            section_text    = COALESCE(excluded.section_text, facilities_land.section_text),
+            cache_version   = excluded.cache_version,
+            source_kind     = excluded.source_kind,
+            source_id       = excluded.source_id,
+            source_size     = excluded.source_size,
+            source_mtime_ns = excluded.source_mtime_ns,
+            pdf_size        = excluded.pdf_size,
+            pdf_mtime       = excluded.pdf_mtime,
+            updated_at      = excluded.updated_at
         """,
-        (code, json.dumps(sites, ensure_ascii=False), section_text, cache_version, pdf_size, pdf_mtime, _now()),
+        (
+            code,
+            json.dumps(sites, ensure_ascii=False),
+            section_text,
+            cache_version,
+            source_kind,
+            source_id,
+            source_size,
+            source_mtime_ns,
+            source_size,
+            float(source_mtime_ns) / 1_000_000_000,
+            _now(),
+        ),
     )
 
 
@@ -185,16 +207,30 @@ def load_sites_cache(
     conn: sqlite3.Connection,
     code: str,
     *,
-    pdf_size: int,
-    pdf_mtime: float,
+    cache_version: int,
+    source_kind: str,
+    source_id: str,
+    source_size: int,
+    source_mtime_ns: int,
 ) -> list[SiteEntry] | None:
     row = conn.execute(
-        "SELECT sites_json, pdf_size, pdf_mtime FROM facilities_land WHERE code = ?",
+        """
+        SELECT sites_json, cache_version, source_kind, source_id, source_size, source_mtime_ns
+        FROM facilities_land
+        WHERE code = ?
+        """,
         (code,),
     ).fetchone()
     if row is None:
         return None
-    if int(row["pdf_size"]) != pdf_size or float(row["pdf_mtime"]) != pdf_mtime:
+    if not _matches_facilities_source(
+        row,
+        cache_version=cache_version,
+        source_kind=source_kind,
+        source_id=source_id,
+        source_size=source_size,
+        source_mtime_ns=source_mtime_ns,
+    ):
         return None
     return json.loads(row["sites_json"])
 
@@ -205,21 +241,42 @@ def save_facilities_section_text(
     section_text: str,
     *,
     cache_version: int,
-    pdf_size: int,
-    pdf_mtime: float,
+    source_kind: str,
+    source_id: str,
+    source_size: int,
+    source_mtime_ns: int,
 ) -> None:
     conn.execute(
         """
-        INSERT INTO facilities_land (code, sites_json, section_text, cache_version, pdf_size, pdf_mtime, updated_at)
-        VALUES (?, '[]', ?, ?, ?, ?, ?)
+        INSERT INTO facilities_land (
+            code, sites_json, section_text, cache_version,
+            source_kind, source_id, source_size, source_mtime_ns,
+            pdf_size, pdf_mtime, updated_at
+        )
+        VALUES (?, '[]', ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(code) DO UPDATE SET
-            section_text  = excluded.section_text,
-            cache_version = excluded.cache_version,
-            pdf_size      = excluded.pdf_size,
-            pdf_mtime     = excluded.pdf_mtime,
-            updated_at    = excluded.updated_at
+            section_text    = excluded.section_text,
+            cache_version   = excluded.cache_version,
+            source_kind     = excluded.source_kind,
+            source_id       = excluded.source_id,
+            source_size     = excluded.source_size,
+            source_mtime_ns = excluded.source_mtime_ns,
+            pdf_size        = excluded.pdf_size,
+            pdf_mtime       = excluded.pdf_mtime,
+            updated_at      = excluded.updated_at
         """,
-        (code, section_text, cache_version, pdf_size, pdf_mtime, _now()),
+        (
+            code,
+            section_text,
+            cache_version,
+            source_kind,
+            source_id,
+            source_size,
+            source_mtime_ns,
+            source_size,
+            float(source_mtime_ns) / 1_000_000_000,
+            _now(),
+        ),
     )
 
 
@@ -227,16 +284,30 @@ def load_facilities_section_text(
     conn: sqlite3.Connection,
     code: str,
     *,
-    pdf_size: int,
-    pdf_mtime: float,
+    cache_version: int,
+    source_kind: str,
+    source_id: str,
+    source_size: int,
+    source_mtime_ns: int,
 ) -> str | None:
     row = conn.execute(
-        "SELECT section_text, pdf_size, pdf_mtime FROM facilities_land WHERE code = ?",
+        """
+        SELECT section_text, cache_version, source_kind, source_id, source_size, source_mtime_ns
+        FROM facilities_land
+        WHERE code = ?
+        """,
         (code,),
     ).fetchone()
     if row is None:
         return None
-    if int(row["pdf_size"]) != pdf_size or float(row["pdf_mtime"]) != pdf_mtime:
+    if not _matches_facilities_source(
+        row,
+        cache_version=cache_version,
+        source_kind=source_kind,
+        source_id=source_id,
+        source_size=source_size,
+        source_mtime_ns=source_mtime_ns,
+    ):
         return None
     section_text = row["section_text"]
     return str(section_text) if section_text is not None else None
@@ -246,19 +317,53 @@ def load_facilities_cache(
     conn: sqlite3.Connection,
     code: str,
     *,
-    pdf_size: int,
-    pdf_mtime: float,
+    cache_version: int,
+    source_kind: str,
+    source_id: str,
+    source_size: int,
+    source_mtime_ns: int,
 ) -> tuple[list[SiteEntry], str | None] | None:
     row = conn.execute(
-        "SELECT sites_json, section_text, pdf_size, pdf_mtime FROM facilities_land WHERE code = ?",
+        """
+        SELECT
+            sites_json, section_text, cache_version,
+            source_kind, source_id, source_size, source_mtime_ns
+        FROM facilities_land
+        WHERE code = ?
+        """,
         (code,),
     ).fetchone()
     if row is None:
         return None
-    if int(row["pdf_size"]) != pdf_size or float(row["pdf_mtime"]) != pdf_mtime:
+    if not _matches_facilities_source(
+        row,
+        cache_version=cache_version,
+        source_kind=source_kind,
+        source_id=source_id,
+        source_size=source_size,
+        source_mtime_ns=source_mtime_ns,
+    ):
         return None
     section_text = row["section_text"]
     return (json.loads(row["sites_json"]), str(section_text) if section_text is not None else None)
+
+
+def _matches_facilities_source(
+    row: sqlite3.Row,
+    *,
+    cache_version: int,
+    source_kind: str,
+    source_id: str,
+    source_size: int,
+    source_mtime_ns: int,
+) -> bool:
+    return (
+        int(row["cache_version"]) == int(cache_version)
+        and str(row["source_kind"] or "") == source_kind
+        and str(row["source_id"] or "") == source_id
+        and int(row["source_size"] or -1) == int(source_size)
+        and int(row["source_mtime_ns"] or -1) == int(source_mtime_ns)
+    )
 
 
 # ---------------------------------------------------------------------------
