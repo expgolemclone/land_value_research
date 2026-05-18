@@ -106,6 +106,39 @@ class TestLandPriceTokyo(unittest.TestCase):
         self.assertEqual(self.lp.get_point_landuse_kind("13-101-002"), "商業")
         self.assertEqual(self.lp.get_point_landuse_kind("nonexistent"), "")
 
+    def test_duplicate_point_ids_are_disambiguated(self) -> None:
+        geojson_path = os.path.join(self._tmpdir.name, "duplicate.geojson")
+        geojson = _make_geojson(
+            [
+                {
+                    "lat": 35.68,
+                    "lon": 139.77,
+                    "l01_001": "13",
+                    "l01_002": "101",
+                    "l01_003": "001",
+                    "price": 1000000,
+                    "landuse": "住宅",
+                },
+                {
+                    "lat": 35.69,
+                    "lon": 139.78,
+                    "l01_001": "13",
+                    "l01_002": "101",
+                    "l01_003": "001",
+                    "price": 2000000,
+                    "landuse": "商業",
+                },
+            ]
+        )
+        with open(geojson_path, "w", encoding="utf-8") as f:
+            f.write(geojson)
+
+        lp = LandPriceTokyo(geojson_path)
+        pr = lp.nearest(lat=35.6901, lon=139.7801)
+
+        self.assertEqual(pr.nearest_id, "13-101-001#2")
+        self.assertEqual(lp.get_point_landuse_kind(pr.nearest_id), "商業")
+
     def test_idw_invalid_k(self) -> None:
         with self.assertRaises(ValueError):
             self.lp.idw(lat=35.68, lon=139.77, k=0)

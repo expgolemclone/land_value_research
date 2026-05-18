@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import urllib.parse
 import logging
 from pathlib import Path
 from typing import TypedDict
@@ -139,7 +140,16 @@ def markdown_to_html(text: str) -> str:
         s = html.escape(s)
         s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
         s = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", s)
-        return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2" target="_blank">\1</a>', s)
+
+        def _replace_link(match: re.Match[str]) -> str:
+            label = match.group(1)
+            escaped_url = match.group(2)
+            url = html.unescape(escaped_url)
+            if urllib.parse.urlparse(url).scheme not in {"http", "https"}:
+                return label
+            return f'<a href="{escaped_url}" target="_blank" rel="noopener noreferrer">{label}</a>'
+
+        return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", _replace_link, s)
 
     def _close_list() -> None:
         nonlocal in_ul

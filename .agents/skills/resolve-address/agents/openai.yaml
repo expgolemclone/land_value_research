@@ -1,4 +1,0 @@
-interface:
-  display_name: "Resolve Address"
-  short_description: "低解像度住所を番地レベルへ補完して地価推定精度を改善する"
-  default_prompt: "Use $resolve-address to improve low-resolution Tokyo facility addresses."

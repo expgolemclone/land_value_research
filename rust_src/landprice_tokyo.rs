@@ -57,6 +57,7 @@ impl LandPriceTokyo {
         let mut points = Vec::with_capacity(gj.features.len());
         let mut tree_all: KdTree<f64, 2> = KdTree::new();
         let mut point_idx_by_id = HashMap::new();
+        let mut point_id_counts: HashMap<String, usize> = HashMap::new();
 
         for feature in gj.features.iter() {
             let geom = match feature.geometry.as_ref() {
@@ -102,7 +103,14 @@ impl LandPriceTokyo {
                     })
                     .unwrap_or_default()
             );
-            let point_id = format!("{}-{}-{}", l01_001, l01_002, l01_003);
+            let base_point_id = format!("{}-{}-{}", l01_001, l01_002, l01_003);
+            let count = point_id_counts.entry(base_point_id.clone()).or_insert(0);
+            *count += 1;
+            let point_id = if *count == 1 {
+                base_point_id
+            } else {
+                format!("{base_point_id}#{count}")
+            };
 
             // L01_008 は文字列 or 数値
             let price: f64 = props
@@ -161,7 +169,15 @@ impl LandPriceTokyo {
             ("商業系", &["商業", "近商"]),
             (
                 "住居系",
-                &["1住居", "2住居", "準住居", "1中専", "2中専", "1低専", "2低専"],
+                &[
+                    "1住居",
+                    "2住居",
+                    "準住居",
+                    "1中専",
+                    "2中専",
+                    "1低専",
+                    "2低専",
+                ],
             ),
         ];
         for (family_name, members) in families {
@@ -449,6 +465,40 @@ mod tests {
         assert_eq!(lp.get_point_landuse_kind("13-101-001"), "住宅");
         assert_eq!(lp.get_point_landuse_kind("13-101-002"), "商業");
         assert_eq!(lp.get_point_landuse_kind("nonexistent"), "");
+    }
+
+    #[test]
+    fn test_duplicate_point_ids_are_disambiguated() {
+        init_python();
+        let geojson = serde_json::json!({
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {"type": "Point", "coordinates": [139.77, 35.68]},
+                    "properties": {
+                        "L01_001": "13", "L01_002": "101", "L01_003": "001",
+                        "L01_008": 1000000, "L01_051": "住宅"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {"type": "Point", "coordinates": [139.78, 35.69]},
+                    "properties": {
+                        "L01_001": "13", "L01_002": "101", "L01_003": "001",
+                        "L01_008": 2000000, "L01_051": "商業"
+                    }
+                }
+            ]
+        });
+        let mut f = NamedTempFile::new().unwrap();
+        write!(f, "{}", geojson).unwrap();
+
+        let lp = LandPriceTokyo::new(f.path().to_str().unwrap()).unwrap();
+        let pr = lp.nearest(35.6901, 139.7801, None).unwrap();
+
+        assert_eq!(pr.nearest_id, "13-101-001#2");
+        assert_eq!(lp.get_point_landuse_kind(&pr.nearest_id), "商業");
     }
 
     #[test]

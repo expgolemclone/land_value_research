@@ -22,10 +22,11 @@ def open_csv(path: str | os.PathLike[str]) -> Generator[TextIOWrapper]:
     last_error: UnicodeDecodeError | None = None
     for enc in _CSV_ENCODINGS:
         try:
-            f = open(path, encoding=enc, newline="")
-            yield f
-            f.close()
-            return
+            with open(path, encoding=enc, newline="") as f:
+                f.read()
+                f.seek(0)
+                yield f
+                return
         except UnicodeDecodeError as e:
             last_error = e
     if last_error is not None:

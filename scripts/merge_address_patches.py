@@ -92,12 +92,14 @@ def merge_patches_safe(
             continue
 
         logger.info("  処理中: %s", pf.name)
+        file_has_errors = False
 
         for code, sites in patch.items():
             code_key = str(code)
             if not isinstance(sites, dict):
                 logger.warning("  警告: %s の値が辞書ではありません。スキップ。", code)
                 errors += 1
+                file_has_errors = True
                 continue
 
             affected_codes.add(code_key)
@@ -122,7 +124,8 @@ def merge_patches_safe(
                     logger.info("  追加: %s / %s", code, site_name)
                     added += 1
 
-        merged_patch_files.append(pf)
+        if not file_has_errors:
+            merged_patch_files.append(pf)
 
     save_yaml(_overrides_file, overrides)
     for pf in merged_patch_files:

@@ -1,6 +1,7 @@
 import argparse
 import csv
 import gc
+import json
 import logging
 import math
 import os
@@ -63,6 +64,7 @@ from src.land_db.repo import (
     get_geocode_deps_hash,
     get_land_price_deps_hash,
     list_invalidation_hashes,
+    load_invalidation_hash,
     load_facilities_cache,
     load_geocode_cache,
     load_land_price_cache,
@@ -470,11 +472,6 @@ def parse_args() -> argparse.Namespace:
         default=True,
         help="パイプライン完了後にWeb UIサーバーを起動するか(default: on)",
     )
-    parser.add_argument(
-        "--screening-config",
-        default=None,
-        help="formula_screening のTOML戦略でランキング表示を絞り込む表示設定TOML",
-    )
     return parser.parse_args()
 
 
@@ -523,6 +520,7 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
         set_land_price_deps_hash(land_conn, price_deps_hash)
 
     geocode_deps_hash = combined_md5(
+        str(OAZA_CSV),
         str(GAIKU_CSV),
         str(GEOCODE_RS),
     )
@@ -553,8 +551,6 @@ def setup_environment(args: argparse.Namespace) -> RunContext:
 
 def _invalidate_stale_override_csvs(ctx: RunContext) -> list[str]:
     """Delete output CSVs for companies whose overrides changed since last run."""
-    import json
-
     invalidated: list[str] = []
 
     def _check_overrides(
@@ -613,14 +609,77 @@ def _filter_targets(
         output_filename = f"{sanitize_filename_component(code)}_output.csv"
         out_path = os.path.join(ctx.output_dir, output_filename)
         processed_out_path = os.path.join(ctx.processed_lookup_dir, output_filename)
-        if ctx.args.skip_processed and os.path.exists(processed_out_path):
+        output_signature = _build_output_signature(t, company_name, ctx)
+        previous_signature = load_invalidation_hash(ctx.land_conn, "output_signature", code)
+        can_reuse_output = (
+            os.path.exists(processed_out_path)
+            and previous_signature == output_signature
+            and _is_valid_output_csv(processed_out_path)
+        )
+        if ctx.args.skip_processed and can_reuse_output:
             skipped.append((code, company_name, processed_out_path))
             continue
+        if os.path.exists(processed_out_path) and not can_reuse_output:
+            os.remove(processed_out_path)
+            logger.info("再計算対象: %s の既存CSVを削除", code)
         t2 = dict(t)
         t2["_resolved_company_name"] = company_name
         t2["_output_path"] = out_path
+        t2["_output_signature"] = output_signature
         targets_to_process.append(t2)
     return targets_to_process, skipped
+
+
+def _build_output_signature(
+    target: dict[str, object],
+    company_name: str,
+    ctx: RunContext,
+) -> str:
+    code = str(target["code"])
+    xbrl_artifact = ctx.stock_db_xbrl_artifacts.get(code)
+    payload = {
+        "target": {
+            "code": code,
+            "company_name": company_name,
+            "market_cap": target.get("market_cap"),
+            "address_source_urls": target.get("address_source_urls", []),
+        },
+        "stock_db_market_cap": ctx.stock_db_market_caps.get(code),
+        "xbrl": None
+        if xbrl_artifact is None
+        else {
+            "doc_id": xbrl_artifact.doc_id,
+            "source_size": xbrl_artifact.source_size,
+            "source_mtime_ns": xbrl_artifact.source_mtime_ns,
+        },
+        "address_override": ctx.addr_overrides.get(code),
+        "price_override": ctx.price_overrides.get(code),
+        "pricing": {
+            "price_method": ctx.args.price_method,
+            "k": ctx.args.k,
+            "p": ctx.args.p,
+            "eps": ctx.args.eps,
+            "geocode_factor_gaiku": ctx.args.geocode_factor_gaiku,
+            "geocode_factor_oaza_chome": ctx.args.geocode_factor_oaza_chome,
+            "geocode_factor_muni_centroid": ctx.args.geocode_factor_muni_centroid,
+            "landuse_match": ctx.args.landuse_match,
+            "landuse_fallback_dist": ctx.args.landuse_fallback_dist,
+        },
+    }
+    return string_md5(json.dumps(payload, sort_keys=True, ensure_ascii=False, default=str))
+
+
+def _is_valid_output_csv(path: str) -> bool:
+    try:
+        if os.path.getsize(path) == 0:
+            return False
+        with open_csv(path) as f:
+            reader = csv.reader(f)
+            header = next(reader, None)
+            first_row = next(reader, None)
+    except (OSError, UnicodeDecodeError, csv.Error):
+        return False
+    return header == OUTPUT_FIELDNAMES and first_row is not None
 
 
 def _resolve_company_metadata(
@@ -1082,11 +1141,13 @@ def process_company(
 
 
 def _write_single_result(result: CompanyResult, out_path: str) -> None:
-    with open(out_path, "w", newline="", encoding="utf-8") as f:
+    tmp_path = f"{out_path}.tmp.{os.getpid()}.{threading.get_ident()}"
+    with open(tmp_path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=OUTPUT_FIELDNAMES)
         w.writeheader()
         for r in result.out_rows:
             w.writerow(r)
+    os.replace(tmp_path, out_path)
 
 
 def _get_memory_usage_percent() -> float:
@@ -1366,6 +1427,13 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
             result, error = _process_company_with_retry(t, company_index, total_companies, ctx)
             if result is not None:
                 _write_single_result(result, t["_output_path"])
+                save_invalidation_hash(
+                    ctx.land_conn,
+                    "output_signature",
+                    str(t["code"]),
+                    str(t["_output_signature"]),
+                )
+                ctx.land_conn.commit()
                 written_count += 1
                 print(f"[{written_count}/{total_companies}] Wrote: {t['_output_path']}")
             elif error:
@@ -1393,7 +1461,7 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
         logger.info("ランキングWeb UI起動")
         from src.web import serve_ranking
 
-        serve_ranking(input_dir=ctx.output_dir, screening_config=args.screening_config)
+        serve_ranking(input_dir=ctx.output_dir)
 
 
 def _post_pipeline_cleanup(base_dir: str, keep_logs: int = 5) -> None:

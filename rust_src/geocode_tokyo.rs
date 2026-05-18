@@ -67,8 +67,7 @@ impl TokyoGeocoder {
                 continue;
             }
             let muni = row.get("市区町村名").cloned().unwrap_or_default();
-            let oaza =
-                normalize_addr(&row.get("大字町丁目名").cloned().unwrap_or_default());
+            let oaza = normalize_addr(&row.get("大字町丁目名").cloned().unwrap_or_default());
             let Some(lat) = row.get("緯度").and_then(|s| s.parse::<f64>().ok()) else {
                 continue;
             };
@@ -122,8 +121,7 @@ impl TokyoGeocoder {
                 continue;
             }
             let muni = row.get("市区町村名").cloned().unwrap_or_default();
-            let oaza =
-                normalize_addr(&row.get("大字・丁目名").cloned().unwrap_or_default());
+            let oaza = normalize_addr(&row.get("大字・丁目名").cloned().unwrap_or_default());
             let block = row.get("街区符号・地番").cloned().unwrap_or_default();
             let rep_flag: i32 = row
                 .get("代表フラグ")

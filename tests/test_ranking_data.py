@@ -101,6 +101,12 @@ class TestRankingData(unittest.TestCase):
         self.assertIn("<code>x</code>", html)
         self.assertIn("<ul>", html)
 
+    def test_markdown_to_html_rejects_unsafe_link_schemes(self) -> None:
+        html = markdown_to_html("[unsafe](javascript:alert(1)) [safe](https://example.com)")
+
+        self.assertNotIn("javascript:", html)
+        self.assertIn('href="https://example.com"', html)
+
 
 if __name__ == "__main__":
     unittest.main()

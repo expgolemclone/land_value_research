@@ -104,6 +104,22 @@ class TestMergePatchesSafe(unittest.TestCase):
             # Only 1234.yaml is merged, empty.yaml is skipped
             self.assertEqual(result, 1)
 
+    def test_keeps_invalid_patch_file_for_inspection(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            patch_dir = Path(tmpdir) / "patches"
+            patch_dir.mkdir()
+            overrides_file = Path(tmpdir) / "overrides.yaml"
+            patch_file = patch_dir / "broken.yaml"
+            patch_file.write_text("'1234': broken\n", encoding="utf-8")
+
+            result = merge_patches_safe(
+                patch_dir=patch_dir,
+                overrides_file=overrides_file,
+            )
+
+            self.assertEqual(result, 0)
+            self.assertTrue(patch_file.exists())
+
 
 class TestPostPipelineCleanup(unittest.TestCase):
     """Tests for _post_pipeline_cleanup() from run.py."""

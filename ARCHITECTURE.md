@@ -18,7 +18,7 @@
 4. 公示地価・基準地価のGeoJSONを用いて、地点ごとの土地単価を推定する。
 5. 土地面積と推定単価から推定土地時価、含み益、評価倍率、時価総額比を計算する。
 6. 企業別CSVを生成し、Web UIでランキングを表示する。
-7. 住所/地価 をCodex Skills（`.agents/skills/`）で 精度向上/合算拠点の分割 をする。根拠は調査メモとして保存する。
+7. 住所/地価 をCodex Skillsで 精度向上/合算拠点の分割 をする。根拠は調査メモとして保存する。
 
 住所補完、地価推定はいずれも推定を含むため、出力には住所解決レベル、信頼度、異常値警告、近傍点情報などの監査用タグを含めている。
 
@@ -58,18 +58,15 @@
 | `scripts/`           | データ整備・補助調査・住所パッチマージ・land.db取得などの補助CLI。                                                                   |
 | `tests/`             | Pythonテスト。XBRL抽出、共通表パーサ、住所正規化、地価推定、DB、ランキング、補正処理、ネットワーク耐性などを確認する。                    |
 | `config/`            | 入力CSV、住所補正、地価補正、ブラウザ等の実行パラメータ。                                                                            |
-| `.agents/skills/`    | Codex がリポジトリルートから自動検出する共有スキル。住所精度改善用 `resolve-address` と合算拠点分割用 `split-address` を配置する。          |
 | `data/geocoding/`    | 東京都ジオコーディング参照CSV。大字町丁目と街区の2種類を使う。                                                                       |
 | `data/landprice/`    | 公示地価・基準地価の元データおよびマージ済みGeoJSON。                                                                                |
 | `index.html`         | GitHub Pages のルートURLから `docs/` のWeb UIへ遷移させる入口。                                                                      |
-| `docs/`              | Web UI用HTML、コンパイル済みJS、公開用ランキングJSON。通常版と `net_cash_fcf` 版をGitHub Pagesで配信する。                            |
+| `docs/`              | Web UI用HTML、コンパイル済みJS、公開用ランキングJSON。`stock_web_ui` の共通テンプレートを使う。                                      |
 | `split-address/`     | ランキング上位銘柄などの調査メモ。Web UIの「調査メモ」モーダルにも使われる。                                                          |
 | `codereview-report.md` | ワークスペース全体レビューの指摘、再現根拠、検証結果を記録する成果物。                                                             |
 | `pyproject.toml`     | Python依存、maturinビルド設定、pytest/ruff設定。                                                                                     |
 | `Cargo.toml`         | Rust crate `land_value_core` の依存とcrate設定。                                                                                     |
 | `flake.nix`          | Nix dev shell。Python 3.13、Rust、uv、maturin、ruff、Node.jsを提供する。                                                             |
-
-NixOS上で `uv run ruff ...` を使う場合、`uv` が `.venv` に配置するPyPI由来のruff ELFバイナリは `/lib64/ld-linux-x86-64.so.2` を要求する。この環境では `../../nix-config` 側の `programs.nix-ld` で互換loaderを有効化し、`stub-ld` 停止を避ける。Nix dev shellまたはHome Manager由来の `ruff` も引き続き利用できる。
 
 ## 3. 実行入口
 
@@ -105,7 +102,7 @@ land-value-run --input config/input.csv
 | `--geocode-factor-muni-centroid` | `0.85`        | 市区町村重心住所の地価補正係数。                                     |
 | `--allow-download`               | on            | 互換用。有報XBRL原本は `../stock_db` で事前取得する。                |
 | `--allow-web-address`            | on            | Web公開情報による詳細住所補完を使う。                                |
-| `--skip-processed`               | on            | 既存 `*_output.csv` の企業をスキップする。                           |
+| `--skip-processed`               | on            | 依存署名が一致し、妥当な既存 `*_output.csv` がある企業をスキップする。 |
 | `--allow-auto-metadata`          | on            | 会社名不足時にIRBank等で補完する。                                   |
 | `--landuse-match`                | on            | 設備内容から用途ファミリーを推定し、用途区分を合わせて地価推定する。 |
 | `--landuse-fallback-dist`        | `1500.0`      | 用途ファミリー最近傍が遠すぎる場合に全用途へ戻す距離。               |
@@ -113,27 +110,12 @@ land-value-run --input config/input.csv
 | `--max-restarts`                 | `10`          | メモリ制限終了時の最大再起動回数。                                   |
 | `--no-auto-restart`              | off           | 自動再起動ラッパーを無効化する。                                     |
 | `--serve-ranking`                | on            | 完了後にWeb UIサーバーを起動する。`--no-serve-ranking` で無効化。    |
-| `--screening-config`             | `None`        | formula_screening のTOML戦略でランキング表示を絞り込む。             |
 
 `main()` は標準出力と標準エラーをUTF-8に設定し、自動再起動が有効なら `_run_with_restart()` を挟む。実処理は `_main_worker()` と `_run_pipeline()` で行う。
 
 ### 3.3 Web UIサーバー
 
-パイプライン完了後、`run.py` は後処理を済ませてから自動的に Web UI サーバーを起動する。実行例は以下である。
-
-通常のパイプライン実行は以下を使う。`--serve-ranking` は既定で有効なので、処理後にランキングWeb UIが起動する。
-
-```bash
-uv run python run.py
-```
-
-`formula_screening` の戦略結果に絞ってランキングを表示する場合は以下を使う。
-
-```bash
-uv run python run.py --screening-config config/screening/net_cash_fcf.toml
-```
-
-Web UIだけを単独で起動する場合は以下を使う。
+パイプライン完了後、`run.py` は後処理を済ませてから自動的に Web UI サーバーを起動する。単独で起動する場合は以下を使う。
 
 ```bash
 uv run python -m src.web
@@ -144,37 +126,12 @@ uv run python -m src.web
 1. `src.ranking_data.collect_rank_rows()` でCSVからランキングデータを読み込む。入力ディレクトリは `str` / `Path` のどちらでも受け付ける。
 2. Rust-backed な `formula_screening.web.compute_all_stock_metrics()` でNCR, PER, 優先株有無, equity ratio, FCF yield, CROIC, PEG等を計算する。
 3. 両者をマージしてJSON API (`/api/ranking`) として供給する。数値列は `_to_float_safe()` で str/float 両対応に変換する。変換失敗時は `logger.debug` で記録し `None` を返す。
-4. `/api/stock-price-meta` で `stock_db.prices.date` の最大値を `{ "price_date": "YYYY-MM-DD" }` として供給する。
-5. `stock_web_ui.serve` でHTTPサーバーを起動し、共有テンプレートから生成した index HTML を配信する。
-6. GitHub Pages用には `uv run python -m src.web --export-github-pages` で通常版、`net_cash_fcf` 版、株価基準日 metadata のJSONを書き出す。
-
-`formula_screening` の戦略評価は `stock_db` のRust APIを経由する。`stock_db` リポジトリ外から呼び出すと株価自動更新が走るため、
-既存DBの株価で静的JSONだけを再生成したい場合は次のように `stock_db` 配下から実行する。
-
-```bash
-cd ../stock_db
-PYTHONPATH=/home/exp/projects/land_value_research \
-  /home/exp/projects/land_value_research/.venv/bin/python - <<'PY'
-from pathlib import Path
-from src.web import export_github_pages_json
-
-root = Path("/home/exp/projects/land_value_research")
-export_github_pages_json(input_dir=root / "data/output", output_dir=root / "docs/assets")
-PY
-```
-
-任意で `--screening-config config/screening/net_cash_fcf.toml` を指定すると、
-`formula_screening.web.run_screening_strategy_payload()` に土地CSV上の候補コードを渡し、
-TOML戦略を通過した銘柄だけにランキングを絞り込む。`formula_screening` 側は土地情報を参照せず、
-このリポジトリが公開APIの結果を土地ランキングへ合流する。
-
-`net_cash_fcf` 上位のファクトチェックでは、対象銘柄だけを `run.py --input ... --no-skip-processed --no-serve-ranking` で再計算し、
-合算拠点は `config/address_overrides.yaml` で東京側代表点と `全国各所` 残差に分ける。根拠は `split-address/{code}.md` に保存し、
-公開JSONを再エクスポートしてランキング値と調査メモを同期させる。
+4. `stock_web_ui.serve` でHTTPサーバーを起動し、共有テンプレートから生成した index HTML を配信する。
+5. GitHub Pages用には `uv run python -m src.web --export-json docs/assets/ranking.json` で同じJSON形状を書き出す。
 
 フロントエンドは `src_ts/app.ts` でカラム定義を構成し、`stock_web_ui` の共通TypeScriptランタイム (`stock-table.js`) がテーブル描画、ソート、列表示切替、閾値カラー、リンク解決を行う。調査メモは `detailModal: true` で有効になるモーダル機能で表示する。
 
-TypeScriptのコンパイルは `npx tsc` で行い、`docs/assets/app.js` が出力される。公開ページは通常版が `https://expgolemclone.github.io/land_value_research/docs/`、`net_cash_fcf` 版が `https://expgolemclone.github.io/land_value_research/docs/net_cash_fcf.html` である。リポジトリルートの `https://expgolemclone.github.io/land_value_research/` は `docs/` の通常版Web UIへ遷移する。
+TypeScriptのコンパイルは `npx tsc` で行い、`docs/assets/app.js` が出力される。公開URLは `https://expgolemclone.github.io/land_value_research/` であり、ルートの `index.html` から `docs/` のWeb UIへ遷移する。
 
 ### 3.4 補助スクリプト
 
@@ -225,7 +182,7 @@ Rust crate名は `land_value_core` で、Pythonモジュール名も同じであ
 | ------------------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
 | `../stock_db`             | 会社名、有報XBRL原本、株価、発行済株式数、時価総額補完。 | `src/stock_db_sync.py`, `src/company_store.py`       |
 | `../stock_web_ui`         | 共通Web UIランタイム、列定義、HTTPサーバー。        | `src/web.py`, `src_ts/app.ts`                                       |
-| `../formula_screening`    | NCR, PER, FCF yield等の指標計算とTOML戦略による表示時絞り込み。 | `src/web.py` → `compute_all_stock_metrics()`, `run_screening_strategy_payload()` |
+| `../formula_screening`    | NCR, PER, FCF yield等の指標計算。                   | `src/web.py` → `compute_all_stock_metrics()`                        |
 | BrowserService            | HTML取得、IRBank取得、Web住所調査。                 | `src/browser.py`, `src/web_address_research.py`                    |
 | IRBank                    | 不足した会社名の補完。                              | `src/company_metadata_fallback.py`                                  |
 | EDINET XBRL原本           | 有報の設備表抽出元。`../stock_db` のEDINET API v2取得済みZIP/展開ディレクトリを読む。 | `src/xbrl_extract.py`, `src/stock_db_sync.py` |
@@ -251,7 +208,7 @@ flowchart TD
     J --> K[信頼度・異常値警告・含み益・時価総額比計算]
     K --> L[data/output/*_output.csv]
     L --> M[パッチマージ・ログ整理・bak削除]
-    M --> N[Web UIサーバー / docs/assets/ranking*.json]
+    M --> N[Web UIサーバー / docs/assets/ranking.json]
 ```
 
 `run.py` 内部では次のフェーズに分かれる。
@@ -272,7 +229,7 @@ flowchart TD
    `_process_company_with_retry()` が一時通信エラーを指数バックオフで再試行しながら `process_company()` を実行する。XBRL原本がない企業はスキップする。
 
 6. **企業別CSV出力**
-   `_write_single_result()` が `OUTPUT_COLUMNS` 順で `*_output.csv` を書く。
+   `_write_single_result()` が `OUTPUT_COLUMNS` 順で一時ファイルへ書き、`os.replace()` で `*_output.csv` を原子的に更新する。
 
 7. **定期保存とメモリ対策**
    10社ごとに `save_caches()`、Web住所調査のメモリキャッシュクリア、GCを行う。メモリ監視スレッドは閾値超過時にDBコミット後、専用終了コードで終了する。
@@ -471,16 +428,10 @@ Web UI用JSONは `src.ranking_data.RankingRow` と `src.web.build_ranking_payloa
 | `memo_html`                             | `split-address/{code}.md` がある場合にモーダル表示する。 |
 | `geocode_tag`, `confidence`, `anomaly`  | 企業内拠点の住所解決レベル、信頼度、警告を集約する。     |
 | `estimated_value`, `market_cap` など    | 推定土地時価、時価総額、簿価、含み益の円単位数値。       |
-| `fcf_yield_avg`, `croic`                  | 共通FCF/CROIC列用のトップレベル値。`stock_web_ui` の共有カラムが直接参照する。 |
 | `peg_trailing_5`, `peg_blended_5y_actual_2f` と各 `*_status` | 共通PEG列用のトップレベル値。成長率が0以下なら `neg`、その他の欠損は `-` を表示する。 |
 | `metrics`                               | `formula_screening` 由来のNCR, PER, 優先株有無, FCF yield等。PEG値と `*_status` も保持する。 |
 
-`src.web.build_ranking_payload()` は `screening_config` を受け取ると `src.screening_config.load_screening_config()` で
-`strategy_path` を解決し、`formula_screening` の公開APIで候補銘柄をTOML戦略通過銘柄へ絞る。設定例は
-`config/screening/net_cash_fcf.toml` で、`strategy_path = "../formula_screening/strategies/net_cash_fcf.toml"` を指す。
-設定未指定時は従来どおり全土地ランキング行を表示する。
-
-フロントエンドはローカルサーバーでは `/api/ranking`、GitHub Pages では `assets/ranking.json` を読み込む。株価基準日はローカルでは `/api/stock-price-meta`、GitHub Pages では `assets/stock-price-meta.json` を `metadataUrl` として読み込む。GitHub Pages のルート `index.html` は `docs/` に遷移させる。
+フロントエンドはローカルサーバーでは `/api/ranking`、GitHub Pages では `assets/ranking.json` を読み込む。GitHub Pages のルート `index.html` は `docs/` に遷移させる。
 
 ## 10. 永続化とキャッシュ
 
@@ -510,7 +461,7 @@ Web UI用JSONは `src.ranking_data.RankingRow` と `src.web.build_ranking_payloa
 | キャッシュ         | 依存ハッシュ                                | 変更時の動作                       |
 | ------------------ | ------------------------------------------- | ---------------------------------- |
 | `land_price_cache` | 地価GeoJSONと `rust_src/landprice_tokyo.rs` | テーブル全削除後、新ハッシュ保存。 |
-| `geocode_cache`    | 街区CSVと `rust_src/geocode_tokyo.rs`       | テーブル全削除後、新ハッシュ保存。 |
+| `geocode_cache`    | 街区CSV、町丁目CSV、`rust_src/geocode_tokyo.rs` | テーブル全削除後、新ハッシュ保存。 |
 
 住所補正と地価補正は企業単位で無効化する。`_invalidate_stale_override_csvs()` は補正内容をJSON化してハッシュ化し、`invalidation_hashes` と差分がある企業の既存CSVを削除する。これにより `--skip-processed` が有効でも補正済み企業は再処理される。
 
@@ -663,7 +614,7 @@ Rustの `TokyoGeocoder.geocode()` は、住所正規化後に東京都の区市�
 `rust_src/landprice_tokyo.rs` の `LandPriceTokyo` はGeoJSONから地価点を読み、以下を構築する。
 
 - 全地価点 `points`
-- 地価点IDからインデックスへの `point_idx_by_id`
+- 重複時は `#2` 以降の suffix を付けて一意化した地価点IDからインデックスへの `point_idx_by_id`
 - 全点KdTree `tree_all`
 - 全点グローバルインデックス `all_idx`
 - 用途区分別および用途ファミリー別のサブKdTree `landuse_trees`
@@ -792,7 +743,7 @@ CSV内の企業名が空、または証券コードと同じ場合、`company_me
 
 ### 16.4 公開用JSON
 
-GitHub Pages用の静的データは通常版が `docs/assets/ranking.json`、`net_cash_fcf` 版が `docs/assets/ranking_net_cash_fcf.json`、株価基準日 metadata が `docs/assets/stock-price-meta.json` である。`src/web.py --export-github-pages` は通常版、`config/screening/net_cash_fcf.toml` 絞り込み版、metadata をまとめて書き出す。公開ページは通常版が `https://expgolemclone.github.io/land_value_research/docs/`、`net_cash_fcf` 版が `https://expgolemclone.github.io/land_value_research/docs/net_cash_fcf.html` で、リポジトリルートの `index.html` は `docs/` へ遷移させる。
+GitHub Pages用の静的データは `docs/assets/ranking.json` と `docs/assets/stock-price-meta.json` である。`src/web.py --export-json` はローカルサーバーの `/api/ranking` と同じpayloadを書き出し、最新株価日付を `{ "price_date": "YYYY-MM-DD" }` として保存する。`docs/index.html` が読み込む `docs/assets/app.js` は GitHub Pages 上では `assets/ranking.json` と `assets/stock-price-meta.json` を fetch する。リポジトリルートは `index.html` で `docs/` へ遷移させる。
 
 ## 17. 補助調査と住所パッチ
 
@@ -806,8 +757,6 @@ GitHub Pages用の静的データは通常版が `docs/assets/ranking.json`、`n
 - `config/address_patches/*.yaml`: `address_overrides.yaml` へマージする住所パッチ。
 
 合算拠点の分割では、単に東京都住所へ寄せるのではなく、全国各所や他県に属する面積を分離し、東京都評価から除外できるようにする。
-
-`split-address` は合算拠点に限らず、`muni_centroid` 解決の拠点の住所特定にも使う。例えば7916光村印刷の「光村商事倉庫株式会社（東京都大田区）」と「京浜島倉庫」は有報に区までしか記載されていないが、子会社（光村商事倉庫株式会社）の公式サイト会社概要から京浜島二丁目12番13号・同4番15号の番地レベル住所を特定し、`address_overrides.yaml` に登録することで `muni_centroid` → `gaiku` へ精度向上できた。
 
 ### 17.2 `resolve-address`
 
@@ -993,14 +942,14 @@ cargo test
 1. `src/ranking_data.py` の `RankingRow` と `src/web.py` のJSON payload生成を合わせる。
 2. `src_ts/app.ts` のアクセサとカラム定義を更新する。
 3. `tests/test_ranking_data.py` と `tests/test_web.py` を更新する。
-4. `uv run python -m src.web --export-github-pages` で公開用JSONを再生成する。
+4. `uv run python -m src.web --export-json docs/assets/ranking.json` で公開用JSONを再生成する。
 
 ### 22.8 Web UIを変更する場合
 
 1. `src_ts/app.ts` を変更後、`npx tsc` で `docs/assets/app.js` を再生成する。
 2. `src/web.py` の JSON 形状と `app.ts` のアクセサが一致しているか確認する。
 3. `stock_web_ui` 側のランタイム (`stock-table.js`, `columns.js`, `style.css`) を更新した場合は、`../stock_web_ui` で `npx tsc` を実行する。
-4. 公開用データを更新する場合は `uv run python -m src.web --export-github-pages` も実行する。
+4. 公開用データを更新する場合は `docs/assets/ranking.json` も再生成する。
 
 ## 23. フックとエージェント運用
 
@@ -1026,8 +975,8 @@ cargo test
 - `stock_db` がない環境では、会社メタデータや時価総額補完が制限される。
 - `data/land.db` はRelease assetから取得できるが、ネットワークやGitHub認証に依存する場合がある。
 - BrowserServiceは外部サイトの応答やチャレンジ画面の影響を受ける。Web取得失敗を即座に恒久的なデータ欠損とみなさない。
-- Web UIサーバーはローカル開発用である。公開時は `docs/assets/ranking.json` と `docs/assets/ranking_net_cash_fcf.json` をGitHub Pagesで配信する。
-- `formula_screening` の `compute_all_stock_metrics()` と `run_screening_strategy_payload()` は `stock_db` にアクセスするため、DBの事前更新が必要な場合がある。
+- Web UIサーバーはローカル開発用である。公開時は `docs/assets/ranking.json` をGitHub Pagesで配信する。
+- `formula_screening` の `compute_all_stock_metrics()` は `stock_db` にアクセスするため、DBの事前更新が必要な場合がある。
 
 ## 25. 保守時の推奨手順
 
