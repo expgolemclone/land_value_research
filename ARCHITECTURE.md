@@ -63,6 +63,7 @@
 | `index.html`         | GitHub Pages のルートURLから `docs/` のWeb UIへ遷移させる入口。                                                                      |
 | `docs/`              | Web UI用HTML、コンパイル済みJS、公開用ランキングJSON。`stock_web_ui` の共通テンプレートを使う。                                      |
 | `split-address/`     | ランキング上位銘柄などの調査メモ。Web UIの「調査メモ」モーダルにも使われる。                                                          |
+| `codereview-report.md` | ワークスペース全体レビューの指摘、再現根拠、検証結果を記録する成果物。                                                             |
 | `pyproject.toml`     | Python依存、maturinビルド設定、pytest/ruff設定。                                                                                     |
 | `Cargo.toml`         | Rust crate `land_value_core` の依存とcrate設定。                                                                                     |
 | `flake.nix`          | Nix dev shell。Python 3.13、Rust、uv、maturin、ruff、Node.jsを提供する。                                                             |
