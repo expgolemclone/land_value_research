@@ -14,6 +14,7 @@ from stock_web_ui.serve import serve as _serve
 from src.company_store import connect_company_db, load_company_directory
 from src.config import DEFAULT_OUTPUT_DIR, PROJECT_ROOT
 from src.ranking_data import collect_rank_rows, markdown_to_html
+from src.screening_config import load_screening_config
 
 logger = logging.getLogger(__name__)
 
@@ -37,9 +38,71 @@ def _to_float_safe(raw: str | float | None) -> float | None:
         return None
 
 
-def build_ranking_payload(input_dir: Path | str | None = None) -> list[dict]:
+def _codes_from_rank_rows(rank_rows: list[dict]) -> list[str]:
+    codes: list[str] = []
+    seen: set[str] = set()
+    for row in rank_rows:
+        code = str(row.get("code", "")).strip()
+        if not code or code in seen:
+            continue
+        seen.add(code)
+        codes.append(code)
+    return codes
+
+
+def _screening_payload_to_metric_map(payload: list[dict]) -> dict[str, dict]:
+    metric_map: dict[str, dict] = {}
+    for row in payload:
+        code = str(row.get("code", "")).strip()
+        if not code:
+            continue
+
+        nested_metrics = row.get("metrics")
+        metrics = dict(nested_metrics) if isinstance(nested_metrics, dict) else {}
+        for key in (
+            "price",
+            "fcf_yield_avg",
+            "croic",
+            "peg_trailing_5",
+            "peg_trailing_5_status",
+            "peg_blended_5y_actual_2f",
+            "peg_blended_5y_actual_2f_status",
+            "has_preferred_shares",
+        ):
+            metrics[key] = row.get(key)
+        metric_map[code] = metrics
+    return metric_map
+
+
+def _load_screening_metrics(
+    rank_rows: list[dict],
+    screening_config: Path | str | None,
+) -> tuple[dict[str, dict], set[str] | None]:
+    if screening_config is None:
+        from formula_screening.web import compute_all_stock_metrics
+
+        return compute_all_stock_metrics(), None
+
+    config = load_screening_config(screening_config)
+    candidate_codes = _codes_from_rank_rows(rank_rows)
+    if not candidate_codes:
+        return {}, set()
+
+    from formula_screening.web import run_screening_strategy_payload
+
+    screening_payload = run_screening_strategy_payload(
+        config.strategy_path,
+        tickers=candidate_codes,
+    )
+    metrics = _screening_payload_to_metric_map(screening_payload)
+    return metrics, set(metrics)
+
+
+def build_ranking_payload(
+    input_dir: Path | str | None = None,
+    screening_config: Path | str | None = None,
+) -> list[dict]:
     """Build ranking JSON payload merging land value CSV data with Rust-backed screening metrics."""
-    from formula_screening.web import compute_all_stock_metrics
 
     resolved_input_dir = Path(input_dir) if input_dir is not None else DEFAULT_OUTPUT_DIR
 
@@ -50,7 +113,12 @@ def build_ranking_payload(input_dir: Path | str | None = None) -> list[dict]:
     finally:
         conn.close()
 
-    screening_metrics = compute_all_stock_metrics()
+    if not rank_rows:
+        return []
+
+    screening_metrics, allowed_codes = _load_screening_metrics(rank_rows, screening_config)
+    if allowed_codes is not None:
+        rank_rows = [row for row in rank_rows if row["code"].strip() in allowed_codes]
 
     payload: list[dict] = []
     for row in rank_rows:
@@ -103,10 +171,14 @@ def build_ranking_payload(input_dir: Path | str | None = None) -> list[dict]:
     return payload
 
 
-def export_ranking_json(output_path: Path | str, input_dir: Path | str | None = None) -> None:
+def export_ranking_json(
+    output_path: Path | str,
+    input_dir: Path | str | None = None,
+    screening_config: Path | str | None = None,
+) -> None:
     """Write GitHub Pages compatible ranking payload JSON."""
     resolved_output_path = Path(output_path)
-    payload = build_ranking_payload(input_dir)
+    payload = build_ranking_payload(input_dir, screening_config=screening_config)
     resolved_output_path.parent.mkdir(parents=True, exist_ok=True)
     resolved_output_path.write_text(
         json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n",
@@ -118,10 +190,11 @@ def export_ranking_json(output_path: Path | str, input_dir: Path | str | None = 
 def serve_ranking(
     *,
     input_dir: Path | str | None = None,
+    screening_config: Path | str | None = None,
     server_config: ServerConfig | None = None,
 ) -> None:
     """Start the web UI server with ranking data."""
-    payload = build_ranking_payload(input_dir)
+    payload = build_ranking_payload(input_dir, screening_config=screening_config)
     api_routes: dict[str, ApiHandler] = {
         "/api/ranking": json_route(lambda _params: payload),
     }
@@ -152,11 +225,21 @@ def main() -> None:
         default=None,
         help="Web UI用ランキングJSONを書き出して終了する",
     )
+    parser.add_argument(
+        "--screening-config",
+        type=Path,
+        default=None,
+        help="formula_screening のTOML戦略でランキングを絞り込む表示設定TOML",
+    )
     args = parser.parse_args()
     if args.export_json is not None:
-        export_ranking_json(args.export_json, input_dir=Path(args.input_dir))
+        export_ranking_json(
+            args.export_json,
+            input_dir=Path(args.input_dir),
+            screening_config=args.screening_config,
+        )
         return
-    serve_ranking(input_dir=Path(args.input_dir))
+    serve_ranking(input_dir=Path(args.input_dir), screening_config=args.screening_config)
 
 
 if __name__ == "__main__":

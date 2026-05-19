@@ -22,12 +22,18 @@ from src.schema import (
 from src.web import build_ranking_payload, export_ranking_json
 
 
-def write_output_csv(path: Path) -> None:
+def write_output_csv(
+    path: Path,
+    *,
+    code: str = "9999",
+    name: str = "テスト会社",
+    ratio: str = "0.1",
+) -> None:
     row = dict.fromkeys(OUTPUT_COLUMNS, "")
     row.update(
         {
-            COL_CODE: "9999",
-            COL_COMPANY_NAME: "テスト会社",
+            COL_CODE: code,
+            COL_COMPANY_NAME: name,
             COL_SITE_NAME: "東京都合計",
             COL_ESTIMATED_VALUE: "1000000000",
             COL_BOOK_VALUE: "500000000",
@@ -35,8 +41,8 @@ def write_output_csv(path: Path) -> None:
             COL_MULT_RAW: "2.0",
             COL_MULT: "2.000",
             COL_MARKET_CAP: "10000000000",
-            COL_RATIO_RAW: "0.1",
-            COL_RATIO: "0.100",
+            COL_RATIO_RAW: ratio,
+            COL_RATIO: f"{float(ratio):.3f}",
         }
     )
     with path.open("w", newline="", encoding="utf-8") as f:
@@ -103,6 +109,50 @@ class TestWebPayload(unittest.TestCase):
             payload = json.loads(out.read_text(encoding="utf-8"))
 
         self.assertEqual([{"code": "9999"}], payload)
+
+    def test_build_ranking_payload_filters_by_screening_config(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td)
+            strategy = base / "strategy.toml"
+            strategy.write_text("[[filters]]\n", encoding="utf-8")
+            config = base / "screening.toml"
+            config.write_text(f'strategy_path = "{strategy}"\n', encoding="utf-8")
+            write_output_csv(base / "9999_output.csv", code="9999", name="通過会社", ratio="0.2")
+            write_output_csv(base / "8888_output.csv", code="8888", name="除外会社", ratio="0.3")
+            with (
+                patch("src.web.connect_company_db") as connect_db,
+                patch("src.web.load_company_directory", return_value={}),
+                patch(
+                    "formula_screening.web.run_screening_strategy_payload",
+                    return_value=[
+                        {
+                            "code": "9999",
+                            "price": 2222,
+                            "metrics": {
+                                "net_cash_ratio": 0.5,
+                                "per": 8.0,
+                                "equity_ratio": 70.0,
+                            },
+                            "fcf_yield_avg": 0.04,
+                            "croic": 0.03,
+                            "peg_trailing_5": 1.2,
+                            "peg_trailing_5_status": "ok",
+                            "peg_blended_5y_actual_2f": None,
+                            "peg_blended_5y_actual_2f_status": "missing_input",
+                            "has_preferred_shares": False,
+                        }
+                    ],
+                ) as run_strategy,
+            ):
+                connect_db.return_value.close.return_value = None
+                payload = build_ranking_payload(base, screening_config=config)
+
+        self.assertEqual(["9999"], [row["code"] for row in payload])
+        self.assertEqual(2222, payload[0]["price"])
+        self.assertEqual(0.5, payload[0]["metrics"]["net_cash_ratio"])
+        self.assertEqual(0.04, payload[0]["metrics"]["fcf_yield_avg"])
+        self.assertFalse(payload[0]["metrics"]["has_preferred_shares"])
+        run_strategy.assert_called_once_with(strategy, tickers=["8888", "9999"])
 
 
 if __name__ == "__main__":

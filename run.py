@@ -470,6 +470,11 @@ def parse_args() -> argparse.Namespace:
         default=True,
         help="パイプライン完了後にWeb UIサーバーを起動するか(default: on)",
     )
+    parser.add_argument(
+        "--screening-config",
+        default=None,
+        help="formula_screening のTOML戦略でランキング表示を絞り込む表示設定TOML",
+    )
     return parser.parse_args()
 
 
@@ -1388,7 +1393,7 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
         logger.info("ランキングWeb UI起動")
         from src.web import serve_ranking
 
-        serve_ranking(input_dir=ctx.output_dir)
+        serve_ranking(input_dir=ctx.output_dir, screening_config=args.screening_config)
 
 
 def _post_pipeline_cleanup(base_dir: str, keep_logs: int = 5) -> None:

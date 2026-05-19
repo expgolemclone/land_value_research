@@ -129,6 +129,11 @@ uv run python -m src.web
 4. `stock_web_ui.serve` でHTTPサーバーを起動し、共有テンプレートから生成した index HTML を配信する。
 5. GitHub Pages用には `uv run python -m src.web --export-json docs/assets/ranking.json` で同じJSON形状を書き出す。
 
+任意で `--screening-config config/screening/net_cash_fcf.toml` を指定すると、
+`formula_screening.web.run_screening_strategy_payload()` に土地CSV上の候補コードを渡し、
+TOML戦略を通過した銘柄だけにランキングを絞り込む。`formula_screening` 側は土地情報を参照せず、
+このリポジトリが公開APIの結果を土地ランキングへ合流する。
+
 フロントエンドは `src_ts/app.ts` でカラム定義を構成し、`stock_web_ui` の共通TypeScriptランタイム (`stock-table.js`) がテーブル描画、ソート、列表示切替、閾値カラー、リンク解決を行う。調査メモは `detailModal: true` で有効になるモーダル機能で表示する。
 
 TypeScriptのコンパイルは `npx tsc` で行い、`docs/assets/app.js` が出力される。公開URLは `https://expgolemclone.github.io/land_value_research/` であり、ルートの `index.html` から `docs/` のWeb UIへ遷移する。
@@ -182,7 +187,7 @@ Rust crate名は `land_value_core` で、Pythonモジュール名も同じであ
 | ------------------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
 | `../stock_db`             | 会社名、有報XBRL原本、株価、発行済株式数、時価総額補完。 | `src/stock_db_sync.py`, `src/company_store.py`       |
 | `../stock_web_ui`         | 共通Web UIランタイム、列定義、HTTPサーバー。        | `src/web.py`, `src_ts/app.ts`                                       |
-| `../formula_screening`    | NCR, PER, FCF yield等の指標計算。                   | `src/web.py` → `compute_all_stock_metrics()`                        |
+| `../formula_screening`    | NCR, PER, FCF yield等の指標計算とTOML戦略による表示時絞り込み。 | `src/web.py` → `compute_all_stock_metrics()`, `run_screening_strategy_payload()` |
 | BrowserService            | HTML取得、IRBank取得、Web住所調査。                 | `src/browser.py`, `src/web_address_research.py`                    |
 | IRBank                    | 不足した会社名の補完。                              | `src/company_metadata_fallback.py`                                  |
 | EDINET XBRL原本           | 有報の設備表抽出元。`../stock_db` のEDINET API v2取得済みZIP/展開ディレクトリを読む。 | `src/xbrl_extract.py`, `src/stock_db_sync.py` |
@@ -430,6 +435,11 @@ Web UI用JSONは `src.ranking_data.RankingRow` と `src.web.build_ranking_payloa
 | `estimated_value`, `market_cap` など    | 推定土地時価、時価総額、簿価、含み益の円単位数値。       |
 | `peg_trailing_5`, `peg_blended_5y_actual_2f` と各 `*_status` | 共通PEG列用のトップレベル値。成長率が0以下なら `neg`、その他の欠損は `-` を表示する。 |
 | `metrics`                               | `formula_screening` 由来のNCR, PER, 優先株有無, FCF yield等。PEG値と `*_status` も保持する。 |
+
+`src.web.build_ranking_payload()` は `screening_config` を受け取ると `src.screening_config.load_screening_config()` で
+`strategy_path` を解決し、`formula_screening` の公開APIで候補銘柄をTOML戦略通過銘柄へ絞る。設定例は
+`config/screening/net_cash_fcf.toml` で、`strategy_path = "../formula_screening/strategies/net_cash_fcf.toml"` を指す。
+設定未指定時は従来どおり全土地ランキング行を表示する。
 
 フロントエンドはローカルサーバーでは `/api/ranking`、GitHub Pages では `assets/ranking.json` を読み込む。GitHub Pages のルート `index.html` は `docs/` に遷移させる。
 
@@ -976,7 +986,7 @@ cargo test
 - `data/land.db` はRelease assetから取得できるが、ネットワークやGitHub認証に依存する場合がある。
 - BrowserServiceは外部サイトの応答やチャレンジ画面の影響を受ける。Web取得失敗を即座に恒久的なデータ欠損とみなさない。
 - Web UIサーバーはローカル開発用である。公開時は `docs/assets/ranking.json` をGitHub Pagesで配信する。
-- `formula_screening` の `compute_all_stock_metrics()` は `stock_db` にアクセスするため、DBの事前更新が必要な場合がある。
+- `formula_screening` の `compute_all_stock_metrics()` と `run_screening_strategy_payload()` は `stock_db` にアクセスするため、DBの事前更新が必要な場合がある。
 
 ## 25. 保守時の推奨手順
 
