@@ -68,6 +68,8 @@
 | `Cargo.toml`         | Rust crate `land_value_core` の依存とcrate設定。                                                                                     |
 | `flake.nix`          | Nix dev shell。Python 3.13、Rust、uv、maturin、ruff、Node.jsを提供する。                                                             |
 
+NixOS上で `uv run ruff ...` を使う場合、`uv` が `.venv` に配置するPyPI由来のruff ELFバイナリは `/lib64/ld-linux-x86-64.so.2` を要求する。この環境では `../../nix-config` 側の `programs.nix-ld` で互換loaderを有効化し、`stub-ld` 停止を避ける。Nix dev shellまたはHome Manager由来の `ruff` も引き続き利用できる。
+
 ## 3. 実行入口
 
 ### 3.1 メインCLI
