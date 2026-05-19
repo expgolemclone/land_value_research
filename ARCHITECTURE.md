@@ -433,6 +433,7 @@ Web UI用JSONは `src.ranking_data.RankingRow` と `src.web.build_ranking_payloa
 | `memo_html`                             | `split-address/{code}.md` がある場合にモーダル表示する。 |
 | `geocode_tag`, `confidence`, `anomaly`  | 企業内拠点の住所解決レベル、信頼度、警告を集約する。     |
 | `estimated_value`, `market_cap` など    | 推定土地時価、時価総額、簿価、含み益の円単位数値。       |
+| `fcf_yield_avg`, `croic`                  | 共通FCF/CROIC列用のトップレベル値。`stock_web_ui` の共有カラムが直接参照する。 |
 | `peg_trailing_5`, `peg_blended_5y_actual_2f` と各 `*_status` | 共通PEG列用のトップレベル値。成長率が0以下なら `neg`、その他の欠損は `-` を表示する。 |
 | `metrics`                               | `formula_screening` 由来のNCR, PER, 優先株有無, FCF yield等。PEG値と `*_status` も保持する。 |
 

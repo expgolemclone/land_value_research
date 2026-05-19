@@ -143,6 +143,8 @@ def build_ranking_payload(
             "peg_trailing_5_status": metrics.get("peg_trailing_5_status"),
             "peg_blended_5y_actual_2f": metrics.get("peg_blended_5y_actual_2f"),
             "peg_blended_5y_actual_2f_status": metrics.get("peg_blended_5y_actual_2f_status"),
+            "fcf_yield_avg": metrics.get("fcf_yield_avg"),
+            "croic": metrics.get("croic"),
             "ratio": ratio,
             "estimated_value": estimated_value,
             "market_cap": market_cap,

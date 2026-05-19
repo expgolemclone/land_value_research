@@ -85,6 +85,8 @@ class TestWebPayload(unittest.TestCase):
         self.assertEqual("missing_input", payload[0]["peg_blended_5y_actual_2f_status"])
         self.assertEqual("non_positive_growth", payload[0]["metrics"]["peg_trailing_5_status"])
         self.assertIs(True, payload[0]["metrics"]["has_preferred_shares"])
+        self.assertIn("fcf_yield_avg", payload[0])
+        self.assertIn("croic", payload[0])
 
     def test_build_ranking_payload_accepts_string_input_dir(self) -> None:
         with tempfile.TemporaryDirectory() as td:
@@ -150,6 +152,8 @@ class TestWebPayload(unittest.TestCase):
         self.assertEqual(["9999"], [row["code"] for row in payload])
         self.assertEqual(2222, payload[0]["price"])
         self.assertEqual(0.5, payload[0]["metrics"]["net_cash_ratio"])
+        self.assertEqual(0.04, payload[0]["fcf_yield_avg"])
+        self.assertEqual(0.03, payload[0]["croic"])
         self.assertEqual(0.04, payload[0]["metrics"]["fcf_yield_avg"])
         self.assertFalse(payload[0]["metrics"]["has_preferred_shares"])
         run_strategy.assert_called_once_with(strategy, tickers=["8888", "9999"])
