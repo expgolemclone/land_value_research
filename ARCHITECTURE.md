@@ -153,7 +153,7 @@ TOML戦略を通過した銘柄だけにランキングを絞り込む。`formul
 
 フロントエンドは `src_ts/app.ts` でカラム定義を構成し、`stock_web_ui` の共通TypeScriptランタイム (`stock-table.js`) がテーブル描画、ソート、列表示切替、閾値カラー、リンク解決を行う。調査メモは `detailModal: true` で有効になるモーダル機能で表示する。
 
-TypeScriptのコンパイルは `npx tsc` で行い、`docs/assets/app.js` が出力される。公開URLは `https://expgolemclone.github.io/land_value_research/` であり、ルートの `index.html` から `docs/` の通常版Web UIへ遷移する。`net_cash_fcf` 版は `docs/net_cash_fcf.html` で表示する。
+TypeScriptのコンパイルは `npx tsc` で行い、`docs/assets/app.js` が出力される。公開ページは通常版が `https://expgolemclone.github.io/land_value_research/docs/`、`net_cash_fcf` 版が `https://expgolemclone.github.io/land_value_research/docs/net_cash_fcf.html` である。リポジトリルートの `https://expgolemclone.github.io/land_value_research/` は `docs/` の通常版Web UIへ遷移する。
 
 ### 3.4 補助スクリプト
 
@@ -771,7 +771,7 @@ CSV内の企業名が空、または証券コードと同じ場合、`company_me
 
 ### 16.4 公開用JSON
 
-GitHub Pages用の静的データは通常版が `docs/assets/ranking.json`、`net_cash_fcf` 版が `docs/assets/ranking_net_cash_fcf.json` である。`src/web.py --export-github-pages` は通常版と `config/screening/net_cash_fcf.toml` 絞り込み版をまとめて書き出す。`docs/index.html` は通常版、`docs/net_cash_fcf.html` は絞り込み版を読み込み、リポジトリルートの `index.html` は `docs/` へ遷移させる。
+GitHub Pages用の静的データは通常版が `docs/assets/ranking.json`、`net_cash_fcf` 版が `docs/assets/ranking_net_cash_fcf.json` である。`src/web.py --export-github-pages` は通常版と `config/screening/net_cash_fcf.toml` 絞り込み版をまとめて書き出す。公開ページは通常版が `https://expgolemclone.github.io/land_value_research/docs/`、`net_cash_fcf` 版が `https://expgolemclone.github.io/land_value_research/docs/net_cash_fcf.html` で、リポジトリルートの `index.html` は `docs/` へ遷移させる。
 
 ## 17. 補助調査と住所パッチ
 

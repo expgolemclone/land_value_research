@@ -27,7 +27,10 @@ GitHub Pages用に通常版と `net_cash_fcf` 版のJSONをまとめて更新:
 uv run python -m src.web --export-github-pages
 ```
 
-公開ページは通常版が `/docs/`、`net_cash_fcf` 版が `/docs/net_cash_fcf.html`。
+公開ページ:
+
+- 通常版: [https://expgolemclone.github.io/land_value_research/docs/](https://expgolemclone.github.io/land_value_research/docs/)
+- `net_cash_fcf` 版: [https://expgolemclone.github.io/land_value_research/docs/net_cash_fcf.html](https://expgolemclone.github.io/land_value_research/docs/net_cash_fcf.html)
 
 ---
 
