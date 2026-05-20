@@ -178,13 +178,20 @@ const METRIC_THRESHOLDS = {
     ...C.COMMON_THRESHOLDS,
     ratio: { good: (v) => v >= 0.5 },
 };
+function resolveDataUrl() {
+    const pageDataUrl = document.body?.dataset.rankingJson?.trim();
+    if (pageDataUrl) {
+        return pageDataUrl;
+    }
+    return IS_GITHUB_PAGES ? "assets/ranking.json" : "/api/ranking";
+}
 /* ------------------------------------------------------------------ */
 /*  Bootstrap                                                          */
 /* ------------------------------------------------------------------ */
 function bootstrap() {
     StockTable.init({
         defaultTitle: "Land Value Ranking",
-        dataUrl: IS_GITHUB_PAGES ? "assets/ranking.json" : "/api/ranking",
+        dataUrl: resolveDataUrl(),
         columns: COLUMNS,
         metricThresholds: METRIC_THRESHOLDS,
         defaultSortKey: "ratio",

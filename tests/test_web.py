@@ -3,7 +3,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from src.schema import (
     COL_BOOK_VALUE,
@@ -19,7 +19,7 @@ from src.schema import (
     COL_UNREALIZED_GAIN,
     OUTPUT_COLUMNS,
 )
-from src.web import build_ranking_payload, export_ranking_json
+from src.web import build_ranking_payload, export_github_pages_json, export_ranking_json
 
 
 def write_output_csv(
@@ -111,6 +111,39 @@ class TestWebPayload(unittest.TestCase):
             payload = json.loads(out.read_text(encoding="utf-8"))
 
         self.assertEqual([{"code": "9999"}], payload)
+
+    def test_export_github_pages_json_writes_standard_and_screened_payloads(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td)
+            input_dir = base / "output"
+            output_dir = base / "assets"
+            screening_config = base / "screening.toml"
+            with patch(
+                "src.web.build_ranking_payload",
+                side_effect=[
+                    [{"code": "all"}],
+                    [{"code": "screened"}],
+                ],
+            ) as build_payload:
+                standard_path, screened_path = export_github_pages_json(
+                    input_dir=input_dir,
+                    output_dir=output_dir,
+                    screening_config=screening_config,
+                )
+
+            standard_payload = json.loads(standard_path.read_text(encoding="utf-8"))
+            screened_payload = json.loads(screened_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(output_dir / "ranking.json", standard_path)
+        self.assertEqual(output_dir / "ranking_net_cash_fcf.json", screened_path)
+        self.assertEqual([{"code": "all"}], standard_payload)
+        self.assertEqual([{"code": "screened"}], screened_payload)
+        build_payload.assert_has_calls(
+            [
+                call(input_dir, screening_config=None),
+                call(input_dir, screening_config=screening_config),
+            ]
+        )
 
     def test_build_ranking_payload_filters_by_screening_config(self) -> None:
         with tempfile.TemporaryDirectory() as td:

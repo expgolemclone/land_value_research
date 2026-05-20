@@ -21,6 +21,14 @@ uv run python run.py --screening-config config/screening/net_cash_fcf.toml
 
 `run.py` はデフォルトで処理後にランキングWeb UIを起動する。起動しない場合は `--no-serve-ranking` を付ける。
 
+GitHub Pages用に通常版と `net_cash_fcf` 版のJSONをまとめて更新:
+
+```bash
+uv run python -m src.web --export-github-pages
+```
+
+公開ページは通常版が `/docs/`、`net_cash_fcf` 版が `/docs/net_cash_fcf.html`。
+
 ---
 
 > [!NOTE]

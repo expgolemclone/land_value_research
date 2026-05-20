@@ -218,6 +218,14 @@ const METRIC_THRESHOLDS: Record<string, MetricThreshold> = {
   ratio: { good: (v): boolean => v >= 0.5 },
 };
 
+function resolveDataUrl(): string {
+  const pageDataUrl = document.body?.dataset.rankingJson?.trim();
+  if (pageDataUrl) {
+    return pageDataUrl;
+  }
+  return IS_GITHUB_PAGES ? "assets/ranking.json" : "/api/ranking";
+}
+
 /* ------------------------------------------------------------------ */
 /*  Bootstrap                                                          */
 /* ------------------------------------------------------------------ */
@@ -225,7 +233,7 @@ const METRIC_THRESHOLDS: Record<string, MetricThreshold> = {
 function bootstrap(): void {
   StockTable.init({
     defaultTitle: "Land Value Ranking",
-    dataUrl: IS_GITHUB_PAGES ? "assets/ranking.json" : "/api/ranking",
+    dataUrl: resolveDataUrl(),
     columns: COLUMNS,
     metricThresholds: METRIC_THRESHOLDS,
     defaultSortKey: "ratio",

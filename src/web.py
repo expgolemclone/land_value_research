@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 _PROJECT_ROOT: Path = PROJECT_ROOT
 _DOCS_DIR: Path = _PROJECT_ROOT / "docs"
 _STATIC_ROOT: Path = _DOCS_DIR / "assets"
+_NET_CASH_FCF_SCREENING_CONFIG: Path = _PROJECT_ROOT / "config" / "screening" / "net_cash_fcf.toml"
 
 
 def _to_float_safe(raw: str | float | None) -> float | None:
@@ -189,6 +190,26 @@ def export_ranking_json(
     logger.info("ranking JSON exported: %s (%d rows)", resolved_output_path, len(payload))
 
 
+def export_github_pages_json(
+    input_dir: Path | str | None = None,
+    output_dir: Path | str | None = None,
+    screening_config: Path | str | None = None,
+) -> tuple[Path, Path]:
+    """Write the standard and net_cash_fcf GitHub Pages ranking JSON files."""
+    resolved_output_dir = Path(output_dir) if output_dir is not None else _STATIC_ROOT
+    standard_path = resolved_output_dir / "ranking.json"
+    screened_path = resolved_output_dir / "ranking_net_cash_fcf.json"
+    resolved_screening_config = screening_config if screening_config is not None else _NET_CASH_FCF_SCREENING_CONFIG
+
+    export_ranking_json(standard_path, input_dir=input_dir)
+    export_ranking_json(
+        screened_path,
+        input_dir=input_dir,
+        screening_config=resolved_screening_config,
+    )
+    return standard_path, screened_path
+
+
 def serve_ranking(
     *,
     input_dir: Path | str | None = None,
@@ -228,12 +249,26 @@ def main() -> None:
         help="Web UI用ランキングJSONを書き出して終了する",
     )
     parser.add_argument(
+        "--export-github-pages",
+        action="store_true",
+        default=False,
+        help="GitHub Pages用に通常版とnet_cash_fcf版のランキングJSONを書き出して終了する",
+    )
+    parser.add_argument(
         "--screening-config",
         type=Path,
         default=None,
         help="formula_screening のTOML戦略でランキングを絞り込む表示設定TOML",
     )
     args = parser.parse_args()
+    if args.export_json is not None and args.export_github_pages:
+        parser.error("--export-json and --export-github-pages cannot be used together")
+    if args.export_github_pages:
+        export_github_pages_json(
+            input_dir=Path(args.input_dir),
+            screening_config=args.screening_config,
+        )
+        return
     if args.export_json is not None:
         export_ranking_json(
             args.export_json,

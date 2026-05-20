@@ -61,7 +61,7 @@
 | `data/geocoding/`    | 東京都ジオコーディング参照CSV。大字町丁目と街区の2種類を使う。                                                                       |
 | `data/landprice/`    | 公示地価・基準地価の元データおよびマージ済みGeoJSON。                                                                                |
 | `index.html`         | GitHub Pages のルートURLから `docs/` のWeb UIへ遷移させる入口。                                                                      |
-| `docs/`              | Web UI用HTML、コンパイル済みJS、公開用ランキングJSON。`stock_web_ui` の共通テンプレートを使う。                                      |
+| `docs/`              | Web UI用HTML、コンパイル済みJS、公開用ランキングJSON。通常版と `net_cash_fcf` 版をGitHub Pagesで配信する。                            |
 | `split-address/`     | ランキング上位銘柄などの調査メモ。Web UIの「調査メモ」モーダルにも使われる。                                                          |
 | `codereview-report.md` | ワークスペース全体レビューの指摘、再現根拠、検証結果を記録する成果物。                                                             |
 | `pyproject.toml`     | Python依存、maturinビルド設定、pytest/ruff設定。                                                                                     |
@@ -144,7 +144,7 @@ uv run python -m src.web
 2. Rust-backed な `formula_screening.web.compute_all_stock_metrics()` でNCR, PER, 優先株有無, equity ratio, FCF yield, CROIC, PEG等を計算する。
 3. 両者をマージしてJSON API (`/api/ranking`) として供給する。数値列は `_to_float_safe()` で str/float 両対応に変換する。変換失敗時は `logger.debug` で記録し `None` を返す。
 4. `stock_web_ui.serve` でHTTPサーバーを起動し、共有テンプレートから生成した index HTML を配信する。
-5. GitHub Pages用には `uv run python -m src.web --export-json docs/assets/ranking.json` で同じJSON形状を書き出す。
+5. GitHub Pages用には `uv run python -m src.web --export-github-pages` で通常版と `net_cash_fcf` 版のJSONを書き出す。
 
 任意で `--screening-config config/screening/net_cash_fcf.toml` を指定すると、
 `formula_screening.web.run_screening_strategy_payload()` に土地CSV上の候補コードを渡し、
@@ -153,7 +153,7 @@ TOML戦略を通過した銘柄だけにランキングを絞り込む。`formul
 
 フロントエンドは `src_ts/app.ts` でカラム定義を構成し、`stock_web_ui` の共通TypeScriptランタイム (`stock-table.js`) がテーブル描画、ソート、列表示切替、閾値カラー、リンク解決を行う。調査メモは `detailModal: true` で有効になるモーダル機能で表示する。
 
-TypeScriptのコンパイルは `npx tsc` で行い、`docs/assets/app.js` が出力される。公開URLは `https://expgolemclone.github.io/land_value_research/` であり、ルートの `index.html` から `docs/` のWeb UIへ遷移する。
+TypeScriptのコンパイルは `npx tsc` で行い、`docs/assets/app.js` が出力される。公開URLは `https://expgolemclone.github.io/land_value_research/` であり、ルートの `index.html` から `docs/` の通常版Web UIへ遷移する。`net_cash_fcf` 版は `docs/net_cash_fcf.html` で表示する。
 
 ### 3.4 補助スクリプト
 
@@ -230,7 +230,7 @@ flowchart TD
     J --> K[信頼度・異常値警告・含み益・時価総額比計算]
     K --> L[data/output/*_output.csv]
     L --> M[パッチマージ・ログ整理・bak削除]
-    M --> N[Web UIサーバー / docs/assets/ranking.json]
+    M --> N[Web UIサーバー / docs/assets/ranking*.json]
 ```
 
 `run.py` 内部では次のフェーズに分かれる。
@@ -771,7 +771,7 @@ CSV内の企業名が空、または証券コードと同じ場合、`company_me
 
 ### 16.4 公開用JSON
 
-GitHub Pages用の静的データは `docs/assets/ranking.json` である。`src/web.py --export-json` はローカルサーバーの `/api/ranking` と同じpayloadを書き出し、`docs/index.html` が読み込む `docs/assets/app.js` は GitHub Pages 上では `assets/ranking.json` を fetch する。リポジトリルートは `index.html` で `docs/` へ遷移させる。
+GitHub Pages用の静的データは通常版が `docs/assets/ranking.json`、`net_cash_fcf` 版が `docs/assets/ranking_net_cash_fcf.json` である。`src/web.py --export-github-pages` は通常版と `config/screening/net_cash_fcf.toml` 絞り込み版をまとめて書き出す。`docs/index.html` は通常版、`docs/net_cash_fcf.html` は絞り込み版を読み込み、リポジトリルートの `index.html` は `docs/` へ遷移させる。
 
 ## 17. 補助調査と住所パッチ
 
@@ -970,14 +970,14 @@ cargo test
 1. `src/ranking_data.py` の `RankingRow` と `src/web.py` のJSON payload生成を合わせる。
 2. `src_ts/app.ts` のアクセサとカラム定義を更新する。
 3. `tests/test_ranking_data.py` と `tests/test_web.py` を更新する。
-4. `uv run python -m src.web --export-json docs/assets/ranking.json` で公開用JSONを再生成する。
+4. `uv run python -m src.web --export-github-pages` で公開用JSONを再生成する。
 
 ### 22.8 Web UIを変更する場合
 
 1. `src_ts/app.ts` を変更後、`npx tsc` で `docs/assets/app.js` を再生成する。
 2. `src/web.py` の JSON 形状と `app.ts` のアクセサが一致しているか確認する。
 3. `stock_web_ui` 側のランタイム (`stock-table.js`, `columns.js`, `style.css`) を更新した場合は、`../stock_web_ui` で `npx tsc` を実行する。
-4. 公開用データを更新する場合は `docs/assets/ranking.json` も再生成する。
+4. 公開用データを更新する場合は `uv run python -m src.web --export-github-pages` も実行する。
 
 ## 23. フックとエージェント運用
 
@@ -1003,7 +1003,7 @@ cargo test
 - `stock_db` がない環境では、会社メタデータや時価総額補完が制限される。
 - `data/land.db` はRelease assetから取得できるが、ネットワークやGitHub認証に依存する場合がある。
 - BrowserServiceは外部サイトの応答やチャレンジ画面の影響を受ける。Web取得失敗を即座に恒久的なデータ欠損とみなさない。
-- Web UIサーバーはローカル開発用である。公開時は `docs/assets/ranking.json` をGitHub Pagesで配信する。
+- Web UIサーバーはローカル開発用である。公開時は `docs/assets/ranking.json` と `docs/assets/ranking_net_cash_fcf.json` をGitHub Pagesで配信する。
 - `formula_screening` の `compute_all_stock_metrics()` と `run_screening_strategy_payload()` は `stock_db` にアクセスするため、DBの事前更新が必要な場合がある。
 
 ## 25. 保守時の推奨手順
