@@ -112,12 +112,27 @@ land-value-run --input config/input.csv
 | `--max-restarts`                 | `10`          | メモリ制限終了時の最大再起動回数。                                   |
 | `--no-auto-restart`              | off           | 自動再起動ラッパーを無効化する。                                     |
 | `--serve-ranking`                | on            | 完了後にWeb UIサーバーを起動する。`--no-serve-ranking` で無効化。    |
+| `--screening-config`             | `None`        | formula_screening のTOML戦略でランキング表示を絞り込む。             |
 
 `main()` は標準出力と標準エラーをUTF-8に設定し、自動再起動が有効なら `_run_with_restart()` を挟む。実処理は `_main_worker()` と `_run_pipeline()` で行う。
 
 ### 3.3 Web UIサーバー
 
-パイプライン完了後、`run.py` は後処理を済ませてから自動的に Web UI サーバーを起動する。単独で起動する場合は以下を使う。
+パイプライン完了後、`run.py` は後処理を済ませてから自動的に Web UI サーバーを起動する。実行例は以下である。
+
+通常のパイプライン実行は以下を使う。`--serve-ranking` は既定で有効なので、処理後にランキングWeb UIが起動する。
+
+```bash
+uv run python run.py
+```
+
+`formula_screening` の戦略結果に絞ってランキングを表示する場合は以下を使う。
+
+```bash
+uv run python run.py --screening-config config/screening/net_cash_fcf.toml
+```
+
+Web UIだけを単独で起動する場合は以下を使う。
 
 ```bash
 uv run python -m src.web
