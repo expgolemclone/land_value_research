@@ -21,7 +21,10 @@ logger = logging.getLogger(__name__)
 _PROJECT_ROOT: Path = PROJECT_ROOT
 _DOCS_DIR: Path = _PROJECT_ROOT / "docs"
 _STATIC_ROOT: Path = _DOCS_DIR / "assets"
+_STOCK_PRICE_METADATA_PATH: Path = _STATIC_ROOT / "stock-price-meta.json"
 _NET_CASH_FCF_SCREENING_CONFIG: Path = _PROJECT_ROOT / "config" / "screening" / "net_cash_fcf.toml"
+
+StockPriceMetadata = dict[str, str | None]
 
 
 def _to_float_safe(raw: str | float | None) -> float | None:
@@ -174,6 +177,31 @@ def build_ranking_payload(
     return payload
 
 
+def build_stock_price_metadata(db_path: Path | str | None = None) -> StockPriceMetadata:
+    """Build latest stock price date metadata for the shared table status."""
+
+    from formula_screening.web import build_stock_price_metadata as _build_stock_price_metadata
+
+    return _build_stock_price_metadata(db_path)
+
+
+def export_stock_price_metadata_json(
+    output_path: Path | str = _STOCK_PRICE_METADATA_PATH,
+    db_path: Path | str | None = None,
+) -> Path:
+    """Write latest stock price date metadata for static pages."""
+
+    resolved_output_path = Path(output_path)
+    metadata: StockPriceMetadata = build_stock_price_metadata(db_path)
+    resolved_output_path.parent.mkdir(parents=True, exist_ok=True)
+    resolved_output_path.write_text(
+        json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    logger.info("stock price metadata JSON exported: %s", resolved_output_path)
+    return resolved_output_path
+
+
 def export_ranking_json(
     output_path: Path | str,
     input_dir: Path | str | None = None,
@@ -207,6 +235,7 @@ def export_github_pages_json(
         input_dir=input_dir,
         screening_config=resolved_screening_config,
     )
+    export_stock_price_metadata_json(resolved_output_dir / "stock-price-meta.json")
     return standard_path, screened_path
 
 
@@ -218,8 +247,10 @@ def serve_ranking(
 ) -> None:
     """Start the web UI server with ranking data."""
     payload = build_ranking_payload(input_dir, screening_config=screening_config)
+    metadata: StockPriceMetadata = build_stock_price_metadata()
     api_routes: dict[str, ApiHandler] = {
         "/api/ranking": json_route(lambda _params: payload),
+        "/api/stock-price-meta": json_route(lambda _params: metadata),
     }
 
     _serve(
@@ -275,6 +306,7 @@ def main() -> None:
             input_dir=Path(args.input_dir),
             screening_config=args.screening_config,
         )
+        export_stock_price_metadata_json(args.export_json.parent / "stock-price-meta.json")
         return
     serve_ranking(input_dir=Path(args.input_dir), screening_config=args.screening_config)
 

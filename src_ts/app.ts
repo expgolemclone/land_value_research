@@ -234,6 +234,7 @@ function bootstrap(): void {
   StockTable.init({
     defaultTitle: "Land Value Ranking",
     dataUrl: resolveDataUrl(),
+    metadataUrl: IS_GITHUB_PAGES ? "assets/stock-price-meta.json" : "/api/stock-price-meta",
     columns: COLUMNS,
     metricThresholds: METRIC_THRESHOLDS,
     defaultSortKey: "ratio",

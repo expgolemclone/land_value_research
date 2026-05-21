@@ -19,7 +19,12 @@ from src.schema import (
     COL_UNREALIZED_GAIN,
     OUTPUT_COLUMNS,
 )
-from src.web import build_ranking_payload, export_github_pages_json, export_ranking_json
+from src.web import (
+    build_ranking_payload,
+    export_github_pages_json,
+    export_ranking_json,
+    export_stock_price_metadata_json,
+)
 
 
 def write_output_csv(
@@ -118,13 +123,16 @@ class TestWebPayload(unittest.TestCase):
             input_dir = base / "output"
             output_dir = base / "assets"
             screening_config = base / "screening.toml"
-            with patch(
-                "src.web.build_ranking_payload",
-                side_effect=[
-                    [{"code": "all"}],
-                    [{"code": "screened"}],
-                ],
-            ) as build_payload:
+            with (
+                patch(
+                    "src.web.build_ranking_payload",
+                    side_effect=[
+                        [{"code": "all"}],
+                        [{"code": "screened"}],
+                    ],
+                ) as build_payload,
+                patch("src.web.export_stock_price_metadata_json") as export_metadata,
+            ):
                 standard_path, screened_path = export_github_pages_json(
                     input_dir=input_dir,
                     output_dir=output_dir,
@@ -144,6 +152,18 @@ class TestWebPayload(unittest.TestCase):
                 call(input_dir, screening_config=screening_config),
             ]
         )
+        export_metadata.assert_called_once_with(output_dir / "stock-price-meta.json")
+
+    def test_export_stock_price_metadata_json_writes_payload(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td) / "stock-price-meta.json"
+            with patch("src.web.build_stock_price_metadata", return_value={"price_date": "2026-05-20"}):
+                result_path = export_stock_price_metadata_json(out)
+
+            payload = json.loads(out.read_text(encoding="utf-8"))
+
+        self.assertEqual(out, result_path)
+        self.assertEqual({"price_date": "2026-05-20"}, payload)
 
     def test_build_ranking_payload_filters_by_screening_config(self) -> None:
         with tempfile.TemporaryDirectory() as td:

@@ -143,8 +143,9 @@ uv run python -m src.web
 1. `src.ranking_data.collect_rank_rows()` でCSVからランキングデータを読み込む。入力ディレクトリは `str` / `Path` のどちらでも受け付ける。
 2. Rust-backed な `formula_screening.web.compute_all_stock_metrics()` でNCR, PER, 優先株有無, equity ratio, FCF yield, CROIC, PEG等を計算する。
 3. 両者をマージしてJSON API (`/api/ranking`) として供給する。数値列は `_to_float_safe()` で str/float 両対応に変換する。変換失敗時は `logger.debug` で記録し `None` を返す。
-4. `stock_web_ui.serve` でHTTPサーバーを起動し、共有テンプレートから生成した index HTML を配信する。
-5. GitHub Pages用には `uv run python -m src.web --export-github-pages` で通常版と `net_cash_fcf` 版のJSONを書き出す。
+4. `/api/stock-price-meta` で `stock_db.prices.date` の最大値を `{ "price_date": "YYYY-MM-DD" }` として供給する。
+5. `stock_web_ui.serve` でHTTPサーバーを起動し、共有テンプレートから生成した index HTML を配信する。
+6. GitHub Pages用には `uv run python -m src.web --export-github-pages` で通常版、`net_cash_fcf` 版、株価基準日 metadata のJSONを書き出す。
 
 任意で `--screening-config config/screening/net_cash_fcf.toml` を指定すると、
 `formula_screening.web.run_screening_strategy_payload()` に土地CSV上の候補コードを渡し、
@@ -459,7 +460,7 @@ Web UI用JSONは `src.ranking_data.RankingRow` と `src.web.build_ranking_payloa
 `config/screening/net_cash_fcf.toml` で、`strategy_path = "../formula_screening/strategies/net_cash_fcf.toml"` を指す。
 設定未指定時は従来どおり全土地ランキング行を表示する。
 
-フロントエンドはローカルサーバーでは `/api/ranking`、GitHub Pages では `assets/ranking.json` を読み込む。GitHub Pages のルート `index.html` は `docs/` に遷移させる。
+フロントエンドはローカルサーバーでは `/api/ranking`、GitHub Pages では `assets/ranking.json` を読み込む。株価基準日はローカルでは `/api/stock-price-meta`、GitHub Pages では `assets/stock-price-meta.json` を `metadataUrl` として読み込む。GitHub Pages のルート `index.html` は `docs/` に遷移させる。
 
 ## 10. 永続化とキャッシュ
 
@@ -771,7 +772,7 @@ CSV内の企業名が空、または証券コードと同じ場合、`company_me
 
 ### 16.4 公開用JSON
 
-GitHub Pages用の静的データは通常版が `docs/assets/ranking.json`、`net_cash_fcf` 版が `docs/assets/ranking_net_cash_fcf.json` である。`src/web.py --export-github-pages` は通常版と `config/screening/net_cash_fcf.toml` 絞り込み版をまとめて書き出す。公開ページは通常版が `https://expgolemclone.github.io/land_value_research/docs/`、`net_cash_fcf` 版が `https://expgolemclone.github.io/land_value_research/docs/net_cash_fcf.html` で、リポジトリルートの `index.html` は `docs/` へ遷移させる。
+GitHub Pages用の静的データは通常版が `docs/assets/ranking.json`、`net_cash_fcf` 版が `docs/assets/ranking_net_cash_fcf.json`、株価基準日 metadata が `docs/assets/stock-price-meta.json` である。`src/web.py --export-github-pages` は通常版、`config/screening/net_cash_fcf.toml` 絞り込み版、metadata をまとめて書き出す。公開ページは通常版が `https://expgolemclone.github.io/land_value_research/docs/`、`net_cash_fcf` 版が `https://expgolemclone.github.io/land_value_research/docs/net_cash_fcf.html` で、リポジトリルートの `index.html` は `docs/` へ遷移させる。
 
 ## 17. 補助調査と住所パッチ
 
