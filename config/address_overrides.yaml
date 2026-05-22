@@ -1229,6 +1229,8 @@
     area_m2_note: 有報739千m2全量。テナントのため東京配分なし。
     area_m2_source: 有報の本社土地面積739千m2(テナントのため全量退避)
     name: 本社(全国工場等・合算)
+'4092':
+  本社: 東京都江東区亀戸9丁目11番1号
 '4095':
   加工事業:
   - address: 東京都中央区日本橋3丁目12番1号
@@ -1324,8 +1326,12 @@
 '4274':
   本社: 東京都あきる野市草花1572番地2
   本社工場: 東京都あきる野市菅生1847番地
+'4317':
+  本社: 東京都港区六本木6丁目15番21号
 '4381':
   本社: 東京都千代田区神田練塀町3番
+'4465':
+  ケミカル: 東京都江東区石島2丁目14番
 '4539':
   本社: 東京都千代田区岩本町2丁目2番3号
 '4548':
@@ -1790,6 +1796,40 @@
     area_m2: 10331.9
     area_m2_is_estimated: false
     name: 全国各所(貸与資産・合算退避)
+'5906':
+  東京支店他14支店:
+  - address: 東京都葛飾区青戸8丁目3番5号
+    area_m2: 346.53
+    area_m2_is_estimated: true
+    area_m2_note: 有報「東京支店他14支店」5,198m2を15拠点で均等按分
+    area_m2_source: 有報総面積の支店数按分
+    area_m2_source_url: stockdb-xbrl://5906/S100VX2E/major-facilities
+    name: 東京支店他14支店(東京支店)
+  - address: 全国各所
+    area_m2: 4851.47
+    area_m2_is_estimated: true
+    area_m2_note: 5,198 - 346.53 = 4,851.47。東京以外の14支店を含む合算残余
+    area_m2_source: 有報総面積から東京支店の按分面積を控除
+    area_m2_source_url: stockdb-xbrl://5906/S100VX2E/major-facilities
+    name: 東京支店他14支店(東京以外・合算残)
+'5922':
+  本社:
+  - address: 東京都新宿区新宿2丁目1番12号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: 公式本社はPMO新宿御苑前8・9階のテナント。有報注記で本社土地には社宅、技術開発部、営業拠点を含むため、本社ビル地点には土地を配分しない
+    area_m2_source: 公式本社所在地と有報注記によるテナント・合算判定
+    area_m2_source_url: stockdb-xbrl://5922/S100W4OT/major-facilities
+    book_value_yen: 0
+    name: 本社(PMO新宿御苑前・テナント)
+  - address: 全国各所
+    area_m2: 2771.0
+    area_m2_is_estimated: false
+    area_m2_note: 有報「本社(東京都新宿区他)」土地2,771m2には社宅、技術開発部、営業拠点を含む。詳細所在地未特定のため東京評価から退避
+    area_m2_source: 有報注記2・3
+    area_m2_source_url: stockdb-xbrl://5922/S100W4OT/major-facilities
+    book_value_yen: 52188000
+    name: 本社(社宅・技術開発部・営業拠点等)
 '5965':
   本社:
   - address: 東京都港区南麻布1丁目7番23号
@@ -1906,14 +1946,16 @@
     area_m2_source_url: stockdb-xbrl://6497/S100VD81/major-facilities
     book_value_yen: 85719000
     name: 賃貸不動産(品川)
-  - address: 東京都府中市分梅町1丁目16番15号
+  - address: 東京都府中市西原町1丁目3番
     area_m2: 17856.6
     area_m2_is_estimated: false
-    area_m2_note: 有報所在地は「東京都府中市他」。Webで確認できた府中側賃貸物件を代表点として採用
+    area_m2_note: 有報所在地は「東京都府中市他」。過年度有報に府中工場余剰地で店舗建物の賃貸を開始した旨があるため、分梅町の賃貸住宅代表点ではなく府中工場所在地を代表点として採用
     area_m2_source: 有報「賃貸不動産 東京都府中市他」の土地面積
     area_m2_source_url: stockdb-xbrl://6497/S100VD81/major-facilities
     book_value_yen: 28412000
-    name: 賃貸不動産(府中市他・代表)
+    name: 賃貸不動産(府中工場余剰地・代表)
+'6543':
+  本社: 東京都千代田区神田司町2丁目6番5号
 '6508':
   本社事務所:
   - address: 東京都品川区大崎2丁目1番1号
@@ -2358,6 +2400,8 @@
     area_m2_note: 8,599 - 484.29 = 8,114.71
     area_m2_source: 有報の東京支社他土地面積8,599m2から内神田484.29m2を控除
     name: 他2支社・4支店(全国合算)
+'8011':
+  本社: 東京都新宿区四谷本塩町6番14号
 '8059':
   本社管轄:
   - address: 東京都千代田区神田駿河台4丁目6番地
@@ -3202,7 +3246,7 @@
   品川区平塚社員寮: 東京都品川区平塚2丁目
   富久屋ビル: 東京都品川区東五反田2丁目2番16号
 '9845':
-  本社・テクニカルセンター 他:
+  本社・テクニカルセンター　他:
   - address: 東京都中央区日本橋人形町2-22-1
     area_m2: 147.0
     area_m2_is_estimated: true

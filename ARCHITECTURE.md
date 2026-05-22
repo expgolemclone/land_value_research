@@ -148,10 +148,29 @@ uv run python -m src.web
 5. `stock_web_ui.serve` でHTTPサーバーを起動し、共有テンプレートから生成した index HTML を配信する。
 6. GitHub Pages用には `uv run python -m src.web --export-github-pages` で通常版、`net_cash_fcf` 版、株価基準日 metadata のJSONを書き出す。
 
+`formula_screening` の戦略評価は `stock_db` のRust APIを経由する。`stock_db` リポジトリ外から呼び出すと株価自動更新が走るため、
+既存DBの株価で静的JSONだけを再生成したい場合は次のように `stock_db` 配下から実行する。
+
+```bash
+cd ../stock_db
+PYTHONPATH=/home/exp/projects/land_value_research \
+  /home/exp/projects/land_value_research/.venv/bin/python - <<'PY'
+from pathlib import Path
+from src.web import export_github_pages_json
+
+root = Path("/home/exp/projects/land_value_research")
+export_github_pages_json(input_dir=root / "data/output", output_dir=root / "docs/assets")
+PY
+```
+
 任意で `--screening-config config/screening/net_cash_fcf.toml` を指定すると、
 `formula_screening.web.run_screening_strategy_payload()` に土地CSV上の候補コードを渡し、
 TOML戦略を通過した銘柄だけにランキングを絞り込む。`formula_screening` 側は土地情報を参照せず、
 このリポジトリが公開APIの結果を土地ランキングへ合流する。
+
+`net_cash_fcf` 上位のファクトチェックでは、対象銘柄だけを `run.py --input ... --no-skip-processed --no-serve-ranking` で再計算し、
+合算拠点は `config/address_overrides.yaml` で東京側代表点と `全国各所` 残差に分ける。根拠は `split-address/{code}.md` に保存し、
+公開JSONを再エクスポートしてランキング値と調査メモを同期させる。
 
 フロントエンドは `src_ts/app.ts` でカラム定義を構成し、`stock_web_ui` の共通TypeScriptランタイム (`stock-table.js`) がテーブル描画、ソート、列表示切替、閾値カラー、リンク解決を行う。調査メモは `detailModal: true` で有効になるモーダル機能で表示する。
 
