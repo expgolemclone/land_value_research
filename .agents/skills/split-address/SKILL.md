@@ -42,7 +42,7 @@ description: 時価総額比の上位銘柄について合算された住所を�
 | `sites[].bad_pattern_1_risk` | 合算名 or 都心高面積 → 重点調査が必要          |
 | `sites[].has_override`       | 既に `address_overrides.yaml` に登録済み       |
 | `sites[].has_hoka`           | 事業所名に「他」「及び」等の複数所在地シグナル |
-| `docs_exists`                | `split-address/{code}.md` が既に存在する（調査済み） |
+| `docs_exists`                | プロジェクトルート直下の `split-address/{code}.md` が既に存在する（調査済み） |
 
 **調査の優先度:**
 
@@ -156,7 +156,7 @@ Web検索で面積が見つからない場合、MCP Playwright で Google Maps �
 - 測定精度は ±10〜20% 程度。`area_m2_source: Google Maps衛星写真からの概算測定` と記録する
 - Playwright が使えない場合は、敷地の概算寸法（東西×南北）から矩形近似で推定する
 
-### 3.5 住所の正規化
+### ステップ5: 住所の正規化
 
 パッチファイルに登録する前に、住所を以下の形式に正規化する：
 
@@ -293,7 +293,7 @@ cat config/address_patches/****.yaml
 
 ### 5.5 推論根拠の保存（必須）
 
-分割時に `area_m2` を推定した場合は、推論根拠を必ず `split-address/{証券コード}.md` に保存する。
+分割時に `area_m2` を推定した場合は、推論根拠を必ずプロジェクトルート直下の `split-address/{証券コード}.md` に保存する。
 
 - ファイル名は証券コード固定（例: `split-address/****.md`）
 - 既存ファイルがある場合は追記ではなく更新し、最新の判断を残す

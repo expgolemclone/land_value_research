@@ -1869,7 +1869,22 @@
     name: 賃貸不動産(全国各所・合算残)
 '6497':
   府中工場: 東京都府中市西原町1丁目3番
-  賃貸不動産: 東京都府中市分梅町1丁目16番15号
+  賃貸不動産:
+  - address: 東京都品川区西五反田7丁目7番7号
+    area_m2: 1828.06
+    area_m2_is_estimated: false
+    area_m2_source: 有報「賃貸不動産 東京都品川区」の土地面積
+    area_m2_source_url: stockdb-xbrl://6497/S100VD81/major-facilities
+    book_value_yen: 85719000
+    name: 賃貸不動産(品川)
+  - address: 東京都府中市分梅町1丁目16番15号
+    area_m2: 17856.6
+    area_m2_is_estimated: false
+    area_m2_note: 有報所在地は「東京都府中市他」。Webで確認できた府中側賃貸物件を代表点として採用
+    area_m2_source: 有報「賃貸不動産 東京都府中市他」の土地面積
+    area_m2_source_url: stockdb-xbrl://6497/S100VD81/major-facilities
+    book_value_yen: 28412000
+    name: 賃貸不動産(府中市他・代表)
 '6508':
   本社事務所:
   - address: 東京都品川区大崎2丁目1番1号
@@ -2526,7 +2541,8 @@
     area_m2_source: 有報の関東事業部土地面積48,731m2から東京営業所423.67m2を控除
     name: 関東事業部(全国物流拠点・合算残余)
 '9059':
-  本社: 東京都千代田区丸の内1丁目1番2号
+  本社: 東京都千代田区神田三崎町3丁目2番4号
+  浮間営業所: 東京都北区浮間4丁目22番1号
   浮間物流センター: 東京都北区浮間4丁目22番1号
 '9082':
   大和自動車交通江東他各営業所: 東京都江東区猿江2丁目16番27号
@@ -3107,8 +3123,102 @@
   本社: 福岡県宗像市池田965-2
 '9788':
   本社: 東京都新宿区西新宿1丁目25番1号
+'2112':
+  本社機能: 東京都中央区日本橋堀留町2丁目9番6号
+'2652':
+  コンプレックス: 東京都千代田区外神田3丁目11番12号
+  ラララ: 東京都豊島区東池袋3丁目15番2号
+  中野店: 東京都中野区中野5丁目52番15号
+'3443':
+  本社: 東京都北区滝野川1丁目3番11号
+  本社他:
+  - address: 東京都江東区新木場4丁目7番51号
+    area_m2: 0.0
+    area_m2_is_estimated: false
+    area_m2_note: 有報の主要な賃借設備欄で東邦航空本社の土地1,075m2は賃借地とされるため、自社保有土地評価から除外
+    area_m2_source: 有報「主要な賃借設備」東邦航空本社土地
+    area_m2_source_url: stockdb-xbrl://3443/S100W2OA/major-facilities
+    book_value_yen: 0
+    name: 本社他(東邦航空本社・東京ヘリポート賃借地)
+  - address: 全国各所
+    area_m2: 11999.0
+    area_m2_is_estimated: false
+    area_m2_note: 有報の所有土地行「本社他(東京都江東区他)」は具体的な所有地番が未特定。東京ヘリポート本社は別途賃借設備として開示されているため、ランキング評価から退避
+    area_m2_source: 有報「本社他(東京都江東区他)」の土地面積
+    area_m2_source_url: stockdb-xbrl://3443/S100W2OA/major-facilities
+    book_value_yen: 275000000
+    name: 本社他(東邦航空所有地・所在地未特定)
+'4625':
+  塗料販売事業: 東京都板橋区舟渡3丁目9番6号
+  本社: 東京都板橋区舟渡3丁目9番6号
+'7525':
+  営業所等:
+  - address: 東京都千代田区二番町3丁目10
+    area_m2: 60.79
+    area_m2_is_estimated: true
+    area_m2_note: 有報「営業所等(38ヵ所)」2,309.85m2を38拠点で均等按分
+    area_m2_source: 有報総面積の営業所数按分
+    area_m2_source_url: stockdb-xbrl://7525/S100W3W6/major-facilities
+    name: 営業所等(東京営業所)
+  - address: 東京都八王子市明神町3丁目20番6号
+    area_m2: 60.79
+    area_m2_is_estimated: true
+    area_m2_note: 有報「営業所等(38ヵ所)」2,309.85m2を38拠点で均等按分
+    area_m2_source: 有報総面積の営業所数按分
+    area_m2_source_url: stockdb-xbrl://7525/S100W3W6/major-facilities
+    name: 営業所等(西東京営業所)
+  - address: 全国各所
+    area_m2: 2188.27
+    area_m2_is_estimated: true
+    area_m2_note: 2,309.85 - 60.79 - 60.79 = 2,188.27。東京都外を含む営業所等の合算残余
+    area_m2_source: 有報総面積から東京2営業所の按分面積を控除
+    area_m2_source_url: stockdb-xbrl://7525/S100W3W6/major-facilities
+    name: 営業所等(東京以外・合算残)
+'8699':
+  本社:
+  - address: 東京都港区虎ノ門5丁目11番1号
+    area_m2: 3545.85
+    area_m2_is_estimated: true
+    area_m2_note: 公式本社所在地のオランダヒルズ森タワー敷地面積を上限的代理値として採用。有報面積13,430.07m2とは一致しない
+    area_m2_source: オランダヒルズ森タワー建築概要の敷地面積
+    area_m2_source_url: https://www.moriliving.com/ja/residence/hollandhills_rop/general_info/index.html
+    name: 本社(オランダヒルズ森タワーRoP)
+  - address: 全国各所
+    area_m2: 9884.22
+    area_m2_is_estimated: true
+    area_m2_note: 13,430.07 - 3,545.85 = 9,884.22。宿泊施設購入・土地取得を含む可能性があるが、港区内の詳細所在地は未特定
+    area_m2_source: 有報本社土地面積から本社建物敷地面積を控除
+    area_m2_source_url: stockdb-xbrl://8699/S100W3G4/major-facilities
+    name: 本社(港区内所在地未特定)
+'9193':
+  本社: 東京都港区海岸3丁目25番7号
+'9791':
+  ベルケンホテル・神田: 東京都千代田区神田須田町1丁目4番7号
+  品川区平塚社員寮: 東京都品川区平塚2丁目
+  富久屋ビル: 東京都品川区東五反田2丁目2番16号
 '9845':
-  本社・テクニカルセンター 他: 東京都中央区日本橋人形町2-22-1
+  本社・テクニカルセンター 他:
+  - address: 東京都中央区日本橋人形町2-22-1
+    area_m2: 147.0
+    area_m2_is_estimated: true
+    area_m2_note: 近傍公示地「中央5-20」(日本橋人形町2丁目21番10、地積147m2)を本社敷地の代理値として採用
+    area_m2_source: 公示地価標準地の近傍地積
+    area_m2_source_url: https://www.reinfolib.mlit.go.jp/landPrices_/realEstateAppraisalReport/2025/13/2025131020520.html
+    name: 本社(人形町)
+  - address: 東京都江東区枝川3-1-8
+    area_m2: 593.0
+    area_m2_is_estimated: true
+    area_m2_note: 錢高組施工実績の建築面積395.84m2に近傍物件の敷地/建築面積比を掛けて推定
+    area_m2_source: 建築面積と近傍物件比率による推定
+    area_m2_source_url: https://www.zenitaka.co.jp/news/2007/work/070724.html
+    name: テクニカルセンター(枝川)
+  - address: 全国各所
+    area_m2: 37260.0
+    area_m2_is_estimated: false
+    area_m2_note: 38,000 - 147 - 593 = 37,260。有報の「東京都中央区他」に含まれる未特定残余
+    area_m2_source: 有報総面積から本社・テクニカルセンター推定面積を控除
+    area_m2_source_url: stockdb-xbrl://9845/S100W0V7/major-facilities
+    name: 本社・テクニカルセンター 他(所在地未特定・合算残)
 '9896':
   本社:
   - address: 東京都江東区新木場1丁目7番22号

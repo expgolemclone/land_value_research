@@ -13,7 +13,7 @@ description: 低解像度住所（muni_centroid / oaza_chome）をWebで調査�
 
 明示的に呼び出す場合は `$resolve-address [証券コード] [パッチファイルパス（例: config/address_patches/1234.yaml）]` と指定する。
 
-## 0. 事前準備
+### 事前準備
 
 `data/output/ranking_market_cap_ratio.html` が無い場合は、先に生成する：
 
@@ -21,18 +21,13 @@ description: 低解像度住所（muni_centroid / oaza_chome）をWebで調査�
 python rank_market_cap_ratio.py
 ```
 
-## デフォルト対象の選定
+### デフォルト対象の選定
 
-引数 `$ARGUMENTS` が**指定されていない場合**、以下の手順で対象1銘柄を自動選定する：
-
-1. `data/output/ranking_market_cap_ratio.html` を読み込む（未生成なら `python rank_market_cap_ratio.py` を先に実行）
-2. 「住所解決タグ」列に `muni_centroid` または `oaza_chome` を含む行をフィルタする
-3. フィルタ結果の中で**最も順位が高い（時価総額比が大きい）1銘柄**を対象とする
-4. 該当なしの場合はその旨を報告して終了する
+引数 `$ARGUMENTS` が**指定されていない場合**、`data/output/ranking_market_cap_ratio.html` を読み込み、「住所解決タグ」列に `muni_centroid` または `oaza_chome` を含む行の中で最も時価総額比が大きい1銘柄を自動選定する。該当なしの場合はその旨を報告して終了する。
 
 引数として証券コードが指定された場合はその企業のみを対象とする。
 
-## パッチモード（並行実行時）
+### パッチモード（並行実行時）
 
 `$ARGUMENTS` に `config/address_patches/` で始まるファイルパスが含まれている場合、**パッチモード**で動作する。これは `parallel_research.py` による並行実行時に使用される。
 
@@ -59,18 +54,12 @@ python rank_market_cap_ratio.py
 
 ### 2.1 対象企業の決定
 
-**引数なし（デフォルト）の場合:**
-
-`data/output/ranking_market_cap_ratio.html` のHTMLテーブルを読み込み、「住所解決タグ」列に `muni_centroid` または `oaza_chome` を含む最上位1銘柄の証券コードを取得する。
+「デフォルト対象の選定」に従い自動選定、または `$ARGUMENTS` を証券コードとして使用する。
 
 テーブルの列順:
 ```
 順位 | 証券コード | 企業名 | 有報XBRL | 時価総額比 | ... | 住所解決タグ | CODEX_CHECK | タグ件数 | ...
 ```
-
-**引数ありの場合:**
-
-`$ARGUMENTS` を証券コードとして使用する。
 
 ### 2.2 対象事業所の抽出
 
@@ -199,11 +188,11 @@ python rank_market_cap_ratio.py
 # 証券コード:
 #   事業所名: 東京都...（フルアドレス）
 
-1945:
+"1945":
   本社他: 東京都中央区八丁堀2丁目7番1号
-4116:
+"4116":
   東京製造事業所: 東京都足立区宮城1丁目35番18号
-4619:
+"4619":
   本社 他: 東京都北区王子5丁目2番1号
 ```
 
@@ -245,9 +234,9 @@ print(f"{addr} → {level} ({lat}, {lon})")
 
 オーバーライド登録後、対象企業のキャッシュと出力を削除してパイプラインを再実行する：
 
-```powershell
+```bash
 # 対象企業の出力CSVを削除（例: 証券コード 4116）
-Remove-Item data/output/4116_output.csv -ErrorAction SilentlyContinue
+rm -f data/output/4116_output.csv
 
 # ジオコードの再評価が必要でも、通常は override が優先されるため
 # land.db を手動で消す必要はない
