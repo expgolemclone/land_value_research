@@ -1,0 +1,4 @@
+interface:
+  display_name: "Split Address"
+  short_description: "合算拠点の住所と面積を分割調査して住所パッチ化する"
+  default_prompt: "Use $split-address to research and split combined facility addresses."

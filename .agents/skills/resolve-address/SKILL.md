@@ -1,17 +1,17 @@
 ---
 name: resolve-address
 description: 低解像度住所（muni_centroid / oaza_chome）をWebで調査し、番地レベル（gaiku）の詳細住所を特定して address_overrides.yaml に登録する。出力CSVに muni_centroid や oaza_chome が残っている場合や、住所精度を改善したい場合に使用する。
-argument-hint: "[証券コード] [パッチファイルパス（例: config/address_patches/1234.yaml）]"
 ---
 
-<!-- !!SYNC!! このファイルは以下の2箇所で同一内容を維持すること:
-     - .claude/skills/resolve-address/SKILL.md  (Claude Code用)
-     - .agents/skills/resolve-address/SKILL.md  (Codex CLI用)
-     編集時は必ず両方を同時に更新する。 -->
+<!-- Codex repository skill: $REPO_ROOT/.agents/skills/resolve-address/SKILL.md -->
 
 # 低解像度住所（muni_centroid / oaza_chome）のWeb調査・解決手順
 
 パイプライン実行後に `muni_centroid` や `oaza_chome` レベルでしかジオコーディングできなかった事業所について、Webで詳細住所を調査し `address_overrides.yaml` に登録することで精度を向上させる。
+
+## 呼び出し
+
+明示的に呼び出す場合は `$resolve-address [証券コード] [パッチファイルパス（例: config/address_patches/1234.yaml）]` と指定する。
 
 ## 0. 事前準備
 

@@ -1,18 +1,18 @@
 ---
 name: split-address
 description: 時価総額比の上位銘柄について合算された住所を分割してパッチファイルに登録する。parallel_research.py 経由で呼び出される。
-argument-hint: "<証券コード>"
 ---
 
-<!-- !!SYNC!! このファイルは以下の2箇所で同一内容を維持すること:
-     - .claude/skills/split-address/SKILL.md  (Claude Code用)
-     - .agents/skills/split-address/SKILL.md  (Codex CLI用)
-     編集時は必ず両方を同時に更新する。 -->
+<!-- Codex repository skill: $REPO_ROOT/.agents/skills/split-address/SKILL.md -->
 
 ## 注意
 
 ファイルへのアクセス制限は意図的である.
 コードは見ず, 土地分割のためのwebでのリサーチに集中してもらうためである.
+
+## 呼び出し
+
+明示的に呼び出す場合は `$split-address <証券コード>` と指定する。
 
 ## 引数
 

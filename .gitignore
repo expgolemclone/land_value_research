@@ -86,15 +86,16 @@ a.out
 # Node.js
 node_modules/
 
-# Claude 内部 — hooks/skills/settings 以外は再無視
+# Claude 内部 — hooks/settings 以外は再無視
 .claude/*
 !.claude/hooks/
 !.claude/settings.json
 !.claude/settings.local.json
-!.claude/skills/
 
-# Agent / MCP
-.agents/
+# Agent Skills / MCP
+.agents/*
+!.agents/skills/
+!.agents/skills/**
 .codex
 .playwright-mcp/
 
