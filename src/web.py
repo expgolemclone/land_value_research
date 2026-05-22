@@ -182,7 +182,9 @@ def build_stock_price_metadata(db_path: Path | str | None = None) -> StockPriceM
 
     from formula_screening.web import build_stock_price_metadata as _build_stock_price_metadata
 
-    return _build_stock_price_metadata(db_path)
+    if db_path is not None:
+        raise TypeError("build_stock_price_metadata no longer accepts db_path")
+    return _build_stock_price_metadata()
 
 
 def export_stock_price_metadata_json(
