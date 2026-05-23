@@ -14,13 +14,36 @@ from stock_web_ui.serve import serve as _serve
 from src.company_store import connect_company_db, load_company_directory
 from src.config import DEFAULT_OUTPUT_DIR, PROJECT_ROOT
 from src.ranking_data import collect_rank_rows, markdown_to_html
+from src.screening_config import load_screening_config
 
 logger = logging.getLogger(__name__)
 
 _PROJECT_ROOT: Path = PROJECT_ROOT
 _DOCS_DIR: Path = _PROJECT_ROOT / "docs"
 _STATIC_ROOT: Path = _DOCS_DIR / "assets"
-_STOCK_PRICE_META_JSON: Path = _STATIC_ROOT / "stock-price-meta.json"
+_STOCK_PRICE_METADATA_PATH: Path = _STATIC_ROOT / "stock-price-meta.json"
+_NET_CASH_FCF_SCREENING_CONFIG: Path = _PROJECT_ROOT / "config" / "screening" / "net_cash_fcf.toml"
+
+StockPriceMetadata = dict[str, str | None]
+
+
+def _auto_push_json(paths: list[Path], message: str) -> None:
+    """Commit and push only the specified JSON files if they have changes."""
+    import subprocess
+
+    repo_root = paths[0].resolve().parent.parent.parent
+    str_paths = [str(p) for p in paths]
+    diff = subprocess.run(
+        ["jj", "diff", "--stat", "--"] + str_paths,
+        capture_output=True, text=True, cwd=str(repo_root),
+    )
+    if not diff.stdout.strip():
+        return
+    subprocess.run(
+        ["jj", "commit", "-m", message, "--"] + str_paths,
+        check=True, cwd=str(repo_root),
+    )
+    subprocess.run(["jj", "git", "push"], check=True, cwd=str(repo_root))
 
 
 def _to_float_safe(raw: str | float | None) -> float | None:
@@ -38,9 +61,71 @@ def _to_float_safe(raw: str | float | None) -> float | None:
         return None
 
 
-def build_ranking_payload(input_dir: Path | str | None = None) -> list[dict]:
+def _codes_from_rank_rows(rank_rows: list[dict]) -> list[str]:
+    codes: list[str] = []
+    seen: set[str] = set()
+    for row in rank_rows:
+        code = str(row.get("code", "")).strip()
+        if not code or code in seen:
+            continue
+        seen.add(code)
+        codes.append(code)
+    return codes
+
+
+def _screening_payload_to_metric_map(payload: list[dict]) -> dict[str, dict]:
+    metric_map: dict[str, dict] = {}
+    for row in payload:
+        code = str(row.get("code", "")).strip()
+        if not code:
+            continue
+
+        nested_metrics = row.get("metrics")
+        metrics = dict(nested_metrics) if isinstance(nested_metrics, dict) else {}
+        for key in (
+            "price",
+            "fcf_yield_avg",
+            "croic",
+            "peg_trailing_5",
+            "peg_trailing_5_status",
+            "peg_blended_5y_actual_2f",
+            "peg_blended_5y_actual_2f_status",
+            "has_preferred_shares",
+        ):
+            metrics[key] = row.get(key)
+        metric_map[code] = metrics
+    return metric_map
+
+
+def _load_screening_metrics(
+    rank_rows: list[dict],
+    screening_config: Path | str | None,
+) -> tuple[dict[str, dict], set[str] | None]:
+    if screening_config is None:
+        from formula_screening.web import compute_all_stock_metrics
+
+        return compute_all_stock_metrics(), None
+
+    config = load_screening_config(screening_config)
+    candidate_codes = _codes_from_rank_rows(rank_rows)
+    if not candidate_codes:
+        return {}, set()
+
+    from formula_screening.web import run_screening_strategy_payload
+
+    screening_payload = run_screening_strategy_payload(
+        config.strategy_path,
+        tickers=candidate_codes,
+    )
+    metrics = _screening_payload_to_metric_map(screening_payload)
+    return metrics, set(metrics)
+
+
+def build_ranking_payload(
+    input_dir: Path | str | None = None,
+    screening_config: Path | str | None = None,
+) -> list[dict]:
     """Build ranking JSON payload merging land value CSV data with Rust-backed screening metrics."""
-    from formula_screening.web import compute_all_stock_metrics
 
     resolved_input_dir = Path(input_dir) if input_dir is not None else DEFAULT_OUTPUT_DIR
 
@@ -51,7 +136,12 @@ def build_ranking_payload(input_dir: Path | str | None = None) -> list[dict]:
     finally:
         conn.close()
 
-    screening_metrics = compute_all_stock_metrics()
+    if not rank_rows:
+        return []
+
+    screening_metrics, allowed_codes = _load_screening_metrics(rank_rows, screening_config)
+    if allowed_codes is not None:
+        rank_rows = [row for row in rank_rows if row["code"].strip() in allowed_codes]
 
     payload: list[dict] = []
     for row in rank_rows:
@@ -76,6 +166,8 @@ def build_ranking_payload(input_dir: Path | str | None = None) -> list[dict]:
             "peg_trailing_5_status": metrics.get("peg_trailing_5_status"),
             "peg_blended_5y_actual_2f": metrics.get("peg_blended_5y_actual_2f"),
             "peg_blended_5y_actual_2f_status": metrics.get("peg_blended_5y_actual_2f_status"),
+            "fcf_yield_avg": metrics.get("fcf_yield_avg"),
+            "croic": metrics.get("croic"),
             "ratio": ratio,
             "estimated_value": estimated_value,
             "market_cap": market_cap,
@@ -104,57 +196,82 @@ def build_ranking_payload(input_dir: Path | str | None = None) -> list[dict]:
     return payload
 
 
-def build_stock_price_metadata(db_path: Path | str | None = None) -> dict[str, str | None]:
-    from stock_db.paths import STOCKS_DB_PATH
-    from stock_db.storage.connection import get_connection
-    from stock_db.storage.prices import get_latest_price_date
+def build_stock_price_metadata(db_path: Path | str | None = None) -> StockPriceMetadata:
+    """Build latest stock price date metadata for the shared table status."""
 
-    resolved_db_path = Path(db_path) if db_path is not None else STOCKS_DB_PATH
-    conn = get_connection(resolved_db_path)
-    try:
-        latest_price_date = get_latest_price_date(conn)
-    finally:
-        conn.close()
-    return {"price_date": latest_price_date.isoformat() if latest_price_date else None}
+    from formula_screening.web import build_stock_price_metadata as _build_stock_price_metadata
+
+    if db_path is not None:
+        raise TypeError("build_stock_price_metadata no longer accepts db_path")
+    return _build_stock_price_metadata()
 
 
 def export_stock_price_metadata_json(
-    output_path: Path | str = _STOCK_PRICE_META_JSON,
-    *,
+    output_path: Path | str = _STOCK_PRICE_METADATA_PATH,
     db_path: Path | str | None = None,
-) -> None:
+) -> Path:
+    """Write latest stock price date metadata for static pages."""
+
     resolved_output_path = Path(output_path)
+    metadata: StockPriceMetadata = build_stock_price_metadata(db_path)
     resolved_output_path.parent.mkdir(parents=True, exist_ok=True)
     resolved_output_path.write_text(
-        json.dumps(build_stock_price_metadata(db_path), ensure_ascii=False, indent=2) + "\n",
+        json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+    logger.info("stock price metadata JSON exported: %s", resolved_output_path)
+    return resolved_output_path
 
 
-def export_ranking_json(output_path: Path | str, input_dir: Path | str | None = None) -> None:
+def export_ranking_json(
+    output_path: Path | str,
+    input_dir: Path | str | None = None,
+    screening_config: Path | str | None = None,
+) -> None:
     """Write GitHub Pages compatible ranking payload JSON."""
     resolved_output_path = Path(output_path)
-    payload = build_ranking_payload(input_dir)
+    payload = build_ranking_payload(input_dir, screening_config=screening_config)
     resolved_output_path.parent.mkdir(parents=True, exist_ok=True)
     resolved_output_path.write_text(
         json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n",
         encoding="utf-8",
     )
-    export_stock_price_metadata_json(resolved_output_path.with_name("stock-price-meta.json"))
     logger.info("ranking JSON exported: %s (%d rows)", resolved_output_path, len(payload))
+
+
+def export_github_pages_json(
+    input_dir: Path | str | None = None,
+    output_dir: Path | str | None = None,
+    screening_config: Path | str | None = None,
+) -> tuple[Path, Path]:
+    """Write the standard and net_cash_fcf GitHub Pages ranking JSON files."""
+    resolved_output_dir = Path(output_dir) if output_dir is not None else _STATIC_ROOT
+    standard_path = resolved_output_dir / "ranking.json"
+    screened_path = resolved_output_dir / "ranking_net_cash_fcf.json"
+    resolved_screening_config = screening_config if screening_config is not None else _NET_CASH_FCF_SCREENING_CONFIG
+
+    export_ranking_json(standard_path, input_dir=input_dir)
+    export_ranking_json(
+        screened_path,
+        input_dir=input_dir,
+        screening_config=resolved_screening_config,
+    )
+    export_stock_price_metadata_json(resolved_output_dir / "stock-price-meta.json")
+    return standard_path, screened_path
 
 
 def serve_ranking(
     *,
     input_dir: Path | str | None = None,
+    screening_config: Path | str | None = None,
     server_config: ServerConfig | None = None,
 ) -> None:
     """Start the web UI server with ranking data."""
-    payload = build_ranking_payload(input_dir)
-    stock_price_metadata = build_stock_price_metadata()
+    payload = build_ranking_payload(input_dir, screening_config=screening_config)
+    metadata: StockPriceMetadata = build_stock_price_metadata()
     api_routes: dict[str, ApiHandler] = {
         "/api/ranking": json_route(lambda _params: payload),
-        "/api/stock-price-meta": json_route(lambda _params: stock_price_metadata),
+        "/api/stock-price-meta": json_route(lambda _params: metadata),
     }
 
     _serve(
@@ -183,11 +300,40 @@ def main() -> None:
         default=None,
         help="Web UI用ランキングJSONを書き出して終了する",
     )
+    parser.add_argument(
+        "--export-github-pages",
+        action="store_true",
+        default=False,
+        help="GitHub Pages用に通常版とnet_cash_fcf版のランキングJSONを書き出して終了する",
+    )
+    parser.add_argument(
+        "--screening-config",
+        type=Path,
+        default=None,
+        help="formula_screening のTOML戦略でランキングを絞り込む表示設定TOML",
+    )
     args = parser.parse_args()
-    if args.export_json is not None:
-        export_ranking_json(args.export_json, input_dir=Path(args.input_dir))
+    if args.export_json is not None and args.export_github_pages:
+        parser.error("--export-json and --export-github-pages cannot be used together")
+    if args.export_github_pages:
+        standard_path, screened_path = export_github_pages_json(
+            input_dir=Path(args.input_dir),
+            screening_config=args.screening_config,
+        )
+        _auto_push_json(
+            [standard_path, screened_path, _STATIC_ROOT / "stock-price-meta.json"],
+            "Update ranking data",
+        )
         return
-    serve_ranking(input_dir=Path(args.input_dir))
+    if args.export_json is not None:
+        export_ranking_json(
+            args.export_json,
+            input_dir=Path(args.input_dir),
+            screening_config=args.screening_config,
+        )
+        export_stock_price_metadata_json(args.export_json.parent / "stock-price-meta.json")
+        return
+    serve_ranking(input_dir=Path(args.input_dir), screening_config=args.screening_config)
 
 
 if __name__ == "__main__":
