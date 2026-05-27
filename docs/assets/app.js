@@ -71,7 +71,7 @@ function toOku(value) {
 const COLUMNS = [
     C.codeCol,
     C.nameCol,
-    C.priceCol,
+    C.buildMetricCol(C.NCR_SPEC, metricsAccessor("net_cash_ratio")),
     {
         key: "ratio",
         header: "ratio",
@@ -95,7 +95,7 @@ const COLUMNS = [
             return typeof v === "string" && v.length > 0 ? v : null;
         },
     },
-    C.buildMetricCol(C.NCR_SPEC, metricsAccessor("net_cash_ratio")),
+    C.priceCol,
     C.buildMetricCol(C.PER_A_SPEC, metricsAccessor("per_actual")),
     C.buildMetricCol(C.PER_C_SPEC, metricsAccessor("per")),
     C.buildMetricCol(C.PER_N_SPEC, metricsAccessor("per_next")),
