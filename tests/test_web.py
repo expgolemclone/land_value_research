@@ -1,6 +1,5 @@
 import csv
 import json
-import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
@@ -98,34 +97,23 @@ class TestWebPayload(unittest.TestCase):
     def test_export_ranking_json_writes_payload(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             out = Path(td) / "ranking.json"
-            with (
-                patch("src.web.build_ranking_payload", return_value=[{"code": "9999"}]),
-                patch("src.web.build_stock_price_metadata", return_value={"price_date": "2026-05-15"}),
-            ):
+            with patch("src.web.build_ranking_payload", return_value=[{"code": "9999"}]):
                 export_ranking_json(out, input_dir=Path(td))
 
             payload = json.loads(out.read_text(encoding="utf-8"))
-            metadata = json.loads((out.parent / "stock-price-meta.json").read_text(encoding="utf-8"))
 
         self.assertEqual([{"code": "9999"}], payload)
-        self.assertEqual({"price_date": "2026-05-15"}, metadata)
 
-    def test_build_stock_price_metadata_uses_latest_price_date(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            db_path = Path(td) / "stocks.db"
-            with sqlite3.connect(db_path) as con:
-                con.execute(
-                    "CREATE TABLE prices (ticker TEXT NOT NULL, date TEXT NOT NULL, close REAL, volume INTEGER, updated_at TEXT)"
-                )
-                con.executemany(
-                    "INSERT INTO prices (ticker, date, close) VALUES (?, ?, ?)",
-                    [("9998", "2026-05-14", 1000.0), ("9999", "2026-05-15", 1234.0)],
-                )
-                con.commit()
+    def test_build_stock_price_metadata_uses_formula_screening_api(self) -> None:
+        expected = {"price_date": "2026-05-15", "target_price_date": "2026-05-15"}
+        with patch("formula_screening.web.build_stock_price_metadata", return_value=expected):
+            metadata = build_stock_price_metadata()
 
-            metadata = build_stock_price_metadata(db_path)
+        self.assertEqual(expected, metadata)
 
-        self.assertEqual({"price_date": "2026-05-15"}, metadata)
+    def test_build_stock_price_metadata_rejects_db_path(self) -> None:
+        with self.assertRaises(TypeError):
+            build_stock_price_metadata("stocks.db")
 
 
 if __name__ == "__main__":
