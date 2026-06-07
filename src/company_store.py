@@ -5,8 +5,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypedDict
 
-from stock_db.storage.connection import get_connection
-
 from src.config import LAND_DB_PATH
 from src.land_db.asset import ensure_land_db_exists
 from src.land_db.schema import init_land_db
@@ -27,7 +25,11 @@ def connect_company_db(db_path: Path | None = None) -> sqlite3.Connection:
     resolved_path = db_path or LAND_DB_PATH
     if db_path is None:
         ensure_land_db_exists(resolved_path)
-    conn = get_connection(resolved_path)
+    resolved_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(resolved_path), timeout=60)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA foreign_keys=ON")
+    conn.row_factory = sqlite3.Row
     init_db(conn)
     return conn
 

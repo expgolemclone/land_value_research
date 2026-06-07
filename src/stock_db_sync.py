@@ -3,20 +3,22 @@ from __future__ import annotations
 import logging
 import re
 import sqlite3
-import subprocess
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import date, timedelta
 from pathlib import Path
 
-from stock_db.paths import PROJECT_ROOT as STOCK_DB_PROJECT_ROOT
-from stock_db.paths import STOCKS_DB_PATH
+from stock_db.api import (
+    PriceRefreshError,
+    ensure_prices_fresh,
+    get_latest_xbrl_artifacts,
+    get_stock_market_caps,
+    get_stock_names,
+)
 
 from src.company_store import CompanyDirectory, merge_company_record
 
 logger = logging.getLogger(__name__)
 
-_SQLITE_BATCH_SIZE = 500
 _WHITESPACE_RE = re.compile(r"\s+")
 _DEFAULT_MARKET_CAP_MAX_AGE_DAYS = 7
 
@@ -46,22 +48,9 @@ def _normalize_codes(codes: Iterable[str]) -> list[str]:
     return normalized
 
 
-def _code_batches(codes: list[str], size: int = _SQLITE_BATCH_SIZE) -> list[list[str]]:
-    return [codes[i : i + size] for i in range(0, len(codes), size)]
-
-
-def _open_stock_db_readonly(db_path: Path) -> sqlite3.Connection | None:
-    resolved = db_path.expanduser().resolve()
-    if not resolved.exists():
-        logger.info("stock.db が見つからないため同期をスキップ: %s", resolved)
-        return None
-    try:
-        conn = sqlite3.connect(f"file:{resolved}?mode=ro", uri=True)
-    except sqlite3.Error:
-        logger.exception("stock.db を read-only で開けませんでした: %s", resolved)
-        return None
-    conn.row_factory = sqlite3.Row
-    return conn
+def _reject_db_path(db_path: Path | None) -> None:
+    if db_path is not None:
+        raise ValueError("stock_db db_path override is no longer supported; use stock_db.api")
 
 
 def _is_placeholder_company_name(company_name: str, code: str) -> bool:
@@ -69,64 +58,22 @@ def _is_placeholder_company_name(company_name: str, code: str) -> bool:
     return not compact_name or compact_name == code
 
 
-def _fingerprint_xbrl_artifact(path: Path) -> tuple[int, int] | None:
-    resolved = path.expanduser().resolve()
-    zip_path = resolved.parent / f"{resolved.name}.zip"
-    if not resolved.is_dir() or not zip_path.is_file():
-        return None
-
-    total_size = zip_path.stat().st_size
-    max_mtime_ns = zip_path.stat().st_mtime_ns
-    has_xbrl_body = False
-    for child in resolved.rglob("*"):
-        if not child.is_file():
-            continue
-        total_size += child.stat().st_size
-        max_mtime_ns = max(max_mtime_ns, child.stat().st_mtime_ns)
-        if child.suffix.lower() in {".xbrl", ".xhtml", ".html", ".htm"}:
-            has_xbrl_body = True
-
-    if not has_xbrl_body:
-        return None
-    return total_size, max_mtime_ns
-
-
 def load_stock_db_company_metadata(
     codes: Iterable[str],
     *,
     db_path: Path | None = None,
 ) -> dict[str, StockDbCompanyMetadata]:
+    _reject_db_path(db_path)
     normalized_codes = _normalize_codes(codes)
     if not normalized_codes:
         return {}
 
-    conn = _open_stock_db_readonly(db_path or STOCKS_DB_PATH)
-    if conn is None:
-        return {}
-
+    names = get_stock_names()
     result: dict[str, StockDbCompanyMetadata] = {}
-    try:
-        for batch in _code_batches(normalized_codes):
-            placeholders = ",".join("?" for _ in batch)
-            stock_rows = conn.execute(
-                f"""
-                SELECT ticker, name
-                FROM stocks
-                WHERE ticker IN ({placeholders})
-                """,
-                batch,
-            ).fetchall()
-
-            for row in stock_rows:
-                ticker = str(row["ticker"])
-                metadata = StockDbCompanyMetadata(
-                    company_name=str(row["name"] or ""),
-                )
-                if metadata.company_name:
-                    result[ticker] = metadata
-    finally:
-        conn.close()
-
+    for code in normalized_codes:
+        company_name = str(names.get(code, "") or "")
+        if company_name:
+            result[code] = StockDbCompanyMetadata(company_name=company_name)
     return result
 
 
@@ -135,54 +82,20 @@ def load_stock_db_xbrl_artifacts(
     *,
     db_path: Path | None = None,
 ) -> dict[str, StockDbXbrlArtifact]:
+    _reject_db_path(db_path)
     normalized_codes = _normalize_codes(codes)
     if not normalized_codes:
         return {}
 
-    conn = _open_stock_db_readonly(db_path or STOCKS_DB_PATH)
-    if conn is None:
-        return {}
-
+    rows = get_latest_xbrl_artifacts(normalized_codes)
     result: dict[str, StockDbXbrlArtifact] = {}
-    try:
-        for batch in _code_batches(normalized_codes):
-            placeholders = ",".join("?" for _ in batch)
-            rows = conn.execute(
-                f"""
-                SELECT ticker, doc_id, xbrl_path
-                FROM sec_reports
-                WHERE ticker IN ({placeholders})
-                  AND COALESCE(doc_id, '') <> ''
-                  AND COALESCE(xbrl_path, '') <> ''
-                ORDER BY
-                    ticker,
-                    CASE WHEN fiscal_year = 'latest' THEN 0 ELSE 1 END,
-                    updated_at DESC,
-                    doc_id DESC
-                """,
-                batch,
-            ).fetchall()
-
-            for row in rows:
-                ticker = str(row["ticker"])
-                if ticker in result:
-                    continue
-                doc_id = str(row["doc_id"])
-                xbrl_path = Path(str(row["xbrl_path"]))
-                fingerprint = _fingerprint_xbrl_artifact(xbrl_path)
-                if fingerprint is None:
-                    logger.info("stock.db XBRL原本が無効なためスキップ: ticker=%s path=%s", ticker, xbrl_path)
-                    continue
-                source_size, source_mtime_ns = fingerprint
-                result[ticker] = StockDbXbrlArtifact(
-                    doc_id=doc_id,
-                    xbrl_path=str(xbrl_path.expanduser().resolve()),
-                    source_size=source_size,
-                    source_mtime_ns=source_mtime_ns,
-                )
-    finally:
-        conn.close()
-
+    for code, row in rows.items():
+        result[code] = StockDbXbrlArtifact(
+            doc_id=str(row["doc_id"]),
+            xbrl_path=str(row["xbrl_path"]),
+            source_size=int(row["source_size"]),
+            source_mtime_ns=int(row["source_mtime_ns"]),
+        )
     return result
 
 
@@ -192,98 +105,24 @@ def load_market_cap_from_stock_db(
     db_path: Path | None = None,
     max_age_days: int = _DEFAULT_MARKET_CAP_MAX_AGE_DAYS,
 ) -> dict[str, int]:
+    _reject_db_path(db_path)
     normalized_codes = _normalize_codes(codes)
     if not normalized_codes:
         return {}
-    if max_age_days < 0:
-        raise ValueError("max_age_days must be >= 0")
+    return get_stock_market_caps(normalized_codes, max_age_days=max_age_days)
 
-    conn = _open_stock_db_readonly(db_path or STOCKS_DB_PATH)
-    if conn is None:
-        return {}
 
-    cutoff_date = date.today() - timedelta(days=max_age_days)
-    result: dict[str, int] = {}
+def refresh_stock_prices() -> bool:
+    """Ask stock_db public API to refresh stale prices if needed."""
+
+    logger.info("stock_db 株価更新開始")
     try:
-        for batch in _code_batches(normalized_codes):
-            placeholders = ",".join("?" for _ in batch)
-            rows = conn.execute(
-                f"""
-                WITH latest_prices AS (
-                    SELECT
-                        ticker,
-                        date,
-                        close,
-                        ROW_NUMBER() OVER (
-                            PARTITION BY ticker
-                            ORDER BY date DESC
-                        ) AS rn
-                    FROM prices
-                    WHERE ticker IN ({placeholders})
-                )
-                SELECT
-                    s.ticker,
-                    s.shares_outstanding,
-                    lp.close,
-                    lp.date
-                FROM stocks AS s
-                JOIN latest_prices AS lp
-                  ON lp.ticker = s.ticker
-                 AND lp.rn = 1
-                WHERE s.shares_outstanding IS NOT NULL
-                  AND lp.close IS NOT NULL
-                """,
-                batch,
-            ).fetchall()
-
-            for row in rows:
-                price_date_raw = str(row["date"] or "")
-                try:
-                    price_date = date.fromisoformat(price_date_raw)
-                except ValueError:
-                    logger.debug("stock.db price date parse failed: ticker=%s date=%r", row["ticker"], price_date_raw)
-                    continue
-                if price_date < cutoff_date:
-                    continue
-
-                shares_outstanding = int(row["shares_outstanding"])
-                close = float(row["close"])
-                result[str(row["ticker"])] = int(round(shares_outstanding * close))
-    finally:
-        conn.close()
-
-    return result
-
-
-def run_stooq_scrape(
-    *,
-    cwd: Path | None = None,
-    timeout: int = 300,
-) -> bool:
-    """stock_db で scrape-stooq-prices を実行して最新株価を取得する."""
-    work_dir = cwd or STOCK_DB_PROJECT_ROOT
-    logger.info("stooq 株価スクレイプ開始: cwd=%s", work_dir)
-    try:
-        proc = subprocess.run(
-            ["uv", "run", "scrape-stooq-prices"],
-            cwd=str(work_dir),
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
-    except (subprocess.TimeoutExpired, FileNotFoundError, OSError) as exc:
-        logger.warning("stooq 株価スクレイプ失敗: %s: %s", type(exc).__name__, exc)
+        ensure_prices_fresh()
+    except (PriceRefreshError, ValueError) as exc:
+        logger.warning("stock_db 株価更新失敗: %s", exc)
         return False
 
-    if proc.returncode != 0:
-        logger.warning(
-            "stooq 株価スクレイプ失敗 (exit=%d): %s",
-            proc.returncode,
-            (proc.stderr or "").strip(),
-        )
-        return False
-
-    logger.info("stooq 株価スクレイプ完了: %s", (proc.stderr or "").strip())
+    logger.info("stock_db 株価更新完了")
     return True
 
 

@@ -119,7 +119,7 @@ from src.stock_db_sync import (
     StockDbXbrlArtifact,
     load_market_cap_from_stock_db,
     load_stock_db_xbrl_artifacts,
-    run_stooq_scrape,
+    refresh_stock_prices,
     sync_company_records_from_stock_db,
 )
 from src.utils import ensure_dir, open_csv
@@ -1350,12 +1350,12 @@ def _run_pipeline(args: argparse.Namespace, ctx: RunContext) -> None:
 
         missing_codes = [c for c in stock_db_market_cap_codes if c not in ctx.stock_db_market_caps]
         if missing_codes:
-            logger.info("株価が古いか不足: %d社 — stooq スクレイプを実行", len(missing_codes))
-            if run_stooq_scrape():
+            logger.info("株価が古いか不足: %d社 — stock_db APIで更新", len(missing_codes))
+            if refresh_stock_prices():
                 refreshed = load_market_cap_from_stock_db(missing_codes)
                 ctx.stock_db_market_caps.update(refreshed)
                 logger.info(
-                    "スクレイプ後の時価総額再取得: %d/%d社",
+                    "株価更新後の時価総額再取得: %d/%d社",
                     len(refreshed),
                     len(set(missing_codes)),
                 )
