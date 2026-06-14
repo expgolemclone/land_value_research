@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 
 /// Python の PriceResult dataclass と同等の構造体
-#[pyclass(frozen, get_all)]
+#[pyclass(frozen, get_all, skip_from_py_object)]
 #[derive(Clone, Debug)]
 pub struct PriceResult {
     pub unit_price: i64,

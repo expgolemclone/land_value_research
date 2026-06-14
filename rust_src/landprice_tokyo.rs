@@ -359,7 +359,7 @@ mod tests {
     use tempfile::NamedTempFile;
 
     fn init_python() {
-        pyo3::prepare_freethreaded_python();
+        Python::initialize();
     }
 
     fn make_test_geojson() -> NamedTempFile {

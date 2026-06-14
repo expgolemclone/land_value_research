@@ -9,7 +9,7 @@ crate-type = ["cdylib", "rlib"]
 path = "rust_src/lib.rs"
 
 [dependencies]
-pyo3 = "0.24"
+pyo3 = "0.29"
 encoding_rs = "0.8"
 proj4rs = "0.1"
 geographiclib-rs = "0.2"

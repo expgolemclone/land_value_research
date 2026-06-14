@@ -233,7 +233,7 @@ mod tests {
     use tempfile::TempDir;
 
     fn init_python() {
-        pyo3::prepare_freethreaded_python();
+        Python::initialize();
     }
 
     fn setup_test_csvs() -> (TempDir, String, String) {
