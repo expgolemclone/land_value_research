@@ -2,9 +2,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from stock_db.api import PriceRefreshError
-
 from src.stock_db_sync import (
+    PriceRefreshError,
     StockDbCompanyMetadata,
     StockDbXbrlArtifact,
     load_market_cap_from_stock_db,
@@ -15,7 +14,7 @@ from src.stock_db_sync import (
 
 
 class TestLoadStockDbCompanyMetadata(unittest.TestCase):
-    def test_loads_company_names_from_stock_db_api(self) -> None:
+    def test_loads_company_names_from_stock_db_bridge(self) -> None:
         with patch(
             "src.stock_db_sync.get_stock_names",
             return_value={"1234": "テスト株式会社", "9999": ""},
@@ -34,7 +33,7 @@ class TestLoadStockDbCompanyMetadata(unittest.TestCase):
 
 
 class TestLoadMarketCapFromStockDb(unittest.TestCase):
-    def test_delegates_market_cap_lookup_to_stock_db_api(self) -> None:
+    def test_delegates_market_cap_lookup_to_stock_db_bridge(self) -> None:
         with patch(
             "src.stock_db_sync.get_stock_market_caps",
             return_value={"1234": 123_400_000},
@@ -56,7 +55,7 @@ class TestLoadMarketCapFromStockDb(unittest.TestCase):
 
 
 class TestLoadStockDbXbrlArtifacts(unittest.TestCase):
-    def test_loads_latest_xbrl_artifact_from_stock_db_api(self) -> None:
+    def test_loads_latest_xbrl_artifact_from_stock_db_bridge(self) -> None:
         with patch(
             "src.stock_db_sync.get_latest_xbrl_artifacts",
             return_value={

@@ -1,19 +1,15 @@
 from __future__ import annotations
 
+import json
 import logging
+import os
 import re
 import sqlite3
+import subprocess
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-
-from stock_db.api import (
-    PriceRefreshError,
-    ensure_prices_fresh,
-    get_latest_xbrl_artifacts,
-    get_stock_market_caps,
-    get_stock_names,
-)
+from typing import TypeAlias
 
 from src.company_store import CompanyDirectory, merge_company_record
 
@@ -21,6 +17,21 @@ logger = logging.getLogger(__name__)
 
 _WHITESPACE_RE = re.compile(r"\s+")
 _DEFAULT_MARKET_CAP_MAX_AGE_DAYS = 7
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+_DEFAULT_STOCK_DB_ROOT = _PROJECT_ROOT.parent / "stock_db"
+JsonValue: TypeAlias = (
+    None
+    | bool
+    | int
+    | float
+    | str
+    | list["JsonValue"]
+    | dict[str, "JsonValue"]
+)
+
+
+class PriceRefreshError(RuntimeError):
+    """Raised when stock_db cannot refresh stale prices."""
 
 
 @dataclass(frozen=True)
@@ -50,7 +61,7 @@ def _normalize_codes(codes: Iterable[str]) -> list[str]:
 
 def _reject_db_path(db_path: Path | None) -> None:
     if db_path is not None:
-        raise ValueError("stock_db db_path override is no longer supported; use stock_db.api")
+        raise ValueError("stock_db db_path override is no longer supported; use stock_db Rust CLI")
 
 
 def _is_placeholder_company_name(company_name: str, code: str) -> bool:
@@ -75,6 +86,53 @@ def load_stock_db_company_metadata(
         if company_name:
             result[code] = StockDbCompanyMetadata(company_name=company_name)
     return result
+
+
+def ensure_prices_fresh() -> None:
+    result = subprocess.run(
+        ["uv", "run", "refresh-prices", "--if-needed", "--headless"],
+        cwd=_stock_db_root(),
+        env=_stock_db_env(),
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        message = (result.stderr or result.stdout).strip()
+        raise PriceRefreshError(message or f"refresh-prices exited {result.returncode}")
+
+
+def get_stock_names() -> dict[str, str]:
+    raw = _expect_dict(_run_stock_db_json(["downstream-stock-names"]))
+    return {str(code): str(name) for code, name in raw.items()}
+
+
+def get_latest_xbrl_artifacts(codes: Iterable[str]) -> dict[str, dict[str, JsonValue]]:
+    raw = _expect_dict(
+        _run_stock_db_json(
+            ["downstream-latest-xbrl-artifacts"],
+            tickers=_normalize_codes(codes),
+        )
+    )
+    result: dict[str, dict[str, JsonValue]] = {}
+    for code, row in raw.items():
+        if not isinstance(row, dict):
+            raise ValueError(f"XBRL artifact row must be an object: {code}")
+        result[str(code)] = row
+    return result
+
+
+def get_stock_market_caps(
+    codes: Iterable[str],
+    *,
+    max_age_days: int = _DEFAULT_MARKET_CAP_MAX_AGE_DAYS,
+) -> dict[str, int]:
+    raw = _expect_dict(
+        _run_stock_db_json(
+            ["downstream-stock-market-caps", "--max-age-days", str(max_age_days)],
+            tickers=_normalize_codes(codes),
+        )
+    )
+    return {str(code): int(value) for code, value in raw.items()}
 
 
 def load_stock_db_xbrl_artifacts(
@@ -113,7 +171,7 @@ def load_market_cap_from_stock_db(
 
 
 def refresh_stock_prices() -> bool:
-    """Ask stock_db public API to refresh stale prices if needed."""
+    """Ask stock_db Rust CLI to refresh stale prices if needed."""
 
     logger.info("stock_db 株価更新開始")
     try:
@@ -124,6 +182,49 @@ def refresh_stock_prices() -> bool:
 
     logger.info("stock_db 株価更新完了")
     return True
+
+
+def _stock_db_root() -> Path:
+    configured = os.environ.get("STOCK_DB_ROOT")
+    root = Path(configured).expanduser() if configured else _DEFAULT_STOCK_DB_ROOT
+    if not root.is_dir():
+        raise ValueError(f"stock_db root does not exist: {root}")
+    return root
+
+
+def _stock_db_env() -> dict[str, str]:
+    env = os.environ.copy()
+    env.setdefault("STOCK_DB_ROOT", str(_stock_db_root()))
+    return env
+
+
+def _run_stock_db_json(
+    args: list[str],
+    *,
+    tickers: list[str] | None = None,
+) -> JsonValue:
+    input_text = None if tickers is None else json.dumps(tickers)
+    result = subprocess.run(
+        ["cargo", "run", "-q", "-p", "edinet-xbrl", "--", *args],
+        cwd=_stock_db_root(),
+        env=_stock_db_env(),
+        input=input_text,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        message = (result.stderr or result.stdout).strip()
+        raise ValueError(message or f"edinet-xbrl {' '.join(args)} exited {result.returncode}")
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"edinet-xbrl {' '.join(args)} emitted invalid JSON") from exc
+
+
+def _expect_dict(value: JsonValue) -> dict[str, JsonValue]:
+    if not isinstance(value, dict):
+        raise ValueError(f"expected JSON object, got {type(value).__name__}")
+    return value
 
 
 def sync_company_records_from_stock_db(
