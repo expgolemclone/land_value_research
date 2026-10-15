@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+# rustc が見つからなければ nix develop 経由で再実行
+if ! command -v rustc &>/dev/null; then
+    if [[ -n "${_IN_NIX_DEVELOP:-}" ]]; then
+        echo "エラー: nix develop 内でも rustc が見つかりません" >&2
+        exit 1
+    fi
+    echo "[land-value-run] rustc not found, re-launching via nix develop..." >&2
+    export _IN_NIX_DEVELOP=1
+    exec nix develop "${REPO_DIR}" --command "$0" "$@"
+fi
+
+# Rustソース変更検知 → uv cache clean
+RUST_HASH=$(cat "${REPO_DIR}"/rust_src/*.rs "${REPO_DIR}/Cargo.toml" | md5sum | cut -d' ' -f1)
+HASH_FILE="${REPO_DIR}/data/cache/.rust_src_hash"
+mkdir -p "$(dirname "$HASH_FILE")"
+
+if [[ ! -f "$HASH_FILE" ]] || [[ "$(cat "$HASH_FILE")" != "$RUST_HASH" ]]; then
+    echo "[land-value-run] Rustソース変更を検知、uvキャッシュをクリア..." >&2
+    uv cache clean land-value-research
+    printf '%s' "$RUST_HASH" > "$HASH_FILE"
+fi
+
+exec uv run --no-build-isolation python "${REPO_DIR}/run.py" "$@"

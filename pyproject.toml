@@ -1,0 +1,50 @@
+[project]
+name = "land-value-research"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "pyyaml>=6.0.3,<7",
+    "shtab>=1.7,<2",
+    "requests>=2.28,<3",
+    "pysocks>=1.7,<2",
+    "tomli>=2.0,<3; python_version < '3.11'",
+    "stock-db>=0.1.0,<1",
+    "stock-web-ui>=0.1.0,<1",
+    "formula-screening>=0.1.0,<1",
+]
+
+[tool.uv.sources]
+stock-db = { path = "../stock_db", editable = true }
+stock-web-ui = { path = "../stock_web_ui", editable = true }
+formula-screening = { path = "../formula_screening", editable = true }
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.0,<7",
+    "maturin>=1.5,<2.0",
+    "pytest>=8.0,<9",
+    "ruff>=0.4,<1",
+]
+
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+manifest-path = "Cargo.toml"
+module-name = "land_value_core"
+features = ["pyo3/extension-module"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+exclude = ["data/"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]
